@@ -1,0 +1,56 @@
+# Virtual Environment
+venv/
+env/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Configuration & Secrets (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+*.key.json
+*-key.json
+service-account-key.json
+
+# Data
+data/
+*.json
+*.csv
+*.xlsx
+*.parquet
+
+# Cache & Temporary
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Cloud SQL Proxy
+cloud_sql_proxy
+cloud_sql_proxy.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Database backups
+*.sql
+*.dump
+*.backup
+
+# Credentials (explicit prevention)
+credentials.json
+gcp-key.json
+postgres_password.txt

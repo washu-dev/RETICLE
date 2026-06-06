@@ -1,0 +1,38 @@
+# BioGrid ORCS Data Ingestion (Phase 1: Data Harmonization)
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+
+# Database
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+alembic>=1.10.0
+
+# Data Processing
+pandas>=1.5.0
+numpy>=1.23.0
+
+# Configuration & Secrets
+python-dotenv>=1.0.0
+google-cloud-secret-manager>=2.16.0
+google-auth>=2.25.0
+
+# Utilities
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+tenacity>=8.2.0
+tqdm>=4.60.0
+
+# Development
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# ============================================================================
+# OPTIONAL - Add these later for Phase 5 (AI Hypothesis Engine)
+# ============================================================================
+# langchain>=0.2.7
+# langchain-community>=0.2.7
+# langchain-openai>=0.1.16
+# openai>=1.32.0
+# sentence-transformers>=2.2.0
+# chromadb>=0.4.0
