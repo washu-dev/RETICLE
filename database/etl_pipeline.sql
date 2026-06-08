@@ -86,7 +86,7 @@ BEGIN
             status = 'completed',
             completed_at = CURRENT_TIMESTAMP,
             total_duration_seconds = EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - v_start_time))
-        WHERE run_id = v_run_id;
+        WHERE etl_pipeline_run.run_id = v_run_id;
 
         -- Mark previous versions as historical
         UPDATE data_load_version
@@ -119,7 +119,7 @@ BEGIN
             completed_at = CURRENT_TIMESTAMP,
             error_message = v_error_msg,
             total_duration_seconds = EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - v_start_time))
-        WHERE run_id = v_run_id;
+        WHERE etl_pipeline_run.run_id = v_run_id;
 
         RETURN QUERY
         SELECT
@@ -144,6 +144,7 @@ CREATE OR REPLACE FUNCTION validate_staging_data(
 DECLARE
     v_invalid_screens INT;
     v_invalid_genes INT;
+    v_duplicate_genes INT;
 BEGIN
     -- Check for missing biogrid_screen_id
     UPDATE staging_screen
@@ -156,11 +157,36 @@ BEGIN
     WHERE version_id = p_version_id
     AND validation_errors IS NOT NULL;
 
-    -- Check for missing entrez_id
+    -- Check for missing identifier_id
     UPDATE staging_screen_gene
-    SET validation_errors = 'Missing entrez_id'
+    SET validation_errors = 'Missing identifier_id'
     WHERE version_id = p_version_id
-    AND entrez_id IS NULL;
+    AND identifier_id IS NULL;
+
+    -- Mark duplicate gene entries (keep only first occurrence per identifier_id)
+    -- This prevents ON CONFLICT errors when multiple staging rows have the same gene
+    UPDATE staging_screen_gene
+    SET validation_errors = 'Duplicate identifier (duplicate marked for skip)'
+    WHERE version_id = p_version_id
+    AND validation_errors IS NULL
+    AND identifier_id IN (
+        SELECT identifier_id
+        FROM staging_screen_gene s1
+        WHERE s1.version_id = p_version_id
+        AND s1.validation_errors IS NULL
+        AND ctid > (
+            SELECT MIN(ctid)
+            FROM staging_screen_gene s2
+            WHERE s2.version_id = p_version_id
+            AND s2.identifier_id = s1.identifier_id
+            AND s2.validation_errors IS NULL
+        )
+    );
+
+    SELECT COUNT(*) INTO v_duplicate_genes
+    FROM staging_screen_gene
+    WHERE version_id = p_version_id
+    AND validation_errors = 'Duplicate identifier (duplicate marked for skip)';
 
     SELECT COUNT(*) INTO v_invalid_genes
     FROM staging_screen_gene
@@ -177,8 +203,8 @@ BEGIN
     );
 
     IF v_invalid_screens > 0 OR v_invalid_genes > 0 THEN
-        RAISE NOTICE 'Validation found % invalid screens, % invalid genes',
-            v_invalid_screens, v_invalid_genes;
+        RAISE NOTICE 'Validation found % invalid screens, % invalid genes (% duplicates)',
+            v_invalid_screens, v_invalid_genes, v_duplicate_genes;
     END IF;
 
 END;
@@ -192,20 +218,25 @@ DECLARE
     v_inserted INT;
     v_updated INT;
 BEGIN
-    -- Upsert screens
-    WITH upsert_data AS (
-        INSERT INTO screen (
-            version_id, biogrid_screen_id, organism, annotation_source, is_current
-        )
-        SELECT DISTINCT
-            p_version_id,
+    -- Upsert screens (deduplicate by UNIQUE constraint: version_id, biogrid_screen_id)
+    WITH deduped AS (
+        SELECT DISTINCT ON (biogrid_screen_id)
+            p_version_id as version_id,
             biogrid_screen_id,
             organism,
             annotation_source,
-            TRUE
+            TRUE as is_current
         FROM staging_screen
         WHERE version_id = p_version_id
         AND validation_errors IS NULL
+        ORDER BY biogrid_screen_id, organism, annotation_source
+    ),
+    upsert_data AS (
+        INSERT INTO screen (
+            version_id, biogrid_screen_id, organism, annotation_source, is_current
+        )
+        SELECT version_id, biogrid_screen_id, organism, annotation_source, is_current
+        FROM deduped
         ON CONFLICT (version_id, biogrid_screen_id) DO UPDATE SET
             is_current = TRUE,
             updated_at = CURRENT_TIMESTAMP
@@ -229,22 +260,26 @@ CREATE OR REPLACE FUNCTION load_genes(
 DECLARE
     v_inserted INT;
 BEGIN
-    -- Upsert genes
-    WITH upsert_data AS (
+    -- Upsert genes (deduplicate by UNIQUE constraint: version_id, identifier_id)
+    WITH deduped AS (
+        SELECT DISTINCT ON (ssg.identifier_id)
+            p_version_id as version_id,
+            ssg.identifier_id,
+            ssg.gene_symbol,
+            (SELECT organism FROM data_load_version WHERE version_id = p_version_id) as organism,
+            TRUE as is_current
+        FROM staging_screen_gene ssg
+        WHERE ssg.version_id = p_version_id
+        AND ssg.validation_errors IS NULL
+        ORDER BY ssg.identifier_id, ssg.gene_symbol
+    ),
+    upsert_data AS (
         INSERT INTO gene (
-            version_id, entrez_id, gene_symbol, organism, is_current
+            version_id, identifier_id, gene_symbol, organism, is_current
         )
-        SELECT DISTINCT
-            p_version_id,
-            entrez_id,
-            gene_symbol,
-            (SELECT organism FROM staging_screen_gene
-             WHERE version_id = p_version_id LIMIT 1),
-            TRUE
-        FROM staging_screen_gene
-        WHERE version_id = p_version_id
-        AND validation_errors IS NULL
-        ON CONFLICT (version_id, entrez_id) DO UPDATE SET
+        SELECT version_id, identifier_id, gene_symbol, organism, is_current
+        FROM deduped
+        ON CONFLICT (version_id, identifier_id) DO UPDATE SET
             is_current = TRUE,
             updated_at = CURRENT_TIMESTAMP
         RETURNING 1
@@ -268,10 +303,11 @@ DECLARE
     v_inserted INT;
 BEGIN
     -- Create denormalized screen-gene pairs
+    -- NOTE: Assumes staging data has been deduplicated by version_id, identifier_id in load_genes step
     WITH raw_data AS (
         INSERT INTO screen_gene_raw (
             version_id, run_id, screen_id, gene_id,
-            biogrid_screen_id, entrez_id,
+            biogrid_screen_id, identifier_id,
             hit_flag, score_1, score_2, score_3, score_4, score_5,
             raw_score, is_current
         )
@@ -281,7 +317,7 @@ BEGIN
             s.screen_id,
             g.gene_id,
             st.biogrid_screen_id,
-            st.entrez_id,
+            st.identifier_id,
             st.hit_flag,
             st.score_1, st.score_2, st.score_3, st.score_4, st.score_5,
             COALESCE(st.score_1, 0),  -- raw_score uses first available score
@@ -293,7 +329,7 @@ BEGIN
         )
         JOIN gene g ON (
             g.version_id = p_version_id
-            AND g.entrez_id = st.entrez_id
+            AND g.identifier_id = st.identifier_id
         )
         WHERE st.version_id = p_version_id
         AND st.validation_errors IS NULL
@@ -422,7 +458,7 @@ BEGIN
     WITH dim_data AS (
         INSERT INTO dim_gene (
             version_id, run_id, gene_id,
-            entrez_id, gene_symbol, organism,
+            identifier_id, gene_symbol, organism,
             total_screens, total_screens_hit, total_publications,
             avg_hit_percentage,
             is_current
@@ -431,7 +467,7 @@ BEGIN
             p_version_id,
             p_run_id,
             g.gene_id,
-            g.entrez_id,
+            g.identifier_id,
             g.gene_symbol,
             g.organism,
             COUNT(DISTINCT sgr.screen_id)::INT,

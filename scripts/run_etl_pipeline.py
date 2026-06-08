@@ -2,9 +2,10 @@
 """
 Run the RETICLE ETL pipeline on a specific data version.
 
-This is Step 2 of the data warehouse workflow:
-  1. Load JSON/TSV into staging (staging_loader.py)
-  2. Run ETL pipeline (this script)
+Direct psycopg2 implementation (no SQLAlchemy ORM).
+- Calls run_etl_pipeline() stored procedure
+- Displays audit trail
+- Simple, transparent, efficient
 
 Usage:
   python run_etl_pipeline.py --version 1
@@ -14,82 +15,129 @@ Usage:
 import argparse
 import logging
 import sys
+import time
+import traceback
 from datetime import datetime
-from typing import Optional
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from config import Config
-from database import DatabaseManager, get_db_manager
-from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
-class ETLPipeline:
-    """Execute the ETL pipeline on a data version."""
 
-    def __init__(self, version_id: int, pipeline_version: Optional[str] = None):
+class ETLPipeline:
+    """Execute the ETL pipeline on a data version using direct psycopg2."""
+
+    def __init__(self, version_id: int, pipeline_version: str = None):
         self.version_id = version_id
         self.pipeline_version = pipeline_version or Config.PIPELINE_VERSION
-        self.db = get_db_manager()
-        self.run_id: Optional[int] = None
+        self.conn = None
+        self.run_id = None
+
+    def connect(self) -> bool:
+        """Connect to database."""
+        try:
+            self.conn = psycopg2.connect(
+                host=Config.DB_HOST,
+                port=Config.DB_PORT,
+                database=Config.DB_NAME,
+                user=Config.DB_USER,
+                password=Config.DB_PASSWORD,
+                sslmode='require',
+                gssencmode='disable'
+            )
+            logger.info("✓ Connected to database")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Connection failed: {e}")
+            return False
 
     def run(self) -> bool:
         """Execute the complete ETL pipeline."""
         logger.info("="*80)
-        logger.info(f"ETL PIPELINE EXECUTION")
+        logger.info("ETL PIPELINE EXECUTION")
         logger.info("="*80)
         logger.info(f"Version ID: {self.version_id}")
         logger.info(f"Pipeline Version: {self.pipeline_version}\n")
 
-        try:
-            # Call the PostgreSQL function
-            with self.db.get_session() as session:
-                logger.info("Executing run_etl_pipeline() function...\n")
-
-                result = session.execute(text("""
-                    SELECT * FROM run_etl_pipeline(
-                        p_version_id := :version_id,
-                        p_pipeline_version := :pipeline_version
-                    )
-                """), {
-                    'version_id': self.version_id,
-                    'pipeline_version': self.pipeline_version
-                })
-
-                rows = result.fetchall()
-
-                logger.info("="*80)
-                logger.info("ETL PIPELINE RESULT")
-                logger.info("="*80)
-
-                for row in rows:
-                    run_id, status, duration, message = row
-                    self.run_id = run_id
-
-                    logger.info(f"Run ID:       {run_id}")
-                    logger.info(f"Status:       {status}")
-                    logger.info(f"Duration:     {duration:.1f}s" if duration else "Duration:     N/A")
-                    logger.info(f"Message:      {message}")
-
-                logger.info("="*80 + "\n")
-
-                # Show detailed audit log
-                if status == 'completed':
-                    self._show_audit_log(session)
-                    return True
-                else:
-                    logger.error("Pipeline failed. Check logs above.")
-                    return False
-
-        except Exception as e:
-            logger.error(f"Pipeline execution failed: {e}", exc_info=True)
+        if not self.connect():
             return False
 
-    def _show_audit_log(self, session):
+        start_time = time.time()
+
+        try:
+            logger.info("⏳ Executing run_etl_pipeline() stored procedure...")
+            logger.info("   Processing: validate → load → build → aggregate\n")
+
+            cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+
+            # Call the stored procedure
+            cursor.execute(
+                "SELECT * FROM run_etl_pipeline(%s, %s)",
+                (self.version_id, self.pipeline_version)
+            )
+
+            result = cursor.fetchone()
+
+            if not result:
+                logger.error("❌ No result from stored procedure")
+                return False
+
+            run_id = result['run_id']
+            status = result['status']
+            duration = result['duration_seconds']
+            message = result['message']
+            self.run_id = run_id
+
+            elapsed = time.time() - start_time
+            status_icon = "✓" if status == "completed" else "✗"
+
+            logger.info("="*80)
+            logger.info("ETL PIPELINE RESULT")
+            logger.info("="*80)
+            logger.info(f"{status_icon} Run ID:       {run_id}")
+            logger.info(f"  Status:       {status}")
+            logger.info(f"  Duration:     {duration:.1f}s" if duration else "  Duration:     N/A")
+            logger.info(f"  Total time:   {elapsed:.1f}s")
+            if message:
+                logger.info(f"  Message:      {message}")
+            logger.info("="*80 + "\n")
+
+            # Show detailed audit log
+            if status == "completed":
+                self._show_audit_log(cursor)
+                return True
+            else:
+                logger.error("❌ Pipeline failed!")
+                logger.error(f"   Error: {message}")
+                self._show_failed_steps(cursor)
+                return False
+
+        except Exception as e:
+            logger.error("\n" + "="*80)
+            logger.error("ETL PIPELINE EXECUTION ERROR")
+            logger.error("="*80)
+            logger.error(f"❌ Database error: {e}")
+            logger.error("\nDETAILED ERROR:")
+            for line in traceback.format_exc().split('\n'):
+                if line.strip():
+                    logger.error(f"   {line}")
+            logger.error("="*80 + "\n")
+            return False
+
+        finally:
+            if self.conn:
+                self.conn.close()
+
+    def _show_audit_log(self, cursor):
         """Display detailed audit log from the ETL run."""
         logger.info("ETL AUDIT LOG")
         logger.info("="*80)
 
-        result = session.execute(text("""
+        cursor.execute(
+            """
             SELECT
                 step_name,
                 status,
@@ -99,76 +147,118 @@ class ETLPipeline:
                 duration_seconds,
                 error_message
             FROM etl_audit_log
-            WHERE run_id = :run_id
+            WHERE run_id = %s
             ORDER BY step_order
-        """), {'run_id': self.run_id})
+            """,
+            (self.run_id,)
+        )
 
-        rows = result.fetchall()
+        rows = cursor.fetchall()
 
         for row in rows:
-            step_name, status, rows_proc, rows_ins, rows_skip, duration, error = row
+            status_icon = "✓" if row['status'] == "completed" else "⚠"
 
-            logger.info(f"\n  {step_name}:")
-            logger.info(f"    Status:           {status}")
-            if rows_proc:
-                logger.info(f"    Rows processed:   {rows_proc:,}")
-            if rows_ins:
-                logger.info(f"    Rows inserted:    {rows_ins:,}")
-            if rows_skip:
-                logger.info(f"    Rows skipped:     {rows_skip:,}")
-            if duration:
-                logger.info(f"    Duration:         {duration:.2f}s")
-            if error:
-                logger.info(f"    Error:            {error}")
+            logger.info(f"\n  {status_icon} {row['step_name']}:")
+            logger.info(f"      Status:           {row['status']}")
+            if row['rows_processed']:
+                logger.info(f"      Rows processed:   {row['rows_processed']:,}")
+            if row['rows_inserted']:
+                logger.info(f"      Rows inserted:    {row['rows_inserted']:,}")
+            if row['rows_skipped']:
+                logger.info(f"      Rows skipped:     {row['rows_skipped']:,}")
+            if row['duration_seconds']:
+                logger.info(f"      Duration:         {row['duration_seconds']:.2f}s")
+            if row['error_message']:
+                logger.error(f"      Error:            {row['error_message']}")
 
         logger.info("\n" + "="*80 + "\n")
 
+    def _show_failed_steps(self, cursor):
+        """Show which steps failed and their error messages."""
+        logger.error("\nFAILED STEPS DETAIL:")
+        logger.error("="*80)
+
+        cursor.execute(
+            """
+            SELECT
+                step_name,
+                status,
+                error_message
+            FROM etl_audit_log
+            WHERE run_id = %s
+            AND status != 'completed'
+            ORDER BY step_order
+            """,
+            (self.run_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        if not rows:
+            logger.error("No audit log entries found. Error may have occurred during function initialization.")
+        else:
+            for row in rows:
+                logger.error(f"\n❌ {row['step_name']}")
+                logger.error(f"   Status: {row['status']}")
+                if row['error_message']:
+                    logger.error(f"   Error:  {row['error_message']}")
+
+        logger.error("="*80 + "\n")
+
     def show_version_info(self):
         """Show information about the version being processed."""
+        if not self.connect():
+            return False
+
         logger.info("VERSION INFORMATION")
         logger.info("="*80)
 
         try:
-            with self.db.get_session() as session:
-                result = session.execute(text("""
-                    SELECT
-                        version_id,
-                        organism,
-                        load_date,
-                        status,
-                        is_current,
-                        num_screens,
-                        num_genes,
-                        num_gene_hits,
-                        file_count
-                    FROM data_load_version
-                    WHERE version_id = :version_id
-                """), {'version_id': self.version_id})
+            cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute(
+                """
+                SELECT
+                    version_id,
+                    organism,
+                    load_date,
+                    status,
+                    is_current,
+                    num_screens,
+                    num_genes,
+                    num_gene_hits,
+                    file_count
+                FROM data_load_version
+                WHERE version_id = %s
+                """,
+                (self.version_id,)
+            )
 
-                row = result.fetchone()
+            row = cursor.fetchone()
 
-                if not row:
-                    logger.error(f"Version {self.version_id} not found")
-                    return False
+            if not row:
+                logger.error(f"Version {self.version_id} not found")
+                return False
 
-                version_id, organism, load_date, status, is_current, num_screens, num_genes, num_hits, file_count = row
+            logger.info(f"Version ID:        {row['version_id']}")
+            logger.info(f"Organism:          {row['organism']}")
+            logger.info(f"Load Date:         {row['load_date']}")
+            logger.info(f"Status:            {row['status']}")
+            logger.info(f"Is Current:        {row['is_current']}")
+            logger.info(f"Screens:           {row['num_screens']:,}" if row['num_screens'] else "Screens:           N/A")
+            logger.info(f"Genes:             {row['num_genes']:,}" if row['num_genes'] else "Genes:             N/A")
+            logger.info(f"Gene-Screen Hits:  {row['num_gene_hits']:,}" if row['num_gene_hits'] else "Gene-Screen Hits:  N/A")
+            logger.info(f"Files Processed:   {row['file_count']}" if row['file_count'] else "Files Processed:   N/A")
 
-                logger.info(f"Version ID:        {version_id}")
-                logger.info(f"Organism:          {organism}")
-                logger.info(f"Load Date:         {load_date}")
-                logger.info(f"Status:            {status}")
-                logger.info(f"Is Current:        {is_current}")
-                logger.info(f"Screens:           {num_screens:,}" if num_screens else "Screens:           N/A")
-                logger.info(f"Genes:             {num_genes:,}" if num_genes else "Genes:             N/A")
-                logger.info(f"Gene-Screen Hits:  {num_hits:,}" if num_hits else "Gene-Screen Hits:  N/A")
-                logger.info(f"Files Processed:   {file_count}" if file_count else "Files Processed:   N/A")
-
-                logger.info("="*80 + "\n")
-                return True
+            logger.info("="*80 + "\n")
+            return True
 
         except Exception as e:
             logger.error(f"Failed to show version info: {e}")
             return False
+
+        finally:
+            if self.conn:
+                self.conn.close()
 
 
 def main():
@@ -200,14 +290,6 @@ def main():
         level=Config.LOG_LEVEL,
         format=Config.LOG_FORMAT
     )
-
-    # Validate configuration
-    is_valid, errors = Config.validate()
-    if not is_valid:
-        logger.error("Configuration validation failed:")
-        for error in errors:
-            logger.error(f"  - {error}")
-        return 1
 
     # Create pipeline
     pipeline = ETLPipeline(args.version, args.pipeline_version)

@@ -71,19 +71,7 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Check if virtual environment is active
-if [ -z "$VIRTUAL_ENV" ]; then
-    log_warn "No virtual environment detected"
-    log_info "Attempting to activate reticle environment..."
-
-    if [ -f "venv/bin/activate" ]; then
-        source venv/bin/activate
-    elif conda info --envlist | grep -q "reticle"; then
-        conda activate reticle
-    else
-        log_warn "Could not auto-activate environment, proceeding anyway..."
-    fi
-fi
+# Virtual environment not required - using system Python
 
 # Build command
 CMD="python3 run_etl_pipeline.py --version $VERSION_ID $@"
