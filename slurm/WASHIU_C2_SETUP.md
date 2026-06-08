@@ -6,6 +6,29 @@ Complete setup guide for WashU's C2 HPC cluster.
 
 ## Quick Start (5 Minutes)
 
+### Step 0: Set Up Environment Variables
+
+On WashU C2, add this to `~/.bashrc`:
+
+```bash
+# Edit ~/.bashrc
+nano ~/.bashrc
+
+# Add this line at the end:
+export RETICLE_DIR=$HOME/projects/RETICLE
+
+# Save and reload
+source ~/.bashrc
+```
+
+Verify it's set:
+```bash
+echo $RETICLE_DIR
+# Should output: /home/arifs/projects/RETICLE
+```
+
+For detailed info, see: **[ENV_VARS_SETUP.md](ENV_VARS_SETUP.md)**
+
 ### Step 1: Create PostgreSQL Credentials
 
 On C2 login node:

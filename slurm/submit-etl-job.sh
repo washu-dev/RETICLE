@@ -13,8 +13,13 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RETICLE_DIR="$(dirname "$SCRIPT_DIR")"
+# Get RETICLE_DIR from environment or auto-detect
+if [ -z "$RETICLE_DIR" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    RETICLE_DIR="$(dirname "$SCRIPT_DIR")"
+fi
+
+SCRIPT_DIR="$RETICLE_DIR/slurm"
 
 # Colors
 RED='\033[0;31m'
@@ -190,7 +195,7 @@ log_step "Submitting SLURM job..."
 echo ""
 
 JOB_ID=$(sbatch "${SBATCH_ARGS[@]}" \
-    --export=VERSION_ID="$VERSION_ID",NUM_THREADS="$CORES" \
+    --export=VERSION_ID="$VERSION_ID",NUM_THREADS="$CORES",RETICLE_DIR="$RETICLE_DIR" \
     "$SCRIPT_DIR/$JOB_SCRIPT" | awk '{print $NF}')
 
 echo ""

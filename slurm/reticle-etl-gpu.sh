@@ -25,7 +25,16 @@ set -e
 
 VERSION_ID=${VERSION_ID:-2}
 NUM_THREADS=${NUM_THREADS:-${SLURM_CPUS_PER_TASK:-16}}
-RETICLE_DIR="/Volumes/SD Media/projects/RETICLE"
+
+# Directory configuration
+# RETICLE_DIR can be set via: export RETICLE_DIR=/path/to/reticle
+# or passed via SLURM: sbatch --export=RETICLE_DIR=/path/to/reticle
+# Default: auto-detect from script location (fallback)
+if [ -z "$RETICLE_DIR" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    RETICLE_DIR="$(dirname "$SCRIPT_DIR")"
+fi
+
 SCRIPTS_DIR="$RETICLE_DIR/scripts"
 
 # Colors
