@@ -7,7 +7,7 @@
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/reticle-etl-%j.out
 #SBATCH --error=logs/reticle-etl-%j.err
-#SBATCH --partition=cpu
+# Note: --partition is set by submit-etl-job.sh wrapper (do not set here)
 
 # RETICLE ETL Pipeline - SLURM Job Script
 #
@@ -87,16 +87,10 @@ from config import Config
 import psycopg2
 
 try:
-    conn = psycopg2.connect(
-        host=Config.DB_HOST,
-        port=Config.DB_PORT,
-        database=Config.DB_NAME,
-        user=Config.DB_USER,
-        password=Config.DB_PASSWORD,
-        sslmode='require',
-        gssencmode='disable',
-        connect_timeout=5
-    )
+    params = Config.get_psycopg2_params()
+    params['sslmode'] = 'require'
+    params['connect_timeout'] = 5
+    conn = psycopg2.connect(**params)
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM data_load_version")
     count = cursor.fetchone()[0]

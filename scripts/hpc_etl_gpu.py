@@ -45,16 +45,10 @@ class GPUETLPipeline:
         self.gpu_available = GPU_AVAILABLE
 
     def connect(self) -> psycopg2.extensions.connection:
-        """Create database connection."""
-        return psycopg2.connect(
-            host=Config.DB_HOST,
-            port=Config.DB_PORT,
-            database=Config.DB_NAME,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            sslmode='require',
-            gssencmode='disable'
-        )
+        """Create database connection (uses centralized config)."""
+        params = Config.get_psycopg2_params()
+        params['sslmode'] = 'require'  # Enforce SSL
+        return psycopg2.connect(**params)
 
     def run(self) -> bool:
         """Execute GPU-accelerated ETL."""

@@ -8,7 +8,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --output=logs/reticle-etl-gpu-%j.out
 #SBATCH --error=logs/reticle-etl-gpu-%j.err
-#SBATCH --partition=gpu
+# Note: --partition is set by submit-etl-job.sh wrapper (do not set here)
 
 # RETICLE ETL Pipeline - GPU Variant
 #
@@ -92,6 +92,35 @@ fi
 
 # Change to scripts directory
 cd "$SCRIPTS_DIR"
+
+# Validate database connection
+echo -e "${BLUE}[SETUP]${NC} Validating database connection..."
+python3 << 'PYTHON'
+import sys
+from config import Config
+import psycopg2
+
+try:
+    params = Config.get_psycopg2_params()
+    params['sslmode'] = 'require'
+    params['connect_timeout'] = 5
+    conn = psycopg2.connect(**params)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM data_load_version")
+    count = cursor.fetchone()[0]
+    print(f"✓ Database connected ({count} versions found)")
+    conn.close()
+except Exception as e:
+    print(f"✗ Database connection failed: {e}")
+    sys.exit(1)
+PYTHON
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}[ERROR]${NC} Database validation failed"
+    exit 1
+fi
+
+echo ""
 
 # Start timer
 START_TIME=$(date +%s)

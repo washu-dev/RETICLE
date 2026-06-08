@@ -81,6 +81,7 @@ class Config:
             'database': cls.DB_NAME,
             'user': cls.DB_USER,
             'connect_timeout': 30,
+            'gssencmode': 'disable',  # Disable Kerberos authentication
         }
         if cls.DB_PASSWORD:
             params['password'] = cls.DB_PASSWORD
