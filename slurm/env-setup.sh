@@ -1,18 +1,22 @@
 #!/bin/bash
 # Environment setup for RETICLE ETL - CPU variant
-# Load required modules and activate conda environment
+# Creates Python virtual environment and loads required packages
+# Works with or without conda (uses venv if conda unavailable)
 
 set -e
 
 echo "Setting up environment..."
 
-# Load common modules (adjust for your cluster)
-# module load gcc/11.2.0
-# module load openmpi/4.1.2
+# Load Python module (adjust for your cluster if needed)
+# WashU C2: python3 (default), python39
+module load python3
 
-# Load Python environment - OPTION 1: Conda
+# Path for virtual environment (in home directory to avoid quota issues)
+VENV_HOME="$HOME/.reticle-etl-venv"
+
+# OPTION 1: Use conda if available
 if command -v conda &> /dev/null; then
-    echo "  Loading conda environment..."
+    echo "  Using conda..."
     conda activate reticle-etl 2>/dev/null || {
         echo "  Creating conda environment..."
         conda create -y -n reticle-etl python=3.11 \
@@ -20,11 +24,25 @@ if command -v conda &> /dev/null; then
             -c conda-forge
         conda activate reticle-etl
     }
+# OPTION 2: Use Python venv (for clusters without conda)
 else
-    echo "  Conda not found, using system Python"
+    echo "  Conda not found, using Python venv..."
+
+    if [ ! -d "$VENV_HOME" ]; then
+        echo "  Creating virtual environment at $VENV_HOME..."
+        python3 -m venv "$VENV_HOME"
+    fi
+
+    echo "  Activating virtual environment..."
+    source "$VENV_HOME/bin/activate"
+
+    echo "  Installing packages (this may take a minute)..."
+    pip install --upgrade pip --quiet
+    pip install pandas numpy psycopg2-binary --quiet
 fi
 
 # Verify required packages
+echo "  Verifying packages..."
 python3 << 'PYTHON'
 import sys
 
@@ -45,7 +63,6 @@ for pkg, desc in packages.items():
 
 if missing:
     print(f"\nError: Missing packages: {', '.join(missing)}")
-    print(f"Install with: pip install {' '.join(missing)}")
     sys.exit(1)
 PYTHON
 

@@ -1,35 +1,40 @@
 #!/bin/bash
 # Environment setup for RETICLE ETL - GPU variant
-# Load CUDA, cuDNN, and RAPIDS
+# Load CUDA, cuDNN, and RAPIDS (or cuDF via pip)
+# Works with or without conda
 
 set -e
 
 echo "Setting up GPU environment..."
 
-# Load CUDA module (adjust version for your cluster)
-# module load cuda/12.0
-# module load cudnn/8.6
-# module load nccl/2.16
+# Load Python module
+# WashU C2: python3 (default)
+module load python3
 
-echo "  Loading CUDA modules..."
-# Example for common clusters:
-# module load nvidia/cuda/12.0  or
-# module load cuda/12.2  or
-# . /opt/nvidia/hpc_sdk/linux_x86_64/24.1/compilers/bin/nvc -V
+# Load CUDA module if available (adjust for your cluster)
+# WashU C2: check with 'module avail cuda'
+# Common options: cuda/11.8, cuda/12.0, cuda/12.2
+# If your cluster doesn't have CUDA module, you may need:
+# - export PATH=/usr/local/cuda/bin:$PATH
+# - export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+echo "  Loading CUDA modules (if available)..."
+module load cuda 2>/dev/null || echo "  ⚠ CUDA module not found (GPU may not work)"
 
 # Verify CUDA
 if ! command -v nvidia-smi &> /dev/null; then
     echo "  ⚠ nvidia-smi not found - GPU may not be available"
 fi
 
-echo "  Loading RAPIDS conda environment..."
+# Path for virtual environment
+VENV_HOME="$HOME/.rapids-gpu-venv"
+
+# OPTION 1: Use conda if available (preferred for RAPIDS)
 if command -v conda &> /dev/null; then
+    echo "  Using conda for RAPIDS..."
     conda activate rapids-gpu 2>/dev/null || {
-        echo "  Creating RAPIDS environment..."
+        echo "  Creating RAPIDS conda environment..."
         echo "  (This may take a few minutes...)"
 
-        # Create environment with RAPIDS
-        # Option 1: Using conda-forge (recommended for HPC)
         conda create -y -n rapids-gpu python=3.11 \
             -c nvidia -c conda-forge \
             rapids=24.02 \
@@ -38,54 +43,84 @@ if command -v conda &> /dev/null; then
             psycopg2-binary \
             pandas \
             numpy
-
         conda activate rapids-gpu
     }
+
+# OPTION 2: Use Python venv with GPU packages via pip
 else
-    echo "  ✗ Conda not found - cannot set up RAPIDS"
-    exit 1
+    echo "  Conda not found, using Python venv..."
+
+    if [ ! -d "$VENV_HOME" ]; then
+        echo "  Creating virtual environment at $VENV_HOME..."
+        python3 -m venv "$VENV_HOME"
+    fi
+
+    echo "  Activating virtual environment..."
+    source "$VENV_HOME/bin/activate"
+
+    echo "  Installing packages (this may take several minutes)..."
+    pip install --upgrade pip --quiet
+
+    # Try to install cuDF (GPU-accelerated pandas)
+    echo "  Installing cuDF (GPU-accelerated DataFrame)..."
+    pip install cudf-cu12 --quiet 2>/dev/null || {
+        echo "  ⚠ cuDF installation failed - GPU acceleration unavailable"
+        echo "     Falling back to CPU pandas"
+        pip install pandas numpy psycopg2-binary --quiet
+    }
+
+    # Fallback packages if GPU unavailable
+    pip install pandas numpy psycopg2-binary --quiet
 fi
 
-# Verify RAPIDS and GPU
-echo "  Verifying RAPIDS installation..."
+# Verify packages
+echo "  Verifying packages..."
 python3 << 'PYTHON'
 import sys
 
-print("Checking RAPIDS packages...")
 packages = {
-    'cudf': 'GPU DataFrame',
-    'cupy': 'GPU Array',
+    'pandas': 'CPU fallback',
     'psycopg2': 'PostgreSQL',
-    'pandas': 'CPU fallback'
 }
 
+# Try GPU packages, but don't fail if missing
+optional = {
+    'cudf': 'GPU DataFrame',
+    'cupy': 'GPU Array',
+}
+
+missing = []
 for pkg, desc in packages.items():
     try:
-        mod = __import__(pkg)
+        __import__(pkg)
         print(f"  ✓ {pkg}: {desc}")
     except ImportError:
         print(f"  ✗ {pkg}: {desc}")
-        sys.exit(1)
+        missing.append(pkg)
 
-# Check GPU access
-try:
-    import cupy as cp
-    gpu_name = cp.cuda.runtime.getDeviceProperties(0)['name']
-    print(f"  ✓ GPU accessible: {gpu_name}")
-except Exception as e:
-    print(f"  ✗ GPU access failed: {e}")
+# Check GPU packages (optional)
+gpu_available = False
+for pkg, desc in optional.items():
+    try:
+        mod = __import__(pkg)
+        print(f"  ✓ {pkg}: {desc}")
+        gpu_available = True
+    except ImportError:
+        print(f"  ⚠ {pkg}: {desc} (GPU acceleration unavailable)")
+
+if missing:
+    print(f"\nError: Missing required packages: {', '.join(missing)}")
     sys.exit(1)
 
-print("\n✓ GPU environment ready")
+if not gpu_available:
+    print("\n⚠ GPU packages not available - using CPU fallback")
+    print("  For GPU acceleration, install RAPIDS:")
+    print("  conda install -c nvidia -c conda-forge rapids=24.02")
+
+print("")
 PYTHON
 
-if [ $? -ne 0 ]; then
-    echo "✗ GPU environment setup failed"
-    exit 1
-fi
-
 # Verify .pgpass exists and has correct permissions
-echo ""
 echo "Checking PostgreSQL credentials (.pgpass)..."
 if [ ! -f ~/.pgpass ]; then
     echo "  ✗ .pgpass not found in home directory"
