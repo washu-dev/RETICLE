@@ -190,8 +190,7 @@ log_step "Submitting SLURM job..."
 echo ""
 
 JOB_ID=$(sbatch "${SBATCH_ARGS[@]}" \
-    -v VERSION_ID="$VERSION_ID" \
-    -v NUM_THREADS="$CORES" \
+    --export=VERSION_ID="$VERSION_ID",NUM_THREADS="$CORES" \
     "$SCRIPT_DIR/$JOB_SCRIPT" | awk '{print $NF}')
 
 echo ""
