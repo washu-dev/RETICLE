@@ -34,7 +34,7 @@ function log_step() {
 if [ -z "$1" ]; then
     log_step "RETICLE ETL Jobs"
     echo ""
-    squeue -n "reticle-etl*" --format="%.18i %.20j %.2t %.10M %.5C %.5m %N" --header
+    squeue -n "reticle-etl*" --format="%.18i %.20j %.2t %.10M %.5C %.5m %N"
     echo ""
     log_info "Show detailed info: squeue -j <job_id>"
     log_info "Tail output:        ./monitor-etl-jobs.sh <job_id> tail"
@@ -63,7 +63,7 @@ case $COMMAND in
     status)
         echo ""
         log_step "Job Details"
-        squeue -j "$JOB_ID" -O JobID,Name,State,TimeUsed,TimeLimit,CPUs,MinMemory,Gres,Node --header
+        squeue -j "$JOB_ID" --format="%.18i %.20j %.2t %.10M %.5C %.5m %N"
         echo ""
         ;;
     tail)
