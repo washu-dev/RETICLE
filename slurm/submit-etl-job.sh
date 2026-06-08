@@ -121,6 +121,30 @@ if ! [[ "$VERSION_ID" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
+# Validate .pgpass exists and has correct permissions
+if [ ! -f ~/.pgpass ]; then
+    log_error ".pgpass not found in home directory"
+    echo ""
+    echo "Create it with:"
+    echo "  cat > ~/.pgpass <<'EOF'"
+    echo "  your.postgres.host:5432:reticle_biogrid:reticle_admin:YOUR_PASSWORD"
+    echo "  EOF"
+    echo ""
+    echo "Then set permissions:"
+    echo "  chmod 600 ~/.pgpass"
+    echo ""
+    echo "For detailed setup instructions, see: slurm/PGPASS_SETUP.md"
+    exit 1
+fi
+
+# Check permissions (must be 600)
+PGPASS_PERMS=$(stat -c %a ~/.pgpass 2>/dev/null || stat -f %A ~/.pgpass 2>/dev/null)
+if [ "$PGPASS_PERMS" != "600" ]; then
+    log_error ".pgpass has incorrect permissions: $PGPASS_PERMS (must be 600)"
+    echo "Fix with: chmod 600 ~/.pgpass"
+    exit 1
+fi
+
 # Calculate memory if not specified
 if [ "$MEM_AUTO" = true ]; then
     MEM=$((CORES * 4))  # 4GB per core

@@ -4,6 +4,24 @@
 
 RETICLE ETL pipeline is fully integrated with SLURM job scheduler. Submit jobs, monitor progress, and scale to large datasets on HPC clusters.
 
+Database credentials are stored securely in `~/.pgpass` (PostgreSQL standard, no plaintext passwords in scripts).
+
+## Setup (One-Time)
+
+### PostgreSQL Credentials (.pgpass)
+
+Create `~/.pgpass` on your HPC login node:
+
+```bash
+cat > ~/.pgpass <<'EOF'
+your.postgres.host:5432:reticle_biogrid:reticle_admin:YOUR_PASSWORD
+EOF
+
+chmod 600 ~/.pgpass
+```
+
+See [../slurm/PGPASS_SETUP.md](../slurm/PGPASS_SETUP.md) for complete setup guide.
+
 ## Quick Start
 
 ### 1. Basic CPU Job (8 cores, 30 minutes)

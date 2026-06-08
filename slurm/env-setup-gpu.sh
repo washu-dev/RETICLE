@@ -84,4 +84,26 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Verify .pgpass exists and has correct permissions
+echo ""
+echo "Checking PostgreSQL credentials (.pgpass)..."
+if [ ! -f ~/.pgpass ]; then
+    echo "  ✗ .pgpass not found in home directory"
+    echo "    Create it with: cat > ~/.pgpass <<'EOF'"
+    echo "    your.postgres.host:5432:reticle_biogrid:reticle_admin:PASSWORD"
+    echo "    EOF"
+    echo "    Then: chmod 600 ~/.pgpass"
+    exit 1
+fi
+
+# Check permissions (must be exactly 600 / -rw-------)
+PGPASS_PERMS=$(stat -c %a ~/.pgpass 2>/dev/null || stat -f %A ~/.pgpass 2>/dev/null)
+if [ "$PGPASS_PERMS" != "600" ]; then
+    echo "  ✗ .pgpass has incorrect permissions: $PGPASS_PERMS (must be 600)"
+    echo "    Fix with: chmod 600 ~/.pgpass"
+    exit 1
+fi
+echo "  ✓ .pgpass found with correct permissions (600)"
+
+echo ""
 echo "✓ GPU environment ready"

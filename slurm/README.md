@@ -4,6 +4,22 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 
 ## Quick Start (2 Minutes)
 
+### 0. One-Time Setup: PostgreSQL Credentials
+
+Store database credentials securely in `~/.pgpass`:
+
+```bash
+# On your HPC login node
+cat > ~/.pgpass <<'EOF'
+your.postgres.host:5432:reticle_biogrid:reticle_admin:YOUR_PASSWORD_HERE
+EOF
+
+# Set secure permissions (REQUIRED)
+chmod 600 ~/.pgpass
+```
+
+See **[PGPASS_SETUP.md](PGPASS_SETUP.md)** for detailed instructions.
+
 ### 1. Submit a Job
 ```bash
 cd /Volumes/SD Media/projects/RETICLE/slurm

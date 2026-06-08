@@ -17,11 +17,12 @@ class Config:
     """Database and application configuration."""
 
     # Database connection
+    # Note: DB_PASSWORD should NOT be set. Use ~/.pgpass instead for secure HPC credential storage.
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = int(os.getenv('DB_PORT', 5432))
     DB_NAME = os.getenv('DB_NAME', 'reticle_biogrid')
     DB_USER = os.getenv('DB_USER', 'reticle_admin')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')  # Empty: psycopg2 will use ~/.pgpass
     DB_SSL = os.getenv('DB_SSL', 'false').lower() == 'true'
 
     # Connection pool settings
