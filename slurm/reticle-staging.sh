@@ -1,0 +1,207 @@
+#!/bin/bash
+#SBATCH --job-name=reticle-staging
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=00:10:00
+#SBATCH --output=logs/reticle-staging-%j.out
+#SBATCH --error=logs/reticle-staging-%j.err
+
+# RETICLE Staging Loader - SLURM Job Script
+#
+# Loads JSON and TSV data into versioned staging tables using parallel I/O.
+#
+# Usage:
+#   sbatch reticle-staging.sh homo_sapiens
+#   sbatch reticle-staging.sh mus_musculus 16
+#   sbatch --cpus-per-task=16 reticle-staging.sh homo_sapiens 16
+#
+# Arguments:
+#   $1: Organism (homo_sapiens or mus_musculus) [required]
+#   $2: Number of threads (default: 8, should match --cpus-per-task)
+#
+# Environment Variables (optional):
+#   STAGING_DESCRIPTION  Custom description for this load (default: auto-generated)
+#   RETICLE_DIR          Path to RETICLE repo (auto-detected if not set)
+
+set -e
+
+# Configuration from arguments
+ORGANISM="${1:-}"
+NUM_THREADS="${2:-${SLURM_CPUS_PER_TASK:-8}}"
+STAGING_DESCRIPTION="${STAGING_DESCRIPTION:-Auto-loaded $ORGANISM data (SLURM Job $SLURM_JOB_ID)}"
+
+# Validate organism
+if [ -z "$ORGANISM" ]; then
+    echo "Error: Organism not specified"
+    echo "Usage: $0 <organism> [threads]"
+    echo "  organism: homo_sapiens or mus_musculus (required)"
+    echo "  threads:  number of parallel threads (default: 8)"
+    exit 1
+fi
+
+case "$ORGANISM" in
+    homo_sapiens|mus_musculus)
+        ;;
+    *)
+        echo "Error: Unknown organism: $ORGANISM"
+        echo "Must be: homo_sapiens or mus_musculus"
+        exit 1
+        ;;
+esac
+
+# Directory configuration
+if [ -z "$RETICLE_DIR" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    RETICLE_DIR="$(dirname "$SCRIPT_DIR")"
+fi
+
+SCRIPTS_DIR="$RETICLE_DIR/scripts"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}RETICLE Staging Loader - SLURM Job${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo ""
+echo "SLURM Job ID:     $SLURM_JOB_ID"
+echo "Job Name:         $SLURM_JOB_NAME"
+echo "Nodes:            $SLURM_NNODES"
+echo "CPUs per task:    $SLURM_CPUS_PER_TASK"
+echo "Memory:           $SLURM_MEM_PER_NODE MB"
+echo "Partition:        $SLURM_JOB_PARTITION"
+echo ""
+echo "Staging Configuration:"
+echo "Organism:         $ORGANISM"
+echo "Threads:          $NUM_THREADS"
+echo "Description:      $STAGING_DESCRIPTION"
+echo ""
+
+# Load environment
+echo -e "${BLUE}[SETUP]${NC} Loading environment..."
+if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
+    source "$RETICLE_DIR/slurm/env-setup.sh"
+else
+    echo "Warning: env-setup.sh not found, using system python"
+fi
+
+# Create log directory
+mkdir -p "$RETICLE_DIR/logs"
+
+# Change to scripts directory
+cd "$SCRIPTS_DIR"
+
+# Validate database connection
+echo -e "${BLUE}[SETUP]${NC} Validating database connection..."
+python3 << 'PYTHON'
+import sys
+from config import Config
+import psycopg2
+
+try:
+    params = Config.get_psycopg2_params()
+    params['sslmode'] = 'require'
+    params['connect_timeout'] = 5
+    conn = psycopg2.connect(**params)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM data_load_version")
+    count = cursor.fetchone()[0]
+    print(f"✓ Database connected ({count} versions found)")
+    conn.close()
+except Exception as e:
+    print(f"✗ Database connection failed: {e}")
+    sys.exit(1)
+PYTHON
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}[ERROR]${NC} Database validation failed"
+    exit 1
+fi
+
+# Validate data directory
+echo -e "${BLUE}[SETUP]${NC} Validating data directory..."
+if [ -z "$DATA_DIR" ]; then
+    echo -e "${RED}[ERROR]${NC} DATA_DIR not set"
+    exit 1
+fi
+
+if [ ! -d "$DATA_DIR" ]; then
+    echo -e "${RED}[ERROR]${NC} DATA_DIR not found: $DATA_DIR"
+    exit 1
+fi
+
+DATA_FILES=$(find "$DATA_DIR" -name "screen_metadata_*.json" -o -name "BIOGRID-ORCS-SCREEN_*.screen.tab.txt" | wc -l)
+echo "✓ Data directory found ($DATA_FILES files)"
+echo ""
+
+# Record start time
+START_TIME=$(date +%s)
+
+# Run staging loader
+echo -e "${BLUE}[RUN]${NC} Starting HPC staging loader..."
+echo ""
+
+python3 hpc_staging_loader.py \
+    --organism "$ORGANISM" \
+    --threads "$NUM_THREADS" \
+    --description "$STAGING_DESCRIPTION"
+
+STAGING_EXIT_CODE=$?
+
+# Calculate duration
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+DURATION_MIN=$((DURATION / 60))
+DURATION_SEC=$((DURATION % 60))
+
+echo ""
+echo -e "${BLUE}========================================${NC}"
+if [ $STAGING_EXIT_CODE -eq 0 ]; then
+    echo -e "${GREEN}✓ STAGING COMPLETED SUCCESSFULLY${NC}"
+    echo ""
+    echo "Next steps:"
+    echo "1. Check staging results: python3 maintenance.py --show-storage"
+    echo "2. Run ETL pipeline:"
+    echo "   sbatch ${RETICLE_DIR}/slurm/reticle-etl.sh <version_id>          # CPU"
+    echo "   sbatch ${RETICLE_DIR}/slurm/reticle-etl-dedup-gpu.sh <version_id> # GPU"
+else
+    echo -e "${RED}✗ STAGING FAILED (exit code: $STAGING_EXIT_CODE)${NC}"
+fi
+echo -e "${BLUE}========================================${NC}"
+echo "Total Duration: ${DURATION_MIN}m ${DURATION_SEC}s"
+echo "Job ID:         $SLURM_JOB_ID"
+echo ""
+
+# Log results to database (if table exists)
+python3 << PYTHON
+import psycopg2
+from config import Config
+from datetime import datetime
+
+try:
+    conn = psycopg2.connect(
+        host=Config.DB_HOST,
+        port=Config.DB_PORT,
+        database=Config.DB_NAME,
+        user=Config.DB_USER,
+        sslmode='require',
+        gssencmode='disable'
+    )
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO staging_job_log (slurm_job_id, organism, num_threads, duration_seconds, status, completed_at)
+        VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+    """, ($SLURM_JOB_ID, "$ORGANISM", $NUM_THREADS, $DURATION, 'completed' if $STAGING_EXIT_CODE == 0 else 'failed'))
+    conn.commit()
+    conn.close()
+except Exception as e:
+    # Table may not exist - this is not critical
+    pass
+PYTHON
+
+exit $STAGING_EXIT_CODE
