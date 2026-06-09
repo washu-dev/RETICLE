@@ -7,6 +7,7 @@
 #SBATCH --time=00:10:00
 #SBATCH --output=logs/reticle-staging-%j.out
 #SBATCH --error=logs/reticle-staging-%j.err
+# Note: --partition is set by environment variable or command-line argument (see below)
 
 # RETICLE Staging Loader - SLURM Job Script
 #
@@ -15,7 +16,7 @@
 # Usage:
 #   sbatch reticle-staging.sh homo_sapiens
 #   sbatch reticle-staging.sh mus_musculus 16
-#   sbatch reticle-staging.sh --organism homo_sapiens --threads 16
+#   sbatch reticle-staging.sh --organism homo_sapiens --threads 16 --partition fast
 #   sbatch --cpus-per-task=16 reticle-staging.sh homo_sapiens 16
 #
 # Arguments (positional or flags):
@@ -24,16 +25,19 @@
 #   --organism ORGANISM        Organism flag format
 #   --threads N                Threads flag format
 #   --description TEXT         Custom description (default: auto-generated)
+#   --partition PARTITION      SLURM partition (overrides env var, default: env var or 'cpu')
 #
 # Environment Variables (optional):
-#   STAGING_DESCRIPTION  Custom description for this load (default: auto-generated)
-#   RETICLE_DIR          Path to RETICLE repo (auto-detected if not set)
+#   RETICLE_PARTITION_CPU      Default partition for staging (default: 'cpu')
+#   STAGING_DESCRIPTION        Custom description for this load
+#   RETICLE_DIR                Path to RETICLE repo (auto-detected if not set)
 
 set -e
 
 # Defaults
 ORGANISM=""
 NUM_THREADS=""
+PARTITION="${RETICLE_PARTITION_CPU:-cpu}"  # Default partition: env var or 'cpu'
 
 # Parse arguments (supports both positional and flag formats)
 while [[ $# -gt 0 ]]; do
@@ -48,6 +52,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --description)
             STAGING_DESCRIPTION="$2"
+            shift 2
+            ;;
+        --partition)
+            PARTITION="$2"
             shift 2
             ;;
         homo_sapiens|mus_musculus)
@@ -72,7 +80,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Error: Unknown argument: $1"
-            echo "Usage: $0 [--organism ORGANISM] [--threads N] [--description TEXT]"
+            echo "Usage: $0 [--organism ORGANISM] [--threads N] [--description TEXT] [--partition PARTITION]"
             echo "   or: $0 ORGANISM [THREADS]"
             exit 1
             ;;
