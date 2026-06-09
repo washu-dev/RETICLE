@@ -13,7 +13,7 @@ Performance:
 Usage:
   python gpu_etl_dedup_only.py --version 2
 
-Output files (in /tmp/reticle_staging/):
+Output files (in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/):
   - staging_screen_v2.csv         (screens for loading)
   - staging_screen_gene_v2.csv    (deduplicated pairs for loading)
   - dedup_metadata_v2.json        (statistics)
@@ -24,7 +24,6 @@ import csv
 import json
 import logging
 import sys
-import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -45,7 +44,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 PIPE_DELIMITER = '|'
-TEMP_DIR = Path(tempfile.gettempdir()) / 'reticle_staging'
+TEMP_DIR = Config.STAGING_OUTPUT_DIR
 
 
 class GPUDedupPhase:

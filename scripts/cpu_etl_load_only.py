@@ -26,7 +26,7 @@ Usage:
 
 Prerequisites:
   - gpu_etl_dedup_only.py must have completed successfully
-  - CSV files must exist in /tmp/reticle_staging/
+  - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/
   - Database tables (staging_screen, staging_screen_gene) must exist
 """
 
@@ -35,7 +35,6 @@ import csv
 import json
 import logging
 import sys
-import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -64,7 +63,7 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 PIPE_DELIMITER = '|'
-TEMP_DIR = Path(tempfile.gettempdir()) / 'reticle_staging'
+TEMP_DIR = Config.STAGING_OUTPUT_DIR
 
 
 class CPULoadPhase:

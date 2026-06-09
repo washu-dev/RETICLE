@@ -38,6 +38,12 @@ class Config:
     BACKUP_DIR = DATA_DIR / 'backups'
     LOG_DIR = Path(os.getenv('LOG_DIR', '../logs'))
 
+    # Staging output directory (for GPU/CPU split pipeline)
+    # Must be on shared filesystem if running across multiple HPC nodes
+    # Default: /tmp/reticle_staging (works for single-node, fails for multi-node)
+    # Set RETICLE_STAGING_DIR to a shared filesystem path for multi-node HPC
+    STAGING_OUTPUT_DIR = Path(os.getenv('RETICLE_STAGING_DIR', '/tmp/reticle_staging'))
+
     # Organisms to process
     ORGANISMS = {
         'homo_sapiens': {
