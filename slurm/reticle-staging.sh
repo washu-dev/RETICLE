@@ -15,11 +15,15 @@
 # Usage:
 #   sbatch reticle-staging.sh homo_sapiens
 #   sbatch reticle-staging.sh mus_musculus 16
+#   sbatch reticle-staging.sh --organism homo_sapiens --threads 16
 #   sbatch --cpus-per-task=16 reticle-staging.sh homo_sapiens 16
 #
-# Arguments:
-#   $1: Organism (homo_sapiens or mus_musculus) [required]
-#   $2: Number of threads (default: 8, should match --cpus-per-task)
+# Arguments (positional or flags):
+#   homo_sapiens|mus_musculus  Organism [required, positional or --organism]
+#   16                         Threads (default: 8, positional or --threads)
+#   --organism ORGANISM        Organism flag format
+#   --threads N                Threads flag format
+#   --description TEXT         Custom description (default: auto-generated)
 #
 # Environment Variables (optional):
 #   STAGING_DESCRIPTION  Custom description for this load (default: auto-generated)
@@ -27,17 +31,64 @@
 
 set -e
 
-# Configuration from arguments
-ORGANISM="${1:-}"
-NUM_THREADS="${2:-${SLURM_CPUS_PER_TASK:-8}}"
-STAGING_DESCRIPTION="${STAGING_DESCRIPTION:-Auto-loaded $ORGANISM data (SLURM Job $SLURM_JOB_ID)}"
+# Defaults
+ORGANISM=""
+NUM_THREADS=""
+
+# Parse arguments (supports both positional and flag formats)
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --organism)
+            ORGANISM="$2"
+            shift 2
+            ;;
+        --threads)
+            NUM_THREADS="$2"
+            shift 2
+            ;;
+        --description)
+            STAGING_DESCRIPTION="$2"
+            shift 2
+            ;;
+        homo_sapiens|mus_musculus)
+            # Positional organism
+            if [ -z "$ORGANISM" ]; then
+                ORGANISM="$1"
+                shift
+            else
+                echo "Error: Organism specified twice"
+                exit 1
+            fi
+            ;;
+        [0-9]*)
+            # Positional threads
+            if [ -z "$NUM_THREADS" ]; then
+                NUM_THREADS="$1"
+                shift
+            else
+                echo "Error: Threads specified twice"
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Error: Unknown argument: $1"
+            echo "Usage: $0 [--organism ORGANISM] [--threads N] [--description TEXT]"
+            echo "   or: $0 ORGANISM [THREADS]"
+            exit 1
+            ;;
+    esac
+done
 
 # Validate organism
 if [ -z "$ORGANISM" ]; then
     echo "Error: Organism not specified"
-    echo "Usage: $0 <organism> [threads]"
-    echo "  organism: homo_sapiens or mus_musculus (required)"
-    echo "  threads:  number of parallel threads (default: 8)"
+    echo "Usage: $0 [--organism ORGANISM] [--threads N] [--description TEXT]"
+    echo "   or: $0 ORGANISM [THREADS]"
+    echo ""
+    echo "Examples:"
+    echo "  $0 homo_sapiens"
+    echo "  $0 mus_musculus 16"
+    echo "  $0 --organism homo_sapiens --threads 16"
     exit 1
 fi
 
@@ -50,6 +101,12 @@ case "$ORGANISM" in
         exit 1
         ;;
 esac
+
+# Set threads default if not specified
+NUM_THREADS="${NUM_THREADS:-${SLURM_CPUS_PER_TASK:-8}}"
+
+# Set description default if not specified
+STAGING_DESCRIPTION="${STAGING_DESCRIPTION:-Auto-loaded $ORGANISM data (SLURM Job $SLURM_JOB_ID)}"
 
 # Directory configuration
 if [ -z "$RETICLE_DIR" ]; then
