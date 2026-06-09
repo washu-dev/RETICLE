@@ -130,11 +130,25 @@ if [ ! -f "$CSV_PAIRS" ]; then
     exit 1
 fi
 
-SCREENS_SIZE=$(stat -f %z "$CSV_SCREENS" 2>/dev/null || stat -c %s "$CSV_SCREENS")
-PAIRS_SIZE=$(stat -f %z "$CSV_PAIRS" 2>/dev/null || stat -c %s "$CSV_PAIRS")
+if command -v stat &> /dev/null; then
+    if stat -f %z "$CSV_SCREENS" &>/dev/null; then
+        SCREENS_SIZE=$(stat -f %z "$CSV_SCREENS")
+    else
+        SCREENS_SIZE=$(stat -c %s "$CSV_SCREENS")
+    fi
 
-echo "  Screens CSV: $(printf "%.1f" $(echo "$SCREENS_SIZE / 1024 / 1024" | bc -l)) MB"
-echo "  Pairs CSV:   $(printf "%.1f" $(echo "$PAIRS_SIZE / 1024 / 1024" | bc -l)) MB"
+    if stat -f %z "$CSV_PAIRS" &>/dev/null; then
+        PAIRS_SIZE=$(stat -f %z "$CSV_PAIRS")
+    else
+        PAIRS_SIZE=$(stat -c %s "$CSV_PAIRS")
+    fi
+
+    SCREENS_MB=$(awk "BEGIN {printf \"%.1f\", $SCREENS_SIZE / 1024 / 1024}")
+    PAIRS_MB=$(awk "BEGIN {printf \"%.1f\", $PAIRS_SIZE / 1024 / 1024}")
+
+    echo "  Screens CSV: $SCREENS_MB MB"
+    echo "  Pairs CSV:   $PAIRS_MB MB"
+fi
 echo ""
 
 # Start timer
