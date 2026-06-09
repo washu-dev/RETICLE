@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:30:00
-#SBATCH --output=logs/reticle-etl-%j.out
-#SBATCH --error=logs/reticle-etl-%j.err
+#SBATCH --output=%x-%j.out
+#SBATCH --error=%x-%j.err
 #SBATCH --partition=cpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 
@@ -41,6 +41,12 @@ if [ -z "$RETICLE_DIR" ]; then
 fi
 
 SCRIPTS_DIR="$RETICLE_DIR/scripts"
+LOG_DIR="${LOG_DIR:-$RETICLE_DIR/logs}"
+
+# Create log directory and redirect output
+mkdir -p "$LOG_DIR"
+exec 1>"$LOG_DIR/reticle-etl-${SLURM_JOB_ID}.out"
+exec 2>"$LOG_DIR/reticle-etl-${SLURM_JOB_ID}.err"
 
 # Colors
 RED='\033[0;31m'
