@@ -19,7 +19,7 @@ import psycopg2
 import psycopg2.extensions
 
 
-def apply_migration(migration_path: str) -> bool:
+def apply_migration(migration_path):
     """Apply a single migration file."""
     migration_file = Path(migration_path)
 
