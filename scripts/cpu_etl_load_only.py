@@ -186,37 +186,31 @@ class CPULoadPhase:
 
             # Load via COPY
             if len(screens) > 0:
+                from io import StringIO
+                # Reconstruct CSV with proper quoting using csv.writer
+                csv_buffer = StringIO()
+                writer = csv.writer(csv_buffer, delimiter=PIPE_DELIMITER)
+
                 if TQDM_AVAILABLE:
-                    # Show progress while converting to buffer
-                    buffer_lines = []
                     pbar = tqdm(total=len(screens), desc='  Preparing COPY', unit=' rows', ncols=80)
                     for row in screens:
-                        # Reconstruct CSV line to preserve exact format
-                        buffer_lines.append(PIPE_DELIMITER.join(str(cell) if cell is not None else '' for cell in row) + '\n')
+                        writer.writerow(row)
                         pbar.update(1)
                     pbar.close()
-
-                    from io import StringIO
-                    csv_buffer = StringIO(''.join(buffer_lines))
-                    cursor.copy_from(
-                        csv_buffer,
-                        'staging_screen',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
-                                 'annotation_source', 'moi', 'notes'),
-                        null='',
-                    )
                 else:
-                    # No tqdm, use COPY directly from file
-                    with open(csv_file, 'r', encoding='utf-8') as f:
-                        cursor.copy_from(
-                            f,
-                            'staging_screen',
-                            sep=PIPE_DELIMITER,
-                            columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
-                                     'annotation_source', 'moi', 'notes'),
-                            null='',
-                        )
+                    for row in screens:
+                        writer.writerow(row)
+
+                # Get the reconstructed CSV and pass to COPY
+                csv_buffer.seek(0)
+                cursor.copy_from(
+                    csv_buffer,
+                    'staging_screen',
+                    sep=PIPE_DELIMITER,
+                    columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
+                             'annotation_source', 'moi', 'notes'),
+                    null='',
+                )
 
             self.conn.commit()
             self.stats['screens_inserted'] = cursor.rowcount
@@ -253,41 +247,33 @@ class CPULoadPhase:
 
             # Load via COPY
             if len(pairs) > 0:
+                from io import StringIO
+                # Reconstruct CSV with proper quoting using csv.writer
+                csv_buffer = StringIO()
+                writer = csv.writer(csv_buffer, delimiter=PIPE_DELIMITER)
+
                 if TQDM_AVAILABLE:
-                    # Show progress while preparing buffer
-                    buffer_lines = []
                     pbar = tqdm(total=len(pairs), desc='  Preparing COPY', unit=' rows', ncols=80, unit_scale=True)
                     for row in pairs:
-                        # Reconstruct CSV line to preserve exact format
-                        buffer_lines.append(PIPE_DELIMITER.join(str(cell) if cell is not None else '' for cell in row) + '\n')
+                        writer.writerow(row)
                         pbar.update(1)
                     pbar.close()
-
-                    from io import StringIO
-                    csv_buffer = StringIO(''.join(buffer_lines))
-                    cursor.copy_from(
-                        csv_buffer,
-                        'staging_screen_gene',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
-                                 'gene_symbol', 'official_symbol', 'hit_flag',
-                                 'score_1', 'score_2', 'score_3', 'score_4', 'score_5',
-                                 'tsv_filename', 'tsv_row_number'),
-                        null='',
-                    )
                 else:
-                    # No tqdm, use COPY directly from file
-                    with open(csv_file, 'r', encoding='utf-8') as f:
-                        cursor.copy_from(
-                            f,
-                            'staging_screen_gene',
-                            sep=PIPE_DELIMITER,
-                            columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
-                                     'gene_symbol', 'official_symbol', 'hit_flag',
-                                     'score_1', 'score_2', 'score_3', 'score_4', 'score_5',
-                                     'tsv_filename', 'tsv_row_number'),
-                            null='',
-                        )
+                    for row in pairs:
+                        writer.writerow(row)
+
+                # Get the reconstructed CSV and pass to COPY
+                csv_buffer.seek(0)
+                cursor.copy_from(
+                    csv_buffer,
+                    'staging_screen_gene',
+                    sep=PIPE_DELIMITER,
+                    columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
+                             'gene_symbol', 'official_symbol', 'hit_flag',
+                             'score_1', 'score_2', 'score_3', 'score_4', 'score_5',
+                             'tsv_filename', 'tsv_row_number'),
+                    null='',
+                )
 
             self.conn.commit()
             self.stats['pairs_inserted'] = cursor.rowcount
