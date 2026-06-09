@@ -28,7 +28,7 @@ Usage:
 
 Prerequisites:
   - gpu_etl_dedup_only.py must have completed successfully
-  - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/
+  - CSV files must exist in ${STAGING_DIR} or /tmp/reticle_staging/
   - Production tables (screen, gene, screen_gene_raw) must exist
 """
 

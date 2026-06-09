@@ -13,7 +13,7 @@ Performance:
 Usage:
   python gpu_etl_dedup_only.py --version 2
 
-Output files (in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/):
+Output files (in ${STAGING_DIR} or /tmp/reticle_staging/):
   - staging_screen_v2.csv         (screens for loading)
   - staging_screen_gene_v2.csv    (deduplicated pairs for loading)
   - dedup_metadata_v2.json        (statistics)

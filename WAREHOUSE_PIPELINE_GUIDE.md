@@ -178,7 +178,7 @@ cd ~/RETICLE
 source ~/reticle.sh
 
 # Set up shared staging directory (on shared filesystem, not /tmp)
-export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+export STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
 mkdir -p $RETICLE_STAGING_DIR
 
 # Submit Phase 1 (GPU dedup) + Phase 2 (CPU load), auto-chained

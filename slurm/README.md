@@ -61,7 +61,7 @@ sbatch --partition=gpu-v100 slurm/submit-etl-job.sh 1 --gpu
 
 | Variable | Scripts Using | Default | Purpose |
 |----------|---------------|---------|---------|
-| `RETICLE_STAGING_DIR` | gpu_etl_dedup_only.py, cpu_etl_load_only.py | `/tmp/reticle_staging` | Staging directory for CSV files (GPU/CPU split pipeline) |
+| `STAGING_DIR` | gpu_etl_dedup_only.py, cpu_etl_load_only.py | `/tmp/reticle_staging` | Staging directory for CSV files (GPU/CPU split pipeline) |
 
 **Why?**
 - **Single-node:** Default `/tmp/reticle_staging` works (both phases on same node)
@@ -72,8 +72,8 @@ sbatch --partition=gpu-v100 slurm/submit-etl-job.sh 1 --gpu
 ```bash
 # Identify shared filesystem on your cluster (e.g., /storage, /gpfs, /work)
 # Create a directory for this run
-export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
-mkdir -p $RETICLE_STAGING_DIR
+export STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+mkdir -p $STAGING_DIR
 
 # Both phases will now read/write CSV files to the same shared location
 ./slurm/submit-etl-job-split.sh 2 --both
@@ -89,7 +89,7 @@ Node-002's /tmp doesn't contain Phase 1's output
 **Fix:**
 ```bash
 # Before submitting split pipeline:
-export RETICLE_STAGING_DIR=/shared/storage/path    # On shared filesystem
+export STAGING_DIR=/shared/storage/path    # On shared filesystem
 ./slurm/submit-etl-job-split.sh 2 --both           # Now phases find CSV files
 ```
 

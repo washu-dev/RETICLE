@@ -16,11 +16,11 @@
 #
 # Usage:
 #   sbatch reticle-etl-load-cpu.sh
-#   export RETICLE_STAGING_DIR=/shared/storage/path && sbatch reticle-etl-load-cpu.sh  (multi-node HPC)
+#   export STAGING_DIR=/shared/storage/path && sbatch reticle-etl-load-cpu.sh  (multi-node HPC)
 #
 # Prerequisites:
 #   - Phase 1 (gpu_etl_dedup_only.py) must have completed successfully
-#   - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/ (shared filesystem)
+#   - CSV files must exist in ${STAGING_DIR} or /tmp/reticle_staging/ (shared filesystem)
 #   - Production tables (screen, gene, screen_gene_raw) must exist
 #   - Stored procedures (build_fact_screen_gene, build_dim_screen, build_dim_gene) must exist
 #
@@ -33,11 +33,11 @@
 #   3. Loads genes → production gene table (unique genes extracted)
 #   4. Loads pairs → production screen_gene_raw table (with lookups)
 #   5. Calls stored procedures to build aggregates (fact/dimension tables)
-#   6. CSV files remain in RETICLE_STAGING_DIR for debugging if needed
+#   6. CSV files remain in STAGING_DIR for debugging if needed
 #   - No GPU required
 #
 # Multi-Node Setup (HPC):
-#   export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+#   export STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
 
 set -e
 
@@ -122,9 +122,9 @@ fi
 # Check that CSV files exist (and verify they're from Phase 1)
 echo -e "${BLUE}[CHECK]${NC} Verifying CSV files from Phase 1..."
 
-# Use RETICLE_STAGING_DIR environment variable (shared filesystem for multi-node)
+# Use STAGING_DIR environment variable (shared filesystem for multi-node)
 # Default to /tmp/reticle_staging if not set (works for single-node)
-STAGING_DIR="${RETICLE_STAGING_DIR:-/tmp/reticle_staging}"
+STAGING_DIR="${STAGING_DIR:-/tmp/reticle_staging}"
 echo "  Staging directory: $STAGING_DIR"
 echo "  (CSV files will remain here for debugging)"
 
