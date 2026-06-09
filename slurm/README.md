@@ -21,6 +21,44 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 
 ---
 
+## Environment Variables (Configuration)
+
+All SLURM scripts support consistent partition configuration via environment variables:
+
+### Partition Configuration
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `RETICLE_PARTITION_CPU` | reticle-staging.sh, submit-etl-job.sh, submit-etl-job-split.sh | `"cpu"` | Default partition for CPU jobs |
+| `RETICLE_PARTITION_GPU` | submit-etl-job.sh, submit-etl-job-split.sh | `"gpu"` | Default partition for GPU jobs |
+
+**Setup:**
+```bash
+# Set in ~/.bashrc or ~/reticle.sh for permanent configuration
+export RETICLE_PARTITION_CPU=general-cpu      # Your cluster's CPU partition
+export RETICLE_PARTITION_GPU=general-gpu      # Your cluster's GPU partition
+
+# Or set temporarily for a single session
+export RETICLE_PARTITION_CPU=fast
+sbatch slurm/submit-etl-job.sh 1
+```
+
+**Override via command-line:**
+```bash
+# All these scripts support --partition flag
+sbatch slurm/reticle-staging.sh homo_sapiens --partition fast
+sbatch slurm/submit-etl-job.sh 1 --partition fast
+sbatch slurm/submit-etl-job-split.sh 1 --partition fast --both
+```
+
+**Or via sbatch directly:**
+```bash
+sbatch --partition=general-cpu slurm/submit-etl-job.sh 1
+sbatch --partition=gpu-v100 slurm/submit-etl-job.sh 1 --gpu
+```
+
+---
+
 ## Data Staging (Load Phase)
 
 ### `reticle-staging.sh` ⭐ **RECOMMENDED**
