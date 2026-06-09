@@ -40,6 +40,24 @@ sbatch slurm/reticle-staging.sh <organism> [threads]
 sbatch slurm/reticle-staging.sh --organism <organism> --threads <threads>
 ```
 
+⚠️ **IMPORTANT:** Must be submitted with `sbatch`, not run directly
+
+This is a **SLURM job script**. You must submit it to the job queue:
+
+```bash
+# ✅ CORRECT: Submit to SLURM
+sbatch slurm/reticle-staging.sh mus_musculus 16
+
+# ❌ WRONG: Running directly on login node
+./slurm/reticle-staging.sh mus_musculus 16
+```
+
+**Why?**
+- Direct execution runs on login node (not intended for heavy workloads)
+- SLURM variables (`$SLURM_JOB_ID`, `$SLURM_CPUS_PER_TASK`, etc.) are empty
+- No resource isolation or scheduling
+- Risks overloading shared login node
+
 **Arguments (positional or flags):**
 ```
 organism               homo_sapiens or mus_musculus (required)
@@ -126,6 +144,9 @@ Job ID:         12345
 ```
 
 **Workflow:**
+
+Always use `sbatch` to submit the job:
+
 ```bash
 # Step 1: Submit staging (wait for completion)
 JOB_ID=$(sbatch slurm/reticle-staging.sh homo_sapiens | awk '{print $NF}')
