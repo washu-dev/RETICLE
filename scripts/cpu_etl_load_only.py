@@ -31,7 +31,6 @@ Prerequisites:
 """
 
 import argparse
-import csv
 import json
 import logging
 import sys
@@ -175,36 +174,16 @@ class CPULoadPhase:
         try:
             cursor = self.conn.cursor()
 
-            # Read CSV with proper csv module (handles quoted newlines correctly)
-            screens = []
+            # Count rows first (for logging)
             with open(csv_file, 'r', encoding='utf-8') as f:
-                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
-                for row in reader:
-                    screens.append(row)
+                total_rows = sum(1 for _ in f)
 
-            logger.info(f"  Total screens: {len(screens):,}")
+            logger.info(f"  Total screens: {total_rows:,}")
 
-            # Load via COPY
-            if len(screens) > 0:
-                from io import StringIO
-                # Reconstruct CSV with proper quoting using csv.writer
-                csv_buffer = StringIO()
-                writer = csv.writer(csv_buffer, delimiter=PIPE_DELIMITER)
-
-                if TQDM_AVAILABLE:
-                    pbar = tqdm(total=len(screens), desc='  Preparing COPY', unit=' rows', ncols=80)
-                    for row in screens:
-                        writer.writerow(row)
-                        pbar.update(1)
-                    pbar.close()
-                else:
-                    for row in screens:
-                        writer.writerow(row)
-
-                # Get the reconstructed CSV and pass to COPY
-                csv_buffer.seek(0)
+            # Load directly from file (psycopg2 COPY handles file better than StringIO with newlines)
+            with open(csv_file, 'r', encoding='utf-8') as f:
                 cursor.copy_from(
-                    csv_buffer,
+                    f,
                     'staging_screen',
                     sep=PIPE_DELIMITER,
                     columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
@@ -235,37 +214,17 @@ class CPULoadPhase:
         try:
             cursor = self.conn.cursor()
 
-            # Read CSV with proper csv module (handles all edge cases)
-            pairs = []
-            logger.info("  Reading pairs from CSV...")
+            # Count rows first (for logging)
+            logger.info("  Counting rows...")
             with open(csv_file, 'r', encoding='utf-8') as f:
-                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
-                for row in reader:
-                    pairs.append(row)
+                total_rows = sum(1 for _ in f)
 
-            logger.info(f"  Total pairs: {len(pairs):,}")
+            logger.info(f"  Total pairs: {total_rows:,}")
 
-            # Load via COPY
-            if len(pairs) > 0:
-                from io import StringIO
-                # Reconstruct CSV with proper quoting using csv.writer
-                csv_buffer = StringIO()
-                writer = csv.writer(csv_buffer, delimiter=PIPE_DELIMITER)
-
-                if TQDM_AVAILABLE:
-                    pbar = tqdm(total=len(pairs), desc='  Preparing COPY', unit=' rows', ncols=80, unit_scale=True)
-                    for row in pairs:
-                        writer.writerow(row)
-                        pbar.update(1)
-                    pbar.close()
-                else:
-                    for row in pairs:
-                        writer.writerow(row)
-
-                # Get the reconstructed CSV and pass to COPY
-                csv_buffer.seek(0)
+            # Load directly from file (psycopg2 COPY handles file better than StringIO with newlines)
+            with open(csv_file, 'r', encoding='utf-8') as f:
                 cursor.copy_from(
-                    csv_buffer,
+                    f,
                     'staging_screen_gene',
                     sep=PIPE_DELIMITER,
                     columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
