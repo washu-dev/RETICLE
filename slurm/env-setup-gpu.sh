@@ -43,7 +43,8 @@ if command -v conda &> /dev/null; then
             psycopg2-binary \
             pandas \
             numpy \
-            python-dotenv
+            python-dotenv \
+            tqdm
         conda activate rapids-gpu
     }
 
@@ -67,11 +68,11 @@ else
     pip install cudf-cu12 --quiet 2>/dev/null || {
         echo "  ⚠ cuDF installation failed - GPU acceleration unavailable"
         echo "     Falling back to CPU pandas"
-        pip install pandas numpy psycopg2-binary python-dotenv --quiet
+        pip install pandas numpy psycopg2-binary python-dotenv tqdm --quiet
     }
 
     # Fallback packages if GPU unavailable
-    pip install pandas numpy psycopg2-binary python-dotenv --quiet
+    pip install pandas numpy psycopg2-binary python-dotenv tqdm --quiet
 fi
 
 # Verify packages
@@ -83,6 +84,7 @@ packages = {
     'pandas': 'CPU fallback',
     'psycopg2': 'PostgreSQL',
     'dotenv': 'Configuration management',
+    'tqdm': 'Progress reporting',
 }
 
 # Try GPU packages, but don't fail if missing

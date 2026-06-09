@@ -20,7 +20,7 @@ if command -v conda &> /dev/null; then
     conda activate reticle-etl 2>/dev/null || {
         echo "  Creating conda environment..."
         conda create -y -n reticle-etl python=3.11 \
-            pandas numpy psycopg2-binary python-dotenv \
+            pandas numpy psycopg2-binary python-dotenv tqdm \
             -c conda-forge
         conda activate reticle-etl
     }
@@ -38,7 +38,7 @@ else
 
     echo "  Installing packages (this may take a minute)..."
     pip install --upgrade pip --quiet
-    pip install pandas numpy psycopg2-binary python-dotenv --quiet
+    pip install pandas numpy psycopg2-binary python-dotenv tqdm --quiet
 fi
 
 # Verify required packages
@@ -50,7 +50,8 @@ packages = {
     'pandas': 'Data deduplication',
     'numpy': 'Numerical computing',
     'psycopg2': 'PostgreSQL driver',
-    'dotenv': 'Configuration management'
+    'dotenv': 'Configuration management',
+    'tqdm': 'Progress reporting'
 }
 
 missing = []
