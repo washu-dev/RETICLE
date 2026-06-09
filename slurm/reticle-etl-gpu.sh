@@ -8,7 +8,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --output=logs/reticle-etl-gpu-%j.out
 #SBATCH --error=logs/reticle-etl-gpu-%j.err
-# Note: --partition is set by submit-etl-job.sh wrapper (do not set here)
+#SBATCH --partition=gpu
+# Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 
 # RETICLE ETL Pipeline - GPU Variant
 #

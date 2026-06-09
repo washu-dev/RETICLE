@@ -7,7 +7,8 @@
 #SBATCH --time=00:10:00
 #SBATCH --output=logs/reticle-staging-%j.out
 #SBATCH --error=logs/reticle-staging-%j.err
-# Note: --partition is set by environment variable or command-line argument (see below)
+#SBATCH --partition=cpu
+# Note: --partition can be overridden via environment RETICLE_PARTITION_CPU or sbatch --partition=
 
 # RETICLE Staging Loader - SLURM Job Script
 #

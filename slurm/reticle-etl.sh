@@ -7,7 +7,8 @@
 #SBATCH --time=00:30:00
 #SBATCH --output=logs/reticle-etl-%j.out
 #SBATCH --error=logs/reticle-etl-%j.err
-# Note: --partition is set by submit-etl-job.sh wrapper (do not set here)
+#SBATCH --partition=cpu
+# Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 
 # RETICLE ETL Pipeline - SLURM Job Script
 #

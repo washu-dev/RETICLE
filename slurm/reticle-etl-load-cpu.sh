@@ -7,7 +7,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --output=logs/reticle-etl-load-cpu-%j.out
 #SBATCH --error=logs/reticle-etl-load-cpu-%j.err
-# Note: --partition is set by submit-etl-job-split.sh wrapper (do not set here)
+#SBATCH --partition=cpu
+# Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 
 # RETICLE ETL Pipeline - Phase 2: CPU Database Loading Only
 #
