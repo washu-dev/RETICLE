@@ -140,10 +140,10 @@ class GPUDedupPhase:
             screens = cursor.fetchall()
             self.stats['screens_loaded'] = len(screens)
 
-            # Write screens to CSV (use QUOTE_ALL for safety with special characters)
+            # Write screens to CSV (quote only non-numeric fields for safety)
             csv_file = TEMP_DIR / f'staging_screen_v{self.version_id}.csv'
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_ALL)
+                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_NONNUMERIC)
                 for screen in screens:
                     writer.writerow(screen)
 
@@ -247,10 +247,10 @@ class GPUDedupPhase:
 
             logger.info(f"  After dedup: {len(dedup_pairs):,} unique pairs")
 
-            # Write to CSV for CPU phase (use QUOTE_ALL for safety with special characters)
+            # Write to CSV for CPU phase (quote only non-numeric fields for safety)
             csv_file = TEMP_DIR / f'staging_screen_gene_v{self.version_id}.csv'
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_ALL)
+                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_NONNUMERIC)
                 for pair in dedup_pairs:
                     writer.writerow(pair)
 
