@@ -93,6 +93,9 @@ CPU_TIME_LIMIT="01:00:00"
 CPU_CORES=8
 CPU_PARTITION=${RETICLE_PARTITION_CPU:-cpu}
 
+# HPC Accounting (set RETICLE_ACCOUNT for proper billing)
+ACCOUNT="${RETICLE_ACCOUNT:-}"
+
 # Parse options
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -201,6 +204,7 @@ submit_phase1() {
         --mem=$((GPU_CORES * 4))G \
         --time=$GPU_TIME_LIMIT \
         --partition=$GPU_PARTITION \
+        $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
         --gres=gpu:$GPU_GPUS \
         --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
         "$SCRIPT_DIR/reticle-etl-dedup-gpu.sh" | awk '{print $NF}')
@@ -240,6 +244,7 @@ submit_phase2() {
             --mem=$((CPU_CORES * 4))G \
             --time=$CPU_TIME_LIMIT \
             --partition=$CPU_PARTITION \
+            $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
             --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')
     else
@@ -259,6 +264,7 @@ submit_phase2() {
             --mem=$((CPU_CORES * 4))G \
             --time=$CPU_TIME_LIMIT \
             --partition=$CPU_PARTITION \
+            $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
             --dependency=afterok:$DEPENDENCY \
             --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')

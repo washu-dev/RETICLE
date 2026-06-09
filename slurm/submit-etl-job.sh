@@ -84,6 +84,7 @@ GPUS=0
 TIME_LIMIT="00:30:00"
 PARTITION=${RETICLE_PARTITION_CPU:-cpu}      # Set via: export RETICLE_PARTITION_CPU=general-cpu
 PARTITION_GPU=${RETICLE_PARTITION_GPU:-gpu}   # Set via: export RETICLE_PARTITION_GPU=gpu-v100
+ACCOUNT="${RETICLE_ACCOUNT:-}"                # Set via: export RETICLE_ACCOUNT=myaccount
 MEM_AUTO=true
 MEM=""
 
@@ -171,6 +172,11 @@ SBATCH_ARGS+=("--mem=${MEM}G")
 SBATCH_ARGS+=("--time=$TIME_LIMIT")
 SBATCH_ARGS+=("--partition=$PARTITION")
 
+# Add account for HPC billing if specified
+if [ -n "$ACCOUNT" ]; then
+    SBATCH_ARGS+=("--account=$ACCOUNT")
+fi
+
 if [ "$MODE" = "gpu" ]; then
     SBATCH_ARGS+=("--gres=gpu:$GPUS")
     JOB_SCRIPT="reticle-etl-gpu.sh"
@@ -196,6 +202,9 @@ if [ "$MODE" = "gpu" ]; then
 fi
 echo "Time Limit:       $TIME_LIMIT"
 echo "Partition:        $PARTITION"
+if [ -n "$ACCOUNT" ]; then
+    echo "Account:          $ACCOUNT"
+fi
 echo "Job Script:       $JOB_SCRIPT"
 echo ""
 

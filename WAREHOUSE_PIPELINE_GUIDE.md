@@ -179,7 +179,10 @@ source ~/reticle.sh
 
 # Set up shared staging directory (on shared filesystem, not /tmp)
 export STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
-mkdir -p $RETICLE_STAGING_DIR
+mkdir -p $STAGING_DIR
+
+# (Optional) Set HPC billing account
+export RETICLE_ACCOUNT=myproject-001
 
 # Submit Phase 1 (GPU dedup) + Phase 2 (CPU load), auto-chained
 ./slurm/submit-etl-job-split.sh 1 --both

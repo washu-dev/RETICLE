@@ -93,6 +93,31 @@ export STAGING_DIR=/shared/storage/path    # On shared filesystem
 ./slurm/submit-etl-job-split.sh 2 --both           # Now phases find CSV files
 ```
 
+### HPC Billing Account
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `RETICLE_ACCOUNT` | submit-etl-job.sh, submit-etl-job-split.sh | (unset) | HPC billing/project account code |
+
+**Why?**
+- HPC clusters often require `--account` flag for proper billing and resource allocation
+- Different projects/accounts may have different quotas and priorities
+- Optional: if your cluster doesn't require it, leave it unset (scripts work with or without it)
+
+**Setup:**
+```bash
+# Set your HPC account code (ask your cluster admin)
+export RETICLE_ACCOUNT=myproject-001
+
+# All wrapper scripts now include --account automatically
+./slurm/submit-etl-job-split.sh 2 --both
+```
+
+**How it works:**
+- If `RETICLE_ACCOUNT` is set, jobs are submitted with `--account=$RETICLE_ACCOUNT`
+- If unset, jobs submit without the flag (cluster default account applies)
+- Visible in job configuration output and `squeue` listing
+
 ---
 
 ## Data Staging (Load Phase)
