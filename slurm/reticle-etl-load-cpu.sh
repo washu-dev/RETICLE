@@ -10,7 +10,8 @@
 #SBATCH --partition=cpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 
-# RETICLE ETL Pipeline - Phase 2: CPU Database Loading Only
+# RETICLE ETL Pipeline - Phase 2: CPU Transformation Phase
+# Loads deduplicated data directly to production tables (no staging tables)
 #
 # Usage:
 #   sbatch reticle-etl-load-cpu.sh
@@ -18,16 +19,20 @@
 #
 # Prerequisites:
 #   - Phase 1 (gpu_etl_dedup_only.py) must have completed successfully
-#   - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/ (shared filesystem for multi-node)
-#   - Staging tables must exist in database
+#   - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/ (shared filesystem)
+#   - Production tables (screen, gene, screen_gene_raw) must exist
+#   - Stored procedures (build_fact_screen_gene, build_dim_screen, build_dim_gene) must exist
 #
 # Input:
 #   - CSV files from Phase 1: staging_screen_v{VERSION_ID}.csv, staging_screen_gene_v{VERSION_ID}.csv
 #
 # This script:
-#   - Reads CSV files (already deduplicated by GPU phase)
-#   - Uses PostgreSQL COPY for fast bulk loading
-#   - Validates all data was inserted correctly
+#   1. Reads CSV files (already deduplicated by GPU phase)
+#   2. Loads screens → production screen table
+#   3. Loads genes → production gene table (unique genes extracted)
+#   4. Loads pairs → production screen_gene_raw table (with lookups)
+#   5. Calls stored procedures to build aggregates (fact/dimension tables)
+#   6. CSV files remain in RETICLE_STAGING_DIR for debugging if needed
 #   - No GPU required
 #
 # Multi-Node Setup (HPC):
@@ -105,13 +110,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Check that CSV files exist
+# Check that CSV files exist (and verify they're from Phase 1)
 echo -e "${BLUE}[CHECK]${NC} Verifying CSV files from Phase 1..."
 
 # Use RETICLE_STAGING_DIR environment variable (shared filesystem for multi-node)
 # Default to /tmp/reticle_staging if not set (works for single-node)
 STAGING_DIR="${RETICLE_STAGING_DIR:-/tmp/reticle_staging}"
 echo "  Staging directory: $STAGING_DIR"
+echo "  (CSV files will remain here for debugging)"
 
 CSV_SCREENS="$STAGING_DIR/staging_screen_v${VERSION_ID}.csv"
 CSV_PAIRS="$STAGING_DIR/staging_screen_gene_v${VERSION_ID}.csv"
@@ -154,8 +160,12 @@ echo ""
 # Start timer
 START_TIME=$(date +%s)
 
-# Run CPU load phase
-echo -e "${BLUE}[RUN]${NC} Starting CPU loading phase..."
+# Run CPU transformation phase
+echo -e "${BLUE}[RUN]${NC} Starting CPU transformation phase..."
+echo "  Loading CSV → screen table"
+echo "  Loading CSV → gene table (deduplicated)"
+echo "  Loading CSV → screen_gene_raw table"
+echo "  Building fact and dimension tables"
 echo ""
 
 python3 cpu_etl_load_only.py \
@@ -172,13 +182,19 @@ DURATION_SEC=$((DURATION % 60))
 echo ""
 echo -e "${BLUE}========================================${NC}"
 if [ $ETL_EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}✓ CPU LOAD PHASE COMPLETED${NC}"
+    echo -e "${GREEN}✓ CPU TRANSFORMATION PHASE COMPLETED${NC}"
     echo ""
     echo "SPLIT PIPELINE COMPLETE!"
-    echo "  Phase 1 (GPU Dedup): ~30 seconds"
-    echo "  Phase 2 (CPU Load):  ~$DURATION_SEC seconds"
+    echo "  Phase 1 (GPU Dedup):      ~30 seconds"
+    echo "  Phase 2 (CPU Transform):  ~$DURATION_SEC seconds"
+    echo ""
+    echo "Data now in production tables:"
+    echo "  - screen, gene, screen_gene_raw"
+    echo "  - fact_screen_gene, dim_screen, dim_gene"
+    echo ""
+    echo "Debug files remain in: $STAGING_DIR"
 else
-    echo -e "${RED}✗ CPU LOAD PHASE FAILED${NC}"
+    echo -e "${RED}✗ CPU TRANSFORMATION PHASE FAILED${NC}"
 fi
 echo -e "${BLUE}========================================${NC}"
 echo "Total Duration: ${DURATION_MIN}m ${DURATION_SEC}s"
