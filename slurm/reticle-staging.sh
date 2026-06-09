@@ -234,11 +234,12 @@ echo "Total Duration: ${DURATION_MIN}m ${DURATION_SEC}s"
 echo "Job ID:         $SLURM_JOB_ID"
 echo ""
 
-# Log results to database (if table exists)
-python3 << PYTHON
+# Log results to database (optional - table may not exist)
+# Only attempt if running in actual SLURM job (SLURM_JOB_ID is set)
+if [ -n "$SLURM_JOB_ID" ]; then
+    python3 << PYTHON
 import psycopg2
 from config import Config
-from datetime import datetime
 
 try:
     conn = psycopg2.connect(
@@ -250,15 +251,17 @@ try:
         gssencmode='disable'
     )
     cursor = conn.cursor()
+    status = 'completed' if $STAGING_EXIT_CODE == 0 else 'failed'
     cursor.execute("""
         INSERT INTO staging_job_log (slurm_job_id, organism, num_threads, duration_seconds, status, completed_at)
         VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
-    """, ($SLURM_JOB_ID, "$ORGANISM", $NUM_THREADS, $DURATION, 'completed' if $STAGING_EXIT_CODE == 0 else 'failed'))
+    """, ($SLURM_JOB_ID, "$ORGANISM", $NUM_THREADS, $DURATION, status))
     conn.commit()
     conn.close()
 except Exception as e:
-    # Table may not exist - this is not critical
+    # Table may not exist or other DB error - this is not critical
     pass
 PYTHON
+fi
 
 exit $STAGING_EXIT_CODE
