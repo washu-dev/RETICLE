@@ -23,7 +23,7 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 
 ## Environment Variables (Configuration)
 
-All SLURM scripts support consistent partition configuration via environment variables:
+All SLURM scripts support consistent partition and staging configuration via environment variables:
 
 ### Partition Configuration
 
@@ -55,6 +55,42 @@ sbatch slurm/submit-etl-job-split.sh 1 --partition fast --both
 ```bash
 sbatch --partition=general-cpu slurm/submit-etl-job.sh 1
 sbatch --partition=gpu-v100 slurm/submit-etl-job.sh 1 --gpu
+```
+
+### Staging Directory (Multi-Node HPC)
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `RETICLE_STAGING_DIR` | gpu_etl_dedup_only.py, cpu_etl_load_only.py | `/tmp/reticle_staging` | Staging directory for CSV files (GPU/CPU split pipeline) |
+
+**Why?**
+- **Single-node:** Default `/tmp/reticle_staging` works (both phases on same node)
+- **Multi-node split pipeline:** GPU phase on GPU node, CPU phase on CPU node → different /tmp directories → Phase 2 can't find CSV files
+- **Solution:** Point to **shared filesystem** (NFS/GPFS) that all nodes can access
+
+**Setup:**
+```bash
+# Identify shared filesystem on your cluster (e.g., /storage, /gpfs, /work)
+# Create a directory for this run
+export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+mkdir -p $RETICLE_STAGING_DIR
+
+# Both phases will now read/write CSV files to the same shared location
+./slurm/submit-etl-job-split.sh 2 --both
+```
+
+**Example Error Without Shared Directory:**
+```
+[ERROR] CSV file not found: /tmp/reticle_staging/staging_screen_v2.csv
+Phase 1 (GPU) ran on node-001, Phase 2 (CPU) on node-002
+Node-002's /tmp doesn't contain Phase 1's output
+```
+
+**Fix:**
+```bash
+# Before submitting split pipeline:
+export RETICLE_STAGING_DIR=/shared/storage/path    # On shared filesystem
+./slurm/submit-etl-job-split.sh 2 --both           # Now phases find CSV files
 ```
 
 ---

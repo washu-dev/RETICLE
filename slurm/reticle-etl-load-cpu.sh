@@ -14,10 +14,11 @@
 #
 # Usage:
 #   sbatch reticle-etl-load-cpu.sh
+#   export RETICLE_STAGING_DIR=/shared/storage/path && sbatch reticle-etl-load-cpu.sh  (multi-node HPC)
 #
 # Prerequisites:
 #   - Phase 1 (gpu_etl_dedup_only.py) must have completed successfully
-#   - CSV files must exist in /tmp/reticle_staging/
+#   - CSV files must exist in ${RETICLE_STAGING_DIR} or /tmp/reticle_staging/ (shared filesystem for multi-node)
 #   - Staging tables must exist in database
 #
 # Input:
@@ -28,6 +29,9 @@
 #   - Uses PostgreSQL COPY for fast bulk loading
 #   - Validates all data was inserted correctly
 #   - No GPU required
+#
+# Multi-Node Setup (HPC):
+#   export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
 
 set -e
 
@@ -104,8 +108,13 @@ fi
 # Check that CSV files exist
 echo -e "${BLUE}[CHECK]${NC} Verifying CSV files from Phase 1..."
 
-CSV_SCREENS="/tmp/reticle_staging/staging_screen_v${VERSION_ID}.csv"
-CSV_PAIRS="/tmp/reticle_staging/staging_screen_gene_v${VERSION_ID}.csv"
+# Use RETICLE_STAGING_DIR environment variable (shared filesystem for multi-node)
+# Default to /tmp/reticle_staging if not set (works for single-node)
+STAGING_DIR="${RETICLE_STAGING_DIR:-/tmp/reticle_staging}"
+echo "  Staging directory: $STAGING_DIR"
+
+CSV_SCREENS="$STAGING_DIR/staging_screen_v${VERSION_ID}.csv"
+CSV_PAIRS="$STAGING_DIR/staging_screen_gene_v${VERSION_ID}.csv"
 
 if [ ! -f "$CSV_SCREENS" ]; then
     echo -e "${RED}[ERROR]${NC} CSV file not found: $CSV_SCREENS"

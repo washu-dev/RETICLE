@@ -168,20 +168,26 @@ tail -f logs/reticle-etl-${JOB_ID}.log
 
 **Requirements:** SLURM cluster with GPU nodes, NFS-mounted data, PostgreSQL accessible
 
-#### Workflow: GPU Dedup + CPU Load
+#### Workflow: GPU Dedup + CPU Load (Multi-Node Safe)
+
+**CRITICAL:** GPU and CPU phases run on **different HPC nodes**. Use a **shared filesystem** for staging CSV files, not /tmp.
 
 ```bash
 ssh hpc.cluster.com
 cd ~/RETICLE
 source ~/reticle.sh
 
+# Set up shared staging directory (on shared filesystem, not /tmp)
+export RETICLE_STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+mkdir -p $RETICLE_STAGING_DIR
+
 # Submit Phase 1 (GPU dedup) + Phase 2 (CPU load), auto-chained
-sbatch slurm/reticle-etl-dedup-gpu.sh 1
+./slurm/submit-etl-job-split.sh 1 --both
 
 # Monitor both jobs
 squeue -u $USER
-tail -f logs/reticle-etl-gpu-*.log
-tail -f logs/reticle-etl-load-cpu-*.log
+tail -f logs/reticle-etl-dedup-gpu-*.out
+tail -f logs/reticle-etl-load-cpu-*.out
 ```
 
 **Phase 1: GPU Dedup (~30 seconds)**
