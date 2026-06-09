@@ -36,25 +36,42 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 **Usage:**
 ```bash
 sbatch slurm/reticle-staging.sh <organism> [threads]
+# OR
+sbatch slurm/reticle-staging.sh --organism <organism> --threads <threads>
 ```
 
-**Arguments:**
+**Arguments (positional or flags):**
 ```
-organism   homo_sapiens or mus_musculus (required)
-threads    Number of parallel threads (default: 8)
-           Should match --cpus-per-task for efficiency
+organism               homo_sapiens or mus_musculus (required)
+                       --organism homo_sapiens (flag format)
+threads                Number of parallel threads (default: 8)
+                       --threads 16 (flag format)
+                       Should match --cpus-per-task for efficiency
+--description TEXT     Custom description (optional, flag format only)
 ```
 
 **Examples:**
 ```bash
-# Default (8 threads)
+# Positional: Default (8 threads)
 sbatch slurm/reticle-staging.sh homo_sapiens
 
-# Mouse data with 16 threads
+# Positional: Mouse data with 16 threads
 sbatch slurm/reticle-staging.sh mus_musculus 16
 
-# Override SLURM cores
+# Flags: Same, using flag format
+sbatch slurm/reticle-staging.sh --organism mus_musculus --threads 16
+
+# Mixed: positional organism, flag threads
+sbatch slurm/reticle-staging.sh mus_musculus --threads 16
+
+# Override SLURM cores (positional)
 sbatch --cpus-per-task=16 slurm/reticle-staging.sh homo_sapiens 16
+
+# Override SLURM cores (flags)
+sbatch --cpus-per-task=16 slurm/reticle-staging.sh --organism homo_sapiens --threads 16
+
+# Custom description
+sbatch slurm/reticle-staging.sh --organism homo_sapiens --threads 8 --description "Q2 2026 run"
 ```
 
 **What it does:**
