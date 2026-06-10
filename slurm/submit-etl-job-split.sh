@@ -174,8 +174,9 @@ if [ "$PGPASS_PERMS" != "600" ]; then
     exit 1
 fi
 
-# Create logs directory
-mkdir -p "$RETICLE_DIR/logs"
+# Setup log directory
+LOG_DIR="${LOG_DIR:-$RETICLE_DIR/logs}"
+mkdir -p "$LOG_DIR"
 
 # Show configuration
 echo ""
@@ -206,7 +207,9 @@ submit_phase1() {
         --partition=$GPU_PARTITION \
         $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
         --gres=gpu:$GPU_GPUS \
-        --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+        --output=$LOG_DIR/reticle-etl-dedup-gpu-%j.out \
+        --error=$LOG_DIR/reticle-etl-dedup-gpu-%j.err \
+        --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
         "$SCRIPT_DIR/reticle-etl-dedup-gpu.sh" | awk '{print $NF}')
 
     echo "" >&2
@@ -214,9 +217,9 @@ submit_phase1() {
     echo "" >&2
     echo "Job ID:           $GPU_JOB_ID" >&2
     echo "Status:           Check with: squeue -j $GPU_JOB_ID" >&2
-    echo "Output:           $RETICLE_DIR/logs/reticle-etl-dedup-gpu-$GPU_JOB_ID.out" >&2
+    echo "Output:           $LOG_DIR/reticle-etl-dedup-gpu-$GPU_JOB_ID.out" >&2
     echo "" >&2
-    echo -e "${GREEN}Watch output:     tail -f $RETICLE_DIR/logs/reticle-etl-dedup-gpu-$GPU_JOB_ID.out${NC}" >&2
+    echo -e "${GREEN}Watch output:     tail -f $LOG_DIR/reticle-etl-dedup-gpu-$GPU_JOB_ID.out${NC}" >&2
     echo "" >&2
 
     # Return ONLY the job ID on stdout
@@ -245,7 +248,9 @@ submit_phase2() {
             --time=$CPU_TIME_LIMIT \
             --partition=$CPU_PARTITION \
             $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
-            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+            --output=$LOG_DIR/reticle-etl-load-cpu-%j.out \
+            --error=$LOG_DIR/reticle-etl-load-cpu-%j.err \
+            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')
     else
         # With dependency: wait for Phase 1 to complete
@@ -266,7 +271,9 @@ submit_phase2() {
             --partition=$CPU_PARTITION \
             $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
             --dependency=afterok:$DEPENDENCY \
-            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+            --output=$LOG_DIR/reticle-etl-load-cpu-%j.out \
+            --error=$LOG_DIR/reticle-etl-load-cpu-%j.err \
+            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')
     fi
 
@@ -275,9 +282,9 @@ submit_phase2() {
     echo "" >&2
     echo "Job ID:           $CPU_JOB_ID" >&2
     echo "Status:           Check with: squeue -j $CPU_JOB_ID" >&2
-    echo "Output:           $RETICLE_DIR/logs/reticle-etl-load-cpu-$CPU_JOB_ID.out" >&2
+    echo "Output:           $LOG_DIR/reticle-etl-load-cpu-$CPU_JOB_ID.out" >&2
     echo "" >&2
-    echo -e "${GREEN}Watch output:     tail -f $RETICLE_DIR/logs/reticle-etl-load-cpu-$CPU_JOB_ID.out${NC}" >&2
+    echo -e "${GREEN}Watch output:     tail -f $LOG_DIR/reticle-etl-load-cpu-$CPU_JOB_ID.out${NC}" >&2
     echo "" >&2
 
     # Return ONLY the job ID on stdout
