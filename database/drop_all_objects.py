@@ -6,12 +6,20 @@ WARNING: This is destructive. All data will be permanently deleted.
 
 Usage:
   python3 drop_all_objects.py --confirm
+
+Run from: database/ folder
+  cd database && python3 drop_all_objects.py --confirm
 """
 
 import argparse
 import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import sys
+from pathlib import Path
+
+# Add scripts folder to path to import config
+sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 from config import Config
 
 def drop_all_objects():
@@ -153,10 +161,9 @@ def drop_all_objects():
         print("✓ ALL RETICLE DATABASE OBJECTS DROPPED")
         print("="*80)
         print("\nNext steps:")
-        print("  1. psql -h localhost -U reticle_user -d reticle_survey < migrations/0009_versioned_data_warehouse.sql")
-        print("  2. psql -h localhost -U reticle_user -d reticle_survey < database/etl_pipeline.sql")
-        print("  3. python3 staging_loader.py --organism homo_sapiens")
-        print("  4. ./warehouse-run-etl.sh <version_id>")
+        print("  1. Apply migrations: for f in migrations/000[1-3]_*.sql; do psql ... < $f; done")
+        print("  2. python3 scripts/staging_loader.py --organism homo_sapiens")
+        print("  3. ./slurm/submit-etl-job.sh <version_id>")
 
         conn.close()
         return True
@@ -174,7 +181,7 @@ def main():
 WARNING: This will permanently delete ALL data in the RETICLE schema.
 
 Usage:
-  python3 drop_all_objects.py --confirm
+  cd database && python3 drop_all_objects.py --confirm
 
 The --confirm flag is required to prevent accidental data loss.
         """
