@@ -148,6 +148,9 @@ class CPUTransformPhase:
             logger.info(f"Aggregates: {'BUILT' if self.stats['aggregates_built'] else 'FAILED'}")
             logger.info("="*80 + "\n")
 
+            # Mark run as completed in database
+            self._mark_run_completed(elapsed)
+
             return True
 
         except Exception as e:
@@ -565,6 +568,46 @@ class CPUTransformPhase:
             self.conn.commit()
         except Exception as e:
             logger.error(f"Failed to mark run as failed: {e}")
+
+    def _mark_run_completed(self, elapsed_seconds):
+        """Mark ETL run as completed and update version counts."""
+        try:
+            cursor = self.conn.cursor()
+
+            # Update etl_pipeline_run status
+            cursor.execute("""
+                UPDATE etl_pipeline_run
+                SET status = 'completed', completed_at = CURRENT_TIMESTAMP, total_duration_seconds = %s
+                WHERE run_id = %s
+            """, (elapsed_seconds, self.run_id))
+
+            # Update data_load_version status and counts
+            cursor.execute("""
+                SELECT COUNT(*) FROM screen WHERE version_id = %s
+            """, (self.version_id,))
+            num_screens = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT COUNT(*) FROM gene WHERE version_id = %s
+            """, (self.version_id,))
+            num_genes = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT COUNT(*) FROM screen_gene_raw WHERE version_id = %s AND run_id = %s
+            """, (self.version_id, self.run_id))
+            num_gene_hits = cursor.fetchone()[0]
+
+            cursor.execute("""
+                UPDATE data_load_version
+                SET status = 'valid', num_screens = %s, num_genes = %s, num_gene_hits = %s, is_current = TRUE
+                WHERE version_id = %s
+            """, (num_screens, num_genes, num_gene_hits, self.version_id))
+
+            self.conn.commit()
+            logger.info(f"✓ Marked run as completed (screens: {num_screens:,}, genes: {num_genes:,}, hits: {num_gene_hits:,})")
+
+        except Exception as e:
+            logger.error(f"Failed to mark run as completed: {e}")
 
 
 def main():
