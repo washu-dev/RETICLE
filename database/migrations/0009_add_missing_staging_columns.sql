@@ -19,7 +19,7 @@ BEGIN
     SELECT 1 FROM information_schema.columns
     WHERE table_name = 'staging_screen_gene' AND column_name = 'official_symbol'
   ) THEN
-    ALTER TABLE staging_screen_gene ADD COLUMN official_symbol VARCHAR(100);
+    ALTER TABLE staging_screen_gene ADD COLUMN official_symbol VARCHAR(250);
   END IF;
 
   IF NOT EXISTS (
