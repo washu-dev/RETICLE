@@ -530,9 +530,9 @@ class HPCStagingLoader:
             cursor = self.conn.cursor()
             cursor.execute("""
                 UPDATE data_load_version
-                SET total_screens = %s, total_genes = %s
+                SET num_screens = %s, num_genes = %s, status = %s
                 WHERE version_id = %s
-            """, (self.stats['screens_loaded'], self.stats['genes_loaded'], self.version_id))
+            """, (self.stats['screens_loaded'], self.stats['genes_loaded'], 'valid', self.version_id))
             self.conn.commit()
         except Exception as e:
             logger.warning(f"Failed to update version stats: {e}")
