@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Apply database migrations to RETICLE database.
 
@@ -9,10 +10,11 @@ Usage:
 
 import sys
 import os
-from pathlib import Path
 
 # Add scripts directory to path for config import
-sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+scripts_dir = os.path.join(os.path.dirname(script_dir), 'scripts')
+sys.path.insert(0, scripts_dir)
 
 from config import Config
 import psycopg2
@@ -21,18 +23,18 @@ import psycopg2.extensions
 
 def apply_migration(migration_path):
     """Apply a single migration file."""
-    migration_file = Path(migration_path)
+    migration_file = os.path.abspath(migration_path)
 
-    if not migration_file.exists():
-        print(f"✗ Migration file not found: {migration_file}")
+    if not os.path.exists(migration_file):
+        print("✗ Migration file not found: {}".format(migration_file))
         return False
 
-    if not migration_file.suffix == '.sql':
-        print(f"✗ Migration file must be .sql: {migration_file}")
+    if not migration_file.endswith('.sql'):
+        print("✗ Migration file must be .sql: {}".format(migration_file))
         return False
 
-    print(f"Applying migration: {migration_file.name}")
-    print(f"  Path: {migration_file.absolute()}")
+    print("Applying migration: {}".format(os.path.basename(migration_file)))
+    print("  Path: {}".format(migration_file))
 
     try:
         # Read migration SQL
@@ -53,14 +55,14 @@ def apply_migration(migration_path):
         cursor.close()
         conn.close()
 
-        print(f"✓ Migration applied successfully: {migration_file.name}")
+        print("✓ Migration applied successfully: {}".format(os.path.basename(migration_file)))
         return True
 
     except psycopg2.Error as e:
-        print(f"✗ Database error: {e}")
+        print("✗ Database error: {}".format(e))
         return False
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print("✗ Error: {}".format(e))
         return False
 
 
