@@ -335,9 +335,12 @@ class HPCStagingLoader:
             return False
 
     def _process_tsv_file(self, tsv_file: Path) -> Tuple[List, str]:
-        """Process a single TSV file and return row data as strings."""
+        """Process a single TSV file and return row data as strings (deduplicated)."""
         try:
             rows = []
+            seen_keys = set()  # Track (screen_id, identifier_id) to deduplicate
+            duplicates_skipped = 0
+
             with open(tsv_file, "r", encoding="utf-8") as tsv_f:
                 reader = csv.DictReader(tsv_f, delimiter='\t')
 
@@ -351,6 +354,14 @@ class HPCStagingLoader:
 
                         screen_id = int(screen_id_str)
                         identifier_id = row.get('IDENTIFIER_ID', '').strip()
+
+                        # Deduplication: skip if we've seen this (screen_id, identifier_id) pair
+                        key = (screen_id, identifier_id)
+                        if key in seen_keys:
+                            duplicates_skipped += 1
+                            continue
+                        seen_keys.add(key)
+
                         gene_symbol = row.get('OFFICIAL_SYMBOL', '').strip()
                         official_symbol = gene_symbol
                         hit_flag = 't' if row.get('HIT', '').upper() == 'YES' else 'f'
@@ -386,6 +397,9 @@ class HPCStagingLoader:
                     except Exception as e:
                         with self.lock:
                             self.stats['validation_errors'] += 1
+
+            if duplicates_skipped > 0:
+                logger.debug(f"  Skipped {duplicates_skipped} duplicate entries in {tsv_file.name}")
 
             return rows, tsv_file.name
 
