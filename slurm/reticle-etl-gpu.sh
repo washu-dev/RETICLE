@@ -4,11 +4,11 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=48G
-#SBATCH --time=00:15:00
+#SBATCH --time=00:30:00
 #SBATCH --gres=gpu:1
 #SBATCH --output=%x-%j.out
-#SBATCH --error=%x-%j.err
 #SBATCH --partition=gpu
+#SBATCH --account=${RETICLE_ACCOUNT}
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 # Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
 

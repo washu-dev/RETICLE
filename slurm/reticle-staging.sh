@@ -4,10 +4,10 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=00:10:00
+#SBATCH --time=10:00:00
 #SBATCH --output=%x-%j.out
-#SBATCH --error=%x-%j.err
 #SBATCH --partition=cpu
+#SBATCH --account=${RETICLE_ACCOUNT}
 # Note: --partition can be overridden via environment RETICLE_PARTITION_CPU or sbatch --partition=
 # Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
 
