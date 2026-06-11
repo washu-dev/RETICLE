@@ -9,6 +9,7 @@
 #SBATCH --error=%x-%j.err
 #SBATCH --partition=cpu
 # Note: --partition can be overridden via environment RETICLE_PARTITION_CPU or sbatch --partition=
+# Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
 
 # RETICLE Staging Loader - SLURM Job Script
 #

@@ -2,6 +2,10 @@
 # Environment setup for RETICLE ETL - CPU variant
 # Creates Python virtual environment and loads required packages
 # Works with or without conda (uses venv if conda unavailable)
+#
+# Partition & Account Configuration:
+#   Partition: Set via RETICLE_PARTITION_CPU env var or sbatch --partition=
+#   Account:   Set via RETICLE_ACCOUNT env var or sbatch --account=
 
 set -e
 

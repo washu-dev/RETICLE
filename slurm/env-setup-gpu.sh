@@ -2,6 +2,10 @@
 # Environment setup for RETICLE ETL - GPU variant
 # Load CUDA, cuDNN, and RAPIDS (or cuDF via pip)
 # Works with or without conda
+#
+# Partition & Account Configuration:
+#   Partition: Set via RETICLE_PARTITION_GPU env var or sbatch --partition=
+#   Account:   Set via RETICLE_ACCOUNT env var or sbatch --account=
 
 set -e
 

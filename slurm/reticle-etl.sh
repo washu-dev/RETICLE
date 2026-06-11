@@ -9,6 +9,7 @@
 #SBATCH --error=%x-%j.err
 #SBATCH --partition=cpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
+# Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
 
 # RETICLE ETL Pipeline - SLURM Job Script
 #

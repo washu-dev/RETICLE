@@ -7,6 +7,10 @@
 #   ./monitor-etl-jobs.sh 12345        # Show specific job
 #   ./monitor-etl-jobs.sh 12345 tail   # Tail job output
 #
+# Job Submission with Partition & Account:
+#   sbatch --partition=gpu --account=myaccount reticle-etl-gpu.sh
+#   ./submit-etl-job-split.sh <version_id>  # Uses RETICLE_ACCOUNT env var
+#
 
 RETICLE_DIR="/Volumes/SD Media/projects/RETICLE"
 LOGS_DIR="$RETICLE_DIR/logs"
