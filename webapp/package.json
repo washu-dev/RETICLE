@@ -1,49 +1,57 @@
 {
   "name": "reticle-webapp",
   "version": "0.1.0",
-  "description": "RETICLE CRISPR screen analysis web app",
-  "type": "module",
-  "main": "index.web.js",
+  "private": true,
   "scripts": {
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
-    "build:web": "react-native-web-scripts build",
-    "test": "jest",
-    "start": "expo start --web"
+    "build:web": "webpack --mode production --output-path web-build",
+    "test": "jest --watchAll=false --coverage",
+    "start": "webpack serve --mode development"
   },
   "dependencies": {
-    "expo": "^51.0.0",
-    "expo-constants": "^15.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-native": "^0.74.0",
-    "react-native-web": "^0.19.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-native": "^0.76.0",
+    "react-native-web": "^0.19.13"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^14.1.2",
-    "@types/jest": "^29.5.11",
-    "@types/node": "^20.10.6",
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18",
-    "@typescript-eslint/eslint-plugin": "^6.17.0",
-    "@typescript-eslint/parser": "^6.17.0",
-    "eslint": "^8.56.0",
+    "typescript": "^5.6.0",
+    "webpack": "^5.96.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0",
+    "babel-loader": "^9.2.1",
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-react": "^7.25.9",
+    "@babel/preset-typescript": "^7.26.0",
+    "babel-plugin-react-native-web": "^0.19.13",
+    "html-webpack-plugin": "^5.6.3",
+    "eslint": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.3.3"
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jest-axe": "^9.0.0",
+    "ts-jest": "^29.2.5"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["@testing-library/jest-dom"],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web"
+    },
+    "collectCoverageFrom": ["src/**/*.{ts,tsx}"],
+    "coverageThreshold": {
+      "global": {
+        "lines": 70
+      }
+    }
   }
 }
