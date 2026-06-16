@@ -1,6 +1,7 @@
 import json
 import logging
 import sys
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status
@@ -52,7 +53,7 @@ def setup_logging() -> None:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     setup_logging()
     logger.info("RETICLE API starting")
     yield
@@ -64,6 +65,9 @@ app = FastAPI(
     description="CRISPR screen analysis platform",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
 
 app.add_middleware(
