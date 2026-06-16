@@ -11,6 +11,7 @@ name: Webapp CI/CD
 #   - Push to any branch: runs build + test + security only
 #   - Push to main: runs build + test + security + deploy
 #   - Pull requests targeting main or develop: runs build + test + security only
+#   - Manual dispatch: allows running from GitHub Actions UI or gh CLI
 on:
   push:
     branches:
@@ -25,6 +26,7 @@ on:
     paths:
       - 'webapp/**'
       - '.github/workflows/webapp-ci-cd.yml'
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
