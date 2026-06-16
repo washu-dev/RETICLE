@@ -245,6 +245,204 @@ python maintenance.py --promote-version 1
 
 ---
 
+## Shell Wrappers (Convenience Scripts)
+
+### `warehouse-load.sh`
+
+**Wrapper for staging data loader** — Simplified interface to `staging_loader.py` with colorized output.
+
+**Usage:**
+```bash
+./warehouse-load.sh <organism> [description]
+```
+
+**Examples:**
+```bash
+# Load with default description
+./warehouse-load.sh homo_sapiens
+
+# Load with custom description
+./warehouse-load.sh mus_musculus "Mouse ORCS Q2 2026"
+```
+
+**What it does:**
+1. Validate organism (homo_sapiens or mus_musculus)
+2. Run `staging_loader.py` with organism and description
+3. Print colorized status messages (INFO, ERROR, WARN)
+4. Suggest next step on success
+
+**Output:**
+```
+[INFO] Loading homo_sapiens data
+[INFO] Starting staging data loader...
+[INFO] Staging load completed successfully
+[INFO] Next step: Run ./warehouse-run-etl.sh <version_id>
+```
+
+---
+
+### `warehouse-run-etl.sh`
+
+**Wrapper for ETL pipeline** — Simplified interface to `run_etl_pipeline.py`.
+
+**Usage:**
+```bash
+./warehouse-run-etl.sh <version_id> [options]
+```
+
+**Options:**
+```
+--show-info           Show version info before running
+--pipeline-version    Pipeline version string (default: from config)
+```
+
+**Examples:**
+```bash
+# Run ETL on version 2
+./warehouse-run-etl.sh 2
+
+# Run with version info
+./warehouse-run-etl.sh 2 --show-info
+
+# Run with custom pipeline version
+./warehouse-run-etl.sh 3 --pipeline-version 1.0.0
+```
+
+**What it does:**
+1. Validate version ID is numeric
+2. Run `run_etl_pipeline.py` with version and options
+3. Print colorized status messages
+4. Suggest next step on success
+
+**Output:**
+```
+[STEP] Starting ETL pipeline for version 2
+[INFO] Command: python3 run_etl_pipeline.py --version 2
+[INFO] ETL pipeline completed successfully
+[INFO] Next step: Run './warehouse-maintenance.sh --show-storage' to verify
+```
+
+---
+
+### `warehouse-maintenance.sh`
+
+**Wrapper for maintenance operations** — Simplified interface to `maintenance.py`.
+
+**Usage:**
+```bash
+./warehouse-maintenance.sh [command]
+```
+
+**Commands:**
+```
+--list-versions      List all data versions
+--show-storage       Show storage usage by version
+--show-etl-history   Show ETL pipeline run history
+--estimate-purge <id> Estimate space to free by purging
+--purge-version <id> Purge specific version
+--purge-old          Purge all old versions (keep current)
+--promote-version <id> Promote old version to current
+--help               Show help
+```
+
+**Examples:**
+```bash
+# List versions
+./warehouse-maintenance.sh --list-versions
+
+# Show storage
+./warehouse-maintenance.sh --show-storage
+
+# Purge old versions
+./warehouse-maintenance.sh --purge-old
+
+# Estimate what would be freed by purging version 1
+./warehouse-maintenance.sh --estimate-purge 1
+```
+
+**What it does:**
+1. Validate command
+2. Run `maintenance.py` with command and arguments
+3. Print colorized status messages
+4. Display results in tabular format (via tabulate)
+
+---
+
+### `warehouse-purge.sh`
+
+**⚠️ DESTRUCTIVE** — Drops ALL database tables and functions.
+
+**Usage:**
+```bash
+./warehouse-purge.sh --confirm
+```
+
+**WARNING:**
+- ❌ Irreversible — requires manual restoration from backups
+- ❌ Development/testing only
+- ❌ Requires `--confirm` flag to execute
+
+**What it does:**
+1. Require explicit `--confirm` flag
+2. Call `drop_all_objects.py`
+3. Drop all RETICLE tables and functions
+
+**Output:**
+```
+[WARN] This will DROP ALL database objects
+[WARN] This cannot be undone
+[WARN] Dropped: staging_screen, staging_screen_gene, screen, gene, ...
+```
+
+---
+
+### `run-hpc-etl.sh`
+
+**Flexible HPC ETL runner** — Switches between different ETL implementations (multi-threaded, GPU, or original SQL).
+
+**Usage:**
+```bash
+./run-hpc-etl.sh <version_id> [--mode MODE] [--threads N] [--gpu]
+```
+
+**Modes:**
+```
+--threads N    Multi-threaded mode (default, Python pandas dedup)
+--gpu          GPU-accelerated mode (RAPIDS cuDF)
+--mode sql     Original SQL DISTINCT ON approach (deprecated)
+```
+
+**Examples:**
+```bash
+# Multi-threaded (default)
+./run-hpc-etl.sh 2 --threads 8
+
+# GPU-accelerated
+./run-hpc-etl.sh 2 --gpu
+
+# SQL mode (legacy)
+./run-hpc-etl.sh 2 --mode sql
+```
+
+**What it does:**
+1. Detect mode from arguments
+2. Dispatch to appropriate ETL implementation:
+   - `--threads`: `hpc_etl_pipeline.py`
+   - `--gpu`: `hpc_etl_gpu.py`
+   - `--mode sql`: Original SQL-based approach
+3. Run with version ID and options
+4. Print colorized status messages
+
+**Output:**
+```
+[INFO] Running ETL in multi-threaded mode with 8 threads
+[INFO] Loaded 1,904,551 genes from staging
+[INFO] Deduplicated to 30,039 unique genes
+[INFO] ETL pipeline completed successfully
+```
+
+---
+
 ## Configuration & Utilities
 
 ### `config.py`
