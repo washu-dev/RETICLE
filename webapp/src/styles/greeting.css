@@ -1,0 +1,115 @@
+.greeting-section {
+  padding: 3rem 0;
+}
+
+.greeting-container {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.greeting-heading {
+  font-family: 'ivypresto-headline', Georgia, serif;
+  font-size: 2rem;
+  color: #004687;
+  margin-bottom: 1.5rem;
+}
+
+.greeting-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #004687;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-top: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.greeting-error {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 1rem;
+  color: #856404;
+}
+
+.greeting-error p {
+  margin: 0.5rem 0;
+}
+
+.greeting-error details {
+  margin-top: 1rem;
+}
+
+.greeting-error summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  color: #004687;
+}
+
+.greeting-error summary:hover {
+  text-decoration: underline;
+}
+
+.greeting-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.greeting-message {
+  font-family: 'ivypresto-headline', Georgia, serif;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.greeting-description {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .greeting-section {
+    padding: 1.5rem 0;
+  }
+
+  .greeting-container {
+    padding: 1.5rem;
+  }
+
+  .greeting-heading {
+    font-size: 1.5rem;
+  }
+
+  .greeting-message {
+    font-size: 1.25rem;
+  }
+}
