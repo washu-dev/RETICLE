@@ -1,0 +1,189 @@
+name: Webapp CI/CD
+
+# NOTE: The webapp is described as a React Native webapp deployed to AWS.
+# React Native Web (Expo for Web / react-native-web) compiles to a static
+# bundle. The deploy stage below is a PLACEHOLDER — update the deploy job
+# once the AWS target is confirmed. S3 + CloudFront is the standard choice
+# for a static React Native Web bundle; ECS/Fargate is an option if
+# server-side rendering is added later.
+#
+# Triggers:
+#   - Push to any branch: runs build + test + security only
+#   - Push to main: runs build + test + security + deploy
+#   - Pull requests targeting main or develop: runs build + test + security only
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'webapp/**'
+      - '.github/workflows/webapp-ci-cd.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'webapp/**'
+      - '.github/workflows/webapp-ci-cd.yml'
+
+env:
+  AWS_REGION: us-east-1
+  # Populate these once the target S3 bucket / CloudFront distribution
+  # are provisioned:
+  # S3_BUCKET: reticle-webapp-prod
+  # CLOUDFRONT_DISTRIBUTION_ID: XXXXXXXX
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Stage 1: Build
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Build web bundle
+        run: npm run build:web
+        env:
+          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp-build
+          path: webapp/web-build/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Stage 2: Test
+  # ─────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: webapp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test -- --watchAll=false --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp-coverage
+          path: webapp/coverage/
+
+  # ─────────────────────────────────────────────
+  # Stage 3: Security scan
+  # ─────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: webapp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit npm dependencies
+        run: npm audit --audit-level=high
+
+      - name: Run Trivy (filesystem scan)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: webapp/
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+
+  # ─────────────────────────────────────────────
+  # Stage 4: Deploy — main branch only (PLACEHOLDER)
+  # ─────────────────────────────────────────────
+  deploy:
+    name: Deploy to AWS (placeholder)
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    # Deploy only on direct pushes to main (not PRs, not feature branches)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webapp-build
+          path: web-build/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # TODO: replace the steps below once the AWS target is confirmed.
+      # Typical S3 + CloudFront deploy:
+      #   aws s3 sync web-build/ s3://$S3_BUCKET --delete
+      #   aws cloudfront create-invalidation \
+      #     --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      - name: PLACEHOLDER — deploy step not yet configured
+        run: |
+          echo "Webapp deploy target not yet configured."
+          echo "Confirm AWS target (S3+CloudFront or ECS), then update this job."
+          exit 0
+
+      # Rollback path:
+      # If using S3+CloudFront: re-run the workflow against the previous
+      # commit SHA to redeploy the last known-good bundle, or use S3
+      # versioning to restore a prior object version.
+      # If using ECS: same revision rollback pattern as the API service.
