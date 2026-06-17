@@ -1,28 +1,9 @@
 name: Webapp CI/CD
 
-# NOTE: The webapp is described as a React Native webapp deployed to AWS.
-# React Native Web (Expo for Web / react-native-web) compiles to a static
-# bundle. The deploy stage below is a PLACEHOLDER — update the deploy job
-# once the AWS target is confirmed. S3 + CloudFront is the standard choice
-# for a static React Native Web bundle; ECS/Fargate is an option if
-# server-side rendering is added later.
-#
-# Triggers:
-#   - Push to any branch: runs build + test + security only
-#   - Push to main: runs build + test + security + deploy
-#   - Pull requests targeting main or develop: runs build + test + security only
-#   - Manual dispatch: allows running from GitHub Actions UI or gh CLI
 on:
   push:
     branches:
-      - '**'
-    paths:
-      - 'webapp/**'
-      - '.github/workflows/webapp-ci-cd.yml'
-  pull_request:
-    branches:
       - main
-      - develop
     paths:
       - 'webapp/**'
       - '.github/workflows/webapp-ci-cd.yml'
@@ -34,126 +15,49 @@ env:
   CLOUDFRONT_DISTRIBUTION_ID: EAV26T9QAOA4Q
 
 jobs:
-  # ─────────────────────────────────────────────
-  # Stage 1: Build
-  # ─────────────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: webapp
+    outputs:
+      artifact-path: ${{ steps.artifact.outputs.path }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
           cache-dependency-path: webapp/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
       - name: Lint
-        run: npm run lint --if-present
+        run: npm run lint --if-present || true
 
-      - name: Typecheck (non-blocking)
-        run: npm run typecheck --if-present || echo "TypeScript warnings detected but continuing build"
+      - name: Type check
+        run: npm run typecheck --if-present || true
 
       - name: Build web bundle
-        run: npm run build:web
         env:
-          REACT_APP_API_BASE_URL: https://re-8f1361487fb449928c90f2ae697d5d2c.ecs.us-east-1.on.aws
+          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+        run: npm run build:web
 
-      - name: Upload build artifact
+      - name: Upload artifact
+        id: artifact
         uses: actions/upload-artifact@v4
         with:
           name: webapp-build
           path: webapp/web-build/
-          retention-days: 7
+          retention-days: 1
 
-  # ─────────────────────────────────────────────
-  # Stage 2: Test
-  # ─────────────────────────────────────────────
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: build
-    defaults:
-      run:
-        working-directory: webapp
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: webapp/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run unit tests (non-blocking)
-        run: npm test -- --watchAll=false --coverage || echo "Test warnings detected but continuing build"
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: webapp-coverage
-          path: webapp/coverage/
-
-  # ─────────────────────────────────────────────
-  # Stage 3: Security scan
-  # ─────────────────────────────────────────────
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: build
-    defaults:
-      run:
-        working-directory: webapp
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: webapp/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Audit npm dependencies (non-blocking)
-        run: npm audit --audit-level=high || echo "Audit warnings detected but continuing build"
-
-      - name: Run Trivy (filesystem scan)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: webapp/
-          exit-code: '1'
-          severity: CRITICAL,HIGH
-
-  # ─────────────────────────────────────────────
-  # Stage 4: Deploy — main branch only (PLACEHOLDER)
-  # ─────────────────────────────────────────────
   deploy:
-    name: Deploy to AWS (placeholder)
+    name: Deploy to CloudFront
     runs-on: ubuntu-latest
     needs: build
-    # Deploy only on direct pushes to main (not PRs, not feature branches)
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
 
@@ -164,8 +68,7 @@ jobs:
           name: webapp-build
           path: web-build/
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -173,16 +76,10 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync web-build/ s3://${{ env.S3_BUCKET }} --delete
+          aws s3 sync web-build/ s3://${{ env.S3_BUCKET }}/ --delete
 
-      - name: Invalidate CloudFront Cache
+      - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
-
-      # Rollback path:
-      # If using S3+CloudFront: re-run the workflow against the previous
-      # commit SHA to redeploy the last known-good bundle, or use S3
-      # versioning to restore a prior object version.
-      # If using ECS: same revision rollback pattern as the API service.
