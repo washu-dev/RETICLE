@@ -6,7 +6,7 @@ from main import app
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(app=app)
+    return TestClient(app)
 
 
 class TestHealth:
