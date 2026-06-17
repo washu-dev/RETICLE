@@ -1,5 +1,5 @@
 import React from 'react';
-import useGreeting from '../hooks/useGreeting';
+import { useGreeting } from '../hooks/useGreeting';
 import '../styles/greeting.css';
 
 export default function GreetingDisplay(): React.ReactElement {
