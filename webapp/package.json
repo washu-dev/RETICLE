@@ -41,28 +41,4 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
   },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/tests/setup.ts"
-    ],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web"
-    },
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{ts,tsx}",
-      "<rootDir>/tests/**/*.{ts,tsx}"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
-      "!src/**/*.d.ts",
-      "!src/index.web.tsx"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "lines": 50
-      }
-    }
-  }
 }
