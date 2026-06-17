@@ -184,10 +184,20 @@ jobs:
 
       - name: Wait for Deployment to Complete
         run: |
-          aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_EXPRESS_SERVICE }} \
-            --region ${{ env.AWS_REGION }}
+          # Quick status check with 2-minute timeout
+          for i in {1..12}; do
+            STATUS=$(aws ecs describe-services \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --services ${{ env.ECS_EXPRESS_SERVICE }} \
+              --region ${{ env.AWS_REGION }} \
+              --query 'services[0].status' --output text)
+            if [ "$STATUS" = "ACTIVE" ]; then
+              echo "✓ Service is ACTIVE"
+              break
+            fi
+            echo "Service status: $STATUS (attempt $i/12)"
+            sleep 10
+          done
 
       - name: Verify Deployment
         run: |
