@@ -24,7 +24,8 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: reticle-api
-  ECS_EXPRESS_SERVICE: reticle-api-test
+  ECS_CLUSTER: default
+  ECS_EXPRESS_SERVICE: reticle-api-c7e2
   CONTAINER_NAME: reticle-api
   API_ENDPOINT: https://re-8f1361487fb449928c90f2ae697d5d2c.ecs.us-east-1.on.aws
 
@@ -174,7 +175,7 @@ jobs:
       - name: Update ECS Express Service with New Image
         run: |
           aws ecs update-service \
-            --cluster default \
+            --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_EXPRESS_SERVICE }} \
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
@@ -182,7 +183,7 @@ jobs:
       - name: Wait for Deployment to Complete
         run: |
           aws ecs wait services-stable \
-            --cluster default \
+            --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_EXPRESS_SERVICE }} \
             --region ${{ env.AWS_REGION }}
 
