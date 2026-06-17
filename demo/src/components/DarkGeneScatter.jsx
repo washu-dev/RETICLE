@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Label,
+  ResponsiveContainer, ReferenceLine, ReferenceArea, Label,
 } from 'recharts';
 import { DARK_GENES } from '../mockData';
 import GeneDetailPanel from './GeneDetailPanel';
+
+const CLUSTERS = [
+  { key: 'core-autophagy',      label: 'Core autophagy',      color: '#4f9cf9', x1: 0.61, x2: 0.90, y1: 1.3, y2: 4.9 },
+  { key: 'selective-autophagy', label: 'Selective autophagy', color: '#34d399', x1: 0.49, x2: 0.86, y1: 3.6, y2: 7.7 },
+  { key: 'dark-matter',         label: 'Dark matter',         color: '#fbbf24', x1: 0.53, x2: 0.76, y1: 7.2, y2: 10  },
+];
 
 function CustomDot(props) {
   const { cx, cy, payload, onClick, selected } = props;
@@ -52,11 +58,13 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function DarkGeneScatter() {
+export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene }) {
   const [selected, setSelected] = useState(null);
 
   const handleClick = (payload) => {
-    setSelected(payload.symbol === selected ? null : payload.symbol);
+    const next = payload.symbol === selected ? null : payload.symbol;
+    setSelected(next);
+    if (next && onSelectGene) onSelectGene(next);
   };
 
   const darkCount = DARK_GENES.filter(g => !g.isBright && g.darkScore >= 6).length;
@@ -111,7 +119,7 @@ export default function DarkGeneScatter() {
             </div>
           </div>
           {/* Legend */}
-          <div style={{ display: 'flex', gap: 16, fontSize: '0.78rem', color: 'var(--text-2)' }}>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.78rem', color: 'var(--text-2)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--amber)" /></svg>
               Dark candidate
@@ -120,6 +128,12 @@ export default function DarkGeneScatter() {
               <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--blue)" /></svg>
               Known gene
             </span>
+            {pathwayAnalysis && CLUSTERS.map(c => (
+              <span key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="12" height="12"><rect x="1" y="1" width="10" height="10" rx="2" fill={c.color} fillOpacity={0.25} stroke={c.color} strokeWidth={1} /></svg>
+                {c.label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -145,6 +159,17 @@ export default function DarkGeneScatter() {
             <ReferenceLine x={0.6} stroke="rgba(251,191,36,0.25)" strokeDasharray="6 3" />
             <ReferenceLine y={6}   stroke="rgba(251,191,36,0.25)" strokeDasharray="6 3" />
 
+            {/* Pathway co-significance cluster regions */}
+            {pathwayAnalysis && CLUSTERS.map(c => (
+              <ReferenceArea
+                key={c.key}
+                x1={c.x1} x2={c.x2} y1={c.y1} y2={c.y2}
+                fill={c.color} fillOpacity={0.07}
+                stroke={c.color} strokeOpacity={0.3} strokeWidth={1}
+                label={{ value: c.label, position: 'insideTopRight', fontSize: 9, fill: c.color, fontWeight: 600 }}
+              />
+            ))}
+
             <Scatter
               data={DARK_GENES}
               shape={(props) => (
@@ -163,7 +188,11 @@ export default function DarkGeneScatter() {
           {DARK_GENES.filter(g => !g.isBright && g.darkScore >= 6).map(g => (
             <button
               key={g.symbol}
-              onClick={() => setSelected(g.symbol === selected ? null : g.symbol)}
+              onClick={() => {
+                const next = g.symbol === selected ? null : g.symbol;
+                setSelected(next);
+                if (next && onSelectGene) onSelectGene(next);
+              }}
               style={{
                 padding: '4px 10px', borderRadius: 6, fontSize: '0.78rem', fontFamily: 'monospace', fontWeight: 600,
                 background: selected === g.symbol ? 'rgba(251,191,36,0.2)' : 'var(--bg-1)',

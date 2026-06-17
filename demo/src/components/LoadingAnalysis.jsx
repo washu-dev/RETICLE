@@ -4,9 +4,9 @@ const STEPS = [
   { label: 'Resolving gene identifiers via canonical crosswalk',         pct: 15 },
   { label: 'Querying 287 harmonized screens in reference set',           pct: 32 },
   { label: 'Computing Spearman ρ correlations',                          pct: 50 },
-  { label: 'Applying directionality labels (KO ↔ CRISPRa)',             pct: 64 },
-  { label: 'Scoring darkness: publication count × GO term specificity',  pct: 78 },
-  { label: 'Generating AI hypotheses for top dark-gene candidates',      pct: 90 },
+  { label: 'Scoring darkness: publication count × GO term specificity',  pct: 64 },
+  { label: 'Generating AI hypotheses for top dark-gene candidates',      pct: 78 },
+  { label: 'Applying directionality labels (KO ↔ CRISPRa)',             pct: 90 },
   { label: 'Assembling results package',                                 pct: 100 },
 ];
 
