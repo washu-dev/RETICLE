@@ -15,7 +15,7 @@ class TestHealth:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["service"] == "wcs-api-server"
+        assert data["service"] == "reticle-api-server"
         assert "version" in data
 
 

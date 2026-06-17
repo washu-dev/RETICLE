@@ -84,7 +84,7 @@ app.add_middleware(
 async def health() -> HealthResponse:
     return HealthResponse(
         status="healthy",
-        service="wcs-api-server",
+        service="reticle-api-server",
         version="0.1.0",
     )
 
