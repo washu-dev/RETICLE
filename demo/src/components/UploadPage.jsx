@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, FlaskConical, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
 import { EXAMPLE_GENE_LIST } from '../mockData';
+import { parseGenes } from '../utils/parseGenes';
 
 const FORMAT_HINT = `CSV or TSV with header row:
   gene_symbol, score
@@ -29,16 +30,6 @@ export default function UploadPage({ onAnalyze }) {
   function loadExample() {
     setText(EXAMPLE_GENE_LIST);
     setError('');
-  }
-
-  function parseGenes(raw) {
-    const lines = raw.trim().split('\n').filter(l => l.trim());
-    const dataLines = lines.filter(l => !l.toLowerCase().startsWith('gene'));
-    if (dataLines.length < 3) return null;
-    return dataLines.map(l => {
-      const [sym, score] = l.split(/[,\t]/);
-      return { symbol: sym?.trim(), score: parseFloat(score) || 0 };
-    }).filter(g => g.symbol);
   }
 
   function handleSubmit() {

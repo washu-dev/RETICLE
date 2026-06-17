@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import { GRAPH_ELEMENTS } from '../mockData';
+import { getConnectedScreens, getConnectedGenes } from '../utils/geneGraph';
 import { Info, GitBranch, ExternalLink, BookOpen } from 'lucide-react';
 
 const STYLES = [
@@ -74,31 +75,6 @@ const STYLES = [
     style: { opacity: 0.04 },
   },
 ];
-
-function getConnectedScreens(nodeId) {
-  return GRAPH_ELEMENTS.edges
-    .filter(e => e.data.source === nodeId || e.data.target === nodeId)
-    .map(e => {
-      const otherId = e.data.source === nodeId ? e.data.target : e.data.source;
-      const other = GRAPH_ELEMENTS.nodes.find(n => n.data.id === otherId);
-      return other?.data.type === 'screen' ? { ...other.data, rho: e.data.rho } : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => Math.abs(b.rho) - Math.abs(a.rho));
-}
-
-function getConnectedGenes(nodeId) {
-  return GRAPH_ELEMENTS.edges
-    .filter(e => e.data.source === nodeId || e.data.target === nodeId)
-    .map(e => {
-      const otherId = e.data.source === nodeId ? e.data.target : e.data.source;
-      const other = GRAPH_ELEMENTS.nodes.find(n => n.data.id === otherId);
-      return (other?.data.type === 'gene' || other?.data.type === 'dark')
-        ? { ...other.data, rho: e.data.rho } : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => Math.abs(b.rho) - Math.abs(a.rho));
-}
 
 const GENE_NODES = GRAPH_ELEMENTS.nodes.filter(
   n => n.data.type === 'gene' || n.data.type === 'dark'
