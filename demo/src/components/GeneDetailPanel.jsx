@@ -1,11 +1,21 @@
-import { X, ExternalLink, FlaskConical, BookOpen, Lightbulb, Activity } from 'lucide-react';
-import { GENE_RATIONALES, DARK_GENES } from '../mockData';
+import { useState } from 'react';
+import { X, ExternalLink, FlaskConical, BookOpen, Lightbulb, Activity, ChevronDown, ChevronUp, Network } from 'lucide-react';
+import { GENE_RATIONALES, DARK_GENES, STRING_INTERACTORS } from '../mockData';
+
+const DIRECTION_STYLE = {
+  upregulated:   { color: 'var(--green)',  label: '↑ up'   },
+  downregulated: { color: 'var(--orange)', label: '↓ down' },
+  unknown:       { color: 'var(--text-3)', label: '— ?'    },
+};
 
 export default function GeneDetailPanel({ symbol, onClose }) {
+  const [stringOpen, setStringOpen] = useState(false);
+
   if (!symbol) return null;
 
-  const rationale = GENE_RATIONALES[symbol];
-  const geneData = DARK_GENES.find(g => g.symbol === symbol);
+  const rationale  = GENE_RATIONALES[symbol];
+  const geneData   = DARK_GENES.find(g => g.symbol === symbol);
+  const interactors = STRING_INTERACTORS[symbol] ?? null;
 
   return (
     <>
@@ -87,6 +97,9 @@ export default function GeneDetailPanel({ symbol, onClose }) {
                 </div>
               </Section>
 
+              {/* STRING interactors */}
+              <StringSection symbol={symbol} interactors={interactors} open={stringOpen} onToggle={() => setStringOpen(o => !o)} />
+
               {/* External links */}
               <Section icon={null} title="External resources">
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -126,6 +139,8 @@ export default function GeneDetailPanel({ symbol, onClose }) {
                 </p>
               </Section>
 
+              <StringSection symbol={symbol} interactors={interactors} open={stringOpen} onToggle={() => setStringOpen(o => !o)} />
+
               <Section icon={<BookOpen size={15} />} title="External resources">
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {[
@@ -149,6 +164,81 @@ export default function GeneDetailPanel({ symbol, onClose }) {
         </div>
       </div>
     </>
+  );
+}
+
+function StringSection({ symbol, interactors, open, onToggle }) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <button
+        onClick={onToggle}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 14px', borderRadius: open ? '8px 8px 0 0' : 8,
+          background: open ? 'rgba(79,156,249,0.08)' : 'var(--bg-2)',
+          border: `1px solid ${open ? 'rgba(79,156,249,0.3)' : 'var(--border)'}`,
+          color: open ? 'var(--blue)' : 'var(--text-2)',
+          fontSize: '0.82rem', transition: 'all 0.15s',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <Network size={14} />
+          <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '0.75rem' }}>
+            STRING protein interactions
+          </span>
+          {interactors && (
+            <span style={{
+              padding: '1px 7px', borderRadius: 100,
+              background: 'rgba(79,156,249,0.15)', color: 'var(--blue)',
+              fontSize: '0.7rem', fontWeight: 700,
+            }}>{interactors.length}</span>
+          )}
+        </span>
+        {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+      </button>
+
+      {open && (
+        <div style={{
+          padding: '12px 14px', borderRadius: '0 0 8px 8px',
+          background: 'var(--bg-2)', border: '1px solid rgba(79,156,249,0.3)', borderTop: 'none',
+        }}>
+          {interactors ? (
+            <>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                <thead>
+                  <tr style={{ color: 'var(--text-3)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600 }}>Gene</th>
+                    <th style={{ textAlign: 'right', paddingBottom: 8, fontWeight: 600 }}>Combined score</th>
+                    <th style={{ textAlign: 'right', paddingBottom: 8, fontWeight: 600 }}>Direction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {interactors.map((r, i) => {
+                    const d = DIRECTION_STYLE[r.direction] ?? DIRECTION_STYLE.unknown;
+                    return (
+                      <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+                        <td style={{ padding: '7px 0', fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-1)' }}>{r.symbol}</td>
+                        <td style={{ padding: '7px 0', textAlign: 'right', color: 'var(--text-2)', fontFamily: 'monospace' }}>{r.combinedScore.toFixed(3)}</td>
+                        <td style={{ padding: '7px 0', textAlign: 'right' }}>
+                          <span style={{ color: d.color, fontWeight: 600, fontSize: '0.75rem' }}>{d.label}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 10, fontSize: '0.72rem', color: 'var(--text-3)', fontStyle: 'italic' }}>
+                Data shown is illustrative for demo purposes
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-3)' }}>
+              No STRING data available for <strong style={{ fontFamily: 'monospace' }}>{symbol}</strong> in this demo.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

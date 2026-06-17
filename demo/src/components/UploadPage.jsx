@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
-import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, FlaskConical } from 'lucide-react';
+import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, FlaskConical, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
 import { EXAMPLE_GENE_LIST } from '../mockData';
+import { parseGenes } from '../utils/parseGenes';
 
 const FORMAT_HINT = `CSV or TSV with header row:
   gene_symbol, score
@@ -8,25 +9,27 @@ const FORMAT_HINT = `CSV or TSV with header row:
   ULK1, -2.74
   ...`;
 
+const ALGORITHMS = ['MAGeCK LFC', 'STARS', 'DRUGz', 'DESeq2', 'Custom'];
+const MODALITY_OPTIONS = ['KO', 'CRISPRa', 'CRISPRi'];
+
 export default function UploadPage({ onAnalyze }) {
   const [text, setText] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState('');
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [algorithm, setAlgorithm] = useState('MAGeCK LFC');
+  const [organism, setOrganism] = useState('Both');
+  const [modalities, setModalities] = useState(['KO', 'CRISPRa']);
+  const [pathwayAnalysis, setPathwayAnalysis] = useState(false);
   const fileRef = useRef();
+
+  function toggleModality(m) {
+    setModalities(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  }
 
   function loadExample() {
     setText(EXAMPLE_GENE_LIST);
     setError('');
-  }
-
-  function parseGenes(raw) {
-    const lines = raw.trim().split('\n').filter(l => l.trim());
-    const dataLines = lines.filter(l => !l.toLowerCase().startsWith('gene'));
-    if (dataLines.length < 3) return null;
-    return dataLines.map(l => {
-      const [sym, score] = l.split(/[,\t]/);
-      return { symbol: sym?.trim(), score: parseFloat(score) || 0 };
-    }).filter(g => g.symbol);
   }
 
   function handleSubmit() {
@@ -34,7 +37,7 @@ export default function UploadPage({ onAnalyze }) {
     const genes = parseGenes(text);
     if (!genes || genes.length < 5) { setError('Need at least 5 genes. Expected format: gene_symbol, score'); return; }
     setError('');
-    onAnalyze(genes);
+    onAnalyze(genes, { algorithm, organism, modalities, pathwayAnalysis });
   }
 
   function handleFile(file) {
@@ -138,6 +141,130 @@ export default function UploadPage({ onAnalyze }) {
               onFocus={e => e.target.style.borderColor = 'var(--blue)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'}
             />
+          </div>
+
+          {/* Analysis options toggle */}
+          <div style={{ marginTop: 12 }}>
+            <button
+              onClick={() => setOptionsOpen(o => !o)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '8px 14px', borderRadius: 8,
+                border: `1px solid ${optionsOpen ? 'var(--blue-dim)' : 'var(--border)'}`,
+                background: optionsOpen ? 'rgba(79,156,249,0.06)' : 'var(--bg-2)',
+                color: optionsOpen ? 'var(--blue)' : 'var(--text-2)',
+                fontSize: '0.85rem', width: '100%', justifyContent: 'space-between',
+                transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <Settings2 size={14} /> Analysis options
+              </span>
+              {optionsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {optionsOpen && (
+              <div style={{
+                marginTop: 2, padding: '18px 20px', borderRadius: '0 0 10px 10px',
+                background: 'var(--bg-2)', border: '1px solid var(--border)', borderTop: 'none',
+                display: 'flex', flexDirection: 'column', gap: 18,
+              }}>
+                {/* Scoring algorithm */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                    Scoring algorithm
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {ALGORITHMS.map(a => (
+                      <button
+                        key={a}
+                        onClick={() => setAlgorithm(a)}
+                        style={{
+                          padding: '5px 12px', borderRadius: 6, fontSize: '0.82rem',
+                          background: algorithm === a ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          border: `1px solid ${algorithm === a ? 'var(--blue)' : 'var(--border)'}`,
+                          color: algorithm === a ? 'var(--blue)' : 'var(--text-2)',
+                          fontWeight: algorithm === a ? 600 : 400,
+                          transition: 'all 0.12s',
+                        }}
+                      >{a}</button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--text-3)', marginTop: 5 }}>
+                    Specifies the scoring system so RETICLE can harmonize comparisons accurately
+                  </div>
+                </div>
+
+                {/* Organism */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                    Organism
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {['Human', 'Mouse', 'Both'].map(o => (
+                      <button
+                        key={o}
+                        onClick={() => setOrganism(o)}
+                        style={{
+                          padding: '5px 14px', borderRadius: 6, fontSize: '0.82rem',
+                          background: organism === o ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          border: `1px solid ${organism === o ? 'var(--blue)' : 'var(--border)'}`,
+                          color: organism === o ? 'var(--blue)' : 'var(--text-2)',
+                          fontWeight: organism === o ? 600 : 400,
+                          transition: 'all 0.12s',
+                        }}
+                      >{o}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Modality */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                    Modality filter
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {MODALITY_OPTIONS.map(m => (
+                      <button
+                        key={m}
+                        onClick={() => toggleModality(m)}
+                        style={{
+                          padding: '5px 14px', borderRadius: 6, fontSize: '0.82rem',
+                          background: modalities.includes(m) ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          border: `1px solid ${modalities.includes(m) ? 'var(--blue)' : 'var(--border)'}`,
+                          color: modalities.includes(m) ? 'var(--blue)' : 'var(--text-2)',
+                          fontWeight: modalities.includes(m) ? 600 : 400,
+                          transition: 'all 0.12s',
+                        }}
+                      >{m}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pathway analysis */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-1)' }}>Include pathway co-significance analysis</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 2 }}>Highlights gene clusters that show significance together</div>
+                  </div>
+                  <button
+                    onClick={() => setPathwayAnalysis(p => !p)}
+                    style={{
+                      width: 40, height: 22, borderRadius: 11, flexShrink: 0,
+                      background: pathwayAnalysis ? 'var(--blue)' : 'var(--bg-3)',
+                      border: `1px solid ${pathwayAnalysis ? 'var(--blue)' : 'var(--border)'}`,
+                      position: 'relative', transition: 'all 0.2s', cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{
+                      display: 'block', width: 16, height: 16, borderRadius: '50%',
+                      background: 'white', position: 'absolute', top: 2,
+                      left: pathwayAnalysis ? 20 : 2, transition: 'left 0.2s',
+                    }} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && (
