@@ -30,10 +30,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  # Populate these once the target S3 bucket / CloudFront distribution
-  # are provisioned:
-  # S3_BUCKET: reticle-webapp-prod
-  # CLOUDFRONT_DISTRIBUTION_ID: XXXXXXXX
+  S3_BUCKET: reticle-webapp-prod
+  CLOUDFRONT_DISTRIBUTION_ID: EAV26T9QAOA4Q
 
 jobs:
   # ─────────────────────────────────────────────
@@ -69,7 +67,7 @@ jobs:
       - name: Build web bundle
         run: npm run build:web
         env:
-          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+          REACT_APP_API_BASE_URL: https://re-8f1361487fb449928c90f2ae697d5d2c.ecs.us-east-1.on.aws
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -173,16 +171,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # TODO: replace the steps below once the AWS target is confirmed.
-      # Typical S3 + CloudFront deploy:
-      #   aws s3 sync web-build/ s3://$S3_BUCKET --delete
-      #   aws cloudfront create-invalidation \
-      #     --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
-      - name: PLACEHOLDER — deploy step not yet configured
+      - name: Deploy to S3
         run: |
-          echo "Webapp deploy target not yet configured."
-          echo "Confirm AWS target (S3+CloudFront or ECS), then update this job."
-          exit 0
+          aws s3 sync web-build/ s3://${{ env.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
 
       # Rollback path:
       # If using S3+CloudFront: re-run the workflow against the previous

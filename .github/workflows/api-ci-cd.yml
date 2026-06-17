@@ -24,10 +24,9 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: reticle-api
-  ECS_CLUSTER: reticle-cluster
-  ECS_SERVICE: reticle-api-service
-  ECS_TASK_DEFINITION: reticle-api-task
+  ECS_EXPRESS_SERVICE: reticle-api-test
   CONTAINER_NAME: reticle-api
+  API_ENDPOINT: https://re-8f1361487fb449928c90f2ae697d5d2c.ecs.us-east-1.on.aws
 
 jobs:
   # ─────────────────────────────────────────────
@@ -171,34 +170,31 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Download current ECS task definition
+      - name: Update ECS Express Service with New Image
         run: |
-          aws ecs describe-task-definition \
-            --task-definition $ECS_TASK_DEFINITION \
-            --query taskDefinition \
-            > task-definition.json
+          aws ecs update-service \
+            --cluster default \
+            --service ${{ env.ECS_EXPRESS_SERVICE }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
 
-      - name: Render updated task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+      - name: Wait for Deployment to Complete
+        run: |
+          aws ecs wait services-stable \
+            --cluster default \
+            --services ${{ env.ECS_EXPRESS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
 
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+      - name: Verify Deployment
+        run: |
+          echo "API deployed successfully at: ${{ env.API_ENDPOINT }}"
+          echo "Service: ${{ env.ECS_EXPRESS_SERVICE }}"
 
       # Rollback path:
-      # ECS keeps previous task definition revisions. If this deploy step
-      # fails, ECS automatically keeps the running revision stable.
-      # Manual rollback:
+      # If deployment fails, ECS Express automatically reverts to previous
+      # container image. To manually rollback:
       #   aws ecs update-service \
-      #     --cluster reticle-cluster \
-      #     --service reticle-api-service \
-      #     --task-definition reticle-api-task:<previous-revision-number>
+      #     --cluster default \
+      #     --service reticle-api-test \
+      #     --force-new-deployment \
+      #     --region us-east-1
