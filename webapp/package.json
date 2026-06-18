@@ -10,10 +10,13 @@
     "start": "webpack serve --mode development"
   },
   "dependencies": {
+    "cytoscape": "^3.34.0",
+    "lucide-react": "^1.17.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-native": "^0.76.0",
-    "react-native-web": "^0.19.13"
+    "react-native-web": "^0.19.13",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
@@ -26,6 +29,8 @@
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
     "babel-plugin-react-native-web": "^0.19.13",
+    "css-loader": "^7.1.0",
+    "style-loader": "^4.0.0",
     "html-webpack-plugin": "^5.6.3",
     "eslint": "^8.57.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -48,7 +53,12 @@
     "testEnvironment": "jsdom",
     "setupFilesAfterEnv": ["@testing-library/jest-dom"],
     "moduleNameMapper": {
-      "^react-native$": "react-native-web"
+      "^react-native$": "react-native-web",
+      "\\.css$": "<rootDir>/src/__mocks__/fileMock.js"
+    },
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest",
+      "^.+\\.(js|jsx)$": "babel-jest"
     },
     "collectCoverageFrom": ["src/**/*.{ts,tsx}"],
     "coverageThreshold": {

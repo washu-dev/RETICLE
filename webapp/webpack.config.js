@@ -12,7 +12,7 @@ module.exports = {
     alias: {
       "react-native$": "react-native-web",
     },
-    extensions: [".web.tsx", ".web.ts", ".web.js", ".tsx", ".ts", ".js"],
+    extensions: [".web.tsx", ".web.ts", ".web.js", ".tsx", ".ts", ".jsx", ".js"],
   },
   module: {
     rules: [
@@ -22,6 +22,10 @@ module.exports = {
         use: {
           loader: "babel-loader",
         },
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },

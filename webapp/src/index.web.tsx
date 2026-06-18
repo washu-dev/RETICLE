@@ -1,7 +1,6 @@
-import { AppRegistry } from "react-native";
-import App from "./App";
+import { createRoot } from 'react-dom/client';
+import './styles/reticle.css';
+import App from './App';
 
-AppRegistry.registerComponent("RETICLE", () => App);
-AppRegistry.runApplication("RETICLE", {
-  rootTag: document.getElementById("root"),
-});
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
