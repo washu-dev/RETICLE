@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net" agent="reticle-architect" version="24.7.0">
+  <diagram id="reticle-api-24" name="Task 24 - FastAPI API">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="RETICLE Task #24 — FastAPI API Placeholder (AWS ECS Fargate)" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="800" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Client trust boundary -->
+        <mxCell id="tb-client" value="Public Internet (untrusted)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;fillColor=none;strokeColor=#B85450;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="220" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="Webapp (Task #25)&#10;React Native Web&#10;CloudFront/S3 origin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="70" y="120" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- AWS account boundary -->
+        <mxCell id="tb-aws" value="AWS Account — us-east-1 (VPC trust boundary)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;fillColor=none;strokeColor=#D79B00;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="300" y="70" width="820" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- ALB -->
+        <mxCell id="alb" value="Application Load Balancer&#10;HTTPS:443 (ACM TLS)&#10;Health check: GET /api/health" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="340" y="120" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ECS Cluster boundary -->
+        <mxCell id="tb-ecs" value="ECS Cluster: reticle-cluster (private subnets)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#9673a6;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="340" y="250" width="500" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="ecs-svc" value="Service: reticle-api-service&#10;Fargate, desired=1 (placeholder)&#10;Task: reticle-api-task" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="360" y="290" width="460" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Container internals -->
+        <mxCell id="container" value="Container: reticle-api (uvicorn :8080)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="380" y="330" width="420" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="mw" value="Middleware&#10;- CORS (allowlist origins)&#10;- RequestID + structured JSON logging&#10;- Exception handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;" vertex="1" parent="1">
+          <mxGeometry x="400" y="365" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="routers" value="Routers (APIRouter)&#10;- health.py  GET /api/health&#10;- greetings.py  GET /api/greetings&#10;- auth.py  POST /api/login (SSO stub)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;" vertex="1" parent="1">
+          <mxGeometry x="600" y="365" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="auth-iface" value="AuthProvider (interface)&#10;PlaceholderAuthProvider impl&#10;(swap for SSO/OIDC later — DIP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;" vertex="1" parent="1">
+          <mxGeometry x="400" y="470" width="380" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Supporting AWS services -->
+        <mxCell id="ecr" value="Amazon ECR&#10;reticle-api:&lt;git-sha&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="900" y="290" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cw" value="CloudWatch Logs&#10;/ecs/reticle-api (JSON)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="900" y="370" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sm" value="Secrets Manager&#10;(future SSO client creds —&#10;injected as task env, 12-factor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="900" y="450" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- CI/CD -->
+        <mxCell id="tb-ci" value="GitHub Actions — api-ci-cd.yml (deploy on push to main only)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="340" y="590" width="740" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ci" value="build (ruff, mypy, docker build)&#10;→ test (pytest+cov)&#10;→ security (bandit, trivy)&#10;→ deploy (push ECR, render task def, ECS deploy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;" vertex="1" parent="1">
+          <mxGeometry x="360" y="615" width="480" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Flows -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="client" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1l" value="HTTPS GET /api/greetings, POST /api/login" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="232" y="95" width="220" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="alb" target="ecs-svc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="ecs-svc" target="ecr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3l" value="pull image" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="828" y="295" width="70" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="container" target="cw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4l" value="stdout JSON logs" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="400" width="90" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="auth-iface" target="sm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5l" value="future: read SSO creds" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="790" y="478" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="ci" target="ecr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

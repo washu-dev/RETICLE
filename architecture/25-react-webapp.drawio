@@ -1,0 +1,86 @@
+<mxfile host="app.diagrams.net" agent="reticle-architect" version="24.7.0">
+  <diagram id="reticle-webapp-25" name="Task 25 - React Native Web">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="RETICLE Task #25 — React Native Web App (AWS S3 + CloudFront)" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="800" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- User -->
+        <mxCell id="user" value="Browser&#10;(end user)" style="shape=umlActor;verticalLabelPosition=bottom;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Edge / CDN boundary -->
+        <mxCell id="tb-edge" value="AWS Edge — CloudFront (HTTPS, ACM cert, OAC to S3)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;fillColor=none;strokeColor=#D79B00;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="160" y="90" width="430" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="cf" value="CloudFront Distribution&#10;- HTTPS only (redirect HTTP)&#10;- Security response headers (CSP, HSTS, X-CTO)&#10;- SPA fallback: 403/404 → /index.html" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;" vertex="1" parent="1">
+          <mxGeometry x="190" y="130" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="S3 bucket: reticle-webapp-prod&#10;(private, OAC-only)&#10;static web-build/ bundle" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="450" y="135" width="120" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- API -->
+        <mxCell id="api" value="RETICLE API (Task #24)&#10;ALB → ECS Fargate&#10;GET /api/greetings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="650" y="135" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- App component tree -->
+        <mxCell id="tb-app" value="React Native Web bundle (runs in browser) — component hierarchy" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="160" y="380" width="690" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="app" value="App (theme + font provider)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="380" y="410" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="header" value="Header&#10;(ivypresto-headline)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="200" y="480" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="content" value="GreetingScreen&#10;(loading / error / data states)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="420" y="480" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="footer" value="Footer&#10;(ivystyle-sans)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="660" y="480" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hook" value="useGreeting() hook&#10;(state: idle/loading/success/error)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="410" y="560" width="200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="apiClient (services/api.ts)&#10;baseURL = REACT_APP_API_BASE_URL&#10;timeout, error normalization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;" vertex="1" parent="1">
+          <mxGeometry x="380" y="620" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- CI/CD -->
+        <mxCell id="ci" value="GitHub Actions webapp-ci-cd.yml: build (lint/typecheck/build:web) → test → security (npm audit, trivy) → deploy main-only: s3 sync + CloudFront invalidation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;" vertex="1" parent="1">
+          <mxGeometry x="160" y="700" width="690" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Flows -->
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="user" target="cf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f1l" value="HTTPS GET (HTML/JS/CSS)" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="105" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="cf" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="client" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3l" value="XHR GET /api/greetings (CORS)" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="600" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="ci" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4l" value="deploy bundle" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="250" width="90" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
