@@ -287,7 +287,6 @@ export default function ResultsPage({ genes, options, onReset }) {
         {tab === 'dark'    && (
           <DarkGeneScatter
             pathwayAnalysis={options?.pathwayAnalysis ?? false}
-            onSelectGene={handleExploreGene}
           />
         )}
         {tab === 'graph'   && (

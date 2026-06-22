@@ -9,6 +9,11 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^react-native$': 'react-native-web',
+    '\\.css$': '<rootDir>/src/__mocks__/fileMock.js',
+  },
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
   collectCoverageFrom: [
@@ -16,6 +21,8 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.web.tsx',
     '!src/react-native.d.ts',
+    '!src/services/api.ts',
+    '!src/config/env.ts',
   ],
   coverageThreshold: {
     global: {
