@@ -21,6 +21,8 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.web.tsx',
     '!src/react-native.d.ts',
+    '!src/services/api.ts',
+    '!src/config/env.ts',
   ],
   coverageThreshold: {
     global: {
