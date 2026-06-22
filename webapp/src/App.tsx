@@ -1,28 +1,31 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import GreetingScreen from "./components/GreetingScreen";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useCallback } from 'react';
+import LandingPage from './components/LandingPage';
+import UploadPage from './components/UploadPage';
+import LoadingAnalysis from './components/LoadingAnalysis';
+import ResultsPage from './components/ResultsPage';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Header />
-      <View style={styles.main} accessibilityRole="main">
-        <GreetingScreen />
-      </View>
-      <Footer />
-    </View>
-  );
-}
+  const [screen, setScreen] = useState('landing');
+  const [genes, setGenes] = useState<any>(null);
+  const [analysisOptions, setAnalysisOptions] = useState<any>(null);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    minHeight: "100vh" as unknown as number,
-    flexDirection: "column",
-  },
-  main: {
-    flex: 1,
-  },
-});
+  const handleStart = () => setScreen('upload');
+  const handleAnalyze = (parsedGenes: any, options: any) => {
+    setGenes(parsedGenes);
+    setAnalysisOptions(options);
+    setScreen('loading');
+  };
+  const handleDone = useCallback(() => setScreen('results'), []);
+  const handleReset = () => {
+    setGenes(null);
+    setAnalysisOptions(null);
+    setScreen('upload');
+  };
+
+  if (screen === 'landing') return <LandingPage onStart={handleStart} />;
+  if (screen === 'upload') return <UploadPage onAnalyze={handleAnalyze} />;
+  if (screen === 'loading') return <LoadingAnalysis geneCount={genes?.length ?? 25} onDone={handleDone} />;
+  if (screen === 'results') return <ResultsPage genes={genes} options={analysisOptions} onReset={handleReset} />;
+  return null;
+}

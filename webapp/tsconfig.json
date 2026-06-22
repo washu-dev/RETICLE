@@ -12,6 +12,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "checkJs": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
