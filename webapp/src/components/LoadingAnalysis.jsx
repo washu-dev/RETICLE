@@ -16,18 +16,19 @@ export default function LoadingAnalysis({ geneCount, onDone }) {
 
   useEffect(() => {
     let s = 0;
+    let doneTimer;
     const interval = setInterval(() => {
       s++;
       if (s >= STEPS.length) {
         clearInterval(interval);
-        setTimeout(onDone, 500);
+        doneTimer = setTimeout(onDone, 500);
       } else {
         setStep(s);
         setPct(STEPS[s].pct);
       }
     }, 600);
     setPct(STEPS[0].pct);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); clearTimeout(doneTimer); };
   }, [onDone]);
 
   return (
