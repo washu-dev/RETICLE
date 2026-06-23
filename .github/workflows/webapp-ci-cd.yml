@@ -1,11 +1,6 @@
 name: Webapp CI/CD
 
-# NOTE: The webapp is described as a React Native webapp deployed to AWS.
-# React Native Web (Expo for Web / react-native-web) compiles to a static
-# bundle. The deploy stage below is a PLACEHOLDER — update the deploy job
-# once the AWS target is confirmed. S3 + CloudFront is the standard choice
-# for a static React Native Web bundle; ECS/Fargate is an option if
-# server-side rendering is added later.
+# Deploys the React Native Web (Expo for Web) static bundle to S3 + CloudFront.
 #
 # Triggers:
 #   - Push to any branch: runs build + test + security only
@@ -147,10 +142,10 @@ jobs:
           severity: CRITICAL,HIGH
 
   # ─────────────────────────────────────────────
-  # Stage 4: Deploy — main branch only (PLACEHOLDER)
+  # Stage 4: Deploy — main branch only
   # ─────────────────────────────────────────────
   deploy:
-    name: Deploy to AWS (placeholder)
+    name: Deploy to S3 + CloudFront
     runs-on: ubuntu-latest
     needs: [test, security]
     # Deploy only on direct pushes to main (not PRs, not feature branches)
