@@ -30,10 +30,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  # Populate these once the target S3 bucket / CloudFront distribution
-  # are provisioned:
-  # S3_BUCKET: reticle-webapp-prod
-  # CLOUDFRONT_DISTRIBUTION_ID: XXXXXXXX
+  S3_BUCKET: reticle-webapp-test
+  CLOUDFRONT_DISTRIBUTION_ID: EAV26T9QAOA4Q
 
 jobs:
   # ─────────────────────────────────────────────
@@ -173,19 +171,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # TODO: replace the steps below once the AWS target is confirmed.
-      # Typical S3 + CloudFront deploy:
-      #   aws s3 sync web-build/ s3://$S3_BUCKET --delete
-      #   aws cloudfront create-invalidation \
-      #     --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
-      - name: PLACEHOLDER — deploy step not yet configured
-        run: |
-          echo "Webapp deploy target not yet configured."
-          echo "Confirm AWS target (S3+CloudFront or ECS), then update this job."
-          exit 0
+      - name: Sync to S3
+        run: aws s3 sync web-build/ s3://$S3_BUCKET --delete
 
-      # Rollback path:
-      # If using S3+CloudFront: re-run the workflow against the previous
-      # commit SHA to redeploy the last known-good bundle, or use S3
-      # versioning to restore a prior object version.
-      # If using ECS: same revision rollback pattern as the API service.
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*"
+
