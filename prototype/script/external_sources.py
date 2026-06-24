@@ -196,17 +196,35 @@ def string_partners(symbol, taxid, limit=8):
     return _cached(key, fetch) or []
 
 
-def string_network(symbol, taxid, add=8):
-    """STRING subnetwork: the gene + `add` top interactors + ALL edges among them.
-    Returns {nodes: [name...], edges: [{a, b, score}]} (a real network, not a star)."""
+# STRING scores each interaction per evidence CHANNEL (sub-score field -> label).
+# This is what STRING's coloured edges encode; we surface it so the UI can explain
+# *why* two genes are linked.
+STRING_CHANNELS = {
+    "escore": "experiments", "dscore": "databases", "tscore": "text-mining",
+    "ascore": "co-expression", "nscore": "gene neighborhood",
+    "fscore": "gene fusion", "pscore": "co-occurrence",
+}
+
+
+def string_network(symbol, taxid, add=10):
+    """STRING subnetwork: the gene + `add` top interactors + ALL edges among them,
+    each edge annotated with STRING's per-evidence-channel sub-scores. `add=10`
+    matches STRING's web default (1st shell = 10 interactors), so the node set is
+    the same as string-db.org.
+    Returns {nodes: [name...], edges: [{a, b, score, channels:{label: subscore}}]}."""
     key = f"stringnet:{taxid}:{symbol}:{add}"
 
     def fetch():
         url = (f"{STRING}/json/network?identifiers={urllib.parse.quote(symbol)}"
                f"&species={taxid}&add_nodes={add}")
         data = json.loads(_get(url))
-        edges = [{"a": d["preferredName_A"], "b": d["preferredName_B"],
-                  "score": round(float(d["score"]), 3)} for d in data]
+        edges = []
+        for d in data:
+            channels = {label: round(float(d[k]), 3)
+                        for k, label in STRING_CHANNELS.items()
+                        if k in d and float(d[k]) > 0}
+            edges.append({"a": d["preferredName_A"], "b": d["preferredName_B"],
+                          "score": round(float(d["score"]), 3), "channels": channels})
         nodes = sorted({n for e in edges for n in (e["a"], e["b"])})
         return {"nodes": nodes, "edges": edges}
     return _cached(key, fetch) or {"nodes": [], "edges": []}
