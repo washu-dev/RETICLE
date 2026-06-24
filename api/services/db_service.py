@@ -25,18 +25,18 @@ _AWS_HOST = os.getenv("AWS_DB_HOST", "")
 USE_PG = bool(_AWS_HOST)
 
 _PG_PARAMS = (
-    dict(
-        host=_AWS_HOST,
-        port=os.getenv("AWS_DB_PORT", "5432"),
-        user=os.getenv("AWS_DB_USER"),
-        password=os.getenv("AWS_DB_PASSWORD"),
-        dbname=os.getenv("AWS_DB_NAME"),
-        connect_timeout=15,
-        keepalives=1,
-        keepalives_idle=20,
-        keepalives_interval=10,
-        keepalives_count=6,
-    )
+    {
+        "host": _AWS_HOST,
+        "port": os.getenv("AWS_DB_PORT", "5432"),
+        "user": os.getenv("AWS_DB_USER"),
+        "password": os.getenv("AWS_DB_PASSWORD"),
+        "dbname": os.getenv("AWS_DB_NAME"),
+        "connect_timeout": 15,
+        "keepalives": 1,
+        "keepalives_idle": 20,
+        "keepalives_interval": 10,
+        "keepalives_count": 6,
+    }
     if USE_PG
     else None
 )

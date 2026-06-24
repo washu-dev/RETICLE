@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter
+
 from models.query import QueryRequest, QueryResponse
 from services.mock_data_service import run_query
 

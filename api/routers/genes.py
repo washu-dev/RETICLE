@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, status
+
 from models.gene import GeneDetail
 from services.mock_data_service import get_gene_detail
 

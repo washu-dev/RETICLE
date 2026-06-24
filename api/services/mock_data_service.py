@@ -82,22 +82,38 @@ _MATCHED_SCREENS: list[MatchedScreen] = [
 ]
 
 _DARK_GENES: list[DarkGene] = [
-    DarkGene(symbol="CCDC6",    dark_score=8.2, correlation=0.71, pubs=23,   screens=4, go_terms=3,  is_bright=False, cluster="dark-matter"),
-    DarkGene(symbol="FAM114A1", dark_score=9.1, correlation=0.68, pubs=8,    screens=3, go_terms=2,  is_bright=False, cluster="dark-matter"),
-    DarkGene(symbol="ZSWIM8",   dark_score=7.8, correlation=0.65, pubs=31,   screens=4, go_terms=4,  is_bright=False, cluster="dark-matter"),
-    DarkGene(symbol="C1orf43",  dark_score=8.9, correlation=0.62, pubs=12,   screens=3, go_terms=2,  is_bright=False, cluster="dark-matter"),
-    DarkGene(symbol="ANKRD36C", dark_score=9.4, correlation=0.58, pubs=5,    screens=2, go_terms=1,  is_bright=False, cluster="dark-matter"),
-    DarkGene(symbol="TMEM106B", dark_score=6.5, correlation=0.77, pubs=67,   screens=5, go_terms=6,  is_bright=False, cluster="selective-autophagy"),
-    DarkGene(symbol="STK38L",   dark_score=7.2, correlation=0.54, pubs=44,   screens=3, go_terms=5,  is_bright=False, cluster="selective-autophagy"),
-    DarkGene(symbol="BNIP3L",   dark_score=5.8, correlation=0.59, pubs=89,   screens=4, go_terms=7,  is_bright=False, cluster="selective-autophagy"),
-    DarkGene(symbol="RAB7A",    dark_score=4.4, correlation=0.66, pubs=214,  screens=6, go_terms=12, is_bright=False, cluster="core-autophagy"),
-    DarkGene(symbol="VAMP8",    dark_score=5.2, correlation=0.81, pubs=112,  screens=5, go_terms=8,  is_bright=False, cluster="selective-autophagy"),
-    DarkGene(symbol="ATG5",     dark_score=2.1, correlation=0.85, pubs=892,  screens=7, go_terms=22, is_bright=True,  cluster="core-autophagy"),
-    DarkGene(symbol="ATG7",     dark_score=1.8, correlation=0.82, pubs=743,  screens=7, go_terms=19, is_bright=True,  cluster="core-autophagy"),
-    DarkGene(symbol="ULK1",     dark_score=3.2, correlation=0.78, pubs=501,  screens=6, go_terms=16, is_bright=True,  cluster="core-autophagy"),
-    DarkGene(symbol="IRGM",     dark_score=4.1, correlation=0.73, pubs=278,  screens=6, go_terms=11, is_bright=True,  cluster="selective-autophagy"),
-    DarkGene(symbol="BECN1",    dark_score=2.4, correlation=0.76, pubs=1204, screens=8, go_terms=24, is_bright=True,  cluster="core-autophagy"),
-    DarkGene(symbol="MAP1LC3B", dark_score=3.0, correlation=0.70, pubs=631,  screens=7, go_terms=17, is_bright=True,  cluster="core-autophagy"),
+    DarkGene(symbol="CCDC6",    dark_score=8.2, correlation=0.71,
+             pubs=23,   screens=4, go_terms=3,  is_bright=False, cluster="dark-matter"),
+    DarkGene(symbol="FAM114A1", dark_score=9.1, correlation=0.68,
+             pubs=8,    screens=3, go_terms=2,  is_bright=False, cluster="dark-matter"),
+    DarkGene(symbol="ZSWIM8",   dark_score=7.8, correlation=0.65,
+             pubs=31,   screens=4, go_terms=4,  is_bright=False, cluster="dark-matter"),
+    DarkGene(symbol="C1orf43",  dark_score=8.9, correlation=0.62,
+             pubs=12,   screens=3, go_terms=2,  is_bright=False, cluster="dark-matter"),
+    DarkGene(symbol="ANKRD36C", dark_score=9.4, correlation=0.58,
+             pubs=5,    screens=2, go_terms=1,  is_bright=False, cluster="dark-matter"),
+    DarkGene(symbol="TMEM106B", dark_score=6.5, correlation=0.77,
+             pubs=67,   screens=5, go_terms=6,  is_bright=False, cluster="selective-autophagy"),
+    DarkGene(symbol="STK38L",   dark_score=7.2, correlation=0.54,
+             pubs=44,   screens=3, go_terms=5,  is_bright=False, cluster="selective-autophagy"),
+    DarkGene(symbol="BNIP3L",   dark_score=5.8, correlation=0.59,
+             pubs=89,   screens=4, go_terms=7,  is_bright=False, cluster="selective-autophagy"),
+    DarkGene(symbol="RAB7A",    dark_score=4.4, correlation=0.66,
+             pubs=214,  screens=6, go_terms=12, is_bright=False, cluster="core-autophagy"),
+    DarkGene(symbol="VAMP8",    dark_score=5.2, correlation=0.81,
+             pubs=112,  screens=5, go_terms=8,  is_bright=False, cluster="selective-autophagy"),
+    DarkGene(symbol="ATG5",     dark_score=2.1, correlation=0.85,
+             pubs=892,  screens=7, go_terms=22, is_bright=True,  cluster="core-autophagy"),
+    DarkGene(symbol="ATG7",     dark_score=1.8, correlation=0.82,
+             pubs=743,  screens=7, go_terms=19, is_bright=True,  cluster="core-autophagy"),
+    DarkGene(symbol="ULK1",     dark_score=3.2, correlation=0.78,
+             pubs=501,  screens=6, go_terms=16, is_bright=True,  cluster="core-autophagy"),
+    DarkGene(symbol="IRGM",     dark_score=4.1, correlation=0.73,
+             pubs=278,  screens=6, go_terms=11, is_bright=True,  cluster="selective-autophagy"),
+    DarkGene(symbol="BECN1",    dark_score=2.4, correlation=0.76,
+             pubs=1204, screens=8, go_terms=24, is_bright=True,  cluster="core-autophagy"),
+    DarkGene(symbol="MAP1LC3B", dark_score=3.0, correlation=0.70,
+             pubs=631,  screens=7, go_terms=17, is_bright=True,  cluster="core-autophagy"),
 ]
 
 _GRAPH_ELEMENTS = GraphElements(
@@ -147,22 +163,38 @@ _GRAPH_ELEMENTS = GraphElements(
                   position=GraphNodePosition(x=390, y=380)),
     ],
     edges=[
-        GraphEdge(data=GraphEdgeData(source="s1", target="g1", rho=0.82, edge_label="Orvedahl 2019 → ATG5")),
-        GraphEdge(data=GraphEdgeData(source="s1", target="g2", rho=0.78, edge_label="Orvedahl 2019 → ATG7")),
-        GraphEdge(data=GraphEdgeData(source="s1", target="g3", rho=0.74, edge_label="Orvedahl 2019 → IRGM")),
-        GraphEdge(data=GraphEdgeData(source="s1", target="g4", rho=0.71, edge_label="Orvedahl 2019 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(source="s2", target="g1", rho=0.68, edge_label="Zhao 2021 → ATG5")),
-        GraphEdge(data=GraphEdgeData(source="s2", target="g3", rho=0.65, edge_label="Zhao 2021 → IRGM")),
-        GraphEdge(data=GraphEdgeData(source="s2", target="g4", rho=0.62, edge_label="Zhao 2021 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(source="s2", target="g5", rho=0.58, edge_label="Zhao 2021 → FAM114A1")),
-        GraphEdge(data=GraphEdgeData(source="s3", target="g2", rho=0.61, edge_label="Lin 2022 → ATG7")),
-        GraphEdge(data=GraphEdgeData(source="s3", target="g6", rho=0.57, edge_label="Lin 2022 → ULK1")),
-        GraphEdge(data=GraphEdgeData(source="s3", target="g4", rho=0.54, edge_label="Lin 2022 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(source="s4", target="g5", rho=-0.55, edge_label="Park 2023 → FAM114A1")),
-        GraphEdge(data=GraphEdgeData(source="s4", target="g1", rho=-0.48, edge_label="Park 2023 → ATG5")),
-        GraphEdge(data=GraphEdgeData(source="s5", target="g6", rho=0.43, edge_label="Huang 2021 → ULK1")),
-        GraphEdge(data=GraphEdgeData(source="s5", target="g3", rho=0.39, edge_label="Huang 2021 → IRGM")),
-        GraphEdge(data=GraphEdgeData(source="s5", target="g5", rho=0.36, edge_label="Huang 2021 → FAM114A1")),
+        GraphEdge(data=GraphEdgeData(
+            source="s1", target="g1", rho=0.82, edge_label="Orvedahl 2019 → ATG5")),
+        GraphEdge(data=GraphEdgeData(
+            source="s1", target="g2", rho=0.78, edge_label="Orvedahl 2019 → ATG7")),
+        GraphEdge(data=GraphEdgeData(
+            source="s1", target="g3", rho=0.74, edge_label="Orvedahl 2019 → IRGM")),
+        GraphEdge(data=GraphEdgeData(
+            source="s1", target="g4", rho=0.71, edge_label="Orvedahl 2019 → CCDC6")),
+        GraphEdge(data=GraphEdgeData(
+            source="s2", target="g1", rho=0.68, edge_label="Zhao 2021 → ATG5")),
+        GraphEdge(data=GraphEdgeData(
+            source="s2", target="g3", rho=0.65, edge_label="Zhao 2021 → IRGM")),
+        GraphEdge(data=GraphEdgeData(
+            source="s2", target="g4", rho=0.62, edge_label="Zhao 2021 → CCDC6")),
+        GraphEdge(data=GraphEdgeData(
+            source="s2", target="g5", rho=0.58, edge_label="Zhao 2021 → FAM114A1")),
+        GraphEdge(data=GraphEdgeData(
+            source="s3", target="g2", rho=0.61, edge_label="Lin 2022 → ATG7")),
+        GraphEdge(data=GraphEdgeData(
+            source="s3", target="g6", rho=0.57, edge_label="Lin 2022 → ULK1")),
+        GraphEdge(data=GraphEdgeData(
+            source="s3", target="g4", rho=0.54, edge_label="Lin 2022 → CCDC6")),
+        GraphEdge(data=GraphEdgeData(
+            source="s4", target="g5", rho=-0.55, edge_label="Park 2023 → FAM114A1")),
+        GraphEdge(data=GraphEdgeData(
+            source="s4", target="g1", rho=-0.48, edge_label="Park 2023 → ATG5")),
+        GraphEdge(data=GraphEdgeData(
+            source="s5", target="g6", rho=0.43, edge_label="Huang 2021 → ULK1")),
+        GraphEdge(data=GraphEdgeData(
+            source="s5", target="g3", rho=0.39, edge_label="Huang 2021 → IRGM")),
+        GraphEdge(data=GraphEdgeData(
+            source="s5", target="g5", rho=0.36, edge_label="Huang 2021 → FAM114A1")),
     ],
 )
 
@@ -170,10 +202,10 @@ _GENE_RATIONALES: dict[str, dict] = {
     "CCDC6": {
         "hypothesis": (
             "CCDC6 (coiled-coil domain containing 6) co-clusters with core autophagy machinery "
-            "(ATG5, ATG7, IRGM) across 4 of 8 matched screens, with a mean Spearman ρ of 0.71 to "
-            "the query screen. Despite only 23 indexed publications, its pathway-correlation profile "
-            "is indistinguishable from established autophagy genes, suggesting a functional role in "
-            "autophagic flux or selective cargo recognition."
+            "(ATG5, ATG7, IRGM) across 4 of 8 matched screens, with a mean Spearman ρ of 0.71 "
+            "to the query screen. Despite only 23 indexed publications, its pathway-correlation "
+            "profile is indistinguishable from established autophagy genes, suggesting a "
+            "functional role in autophagic flux or selective cargo recognition."
         ),
         "mechanistic_context": (
             "CCDC6 is known primarily as a fusion partner in thyroid carcinoma (RET/PTC "
