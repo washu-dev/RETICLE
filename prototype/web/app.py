@@ -52,6 +52,62 @@ HIST_BINS = 26  # over [-1, 1]
 
 
 # ---------------------------------------------------------------------------
+# Database backend — local SQLite  OR  the team's AWS RDS (PostgreSQL).
+# If AWS_DB_HOST is set in .env, queries hit Postgres (schema `reticle`);
+# otherwise the local SQLite file. Same SQL works for both.
+# ---------------------------------------------------------------------------
+
+def _load_env():
+    cfg, p = {}, HERE.parent / ".env"
+    if p.exists():
+        for line in p.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                cfg[k.strip()] = v.strip()
+    return cfg
+
+
+_ENV = _load_env()
+USE_PG = bool(_ENV.get("AWS_DB_HOST"))
+_PG_PARAMS = (dict(host=_ENV.get("AWS_DB_HOST"), port=_ENV.get("AWS_DB_PORT", "5432"),
+                   user=_ENV.get("AWS_DB_USER"), password=_ENV.get("AWS_DB_PASSWORD"),
+                   dbname=_ENV.get("AWS_DB_NAME"), connect_timeout=15) if USE_PG else None)
+
+
+class _Row(dict):
+    """Case-insensitive row access (Postgres returns lowercase column names while
+    the SQL mixes cases, like sqlite3.Row does natively)."""
+    def __getitem__(self, k):
+        try:
+            return dict.__getitem__(self, k)
+        except KeyError:
+            return dict.__getitem__(self, k.lower())
+
+
+def db_fetchall(sql, params=()):
+    """Run a SELECT against the configured backend; rows allow case-insensitive
+    dict access (`?` placeholders work for both — translated to %s for Postgres)."""
+    if USE_PG:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        con = psycopg2.connect(**_PG_PARAMS)
+        try:
+            cur = con.cursor(cursor_factory=RealDictCursor)
+            cur.execute("SET search_path TO reticle, public")
+            cur.execute(sql.replace("?", "%s"), params)
+            return [_Row(r) for r in cur.fetchall()]
+        finally:
+            con.close()
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+    try:
+        return con.execute(sql, params).fetchall()
+    finally:
+        con.close()
+
+
+# ---------------------------------------------------------------------------
 # Data
 # ---------------------------------------------------------------------------
 
@@ -103,11 +159,9 @@ def domain_block(rows, full=True):
 
 
 def gene_payload(symbol: str):
-    con = sqlite3.connect(DB)
-    con.row_factory = sqlite3.Row
     variants = resolve_symbol_variants(symbol)
     ph = ",".join("?" * len(variants))
-    rows = con.execute(
+    rows = db_fetchall(
         f"""SELECT h.SCREEN_ID, h.GENE_SYMBOL, h.PERCENTILE_SCORE AS pct,
                    h.IS_HIT AS is_hit,
                    m.CELL_LINE, m.SCREEN_TYPE, m.ANALYSIS, m.PHENOTYPE,
@@ -119,8 +173,7 @@ def gene_payload(symbol: str):
             WHERE h.GENE_SYMBOL IN ({ph})
               AND h.PERCENTILE_SCORE IS NOT NULL""",
         variants,
-    ).fetchall()
-    con.close()
+    )
     if not rows:
         return None
 
@@ -161,18 +214,15 @@ def network_payload(symbol, taxid):
     nodes = net.get("nodes", [])
     if not nodes:
         return None
-    con = sqlite3.connect(DB)
-    con.row_factory = sqlite3.Row
     ph = ",".join("?" * len(nodes))
-    rows = con.execute(
+    rows = db_fetchall(
         f"""SELECT h.GENE_SYMBOL g, AVG(h.PERCENTILE_SCORE) m
             FROM harmonized_scores h
             JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
             WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain = 'fitness'
               AND h.PERCENTILE_SCORE IS NOT NULL
-            GROUP BY h.GENE_SYMBOL""", nodes).fetchall()
-    con.close()
-    med = {r["g"]: r["m"] for r in rows}
+            GROUP BY h.GENE_SYMBOL""", nodes)
+    med = {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
     def lean(m):
         if m is None:
