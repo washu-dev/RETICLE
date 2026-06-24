@@ -49,7 +49,7 @@ class _Row(dict):
     """Dict row with case-insensitive key access (Postgres returns lowercase column
     names; SQLite column names may be mixed-case from the CREATE TABLE statement)."""
 
-    def __getitem__(self, k):
+    def __getitem__(self, k: str) -> object:
         try:
             return dict.__getitem__(self, k)
         except KeyError:
@@ -74,6 +74,7 @@ def db_fetchall(sql: str, params: tuple = ()) -> list[_Row]:
         import psycopg2
         from psycopg2.extras import RealDictCursor
 
+        assert _PG_PARAMS is not None
         con = psycopg2.connect(**_PG_PARAMS)
         try:
             cur = con.cursor(cursor_factory=RealDictCursor)
