@@ -108,11 +108,13 @@ export default function GraphExplorer({ graphElements, focusGene, onGeneSelect }
       container: containerRef.current,
       elements: [...elements.nodes, ...elements.edges],
       style: STYLES,
-      layout: { name: layout, animate: true, animationDuration: 600, padding: 40 },
       userZoomingEnabled: true,
       userPanningEnabled: true,
       boxSelectionEnabled: false,
     });
+
+    const layoutInstance = cy.layout({ name: layout, animate: true, animationDuration: 600, padding: 40 });
+    layoutInstance.run();
 
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
@@ -158,7 +160,10 @@ export default function GraphExplorer({ graphElements, focusGene, onGeneSelect }
 
     if (focusGene) applyFocus(cy, focusGene);
 
-    return () => cy.destroy();
+    return () => {
+      layoutInstance.stop();
+      cy.destroy();
+    };
   }, [layout]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Respond to focusGene changes after mount
