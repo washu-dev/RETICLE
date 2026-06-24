@@ -126,6 +126,6 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host="0.0.0.0",  # nosec B104 — intentional for containerized deployment
         port=8000,
     )
