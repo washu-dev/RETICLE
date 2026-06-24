@@ -155,6 +155,10 @@ def domain_block(rows, full=True):
         block["rug"] = [round(float(x), 3) for x in pct.tolist()]
         block["most_essential"] = [_pack(r) for r in ordered[:10]]
         block["most_advantageous"] = [_pack(r) for r in reversed(ordered[-10:])]
+        # per-screen rows (with the specific pressure) so the UI can re-slice by condition
+        block["screens"] = [{"p": round(float(r["pct"]), 3),
+                             "cc": (r["cc"] or "other"), "cn": (r["cn"] or ""),
+                             "h": int(r["is_hit"])} for r in rows]
     return block
 
 
@@ -166,7 +170,8 @@ def gene_payload(symbol: str):
                    h.IS_HIT AS is_hit,
                    m.CELL_LINE, m.SCREEN_TYPE, m.ANALYSIS, m.PHENOTYPE,
                    m.SCREEN_RATIONALE, m.ORGANISM_OFFICIAL AS org,
-                   COALESCE(c.assay_domain, 'other') AS domain
+                   COALESCE(c.assay_domain, 'other') AS domain,
+                   c.condition_class AS cc, c.condition_name AS cn
             FROM harmonized_scores h
             JOIN screen_metadata m ON h.SCREEN_ID = m.SCREEN_ID
             LEFT JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
