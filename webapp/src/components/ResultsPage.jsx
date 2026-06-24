@@ -1,23 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { BarChart2, Dna, Share2, Download, RotateCcw, FlaskConical, List, ArrowRight } from 'lucide-react';
 import MatchedScreens from './MatchedScreens';
 import DarkGeneScatter from './DarkGeneScatter';
 import GraphExplorer from './GraphExplorer';
-import { DARK_GENES, GRAPH_ELEMENTS } from '../mockData';
 
-const GRAPH_GENE_LABELS = new Set(
-  GRAPH_ELEMENTS.nodes
-    .filter(n => n.data.type === 'gene' || n.data.type === 'dark')
-    .map(n => n.data.label)
-);
-
-function QueryGenesTab({ genes, onExploreGene }) {
+function QueryGenesTab({ genes, darkGeneMap, graphGeneLabelSet, onExploreGene }) {
   const [filter, setFilter] = useState('all');
 
-  const enriched = genes.map(g => {
-    const dark = DARK_GENES.find(d => d.symbol === g.symbol);
-    return { ...g, dark };
-  });
+  const enriched = genes.map(g => ({ ...g, dark: darkGeneMap[g.symbol] ?? null }));
 
   const displayed = filter === 'dark'
     ? enriched.filter(g => g.dark && !g.dark.isBright && g.dark.darkScore >= 6)
@@ -30,32 +20,21 @@ function QueryGenesTab({ genes, onExploreGene }) {
 
   return (
     <div>
-      {/* Summary chips */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{
-          padding: '12px 18px', borderRadius: 10, flex: '1 1 180px',
-          background: 'var(--bg-2)', border: '1px solid var(--border)',
-        }}>
+        <div style={{ padding: '12px 18px', borderRadius: 10, flex: '1 1 180px', background: 'var(--bg-2)', border: '1px solid var(--border)' }}>
           <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-1)' }}>{genes.length}</div>
           <div style={{ fontSize: '0.82rem', color: 'var(--text-3)', marginTop: 2 }}>genes from your screen</div>
         </div>
-        <div style={{
-          padding: '12px 18px', borderRadius: 10, flex: '1 1 180px',
-          background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)',
-        }}>
+        <div style={{ padding: '12px 18px', borderRadius: 10, flex: '1 1 180px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' }}>
           <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--amber)' }}>{darkCount}</div>
           <div style={{ fontSize: '0.82rem', color: 'var(--text-3)', marginTop: 2 }}>dark-matter candidates</div>
         </div>
-        <div style={{
-          padding: '12px 18px', borderRadius: 10, flex: '1 1 180px',
-          background: 'rgba(79,156,249,0.06)', border: '1px solid rgba(79,156,249,0.2)',
-        }}>
+        <div style={{ padding: '12px 18px', borderRadius: 10, flex: '1 1 180px', background: 'rgba(79,156,249,0.06)', border: '1px solid rgba(79,156,249,0.2)' }}>
           <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--blue)' }}>{brightCount}</div>
           <div style={{ fontSize: '0.82rem', color: 'var(--text-3)', marginTop: 2 }}>known pathway genes</div>
         </div>
       </div>
 
-      {/* Filter row */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {[['all', 'All genes'], ['dark', 'Dark candidates'], ['bright', 'Known genes']].map(([key, label]) => (
           <button
@@ -72,15 +51,10 @@ function QueryGenesTab({ genes, onExploreGene }) {
         ))}
       </div>
 
-      {/* Gene table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
           <thead>
-            <tr style={{
-              background: 'var(--bg-2)',
-              fontSize: '0.72rem', color: 'var(--text-3)',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>
+            <tr style={{ background: 'var(--bg-2)', fontSize: '0.72rem', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 600 }}>Gene</th>
               <th style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600 }}>Score</th>
               <th style={{ padding: '10px 16px', textAlign: 'right', fontWeight: 600 }}>Darkness</th>
@@ -93,36 +67,19 @@ function QueryGenesTab({ genes, onExploreGene }) {
             {displayed.map((g, i) => {
               const isDark     = g.dark && !g.dark.isBright && g.dark.darkScore >= 6;
               const isBright   = g.dark?.isBright;
-              const inGraph    = GRAPH_GENE_LABELS.has(g.symbol);
+              const inGraph    = graphGeneLabelSet.has(g.symbol);
               const scoreColor = g.score < 0 ? 'var(--blue)' : 'var(--orange)';
 
               return (
                 <tr
                   key={g.symbol}
-                  style={{
-                    borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                    background: isDark ? 'rgba(251,191,36,0.03)' : 'transparent',
-                  }}
+                  style={{ borderTop: i === 0 ? 'none' : '1px solid var(--border)', background: isDark ? 'rgba(251,191,36,0.03)' : 'transparent' }}
                 >
                   <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{
-                        fontFamily: 'monospace', fontWeight: 700,
-                        color: isDark ? 'var(--amber)' : isBright ? 'var(--blue)' : 'var(--text-1)',
-                        fontSize: '0.88rem',
-                      }}>{g.symbol}</span>
-                      {isDark && (
-                        <span style={{
-                          fontSize: '0.65rem', padding: '1px 6px', borderRadius: 100,
-                          background: 'rgba(251,191,36,0.15)', color: 'var(--amber)', fontWeight: 700,
-                        }}>dark</span>
-                      )}
-                      {isBright && (
-                        <span style={{
-                          fontSize: '0.65rem', padding: '1px 6px', borderRadius: 100,
-                          background: 'rgba(79,156,249,0.12)', color: 'var(--blue)', fontWeight: 700,
-                        }}>known</span>
-                      )}
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: isDark ? 'var(--amber)' : isBright ? 'var(--blue)' : 'var(--text-1)', fontSize: '0.88rem' }}>{g.symbol}</span>
+                      {isDark   && <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: 100, background: 'rgba(251,191,36,0.15)', color: 'var(--amber)', fontWeight: 700 }}>dark</span>}
+                      {isBright && <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: 100, background: 'rgba(79,156,249,0.12)', color: 'var(--blue)',  fontWeight: 700 }}>known</span>}
                     </div>
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: 'monospace', color: scoreColor, fontWeight: 600 }}>
@@ -167,9 +124,22 @@ function QueryGenesTab({ genes, onExploreGene }) {
   );
 }
 
-export default function ResultsPage({ genes, options, onReset }) {
-  const [tab, setTab]           = useState('screens');
+export default function ResultsPage({ genes, options, queryResults, onReset }) {
+  const [tab, setTab]             = useState('screens');
   const [focusGene, setFocusGene] = useState(null);
+
+  // Build look-up structures from query results (with empty defaults if API failed).
+  const darkGeneMap = useMemo(() => {
+    const map = {};
+    (queryResults?.darkGenes ?? []).forEach(g => { map[g.symbol] = g; });
+    return map;
+  }, [queryResults]);
+
+  const graphGeneLabelSet = useMemo(() => new Set(
+    (queryResults?.graphElements?.nodes ?? [])
+      .filter(n => n.data.type === 'gene' || n.data.type === 'dark')
+      .map(n => n.data.label)
+  ), [queryResults]);
 
   function handleExploreGene(symbol) {
     setFocusGene(symbol);
@@ -177,11 +147,12 @@ export default function ResultsPage({ genes, options, onReset }) {
   }
 
   const geneCount = genes?.length ?? 25;
+  const darkCount = Object.values(darkGeneMap).filter(g => !g.isBright && g.darkScore >= 6).length;
 
   const TABS = [
     { id: 'query',   label: 'Query Genes',         icon: <List size={14} />,     badge: `${geneCount}` },
     { id: 'screens', label: 'Matched Screens',      icon: <BarChart2 size={14} /> },
-    { id: 'dark',    label: 'Dark Gene Candidates', icon: <Dna size={14} />,      badge: '5 priority' },
+    { id: 'dark',    label: 'Dark Gene Candidates', icon: <Dna size={14} />,      badge: darkCount > 0 ? `${darkCount} priority` : undefined },
     { id: 'graph',   label: 'Graph Explorer',       icon: <Share2 size={14} /> },
   ];
 
@@ -194,11 +165,7 @@ export default function ResultsPage({ genes, options, onReset }) {
         background: 'var(--bg-0)', position: 'sticky', top: 0, zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 7,
-            background: 'linear-gradient(135deg, #2563b8, #4f9cf9)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'linear-gradient(135deg, #2563b8, #4f9cf9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlaskConical size={14} color="white" />
           </div>
           <span style={{ fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.02em' }}>RETICLE</span>
@@ -208,21 +175,11 @@ export default function ResultsPage({ genes, options, onReset }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={onReset}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 14px', borderRadius: 8,
-              border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '0.85rem',
-              background: 'var(--bg-2)',
-            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '0.85rem', background: 'var(--bg-2)' }}
           >
             <RotateCcw size={13} /> New query
           </button>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '7px 14px', borderRadius: 8,
-            border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '0.85rem',
-            background: 'var(--bg-2)',
-          }}>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '0.85rem', background: 'var(--bg-2)' }}>
             <Download size={13} /> Export CSV
           </button>
         </div>
@@ -277,20 +234,29 @@ export default function ResultsPage({ genes, options, onReset }) {
         </div>
 
         {/* Tab content */}
-        {tab === 'query'   && (
+        {tab === 'query' && (
           <QueryGenesTab
             genes={genes ?? []}
+            darkGeneMap={darkGeneMap}
+            graphGeneLabelSet={graphGeneLabelSet}
             onExploreGene={handleExploreGene}
           />
         )}
-        {tab === 'screens' && <MatchedScreens genes={genes} />}
-        {tab === 'dark'    && (
+        {tab === 'screens' && (
+          <MatchedScreens
+            genes={genes}
+            screens={queryResults?.matchedScreens}
+          />
+        )}
+        {tab === 'dark' && (
           <DarkGeneScatter
+            darkGenes={queryResults?.darkGenes}
             pathwayAnalysis={options?.pathwayAnalysis ?? false}
           />
         )}
-        {tab === 'graph'   && (
+        {tab === 'graph' && (
           <GraphExplorer
+            graphElements={queryResults?.graphElements}
             focusGene={focusGene}
             onGeneSelect={setFocusGene}
           />

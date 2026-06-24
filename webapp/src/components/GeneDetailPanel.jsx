@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, FlaskConical, BookOpen, Lightbulb, Activity, ChevronDown, ChevronUp, Network } from 'lucide-react';
-import { GENE_RATIONALES, DARK_GENES, STRING_INTERACTORS } from '../mockData';
+import { fetchGeneDetail } from '../services/reticleApi';
 
 const DIRECTION_STYLE = {
   upregulated:   { color: 'var(--green)',  label: '↑ up'   },
@@ -9,13 +9,34 @@ const DIRECTION_STYLE = {
 };
 
 export default function GeneDetailPanel({ symbol, onClose }) {
-  const [stringOpen, setStringOpen] = useState(false);
+  const [geneDetail, setGeneDetail]   = useState(null);
+  const [loading, setLoading]         = useState(false);
+  const [stringOpen, setStringOpen]   = useState(false);
+  const abortRef                      = useRef(null);
+
+  useEffect(() => {
+    if (!symbol) { setGeneDetail(null); return; }
+
+    // Cancel any in-flight request from a previous symbol.
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+    setStringOpen(false);
+
+    fetchGeneDetail(symbol, controller.signal)
+      .then(detail => { setGeneDetail(detail); setLoading(false); })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        setGeneDetail(null);
+        setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [symbol]);
 
   if (!symbol) return null;
-
-  const rationale  = GENE_RATIONALES[symbol];
-  const geneData   = DARK_GENES.find(g => g.symbol === symbol);
-  const interactors = STRING_INTERACTORS[symbol] ?? null;
 
   return (
     <>
@@ -30,16 +51,16 @@ export default function GeneDetailPanel({ symbol, onClose }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <span className="badge badge-dark">Dark candidate</span>
-              {geneData && <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Darkness score: <strong style={{ color: 'var(--amber)' }}>{geneData.darkScore}</strong>/10</span>}
+              {geneDetail && <span style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>Darkness score: <strong style={{ color: 'var(--amber)' }}>{geneDetail.darkScore}</strong>/10</span>}
             </div>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', fontFamily: '"JetBrains Mono",monospace' }}>{symbol}</h2>
-            {geneData && (
+            {geneDetail && (
               <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: '0.8rem', color: 'var(--text-3)' }}>
-                <span>{geneData.pubs} publications</span>
+                <span>{geneDetail.pubs} publications</span>
                 <span>·</span>
-                <span>{geneData.screens} matched screens</span>
+                <span>{geneDetail.screens} matched screens</span>
                 <span>·</span>
-                <span>Pathway correlation: <strong style={{ color: 'var(--blue)' }}>{geneData.correlation}</strong></span>
+                <span>Pathway correlation: <strong style={{ color: 'var(--blue)' }}>{geneDetail.correlation}</strong></span>
               </div>
             )}
           </div>
@@ -49,58 +70,76 @@ export default function GeneDetailPanel({ symbol, onClose }) {
         </div>
 
         <div style={{ padding: '24px' }}>
-          {rationale ? (
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', color: 'var(--text-3)', fontSize: '0.9rem' }}>
+              <div className="spinner" style={{ width: 24, height: 24, marginRight: 12 }} />
+              Loading gene details…
+            </div>
+          ) : geneDetail ? (
             <>
-              {/* Hypothesis */}
-              <Section icon={<Lightbulb size={15} />} title="AI Hypothesis">
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>{rationale.hypothesis}</p>
-              </Section>
+              {geneDetail.hypothesis ? (
+                <>
+                  <Section icon={<Lightbulb size={15} />} title="AI Hypothesis">
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>{geneDetail.hypothesis}</p>
+                  </Section>
 
-              {/* Mechanistic context */}
-              <Section icon={<Activity size={15} />} title="Mechanistic context">
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>{rationale.mechanisticContext}</p>
-              </Section>
+                  <Section icon={<Activity size={15} />} title="Mechanistic context">
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>{geneDetail.mechanisticContext}</p>
+                  </Section>
 
-              {/* Supporting screens */}
-              <Section icon={<FlaskConical size={15} />} title="Supporting screens">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {rationale.citations.map((c, i) => (
-                    <a
-                      key={i}
-                      href={`https://pubmed.ncbi.nlm.nih.gov/${c.pmid}`}
-                      target="_blank" rel="noreferrer"
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '10px 14px', borderRadius: 8, gap: 10,
-                        background: 'var(--bg-2)', border: '1px solid var(--border)',
-                        color: 'var(--text-2)', fontSize: '0.85rem', textDecoration: 'none',
-                        transition: 'border-color 0.15s',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--blue)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                    >
-                      <span>{c.text}</span>
-                      <ExternalLink size={13} style={{ flexShrink: 0, color: 'var(--text-3)' }} />
-                    </a>
-                  ))}
-                </div>
-              </Section>
+                  <Section icon={<FlaskConical size={15} />} title="Supporting screens">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {geneDetail.citations.map((c, i) => (
+                        <a
+                          key={i}
+                          href={`https://pubmed.ncbi.nlm.nih.gov/${c.pmid}`}
+                          target="_blank" rel="noreferrer"
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '10px 14px', borderRadius: 8, gap: 10,
+                            background: 'var(--bg-2)', border: '1px solid var(--border)',
+                            color: 'var(--text-2)', fontSize: '0.85rem', textDecoration: 'none',
+                            transition: 'border-color 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--blue)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                        >
+                          <span>{c.text}</span>
+                          <ExternalLink size={13} style={{ flexShrink: 0, color: 'var(--text-3)' }} />
+                        </a>
+                      ))}
+                    </div>
+                  </Section>
 
-              {/* Suggested validation */}
-              <Section icon={<BookOpen size={15} />} title="Suggested next step">
-                <div style={{
-                  padding: '14px 16px', borderRadius: 9,
-                  background: 'rgba(79,156,249,0.06)', border: '1px solid rgba(79,156,249,0.2)',
-                  fontSize: '0.875rem', color: 'var(--text-2)', lineHeight: 1.6,
-                }}>
-                  {rationale.suggestedValidation}
-                </div>
-              </Section>
+                  <Section icon={<BookOpen size={15} />} title="Suggested next step">
+                    <div style={{
+                      padding: '14px 16px', borderRadius: 9,
+                      background: 'rgba(79,156,249,0.06)', border: '1px solid rgba(79,156,249,0.2)',
+                      fontSize: '0.875rem', color: 'var(--text-2)', lineHeight: 1.6,
+                    }}>
+                      {geneDetail.suggestedValidation}
+                    </div>
+                  </Section>
+                </>
+              ) : (
+                <Section icon={<Activity size={15} />} title="Summary">
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>
+                    <strong style={{ color: 'var(--text-1)' }}>{symbol}</strong> appears in {geneDetail.screens ?? '—'} matched screens
+                    with a pathway correlation of <strong style={{ color: 'var(--blue)' }}>{geneDetail.correlation ?? '—'}</strong>.
+                    It has <strong style={{ color: 'var(--amber)' }}>{geneDetail.pubs ?? '—'} indexed publications</strong> and a darkness score of{' '}
+                    <strong style={{ color: 'var(--amber)' }}>{geneDetail.darkScore ?? '—'}/10</strong>,
+                    making it a priority dark-matter candidate for validation.
+                  </p>
+                </Section>
+              )}
 
-              {/* STRING interactors */}
-              <StringSection symbol={symbol} interactors={interactors} open={stringOpen} onToggle={() => setStringOpen(o => !o)} />
+              <StringSection
+                symbol={symbol}
+                interactors={geneDetail.stringInteractors}
+                open={stringOpen}
+                onToggle={() => setStringOpen(o => !o)}
+              />
 
-              {/* External links */}
               <Section icon={null} title="External resources">
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {[
@@ -127,39 +166,34 @@ export default function GeneDetailPanel({ symbol, onClose }) {
               </Section>
             </>
           ) : (
-            /* Generic gene view */
-            <>
-              <Section icon={<Activity size={15} />} title="Summary">
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7 }}>
-                  <strong style={{ color: 'var(--text-1)' }}>{symbol}</strong> appears in {geneData?.screens ?? '—'} matched screens
-                  with a pathway correlation of <strong style={{ color: 'var(--blue)' }}>{geneData?.correlation ?? '—'}</strong>.
-                  It has <strong style={{ color: 'var(--amber)' }}>{geneData?.pubs ?? '—'} indexed publications</strong> and a darkness score of{' '}
-                  <strong style={{ color: 'var(--amber)' }}>{geneData?.darkScore ?? '—'}/10</strong>,
-                  making it a priority dark-matter candidate for validation.
-                </p>
-              </Section>
-
-              <StringSection symbol={symbol} interactors={interactors} open={stringOpen} onToggle={() => setStringOpen(o => !o)} />
-
-              <Section icon={<BookOpen size={15} />} title="External resources">
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {[
-                    { label: 'NCBI Gene', url: `https://www.ncbi.nlm.nih.gov/gene?term=${symbol}[sym]` },
-                    { label: 'UniProt',   url: `https://www.uniprot.org/uniprotkb?query=${symbol}+AND+organism_id:9606` },
-                    { label: 'BioGRID',  url: `https://orcs.thebiogrid.org/` },
-                  ].map(l => (
-                    <a key={l.label} href={l.url} target="_blank" rel="noreferrer" style={{
+            /* Gene not in reference set */
+            <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-3)', fontSize: '0.9rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔬</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>No detailed record found</div>
+              <div style={{ fontSize: '0.82rem' }}>
+                <strong style={{ fontFamily: 'monospace', color: 'var(--text-1)' }}>{symbol}</strong> is not yet in the reference set.<br />
+                This may be resolved in a future database version.
+              </div>
+              <div style={{ marginTop: 20, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {[
+                  { label: 'NCBI Gene', url: `https://www.ncbi.nlm.nih.gov/gene?term=${symbol}[sym]` },
+                  { label: 'UniProt',   url: `https://www.uniprot.org/uniprotkb?query=${symbol}+AND+organism_id:9606` },
+                  { label: 'BioGRID',  url: `https://orcs.thebiogrid.org/` },
+                ].map(l => (
+                  <a
+                    key={l.label} href={l.url} target="_blank" rel="noreferrer"
+                    style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
                       padding: '7px 14px', borderRadius: 7,
                       background: 'var(--bg-2)', border: '1px solid var(--border)',
                       color: 'var(--text-2)', fontSize: '0.82rem', textDecoration: 'none',
-                    }}>
-                      {l.label} <ExternalLink size={11} />
-                    </a>
-                  ))}
-                </div>
-              </Section>
-            </>
+                    }}
+                  >
+                    {l.label} <ExternalLink size={11} />
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>

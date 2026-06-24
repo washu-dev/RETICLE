@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /root/.local /root/.local
-COPY main.py .
+COPY . .
 
 ENV PATH=/root/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1

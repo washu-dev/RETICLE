@@ -7,6 +7,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from routers.query import router as query_router
+from routers.genes import router as genes_router
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +79,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(query_router)
+app.include_router(genes_router)
 
 
 @app.get("/api/health", response_model=HealthResponse)
