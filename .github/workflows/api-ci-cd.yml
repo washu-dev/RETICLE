@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security]
     # Deploy only on direct pushes to main (not PRs, not feature branches)
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     environment: production
 
     steps:
