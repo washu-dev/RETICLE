@@ -324,7 +324,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
     symbols = [g.symbol.upper() for g in request.genes] or ["ATG5"]
     gene_ph = ", ".join("?" * len(symbols))
 
-    screen_rows = db_fetchall(f"""
+    screen_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
         SELECT
             sm.screen_id                                        AS biogrid_id,
             sm.screen_name                                      AS name,
@@ -373,7 +373,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
 
     if matched_ids:
         screen_ph = ", ".join("?" * len(matched_ids))
-        dark_rows = db_fetchall(f"""
+        dark_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
             SELECT
                 hs.gene_symbol                          AS symbol,
                 COUNT(DISTINCT hs.screen_id)            AS screen_count,
@@ -437,7 +437,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         top_gene_syms = list(gene_id_map.keys())
         top_gene_ph   = ", ".join("?" * len(top_gene_syms))
         if top_gene_syms:
-            edge_rows = db_fetchall(f"""
+            edge_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
                 SELECT screen_id, gene_symbol, harmonized_score
                 FROM reticle.harmonized_scores
                 WHERE screen_id IN ({top_screen_ph})
