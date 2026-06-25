@@ -10,6 +10,7 @@ Run locally after filling in api/.env with RDS credentials.
 import asyncio
 import math
 import os
+from typing import Any
 
 import pytest
 
@@ -27,18 +28,18 @@ pytestmark = pytest.mark.skipif(
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _run(coro):
+def _run(coro: Any) -> Any:
     return asyncio.new_event_loop().run_until_complete(coro)
 
 
-def _query(symbols: list[str]):
+def _query(symbols: list[str]) -> Any:
     from models.query import GeneInput, QueryRequest
     from services.mock_data_service import run_query
     genes = [GeneInput(symbol=s, score=1.0) for s in symbols]
     return _run(run_query(QueryRequest(genes=genes)))
 
 
-def _detail(symbol: str):
+def _detail(symbol: str) -> Any:
     from services.mock_data_service import get_gene_detail
     return _run(get_gene_detail(symbol))
 
@@ -48,14 +49,14 @@ def _detail(symbol: str):
 # ---------------------------------------------------------------------------
 
 class TestConnection:
-    def test_db_reachable(self):
+    def test_db_reachable(self) -> None:
         """Verify psycopg2 can connect and search_path resolves reticle schema."""
         from services.db_service import db_fetchall
         rows = db_fetchall("SELECT COUNT(*) AS n FROM reticle.harmonized_scores")
         assert rows, "No rows returned from harmonized_scores count"
         assert int(rows[0]["n"]) > 0, "harmonized_scores is empty"
 
-    def test_schemas_present(self):
+    def test_schemas_present(self) -> None:
         """Both reticle and public schemas must exist with expected tables."""
         from services.db_service import db_fetchall
         rows = db_fetchall("""
@@ -85,11 +86,11 @@ class TestConnection:
 # ---------------------------------------------------------------------------
 
 class TestRunQuery:
-    def test_returns_matched_screens(self):
+    def test_returns_matched_screens(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         assert len(resp.matched_screens) > 0, "Expected at least one matched screen"
 
-    def test_matched_screen_fields(self):
+    def test_matched_screen_fields(self) -> None:
         resp = _query(["ATG5"])
         screen = resp.matched_screens[0]
         assert screen.id >= 1
@@ -100,11 +101,11 @@ class TestRunQuery:
         assert -1.0 <= screen.rho <= 1.0, f"rho out of range: {screen.rho}"
         assert screen.fdr == 0.0
 
-    def test_returns_dark_genes(self):
+    def test_returns_dark_genes(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         assert len(resp.dark_genes) > 0, "Expected at least one dark gene"
 
-    def test_dark_gene_fields(self):
+    def test_dark_gene_fields(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         dg = resp.dark_genes[0]
         assert dg.symbol, "gene symbol should not be empty"
@@ -115,49 +116,49 @@ class TestRunQuery:
         # correlation is avg percentile_score: -1..1 or 0 when all NULL
         assert -1.0 <= dg.correlation <= 1.0, f"correlation out of range: {dg.correlation}"
 
-    def test_query_genes_excluded_from_dark_genes(self):
+    def test_query_genes_excluded_from_dark_genes(self) -> None:
         """Query genes should never appear in the dark gene list."""
         resp = _query(["ATG5", "ATG7"])
         dark_symbols = {dg.symbol.upper() for dg in resp.dark_genes}
         assert "ATG5" not in dark_symbols
         assert "ATG7" not in dark_symbols
 
-    def test_stats_shape(self):
+    def test_stats_shape(self) -> None:
         resp = _query(["ATG5"])
         assert resp.stats.screens_compared == len(resp.matched_screens)
         assert resp.stats.query_gene_count == 1
         assert resp.stats.significant_matches >= 0
         assert resp.stats.agree_directionality >= 0
 
-    def test_graph_elements_present(self):
+    def test_graph_elements_present(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         assert len(resp.graph_elements.nodes) > 0
         # All node IDs must be unique
         ids = [n.data.id for n in resp.graph_elements.nodes]
         assert len(ids) == len(set(ids)), "Duplicate node IDs in graph"
 
-    def test_graph_edges_reference_valid_nodes(self):
+    def test_graph_edges_reference_valid_nodes(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         node_ids = {n.data.id for n in resp.graph_elements.nodes}
         for edge in resp.graph_elements.edges:
             assert edge.data.source in node_ids, f"Edge source {edge.data.source} not in nodes"
             assert edge.data.target in node_ids, f"Edge target {edge.data.target} not in nodes"
 
-    def test_single_gene_query(self):
+    def test_single_gene_query(self) -> None:
         resp = _query(["BECN1"])
         assert resp.query_id, "query_id should be set"
         # May return 0 results for an obscure gene — just check it doesn't crash
         assert isinstance(resp.matched_screens, list)
         assert isinstance(resp.dark_genes, list)
 
-    def test_unknown_gene_returns_empty_not_error(self):
+    def test_unknown_gene_returns_empty_not_error(self) -> None:
         resp = _query(["NOTAREALGENEXYZ"])
         assert resp.matched_screens == []
         assert resp.dark_genes == []
         assert resp.graph_elements.nodes == []
         assert resp.graph_elements.edges == []
 
-    def test_dark_score_formula(self):
+    def test_dark_score_formula(self) -> None:
         """dark_score = 10 / log10(screens + 2); higher screens = lower score."""
         resp = _query(["ATG5", "ATG7"])
         for dg in resp.dark_genes:
@@ -166,12 +167,12 @@ class TestRunQuery:
                 f"{dg.symbol}: dark_score={dg.dark_score}, expected={expected}"
             )
 
-    def test_screens_ordered_by_shared_genes_desc(self):
+    def test_screens_ordered_by_shared_genes_desc(self) -> None:
         resp = _query(["ATG5", "ATG7"])
         shared = [s.shared_genes for s in resp.matched_screens]
         assert shared == sorted(shared, reverse=True), "Screens not ordered by shared_genes DESC"
 
-    def test_query_id_is_uuid(self):
+    def test_query_id_is_uuid(self) -> None:
         import re
         resp = _query(["ATG5"])
         uuid_pattern = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
@@ -183,12 +184,12 @@ class TestRunQuery:
 # ---------------------------------------------------------------------------
 
 class TestGetGeneDetail:
-    def test_known_gene_returns_detail(self):
+    def test_known_gene_returns_detail(self) -> None:
         detail = _detail("ATG5")
         assert detail is not None, "ATG5 should be found in dim_gene"
         assert detail.symbol == "ATG5"
 
-    def test_known_gene_fields(self):
+    def test_known_gene_fields(self) -> None:
         detail = _detail("ATG5")
         assert detail.screens is not None and detail.screens > 0
         assert detail.dark_score is not None and detail.dark_score > 0
@@ -197,14 +198,14 @@ class TestGetGeneDetail:
         assert detail.correlation is not None
         assert -1.0 <= detail.correlation <= 1.0
 
-    def test_well_known_gene_is_bright(self):
+    def test_well_known_gene_is_bright(self) -> None:
         """ATG5 hits in many screens — should be marked bright."""
         detail = _detail("ATG5")
         assert detail.is_bright is True, (
             f"ATG5 expected is_bright=True, got pubs={detail.pubs}"
         )
 
-    def test_case_insensitive_lookup(self):
+    def test_case_insensitive_lookup(self) -> None:
         """Lookup should work regardless of symbol casing."""
         upper = _detail("ATG5")
         lower = _detail("atg5")
@@ -216,22 +217,22 @@ class TestGetGeneDetail:
         # And return the same screen count
         assert upper.screens == lower.screens == mixed.screens
 
-    def test_unknown_gene_returns_none(self):
+    def test_unknown_gene_returns_none(self) -> None:
         result = _detail("NOTAREALGENEXYZ")
         assert result is None
 
-    def test_citations_are_valid(self):
+    def test_citations_are_valid(self) -> None:
         detail = _detail("ATG5")
         for c in detail.citations:
             assert c.text, "Citation text should not be empty"
             assert c.pmid, "Citation pmid should not be empty"
 
-    def test_dark_score_formula(self):
+    def test_dark_score_formula(self) -> None:
         detail = _detail("ATG5")
         expected = round(10.0 / math.log10((detail.pubs or 0) + 2), 2)
         assert abs(detail.dark_score - expected) < 0.01
 
-    def test_another_gene(self):
+    def test_another_gene(self) -> None:
         """Spot-check a second gene to confirm it's not hardcoded to ATG5."""
         detail = _detail("ATG7")
         if detail is None:
@@ -245,7 +246,7 @@ class TestGetGeneDetail:
 # ---------------------------------------------------------------------------
 
 class TestDbFetchall:
-    def test_returns_list_of_rows(self):
+    def test_returns_list_of_rows(self) -> None:
         from services.db_service import db_fetchall
         rows = db_fetchall(
             "SELECT gene_symbol, harmonized_score FROM reticle.harmonized_scores "
@@ -257,7 +258,7 @@ class TestDbFetchall:
         for row in rows:
             assert "gene_symbol" in row or "gene_symbol" in {k.lower() for k in row}
 
-    def test_case_insensitive_row_access(self):
+    def test_case_insensitive_row_access(self) -> None:
         from services.db_service import db_fetchall
         rows = db_fetchall(
             "SELECT gene_symbol FROM reticle.harmonized_scores LIMIT 1"
@@ -269,7 +270,7 @@ class TestDbFetchall:
         val_lower = row["gene_symbol"]
         assert val_exact == val_lower
 
-    def test_empty_result(self):
+    def test_empty_result(self) -> None:
         from services.db_service import db_fetchall
         rows = db_fetchall(
             "SELECT * FROM reticle.harmonized_scores WHERE gene_symbol = ?",
@@ -277,7 +278,7 @@ class TestDbFetchall:
         )
         assert rows == []
 
-    def test_parameterized_query(self):
+    def test_parameterized_query(self) -> None:
         from services.db_service import db_fetchall
         rows = db_fetchall(
             "SELECT COUNT(*) AS n FROM reticle.harmonized_scores "

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/api", tags=["genes"])
 
 
 @router.get("/genes/{symbol}", response_model=GeneDetail)
-async def get_gene(symbol: str) -> dict:
+async def get_gene(symbol: str) -> Any:
     logger.info("GET /api/genes/%s called", symbol)
     detail = await get_gene_detail(symbol.upper())
     if detail is None:
