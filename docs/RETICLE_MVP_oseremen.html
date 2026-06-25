@@ -154,18 +154,6 @@ h2 .em.adv{color:var(--adv)}
 .sidecar{margin-top:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   font-family:var(--mono); font-size:13px; color:var(--mute)}
 .sidecar .src{padding:5px 10px; border:1px solid var(--grid); border-radius:20px; background:#fff; color:#3A3F46}
-/* ---- illustrative flow diagram ---- */
-.iflow{display:grid; grid-template-columns:1fr 28px 1fr 28px 1fr 28px 1fr; align-items:center; gap:8px}
-.iflow-node{display:flex; flex-direction:column; align-items:center; text-align:center; padding:18px 10px 14px; border:1.5px solid var(--grid); border-radius:12px; background:#fff; gap:5px}
-.iflow-node.iflow-core{border-color:var(--ess); background:var(--ess-soft)}
-.iflow-icon{color:var(--mute)}
-.iflow-node.iflow-core .iflow-icon{color:var(--ess)}
-.iflow-label{font-family:var(--disp); font-size:20px; font-weight:500; color:var(--ink); line-height:1.2}
-.iflow-node.iflow-core .iflow-label{color:var(--ess)}
-.iflow-sub{font-family:var(--mono); font-size:11px; color:var(--mute); line-height:1.5; margin-top:2px}
-.iflow-arr{display:flex; align-items:center; justify-content:center; color:var(--grid); flex-shrink:0}
-.demo-url{font-family:var(--mono); font-size:17px; display:flex; align-items:center; gap:8px; margin-top:14px; color:var(--mute)}
-.demo-url a{color:var(--ess); text-decoration:none; border-bottom:2px solid var(--ess-soft); padding-bottom:2px; font-weight:600}
 
 /* ---- metrics ---- */
 .metrics{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(20px,4vw,54px); margin-top:6px}
@@ -188,11 +176,6 @@ h2 .em.adv{color:var(--adv)}
 .livetag{font-family:var(--mono); font-size:13px; color:var(--adv); display:inline-flex; align-items:center; gap:9px; margin-top:20px}
 .livetag span{width:8px; height:8px; border-radius:50%; background:var(--adv); box-shadow:0 0 0 0 var(--adv); animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 #E08A3C66}70%{box-shadow:0 0 0 9px #E08A3C00}100%{box-shadow:0 0 0 0 #E08A3C00}}
-.realtag{font-family:var(--mono); font-size:12.5px; color:#16a34a; display:inline-flex; align-items:center; gap:8px; margin-top:14px}
-.realtag span{width:7px; height:7px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 0 #16a34a66; animation:pulse-g 1.8s infinite}
-@keyframes pulse-g{0%{box-shadow:0 0 0 0 #16a34a66}70%{box-shadow:0 0 0 9px #16a34a00}100%{box-shadow:0 0 0 0 #16a34a00}}
-.demotag{font-family:var(--mono); font-size:12.5px; color:var(--mute); display:inline-flex; align-items:center; gap:8px; margin-top:10px}
-.demotag span{width:7px; height:7px; border-radius:3px; background:var(--grid); border:1.5px dashed var(--mute)}
 
 /* next-steps list */
 .steps{list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:6px}
@@ -259,42 +242,6 @@ h2 .em.adv{color:var(--adv)}
   .pipe{flex-direction:column}
   .flowdot{display:none}
 }
-/* DNA helix on the title slide */
-#dna-canvas{position:absolute;top:0;right:2%;width:28%;height:58%;z-index:0;pointer-events:none;opacity:.9}
-.slide.title-slide .slide-inner{position:relative;z-index:1}
-.slide.title-slide .frame{z-index:1}
-
-/* harmonization if/else ladder */
-.ladder{display:flex;flex-direction:column;border:1px solid #DCE0E4;border-radius:12px;overflow:hidden;background:#fff;margin-top:6px}
-.lstart{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#6A7178;padding:11px 22px;border-bottom:1px solid #DCE0E4;background:#FBFAF7}
-.lrow{display:grid;grid-template-columns:1fr auto 1.15fr;align-items:center;gap:16px;padding:13px 22px;border-bottom:1px solid #EEF0F2}
-.lrow.fall{background:#FBFAF7}
-.lcond{font-size:15.5px;color:#2C3037}
-.lcond .kw{font-family:var(--mono);font-size:12px;color:#E08A3C;margin-right:9px;font-weight:500}
-.larr{font-family:var(--mono);color:#C7CBD0;font-size:17px}
-.lout{font-size:15px;color:#16181D}
-.lout b{font-weight:600}
-.sub-branch{display:flex;flex-direction:column;gap:4px;margin-top:7px}
-.sub-branch span{font-family:var(--mono);font-size:12px;color:#6A7178}
-.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:5px;margin:2px 0 0 6px}
-.pill.pos{background:#E08A3C22;color:#9A5A1B}.pill.neg{background:#1F6F8B22;color:#155265}
-.lfoot{font-family:var(--mono);font-size:12.5px;color:#6A7178;padding:12px 22px;border-top:1px solid #DCE0E4;background:#FBFAF7;line-height:1.5}
-.lfoot b{color:#16181D;font-weight:500}
-
-/* RAG source cards */
-.sources{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
-.src-card{border:1px solid #DCE0E4;border-radius:11px;padding:17px 18px 16px;background:#fff}
-.src-card.core{border-color:#E08A3C;background:#FFFCF8}
-.src-card .stag{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#9AA0A6}
-.src-card.core .stag{color:#9A5A1B}
-.src-card .snm{font-family:var(--disp);font-size:25px;font-weight:500;margin:6px 0 10px;line-height:1}
-.src-card .sgv{font-size:13px;color:#3A3F46;line-height:1.46}
-.src-card .sgv b{color:#16181D;font-weight:600}
-.ragout{display:flex;align-items:center;gap:13px;margin-top:22px;flex-wrap:wrap}
-.ragout .ra{font-family:var(--mono);color:#C7CBD0;font-size:18px}
-.ragout .rl{font-size:15.5px;color:#2C3037}
-.ragout .rl b{color:#16181D;font-weight:600}
-
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:.001s!important; animation:none!important}
   .is-active [data-anim]{transition-delay:0s!important}
@@ -306,9 +253,8 @@ h2 .em.adv{color:var(--adv)}
 <div class="hint">← →  navigate · <b>F</b> fullscreen</div>
 <div class="deck" id="deck">
 
-<!-- 1 · TITLE -->
-<section class="slide title-slide">
-  <canvas id="dna-canvas"></canvas>
+<!-- Slide 01 · TITLE [Aaron] -->
+<section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim style="--d:0"><b>RETICLE</b> · MVP review</div>
@@ -322,17 +268,17 @@ h2 .em.adv{color:var(--adv)}
     </div>
     <p class="lede" data-anim style="--d:3">One calibrated lens over <b>2,157</b> public CRISPR screens — harmonizing scattered functional-genomics data into a single, queryable, AI-ready map of gene function.</p>
     <div class="title-foot" data-anim style="--d:4">
-      <div class="who">RETICLE</div>
+      <div class="who"><b>Aaron Gao</b> · RETICLE</div>
       <div class="tag">MVP presentation</div>
     </div>
   </div>
 </section>
 
-<!-- 1b · CRISPR PRIMER -->
+<!-- Slide 02 · CRISPR PRIMER [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>01</b> — what a CRISPR screen is</div>
+    <div class="eyebrow" data-anim><b>02</b> — what a CRISPR screen is</div>
     <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px); max-width:20ch">Turn off each gene — one cell at a time.</h2>
     <div class="pipe" data-anim style="--d:2; margin-top:20px">
       <div class="stage"><div class="s-k">perturb</div><div class="s-t">Knock out</div><div class="s-d">a CRISPR library disables each gene — one per cell, across millions of cells</div><div class="flowdot">›</div></div>
@@ -351,11 +297,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 2 · PROBLEM -->
+<!-- Slide 03 · PROBLEM [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>01</b> — the problem</div>
+    <div class="eyebrow" data-anim><b>03</b> — the problem</div>
     <div class="cols">
       <div>
         <h2 data-anim style="--d:1">Every screen speaks a <span class="em">different language.</span></h2>
@@ -371,11 +317,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 3 · GOAL -->
+<!-- Slide 04 · GOAL [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>01</b> — the goal</div>
+    <div class="eyebrow" data-anim><b>04</b> — the goal</div>
     <h2 data-anim style="--d:1">Put every screen on <span class="em adv">one axis.</span></h2>
     <p class="lede" data-anim style="--d:2">Turn 2,157 incomparable screens into a single calibrated coordinate system — <b>deterministic, reproducible, auditable</b> — so any gene returns a reliable answer across the whole corpus.</p>
     <div data-anim style="--d:3;margin-top:10px">
@@ -390,21 +336,21 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 4 · SOLUTION PART 1 DIVIDER -->
+<!-- Slide 05 · THE LOGIC (divider) [Aaron] -->
 <section class="slide divider">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="partno" data-anim>02 — the solution · 1 of 2</div>
+    <div class="partno" data-anim>05 — the logic</div>
     <h2 data-anim style="--d:1">The Logic</h2>
     <p class="lede" data-anim style="--d:2">How we make 2,157 screens genuinely comparable — before anything reaches the web.</p>
   </div>
 </section>
 
-<!-- 5 · HARMONIZATION + REGISTRY -->
+<!-- Slide 06 · HARMONIZATION [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.1</b> — harmonization</div>
+    <div class="eyebrow" data-anim><b>06</b> — harmonization</div>
     <h2 data-anim style="--d:1;font-size:clamp(30px,5vw,58px)">A calibrated score, not a guess.</h2>
     <div class="callout" data-anim style="--d:2;margin:18px 0 6px; font-size:clamp(15px,2vw,20px)">
       Harmonized&nbsp;score&nbsp;=&nbsp;each&nbsp;screen's&nbsp;raw&nbsp;effect,&nbsp;aligned&nbsp;to&nbsp;<b>one&nbsp;shared&nbsp;axis</b>
@@ -435,52 +381,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 5b · HARMONIZATION LOGIC (if / else) -->
+<!-- Slide 07 · DIRECTIONALITY [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.1</b> — the decision</div>
-    <h2 data-anim style="--d:1;font-size:clamp(28px,4.4vw,50px)">How the score is resolved.</h2>
-    <div data-anim style="--d:2;margin-top:10px">
-    <svg viewBox="0 0 1200 400" style="width:100%;display:block;overflow:visible" font-family="IBM Plex Mono">
-      <g stroke="#CDD2D7" stroke-width="1.4" fill="none">
-        <line x1="600" y1="65" x2="140" y2="127"/><line x1="600" y1="65" x2="430" y2="127"/>
-        <line x1="600" y1="65" x2="760" y2="127"/><line x1="600" y1="65" x2="1075" y2="127"/>
-        <line x1="140" y1="173" x2="140" y2="279"/>
-        <line x1="430" y1="173" x2="350" y2="279"/><line x1="430" y1="173" x2="500" y2="279"/>
-        <line x1="760" y1="173" x2="625" y2="279"/><line x1="760" y1="173" x2="760" y2="279"/><line x1="760" y1="173" x2="920" y2="279"/>
-        <line x1="1075" y1="173" x2="1075" y2="279"/>
-      </g>
-      <g font-size="11" fill="#E08A3C" text-anchor="middle" font-weight="500">
-        <text x="140" y="117">IF</text><text x="430" y="117">ELSE IF</text><text x="760" y="117">ELSE IF</text><text x="1075" y="117">ELSE</text>
-      </g>
-      <rect x="495" y="19" width="210" height="46" rx="10" fill="#16181D"/><text x="600" y="48" text-anchor="middle" font-size="13.5" fill="#fff">raw score column(s)</text>
-      <g>
-        <rect x="65" y="127" width="150" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="140" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">a +/− pair?</text>
-        <rect x="340" y="127" width="180" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="430" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">directional column?</text>
-        <rect x="660" y="127" width="200" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="760" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">unsigned significance?</text>
-        <rect x="1020" y="127" width="110" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="1075" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">nothing usable</text>
-      </g>
-      <g>
-        <rect x="65" y="279" width="150" height="42" rx="9" fill="#FBFAF7" stroke="#DCE0E4" stroke-width="1.3"/><text x="140" y="305" text-anchor="middle" font-size="12.5" fill="#16181D">S = pos − neg</text>
-        <rect x="290" y="279" width="120" height="42" rx="9" fill="#FBF3EA" stroke="#E08A3C" stroke-width="1.3"/><text x="350" y="305" text-anchor="middle" font-size="12.5" fill="#9A5A1B">DIR_POS → +</text>
-        <rect x="440" y="279" width="120" height="42" rx="9" fill="#EDF3F5" stroke="#1F6F8B" stroke-width="1.3"/><text x="500" y="305" text-anchor="middle" font-size="12.5" fill="#155265">DIR_NEG → −</text>
-        <rect x="565" y="279" width="120" height="42" rx="9" fill="#FBF3EA" stroke="#E08A3C" stroke-width="1.1"/><text x="625" y="305" text-anchor="middle" font-size="12" fill="#9A5A1B">Positive → +</text>
-        <rect x="700" y="279" width="120" height="42" rx="9" fill="#EDF3F5" stroke="#1F6F8B" stroke-width="1.1"/><text x="760" y="305" text-anchor="middle" font-size="12" fill="#155265">Negative → −</text>
-        <rect x="840" y="279" width="160" height="42" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="920" y="305" text-anchor="middle" font-size="12" fill="#16181D">ambiguous → LLM</text>
-        <rect x="1010" y="279" width="130" height="42" rx="9" fill="#FBFAF7" stroke="#DCE0E4" stroke-width="1.3"/><text x="1075" y="305" text-anchor="middle" font-size="12" fill="#6A7178">UNRESOLVED</text>
-      </g>
-    </svg>
-    </div>
-    <p class="tag" data-anim style="--d:3;margin-top:12px">then × <b>perturbation</b> (CRISPRa inverts the sign) · then the <b>essential-gene anchor</b> flips the whole screen if core-essential genes land on the&nbsp;+&nbsp;side</p>
-  </div>
-</section>
-
-<!-- 6 · DIRECTIONALITY + ANCHOR -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.1</b> — directionality</div>
+    <div class="eyebrow" data-anim><b>07</b> — directionality</div>
     <div class="cols">
       <div>
         <h2 data-anim style="--d:1;font-size:clamp(30px,5vw,58px)">The <span class="em">sign</span> is the hard part.</h2>
@@ -504,11 +409,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 7 · ASSAY DOMAIN -->
+<!-- Slide 08 · ASSAY DOMAIN [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.1</b> — stratification</div>
+    <div class="eyebrow" data-anim><b>08</b> — stratification</div>
     <h2 data-anim style="--d:1;font-size:clamp(30px,5vw,58px)">Compare like with like.</h2>
     <p class="lede" data-anim style="--d:2">Every screen is tagged by what it measures. Essentiality only means something in a fitness assay — so we never pool across domains.</p>
     <div class="domains" data-anim style="--d:3">
@@ -519,11 +424,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 7b · WORKED EXAMPLE -->
+<!-- Slide 09 · WORKED EXAMPLE [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.1</b> — one real screen</div>
+    <div class="eyebrow" data-anim><b>09</b> — one real screen</div>
     <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px)">Watch RETICLE read a real screen.</h2>
     <div class="ex2" data-anim style="--d:2; margin-top:20px">
       <div>
@@ -547,11 +452,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 8 · SOLUTION PART 2 — ARCHITECTURE -->
+<!-- Slide 10 · ARCHITECTURE [Aaron] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02</b> — the solution · 2 of 2 · the architecture</div>
+    <div class="eyebrow" data-anim><b>10</b> — the architecture</div>
     <h2 data-anim style="--d:1;font-size:clamp(28px,4.4vw,50px); max-width:24ch">From raw screens to a gene you can search.</h2>
     <div class="pipe" data-anim style="--d:2">
       <div class="stage"><div class="s-k">source</div><div class="s-t">Raw BioGRID</div><div class="s-d">2,157 ORCS screens</div><div class="flowdot">›</div></div>
@@ -568,32 +473,161 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 8b · RAG LAYER -->
+<!-- ============================================================= -->
+<!-- ============  OSEREMEN'S SECTION — THE WEB PLATFORM  ========= -->
+<!-- ============================================================= -->
+
+<!-- Slide 11 · FROM PIPELINE TO PRODUCT [Oseremen] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02.2</b> — the RAG layer</div>
-    <h2 data-anim style="--d:1;font-size:clamp(28px,4.4vw,50px)">The AI reading is <span class="em">retrieved</span>, not invented.</h2>
-    <div class="sources" data-anim style="--d:2">
-      <div class="src-card core"><div class="stag">internal · screening data</div><div class="snm">BioGRID</div><div class="sgv">how the gene <b>behaves</b> across 2,157 CRISPR screens — fitness / stress / reporter, harmonized</div></div>
-      <div class="src-card"><div class="stag">external</div><div class="snm">STRING</div><div class="sgv">who it <b>interacts</b> with — top partners + the evidence behind each link, colored by their CRISPR behavior</div></div>
-      <div class="src-card"><div class="stag">external</div><div class="snm">NCBI</div><div class="sgv">what it's <b>known</b> to do — the curated gene summary + GO terms</div></div>
-      <div class="src-card"><div class="stag">external</div><div class="snm">PubMed</div><div class="sgv">how <b>studied</b> it is — paper count → a darkness rating; abstracts become cited evidence</div></div>
+    <div class="eyebrow" data-anim><b>11</b> — from pipeline to product</div>
+    <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px); max-width:26ch">Everything Aaron built now lives behind a web app a researcher can open.</h2>
+    <div class="ex2" data-anim style="--d:2; margin-top:22px">
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="assets/reticle_architecture.png" alt="RETICLE physical architecture — CloudFront, ECS, RDS, RIS, Entra SSO"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss">architecture diagram goes here<br>save it as <code>docs/assets/reticle_architecture.png</code></div>
+        </div>
+        <div class="shotcap">RETICLE physical architecture · AWS + WashU RIS + Entra SSO</div>
+      </div>
+      <div>
+        <div class="exread">the three layers</div>
+        <ul class="exmini">
+          <li><span class="ek">database</span>PostgreSQL on <b>AWS RDS</b> <i>—</i> where the harmonized scores and screen-pair correlations live</li>
+          <li><span class="ek">api</span>A Python <b>FastAPI</b> server on <b>ECS</b> <i>—</i> the only thing that talks to the database</li>
+          <li><span class="ek">web app</span><b>React</b> on <b>CloudFront + S3</b> <i>—</i> what the researcher actually opens in their browser</li>
+          <li><span class="ek">auth</span>WashU <b>Entra (SSO)</b> <i>—</i> already in the design, for sign-in later</li>
+        </ul>
+      </div>
     </div>
-    <div class="ragout" data-anim style="--d:3">
-      <span class="rl">retrieved &amp; ranked</span><span class="ra">→</span>
-      <span class="rl"><b>LLM</b></span><span class="ra">→</span>
-      <span class="rl">a short interpretation, <b>cited back to PubMed</b></span>
-    </div>
-    <p class="tag" data-anim style="--d:4;margin-top:14px">One internal source + three external — every claim traces to a source. The screens stay the source of truth; the model only synthesizes.</p>
   </div>
 </section>
 
-<!-- 9 · DEMO -->
+<!-- Slide 12 · THE APPLICATION [Oseremen] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — demo</div>
+    <div class="eyebrow" data-anim><b>12</b> — the application</div>
+    <div class="cols">
+      <div>
+        <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px)">One question, start to finish.</h2>
+        <blockquote class="quote" data-anim style="--d:2; margin-top:20px">I ran a CRISPR screen and got a hit list — which other published screens look like mine?</blockquote>
+      </div>
+      <p class="lede" data-anim style="--d:2">You paste in a ranked gene list, pick the organism and assay type, and RETICLE compares it against every harmonized screen in the database — then ranks the matches for you.</p>
+    </div>
+    <div class="pipe" data-anim style="--d:3; margin-top:26px">
+      <div class="stage"><div class="s-k">step 1</div><div class="s-t">Landing</div><div class="s-d">what the tool does and the dataset behind it</div><div class="flowdot">›</div></div>
+      <div class="stage"><div class="s-k">step 2</div><div class="s-t">Upload</div><div class="s-d">paste your gene list · pick organism &amp; modality</div><div class="flowdot">›</div></div>
+      <div class="stage"><div class="s-k">step 3</div><div class="s-t">Analyze</div><div class="s-d">the API correlates your list against every screen</div><div class="flowdot">›</div></div>
+      <div class="stage"><div class="s-k">step 4</div><div class="s-t">Results</div><div class="s-d">ranked matches · dark genes · network view</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 13 · FINDING SIMILAR SCREENS [Oseremen] -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>13</b> — finding similar screens</div>
+    <div class="cols">
+      <div>
+        <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,50px)">How we match your screen to the rest.</h2>
+        <ul class="points" data-anim style="--d:2">
+          <li><span class="k">1</span>Your gene scores are turned into percentile ranks — the same step Aaron's pipeline ran on every reference screen, so everything is on one scale</li>
+          <li><span class="k">2</span>We compute Spearman ρ between your ranked list and each screen, using <b>only the genes both screens measured</b></li>
+          <li><span class="k">3</span>Every comparison is FDR-corrected and ranked by ρ — strongest matches first</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-anim style="--d:2">
+        <div class="demo-head"><span class="g" style="font-size:26px">Meyers 2017</span><span class="verdict">agree</span></div>
+        <div class="meta" style="font-family:var(--mono); font-size:12px; color:var(--mute); margin-bottom:8px">Knockout · human · pancreatic</div>
+        <div class="axis" style="--pos:80%; height:64px; margin:2px 0 0">
+          <div class="axis__track"></div>
+          <div class="axis__cap l">ρ 0</div><div class="axis__cap r">ρ +1</div>
+          <div class="axis__cross"><b></b></div>
+        </div>
+        <div class="dgrid">
+          <div class="dcell"><div class="dk">spearman ρ</div><div class="dv">+0.61</div></div>
+          <div class="dcell"><div class="dk">fdr</div><div class="dv">0.0003</div></div>
+          <div class="dcell"><div class="dk">shared genes</div><div class="dv">1,840</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:4; margin-top:18px"><b style="color:var(--ess)">Agree</b> = the same genes mattered in both experiments. <b style="color:var(--adv)">Inverted</b> = opposite direction (your KO vs. their CRISPRa) — which is biologically informative, not noise.</p>
+  </div>
+</section>
+
+<!-- Slide 14 · DARK GENES + GRAPH [Oseremen] -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>14</b> — surfacing the dark genes</div>
+    <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px); max-width:24ch">The payoff: understudied genes your data points to.</h2>
+    <div class="cols" data-anim style="--d:2; margin-top:18px">
+      <div>
+        <div class="exread">dark-gene scoring</div>
+        <ul class="points" style="margin-top:12px">
+          <li><span class="k">score</span>A <b>darkness score (0–10)</b> blends publication count, GO-annotation density, and how many of the 2,157 screens ever measured that gene</li>
+          <li><span class="k">plot</span>We plot each gene by <b>correlation with your query</b> (x) against <b>darkness</b> (y)</li>
+          <li><span class="k">→</span>The upper-right corner is the prize: strongly correlated <i>and</i> barely studied</li>
+        </ul>
+      </div>
+      <div>
+        <div class="exread">graph explorer</div>
+        <ul class="points" style="margin-top:12px">
+          <li><span class="k">nodes</span>Three kinds of node: <b>your genes</b>, the <b>matched screens</b>, and the <b>dark candidates</b></li>
+          <li><span class="k">edges</span>An edge means a gene showed up in a screen; the edge weight is the Spearman ρ</li>
+          <li><span class="k">→</span>Click a dark gene and it lights up every screen that flagged it — several independent screens converging is the validation signal</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 15 · WHERE WE ARE [Oseremen] -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>15</b> — where we are right now</div>
+    <div class="cols">
+      <div>
+        <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px)">Built and running — finishing deployment.</h2>
+        <div class="livetag" data-anim style="--d:2"><span></span>API serving real data from AWS RDS locally</div>
+      </div>
+      <ul class="points" data-anim style="--d:2">
+        <li><span class="k">ui</span><b>Frontend.</b> All four screens built and working — landing, upload, analysis, results</li>
+        <li><span class="k">api</span><b>API.</b> Built and running locally, wired to the live RDS database, returning real query results</li>
+        <li><span class="k">now</span><b>In progress.</b> Working through the deployment configuration to get it live on ECS &amp; CloudFront</li>
+        <li><span class="k">next</span><b>Also underway.</b> Direct upload of MAGeCK <code style="font-family:var(--mono);font-size:.85em">gene_summary.txt</code> files, straight from the pipeline output</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 16 · WHAT'S NEXT [Oseremen] -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>16</b> — what's next for the platform</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px)">From working demo to research tool.</h2>
+    <ul class="steps" data-anim style="--d:2">
+      <li><span class="sn">01</span><div><div class="st">Dark-gene scoring, end to end</div><div class="sd">Compute darkness scores from the live database and serve them through a dedicated API endpoint.</div></div></li>
+      <li><span class="sn">02</span><div><div class="st">AI hypothesis generation</div><div class="sd">A RAG pipeline indexes the source papers so the model can write a cited, mechanistic hypothesis for each top dark-gene candidate.</div></div></li>
+      <li><span class="sn">03</span><div><div class="st">WashU SSO</div><div class="sd">Wire up Entra for WUSTL login — which then unlocks saved and shareable queries.</div></div></li>
+      <li><span class="sn">04</span><div><div class="st">The full corpus</div><div class="sd">Scale the deployment to all 2,157 screens and the complete set of screen-pair correlations.</div></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============  END OSEREMEN'S SECTION  ======================= -->
+
+<!-- Slide 17 · DEMO [Aaron — overlaps 13] -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>17</b> — demo</div>
     <div class="cols">
       <div>
         <h2 data-anim style="--d:1;font-size:clamp(30px,5vw,56px)">Search a gene.<br>Read its biology.</h2>
@@ -617,11 +651,11 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- 10 · WHAT'S LIVE -->
+<!-- Slide 18 · WHAT'S LIVE [Aaron — overlaps 15] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — what's live today</div>
+    <div class="eyebrow" data-anim><b>18</b> — what's live today</div>
     <div class="metrics">
       <div class="metric b" data-anim style="--d:1"><div class="m-n"><span data-count="28237649">0</span></div><div class="m-l">harmonized gene × screen scores, loaded &amp; indexed on AWS RDS</div></div>
       <div class="metric a" data-anim style="--d:2"><div class="m-n"><span data-count="0.2" data-dec="1">0</span><span class="u">&nbsp;s</span></div><div class="m-l">per-gene lookup — down from ~15&nbsp;s before indexing</div></div>
@@ -631,219 +665,37 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
-<!-- ============================================================= -->
-<!-- ============  OSEREMEN'S SECTION — THE WEB PLATFORM  ========= -->
-<!-- ============================================================= -->
-
-<!-- O1 · FROM PIPELINE TO PRODUCT (tech architecture) -->
+<!-- Slide 19 · WHAT'S NEXT [Aaron — overlaps 16] -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>01</b> — from pipeline to product</div>
-    <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px); max-width:26ch">We're wrapping Aaron's pipeline in a web app researchers can open.</h2>
-    <div class="ex2" data-anim style="--d:2; margin-top:22px">
-      <div>
-        <div class="exread">the stack</div>
-        <ul class="exmini">
-          <li><span class="ek">frontend</span><b>React</b> app served from <b>S3</b> via <b>CloudFront CDN</b></li>
-          <li><span class="ek">api</span><b>FastAPI</b> (Python) container on <b>AWS ECS</b></li>
-          <li><span class="ek">database</span><b>PostgreSQL</b> on <b>AWS RDS</b> — all harmonized data</li>
-          <li><span class="ek">ETL</span>WashU <b>RIS HPC</b> — where Aaron's pipeline runs</li>
-          <li><span class="ek">auth</span>WashU <b>Entra SSO</b> — scoped to institutional accounts</li>
-        </ul>
-      </div>
-      <div>
-        <div class="exread">how a query travels</div>
-        <ul class="exmini">
-          <li><span class="ek">1</span>Researcher uploads gene list in the <b>React</b> app</li>
-          <li><span class="ek">2</span><b>FastAPI</b> on ECS receives the POST, runs Spearman correlation against RDS</li>
-          <li><span class="ek">3</span>Ranked matches, dark gene scores, and graph elements return as JSON</li>
-          <li><span class="ek">4</span>React renders results — no page reload, no waiting on a server render</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- O2 · THE APPLICATION (the four-step flow) -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>02</b> — the application</div>
-    <div class="cols">
-      <div>
-        <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px)">One question, start to finish.</h2>
-        <blockquote class="quote" data-anim style="--d:2; margin-top:20px">I ran a CRISPR screen and got a hit list — which other published screens look like mine?</blockquote>
-      </div>
-      <p class="lede" data-anim style="--d:2">You paste in a ranked gene list, pick the organism and assay type, and RETICLE compares it against every harmonized screen in the database — then ranks the matches for you.</p>
-      <div class="realtag" data-anim style="--d:3"><span></span>step 3 fires a real POST · results come from RDS</div>
-      <div class="demotag" data-anim style="--d:3"><span></span>example gene list is illustrative (28 autophagy genes)</div>
-    </div>
-    <div class="iflow" style="margin-top:24px">
-      <div class="iflow-node" data-anim style="--d:4">
-        <div class="iflow-icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="23" y2="23"/></svg></div>
-        <div class="iflow-label">Landing</div>
-        <div class="iflow-sub">explore the dataset</div>
-      </div>
-      <div class="iflow-arr" data-anim style="--d:4"><svg width="28" height="14" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><polyline points="17,3 22,7 17,11"/></svg></div>
-      <div class="iflow-node" data-anim style="--d:5">
-        <div class="iflow-icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,12 13,7 18,12"/><line x1="13" y1="7" x2="13" y2="20"/><line x1="5" y1="20" x2="21" y2="20"/></svg></div>
-        <div class="iflow-label">Upload</div>
-        <div class="iflow-sub">gene list · settings</div>
-      </div>
-      <div class="iflow-arr" data-anim style="--d:5"><svg width="28" height="14" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><polyline points="17,3 22,7 17,11"/></svg></div>
-      <div class="iflow-node iflow-core" data-anim style="--d:6">
-        <div class="iflow-icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2,13 C5,13 5,6 9,6 C13,6 13,20 17,20 C21,20 21,13 24,13"/></svg></div>
-        <div class="iflow-label">Analyze</div>
-        <div class="iflow-sub">Spearman ρ · FDR · RDS</div>
-      </div>
-      <div class="iflow-arr" data-anim style="--d:6"><svg width="28" height="14" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><polyline points="17,3 22,7 17,11"/></svg></div>
-      <div class="iflow-node" data-anim style="--d:7">
-        <div class="iflow-icon"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="7" x2="23" y2="7"/><line x1="3" y1="13" x2="17" y2="13"/><line x1="3" y1="19" x2="11" y2="19"/></svg></div>
-        <div class="iflow-label">Results</div>
-        <div class="iflow-sub">ranked matches · dark genes</div>
-      </div>
-    </div>
-    <div style="display:flex; align-items:center; gap:24px; margin-top:16px; flex-wrap:wrap">
-      <p class="tag" data-anim style="--d:8; margin-top:0">▶ <b style="color:var(--ess)">Demo follows</b> — live walk-through of the app (and the running API if time)</p>
-      <div class="demo-url" data-anim style="--d:8">↗ <a href="https://d2vlieua55yney.cloudfront.net/" target="_blank">d2vlieua55yney.cloudfront.net</a></div>
-    </div>
-  </div>
-</section>
-
-<!-- O3 · HOW THE MATCHING WORKS (correlation) -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — finding similar screens</div>
-    <div class="cols">
-      <div>
-        <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,50px)">Under the hood — how the match works.</h2>
-        <ul class="points" data-anim style="--d:2">
-          <li><span class="k">1</span><span>Your gene scores are turned into <b>percentile ranks</b> — the same step Aaron's pipeline ran on every reference screen, so everything is on one scale</span></li>
-          <li><span class="k">2</span><span>We compute <b>Spearman ρ</b> between your ranked list and each screen, using <b>only the genes both screens measured</b></span></li>
-          <li><span class="k">3</span><span>Every comparison is <b>FDR-corrected</b> and ranked by ρ — strongest matches first</span></li>
-        </ul>
-      </div>
-      <div data-anim style="--d:2">
-        <div class="shotwrap">
-          <img class="shot" src="assets/matched_screens.png" alt="Matched Screens UI"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">matched screens screenshot<br><code>docs/assets/matched_screens.png</code></div>
-        </div>
-        <div class="shotcap">Matched Screens — ranked by Spearman ρ · FDR badges · directionality</div>
-      </div>
-    </div>
-    <p class="tag" data-anim style="--d:4; margin-top:18px"><b style="color:var(--ess)">Agree</b> = the same genes mattered in both experiments. <b style="color:var(--adv)">Inverted</b> = opposite direction (your KO vs. their CRISPRa) — which is biologically informative, not noise.</p>
-  </div>
-</section>
-
-<!-- O4 · DARK GENES + GRAPH EXPLORER -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — surfacing the dark genes</div>
-    <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px); max-width:24ch">The payoff: understudied genes your data points to.</h2>
-    <div class="cols" data-anim style="--d:2; margin-top:18px">
-      <div>
-        <div class="exread">dark-gene scoring</div>
-        <ul class="points" style="margin-top:12px">
-          <li><span class="k">score</span><span>A <b>darkness score (0–10)</b> blends publication count, GO-annotation density, and how many of the 2,157 screens ever measured that gene</span></li>
-          <li><span class="k">plot</span><span>We plot each gene by <b>correlation with your query</b> (x) against <b>darkness</b> (y)</span></li>
-          <li><span class="k">→</span><span>The upper-right corner is the prize: strongly correlated <i>and</i> barely studied</span></li>
-        </ul>
-        <div class="demotag" style="margin-top:14px"><span></span>dark scores shown are illustrative · live endpoint being wired</div>
-        <div class="shotwrap" style="margin-top:14px">
-          <img class="shot" src="assets/dark_gene_scatter.png" alt="Dark Gene Scatter"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">dark gene scatter screenshot<br><code>docs/assets/dark_gene_scatter.png</code></div>
-        </div>
-        <div class="shotcap">Dark Gene Scatter · correlation (x) vs. darkness score (y)</div>
-      </div>
-      <div>
-        <div class="exread">graph explorer</div>
-        <ul class="points" style="margin-top:12px">
-          <li><span class="k">nodes</span><span>Three kinds of node: <b>your genes</b>, the <b>matched screens</b>, and the <b>dark candidates</b></span></li>
-          <li><span class="k">edges</span>An edge means a gene showed up in a screen; the edge weight is the Spearman ρ</li>
-          <li><span class="k">→</span>Click a dark gene and it lights up every screen that flagged it — several independent screens converging is the validation signal</li>
-        </ul>
-        <div class="realtag" style="margin-top:14px"><span></span>graph wired to API · real nodes &amp; edges from RDS</div>
-        <div class="shotwrap" style="margin-top:14px">
-          <img class="shot" src="assets/graph_explorer.png" alt="Graph Explorer"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">graph explorer screenshot<br><code>docs/assets/graph_explorer.png</code></div>
-        </div>
-        <div class="shotcap">Graph Explorer · screen and gene nodes · Cytoscape.js</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- O5 · WHERE WE ARE -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>05</b> — where we are right now</div>
-    <h2 data-anim style="--d:1; font-size:clamp(26px,4vw,46px)">Built and running — finishing deployment.</h2>
-    <div class="cols" data-anim style="--d:2; margin-top:20px">
-      <div>
-        <div class="exread" style="margin-bottom:12px">returning real data</div>
-        <ul class="points">
-          <li><span class="k">✓</span><span><b>Matched screens</b> — Spearman ρ, FDR, directionality all live from RDS</span></li>
-          <li><span class="k">✓</span><span><b>Graph explorer</b> — real nodes and edges from API response</span></li>
-          <li><span class="k">✓</span><span><b>Gene query</b> — POST /api/query wired end to end</span></li>
-        </ul>
-        <div class="realtag" style="margin-top:16px"><span></span>API live locally · wired to RDS</div>
-      </div>
-      <div>
-        <div class="exread" style="margin-bottom:12px">demo data / in progress</div>
-        <ul class="points">
-          <li><span class="k">~</span><span><b>Example gene list</b> — 28 autophagy genes, illustrative for demo</span></li>
-          <li><span class="k">~</span><span><b>Dark gene scatter</b> — UI built · live scores endpoint being wired</span></li>
-          <li><span class="k">~</span><span><b>ECS deployment</b> — works locally · cloud config in progress</span></li>
-          <li><span class="k">~</span><span><b>MAGeCK .txt upload</b> — direct file import underway</span></li>
-        </ul>
-        <div class="demotag" style="margin-top:16px"><span></span>falls back to demo data if API is unreachable</div>
-      </div>
-    </div>
-    <div data-anim style="--d:3; display:grid; grid-template-columns:1fr 1fr; gap:clamp(14px,2.5vw,24px); margin-top:20px">
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/swagger_ui.png" alt="Swagger UI"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">swagger UI screenshot<br><code>docs/assets/swagger_ui.png</code></div>
-        </div>
-        <div class="shotcap">Swagger UI · POST /api/query · GET /api/genes/:symbol</div>
-      </div>
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/api_response.png" alt="RDS / API test"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">API / RDS test screenshot<br><code>docs/assets/api_response.png</code></div>
-        </div>
-        <div class="shotcap">API response · ranked matches returned from RDS</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- O6 · WHAT'S NEXT -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — what's next for the platform</div>
-    <h2 data-anim style="--d:1; font-size:clamp(28px,4.6vw,52px)">From working demo to research tool.</h2>
+    <div class="eyebrow" data-anim><b>19</b> — what's next</div>
+    <h2 data-anim style="--d:1;font-size:clamp(28px,4.6vw,52px)">From prototype to instrument.</h2>
     <ul class="steps" data-anim style="--d:2">
-      <li><span class="sn">01</span><div><div class="st">Dark-gene scoring, end to end</div><div class="sd">Compute darkness scores from the live database and serve them through a dedicated API endpoint.</div></div></li>
-      <li><span class="sn">02</span><div><div class="st">AI hypothesis generation</div><div class="sd">A RAG pipeline indexes the source papers so the model can write a cited, mechanistic hypothesis for each top dark-gene candidate.</div></div></li>
-      <li><span class="sn">03</span><div><div class="st">WashU SSO</div><div class="sd">Wire up Entra for WUSTL login — which then unlocks saved and shareable queries.</div></div></li>
-      <li><span class="sn">04</span><div><div class="st">The full corpus</div><div class="sd">All 2,157 screens are already harmonized — wire them all up to the API so the webapp queries the complete dataset, not just the working subset.</div></div></li>
-      <li><span class="sn">05</span><div><div class="st">WashU visual identity</div><div class="sd">Align the UI to WashU brand guidelines — typography, color system, and component style — so it fits naturally in the institutional research ecosystem.</div></div></li>
+      <li><span class="sn">01</span><div><div class="st">Stress directionality, v2</div><div class="sd">Model each stressor's growth direction — growth-promoting treatments invert "vs. control" (advisor feedback).</div></div></li>
+      <li><span class="sn">02</span><div><div class="st">Sources, front and center</div><div class="sd">Every datapoint links back to BioGRID and PubMed — provenance as a first-class feature.</div></div></li>
+      <li><span class="sn">03</span><div><div class="st">Full cloud deployment</div><div class="sd">Converge with the team's FastAPI + React stack on S3 / CloudFront + ECS.</div></div></li>
+      <li><span class="sn">04</span><div><div class="st">Open it to agents</div><div class="sd">A deterministic, auditable API — and a possible BioGRID collaboration to make ORCS natively AI-ready.</div></div></li>
     </ul>
   </div>
 </section>
 
-<!-- ============  END OSEREMEN'S SECTION  ======================= -->
+<!-- Slide 20 · CLOSE [Aaron] -->
+<section class="slide close">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>RETICLE</b></div>
+    <h2 data-anim style="--d:1">A calibrated lens on <span class="em adv">gene function.</span></h2>
+    <div class="brandmark" data-anim style="--d:2">
+      <div class="axis" style="--pos:50%">
+        <div class="axis__track"></div>
+        <div class="axis__cross"><b></b></div>
+      </div>
+    </div>
+    <p class="lede" data-anim style="--d:3">Thank you — questions welcome.</p>
+    <div class="title-foot" data-anim style="--d:4"><div class="who"><b>Aaron Gao</b> · RETICLE</div><div class="tag">github.com/washu-dev/RETICLE</div></div>
+  </div>
+</section>
 
 </div>
 
@@ -910,39 +762,6 @@ h2 .em.adv{color:var(--adv)}
     else if(e.key==='End'){ go(n-1); }
     else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement){ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); } }
   });
-
-  // --- animated DNA double helix (wave dots) behind the title ---
-  function startDNA(){
-    var c=document.getElementById('dna-canvas'); if(!c) return;
-    var ctx=c.getContext('2d'), DPR=Math.min(2, window.devicePixelRatio||1);
-    function size(){ var r=c.getBoundingClientRect(); c.width=Math.max(1,r.width*DPR); c.height=Math.max(1,r.height*DPR); }
-    size(); window.addEventListener('resize', size);
-    var ESS=[31,111,139], ADV=[224,138,60];
-    function frame(t){
-      var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
-      var R=W*0.30, baseX=W*0.52, lean=W*0.12, freq=3.6*6.2832, STEPS=330, items=[];
-      for(var s=0;s<STEPS;s++){
-        var fy=s/(STEPS-1), y=fy*H, cx=baseX+lean*(fy-0.5)*2, th=fy*freq+t;
-        var sn=Math.sin(th), cs=Math.cos(th);
-        var xA=cx+R*sn, zA=cs, xB=cx-R*sn, zB=-cs;                                 // two backbones, vertical axis
-        if(s%3===0){ items.push([xA,y,zA,ESS,1]); items.push([xB,y,zB,ADV,1]); }   // backbone spheres
-        if(s%10===0){ var nd=Math.round(Math.abs(xA-xB)/(W*0.05));                 // base-pair rungs
-          for(var r=1;r<nd;r++){ var fr=r/nd, rx=xA+(xB-xA)*fr, rz=zA+(zB-zA)*fr,
-            col=[ESS[0]+(ADV[0]-ESS[0])*fr, ESS[1]+(ADV[1]-ESS[1])*fr, ESS[2]+(ADV[2]-ESS[2])*fr];
-            items.push([rx,y,rz,col,0]); } }
-      }
-      items.sort(function(a,b){ return a[2]-b[2]; });                             // back-to-front
-      for(var i2=0;i2<items.length;i2++){ var it=items[i2], f=(it[2]+1)/2,
-        rad=(it[4]? 1.8+5.6*f : 0.9+2.1*f)*DPR;
-        ctx.globalAlpha=(it[4]? 0.30+0.65*f : 0.16+0.46*f);
-        ctx.fillStyle='rgb('+(it[3][0]|0)+','+(it[3][1]|0)+','+(it[3][2]|0)+')';
-        ctx.beginPath(); ctx.arc(it[0],it[1],rad,0,6.2832); ctx.fill(); }
-      ctx.globalAlpha=1;
-    }
-    if(reduceMotion){ frame(0); return; }
-    var t=0; (function loop(){ t+=0.010; frame(t); requestAnimationFrame(loop); })();
-  }
-  startDNA();
 
   go(0);
 })();
