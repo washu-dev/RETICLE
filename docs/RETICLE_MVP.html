@@ -242,6 +242,42 @@ h2 .em.adv{color:var(--adv)}
   .pipe{flex-direction:column}
   .flowdot{display:none}
 }
+/* DNA helix on the title slide */
+#dna-canvas{position:absolute;top:0;right:2%;width:28%;height:58%;z-index:0;pointer-events:none;opacity:.9}
+.slide.title-slide .slide-inner{position:relative;z-index:1}
+.slide.title-slide .frame{z-index:1}
+
+/* harmonization if/else ladder */
+.ladder{display:flex;flex-direction:column;border:1px solid #DCE0E4;border-radius:12px;overflow:hidden;background:#fff;margin-top:6px}
+.lstart{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#6A7178;padding:11px 22px;border-bottom:1px solid #DCE0E4;background:#FBFAF7}
+.lrow{display:grid;grid-template-columns:1fr auto 1.15fr;align-items:center;gap:16px;padding:13px 22px;border-bottom:1px solid #EEF0F2}
+.lrow.fall{background:#FBFAF7}
+.lcond{font-size:15.5px;color:#2C3037}
+.lcond .kw{font-family:var(--mono);font-size:12px;color:#E08A3C;margin-right:9px;font-weight:500}
+.larr{font-family:var(--mono);color:#C7CBD0;font-size:17px}
+.lout{font-size:15px;color:#16181D}
+.lout b{font-weight:600}
+.sub-branch{display:flex;flex-direction:column;gap:4px;margin-top:7px}
+.sub-branch span{font-family:var(--mono);font-size:12px;color:#6A7178}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:5px;margin:2px 0 0 6px}
+.pill.pos{background:#E08A3C22;color:#9A5A1B}.pill.neg{background:#1F6F8B22;color:#155265}
+.lfoot{font-family:var(--mono);font-size:12.5px;color:#6A7178;padding:12px 22px;border-top:1px solid #DCE0E4;background:#FBFAF7;line-height:1.5}
+.lfoot b{color:#16181D;font-weight:500}
+
+/* RAG source cards */
+.sources{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+.src-card{border:1px solid #DCE0E4;border-radius:11px;padding:17px 18px 16px;background:#fff}
+.src-card.core{border-color:#E08A3C;background:#FFFCF8}
+.src-card .stag{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#9AA0A6}
+.src-card.core .stag{color:#9A5A1B}
+.src-card .snm{font-family:var(--disp);font-size:25px;font-weight:500;margin:6px 0 10px;line-height:1}
+.src-card .sgv{font-size:13px;color:#3A3F46;line-height:1.46}
+.src-card .sgv b{color:#16181D;font-weight:600}
+.ragout{display:flex;align-items:center;gap:13px;margin-top:22px;flex-wrap:wrap}
+.ragout .ra{font-family:var(--mono);color:#C7CBD0;font-size:18px}
+.ragout .rl{font-size:15.5px;color:#2C3037}
+.ragout .rl b{color:#16181D;font-weight:600}
+
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:.001s!important; animation:none!important}
   .is-active [data-anim]{transition-delay:0s!important}
@@ -254,7 +290,8 @@ h2 .em.adv{color:var(--adv)}
 <div class="deck" id="deck">
 
 <!-- 1 · TITLE -->
-<section class="slide">
+<section class="slide title-slide">
+  <canvas id="dna-canvas"></canvas>
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim style="--d:0"><b>RETICLE</b> · MVP review</div>
@@ -268,7 +305,7 @@ h2 .em.adv{color:var(--adv)}
     </div>
     <p class="lede" data-anim style="--d:3">One calibrated lens over <b>2,157</b> public CRISPR screens — harmonizing scattered functional-genomics data into a single, queryable, AI-ready map of gene function.</p>
     <div class="title-foot" data-anim style="--d:4">
-      <div class="who"><b>Aaron Gao</b> · RETICLE</div>
+      <div class="who">RETICLE</div>
       <div class="tag">MVP presentation</div>
     </div>
   </div>
@@ -381,6 +418,47 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
+<!-- 5b · HARMONIZATION LOGIC (if / else) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02.1</b> — the decision</div>
+    <h2 data-anim style="--d:1;font-size:clamp(28px,4.4vw,50px)">How the score is resolved.</h2>
+    <div data-anim style="--d:2;margin-top:10px">
+    <svg viewBox="0 0 1200 400" style="width:100%;display:block;overflow:visible" font-family="IBM Plex Mono">
+      <g stroke="#CDD2D7" stroke-width="1.4" fill="none">
+        <line x1="600" y1="65" x2="140" y2="127"/><line x1="600" y1="65" x2="430" y2="127"/>
+        <line x1="600" y1="65" x2="760" y2="127"/><line x1="600" y1="65" x2="1075" y2="127"/>
+        <line x1="140" y1="173" x2="140" y2="279"/>
+        <line x1="430" y1="173" x2="350" y2="279"/><line x1="430" y1="173" x2="500" y2="279"/>
+        <line x1="760" y1="173" x2="625" y2="279"/><line x1="760" y1="173" x2="760" y2="279"/><line x1="760" y1="173" x2="920" y2="279"/>
+        <line x1="1075" y1="173" x2="1075" y2="279"/>
+      </g>
+      <g font-size="11" fill="#E08A3C" text-anchor="middle" font-weight="500">
+        <text x="140" y="117">IF</text><text x="430" y="117">ELSE IF</text><text x="760" y="117">ELSE IF</text><text x="1075" y="117">ELSE</text>
+      </g>
+      <rect x="495" y="19" width="210" height="46" rx="10" fill="#16181D"/><text x="600" y="48" text-anchor="middle" font-size="13.5" fill="#fff">raw score column(s)</text>
+      <g>
+        <rect x="65" y="127" width="150" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="140" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">a +/− pair?</text>
+        <rect x="340" y="127" width="180" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="430" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">directional column?</text>
+        <rect x="660" y="127" width="200" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="760" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">unsigned significance?</text>
+        <rect x="1020" y="127" width="110" height="46" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="1075" y="155" text-anchor="middle" font-size="12.5" fill="#16181D">nothing usable</text>
+      </g>
+      <g>
+        <rect x="65" y="279" width="150" height="42" rx="9" fill="#FBFAF7" stroke="#DCE0E4" stroke-width="1.3"/><text x="140" y="305" text-anchor="middle" font-size="12.5" fill="#16181D">S = pos − neg</text>
+        <rect x="290" y="279" width="120" height="42" rx="9" fill="#FBF3EA" stroke="#E08A3C" stroke-width="1.3"/><text x="350" y="305" text-anchor="middle" font-size="12.5" fill="#9A5A1B">DIR_POS → +</text>
+        <rect x="440" y="279" width="120" height="42" rx="9" fill="#EDF3F5" stroke="#1F6F8B" stroke-width="1.3"/><text x="500" y="305" text-anchor="middle" font-size="12.5" fill="#155265">DIR_NEG → −</text>
+        <rect x="565" y="279" width="120" height="42" rx="9" fill="#FBF3EA" stroke="#E08A3C" stroke-width="1.1"/><text x="625" y="305" text-anchor="middle" font-size="12" fill="#9A5A1B">Positive → +</text>
+        <rect x="700" y="279" width="120" height="42" rx="9" fill="#EDF3F5" stroke="#1F6F8B" stroke-width="1.1"/><text x="760" y="305" text-anchor="middle" font-size="12" fill="#155265">Negative → −</text>
+        <rect x="840" y="279" width="160" height="42" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.3"/><text x="920" y="305" text-anchor="middle" font-size="12" fill="#16181D">ambiguous → LLM</text>
+        <rect x="1010" y="279" width="130" height="42" rx="9" fill="#FBFAF7" stroke="#DCE0E4" stroke-width="1.3"/><text x="1075" y="305" text-anchor="middle" font-size="12" fill="#6A7178">UNRESOLVED</text>
+      </g>
+    </svg>
+    </div>
+    <p class="tag" data-anim style="--d:3;margin-top:12px">then × <b>perturbation</b> (CRISPRa inverts the sign) · then the <b>essential-gene anchor</b> flips the whole screen if core-essential genes land on the&nbsp;+&nbsp;side</p>
+  </div>
+</section>
+
 <!-- 6 · DIRECTIONALITY + ANCHOR -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
@@ -473,6 +551,27 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
+<!-- 8b · RAG LAYER -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02.2</b> — the RAG layer</div>
+    <h2 data-anim style="--d:1;font-size:clamp(28px,4.4vw,50px)">The AI reading is <span class="em">retrieved</span>, not invented.</h2>
+    <div class="sources" data-anim style="--d:2">
+      <div class="src-card core"><div class="stag">internal · screening data</div><div class="snm">BioGRID</div><div class="sgv">how the gene <b>behaves</b> across 2,157 CRISPR screens — fitness / stress / reporter, harmonized</div></div>
+      <div class="src-card"><div class="stag">external</div><div class="snm">STRING</div><div class="sgv">who it <b>interacts</b> with — top partners + the evidence behind each link, colored by their CRISPR behavior</div></div>
+      <div class="src-card"><div class="stag">external</div><div class="snm">NCBI</div><div class="sgv">what it's <b>known</b> to do — the curated gene summary + GO terms</div></div>
+      <div class="src-card"><div class="stag">external</div><div class="snm">PubMed</div><div class="sgv">how <b>studied</b> it is — paper count → a darkness rating; abstracts become cited evidence</div></div>
+    </div>
+    <div class="ragout" data-anim style="--d:3">
+      <span class="rl">retrieved &amp; ranked</span><span class="ra">→</span>
+      <span class="rl"><b>LLM</b></span><span class="ra">→</span>
+      <span class="rl">a short interpretation, <b>cited back to PubMed</b></span>
+    </div>
+    <p class="tag" data-anim style="--d:4;margin-top:14px">One internal source + three external — every claim traces to a source. The screens stay the source of truth; the model only synthesizes.</p>
+  </div>
+</section>
+
 <!-- 9 · DEMO -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
@@ -512,38 +611,6 @@ h2 .em.adv{color:var(--adv)}
       <div class="metric" data-anim style="--d:3"><div class="m-n"><span data-count="50">0</span><span class="u">–90×</span></div><div class="m-l">faster queries — the index that makes the explorer usable</div></div>
       <div class="metric" data-anim style="--d:4"><div class="m-n"><span data-count="2157">0</span></div><div class="m-l">screens harmonized · explorer wired end-to-end to the cloud database</div></div>
     </div>
-  </div>
-</section>
-
-<!-- 11 · NEXT -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — what's next</div>
-    <h2 data-anim style="--d:1;font-size:clamp(28px,4.6vw,52px)">From prototype to instrument.</h2>
-    <ul class="steps" data-anim style="--d:2">
-      <li><span class="sn">01</span><div><div class="st">Stress directionality, v2</div><div class="sd">Model each stressor's growth direction — growth-promoting treatments invert "vs. control" (advisor feedback).</div></div></li>
-      <li><span class="sn">02</span><div><div class="st">Sources, front and center</div><div class="sd">Every datapoint links back to BioGRID and PubMed — provenance as a first-class feature.</div></div></li>
-      <li><span class="sn">03</span><div><div class="st">Full cloud deployment</div><div class="sd">Converge with the team's FastAPI + React stack on S3 / CloudFront + ECS.</div></div></li>
-      <li><span class="sn">04</span><div><div class="st">Open it to agents</div><div class="sd">A deterministic, auditable API — and a possible BioGRID collaboration to make ORCS natively AI-ready.</div></div></li>
-    </ul>
-  </div>
-</section>
-
-<!-- 12 · CLOSE -->
-<section class="slide close">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>RETICLE</b></div>
-    <h2 data-anim style="--d:1">A calibrated lens on <span class="em adv">gene function.</span></h2>
-    <div class="brandmark" data-anim style="--d:2">
-      <div class="axis" style="--pos:50%">
-        <div class="axis__track"></div>
-        <div class="axis__cross"><b></b></div>
-      </div>
-    </div>
-    <p class="lede" data-anim style="--d:3">Thank you — questions welcome.</p>
-    <div class="title-foot" data-anim style="--d:4"><div class="who"><b>Aaron Gao</b> · RETICLE</div><div class="tag">github.com/washu-dev/RETICLE</div></div>
   </div>
 </section>
 
@@ -612,6 +679,39 @@ h2 .em.adv{color:var(--adv)}
     else if(e.key==='End'){ go(n-1); }
     else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement){ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); } }
   });
+
+  // --- animated DNA double helix (wave dots) behind the title ---
+  function startDNA(){
+    var c=document.getElementById('dna-canvas'); if(!c) return;
+    var ctx=c.getContext('2d'), DPR=Math.min(2, window.devicePixelRatio||1);
+    function size(){ var r=c.getBoundingClientRect(); c.width=Math.max(1,r.width*DPR); c.height=Math.max(1,r.height*DPR); }
+    size(); window.addEventListener('resize', size);
+    var ESS=[31,111,139], ADV=[224,138,60];
+    function frame(t){
+      var W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+      var R=W*0.30, baseX=W*0.52, lean=W*0.12, freq=3.6*6.2832, STEPS=330, items=[];
+      for(var s=0;s<STEPS;s++){
+        var fy=s/(STEPS-1), y=fy*H, cx=baseX+lean*(fy-0.5)*2, th=fy*freq+t;
+        var sn=Math.sin(th), cs=Math.cos(th);
+        var xA=cx+R*sn, zA=cs, xB=cx-R*sn, zB=-cs;                                 // two backbones, vertical axis
+        if(s%3===0){ items.push([xA,y,zA,ESS,1]); items.push([xB,y,zB,ADV,1]); }   // backbone spheres
+        if(s%10===0){ var nd=Math.round(Math.abs(xA-xB)/(W*0.05));                 // base-pair rungs
+          for(var r=1;r<nd;r++){ var fr=r/nd, rx=xA+(xB-xA)*fr, rz=zA+(zB-zA)*fr,
+            col=[ESS[0]+(ADV[0]-ESS[0])*fr, ESS[1]+(ADV[1]-ESS[1])*fr, ESS[2]+(ADV[2]-ESS[2])*fr];
+            items.push([rx,y,rz,col,0]); } }
+      }
+      items.sort(function(a,b){ return a[2]-b[2]; });                             // back-to-front
+      for(var i2=0;i2<items.length;i2++){ var it=items[i2], f=(it[2]+1)/2,
+        rad=(it[4]? 1.8+5.6*f : 0.9+2.1*f)*DPR;
+        ctx.globalAlpha=(it[4]? 0.30+0.65*f : 0.16+0.46*f);
+        ctx.fillStyle='rgb('+(it[3][0]|0)+','+(it[3][1]|0)+','+(it[3][2]|0)+')';
+        ctx.beginPath(); ctx.arc(it[0],it[1],rad,0,6.2832); ctx.fill(); }
+      ctx.globalAlpha=1;
+    }
+    if(reduceMotion){ frame(0); return; }
+    var t=0; (function loop(){ t+=0.010; frame(t); requestAnimationFrame(loop); })();
+  }
+  startDNA();
 
   go(0);
 })();
