@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { runQuery } from '../services/reticleApi';
 
 const STEPS = [
   { label: 'Resolving gene identifiers via canonical crosswalk',         pct: 15 },
@@ -10,26 +11,64 @@ const STEPS = [
   { label: 'Assembling results package',                                 pct: 100 },
 ];
 
-export default function LoadingAnalysis({ geneCount, onDone }) {
+export default function LoadingAnalysis({ geneCount, genes, options, onDone }) {
   const [step, setStep] = useState(0);
   const [pct, setPct] = useState(0);
 
+  // Stable refs so the effect never re-fires due to parent re-renders.
+  const genesRef   = useRef(genes);
+  const optionsRef = useRef(options);
+
   useEffect(() => {
+    let mounted = true;
+    let apiResults = undefined; // undefined = still in-flight
+    let animDone   = false;
+
+    function finish() {
+      // Only call onDone once both the API and animation have settled.
+      if (!mounted || !animDone || apiResults === undefined) return;
+      onDone(apiResults ?? null);
+    }
+
+    // Fire the API query immediately alongside the animation.
+    runQuery(genesRef.current ?? [], optionsRef.current ?? {})
+      .then(results => {
+        if (!mounted) return;
+        apiResults = results;
+        finish();
+      })
+      .catch(() => {
+        if (!mounted) return;
+        apiResults = null; // signal error; ResultsPage falls back to mock data
+        finish();
+      });
+
+    // Run the step animation independently.
     let s = 0;
     let doneTimer;
     const interval = setInterval(() => {
       s++;
       if (s >= STEPS.length) {
         clearInterval(interval);
-        doneTimer = setTimeout(onDone, 500);
-      } else {
+        doneTimer = setTimeout(() => {
+          if (!mounted) return;
+          animDone = true;
+          finish();
+        }, 500);
+      } else if (mounted) {
         setStep(s);
         setPct(STEPS[s].pct);
       }
     }, 600);
+
     setPct(STEPS[0].pct);
-    return () => { clearInterval(interval); clearTimeout(doneTimer); };
-  }, [onDone]);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+      clearTimeout(doneTimer);
+    };
+  }, [onDone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{
@@ -53,7 +92,7 @@ export default function LoadingAnalysis({ geneCount, onDone }) {
         {/* Step list */}
         <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {STEPS.map((s, i) => {
-            const done = i < step;
+            const done   = i < step;
             const active = i === step;
             return (
               <div key={i} style={{

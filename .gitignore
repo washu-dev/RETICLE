@@ -60,3 +60,6 @@ cache/
 # Documentation
 _build/
 site/
+
+# Local PM inbox (not for version control)
+PM_INBOX.md

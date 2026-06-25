@@ -1,5 +1,5 @@
 import { ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { MATCHED_SCREENS } from '../mockData';
+import { MATCHED_SCREENS as MOCK_SCREENS } from '../mockData';
 
 function DirectionalityBadge({ d }) {
   if (d === 'agree')    return <span className="badge badge-agree"><TrendingUp size={11} /> Agree</span>;
@@ -13,7 +13,7 @@ function ModalityBadge({ m }) {
 }
 
 function RhoBar({ rho }) {
-  const pct = Math.abs(rho) * 100;
+  const pct   = Math.abs(rho) * 100;
   const color = rho > 0 ? 'var(--blue)' : 'var(--orange)';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 140 }}>
@@ -27,19 +27,19 @@ function RhoBar({ rho }) {
   );
 }
 
-export default function MatchedScreens({ genes }) {
-  const screens = MATCHED_SCREENS;
-  const sigCount = screens.filter(s => s.fdr < 0.05).length;
+export default function MatchedScreens({ genes, screens }) {
+  const displayScreens = screens ?? MOCK_SCREENS;
+  const sigCount       = displayScreens.filter(s => s.fdr < 0.05).length;
 
   return (
     <div>
       {/* Summary row */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         {[
-          { label: 'Screens compared', value: '287', note: 'reference set' },
-          { label: 'Significant matches', value: sigCount, note: 'FDR < 5%' },
-          { label: 'Agree directionality', value: screens.filter(s => s.directionality === 'agree').length, note: 'of top 8' },
-          { label: 'Query genes', value: genes?.length ?? 25, note: 'after ID resolution' },
+          { label: 'Screens compared',    value: '287',                                                        note: 'reference set' },
+          { label: 'Significant matches', value: sigCount,                                                     note: 'FDR < 5%' },
+          { label: 'Agree directionality',value: displayScreens.filter(s => s.directionality === 'agree').length, note: 'of top 8' },
+          { label: 'Query genes',         value: genes?.length ?? 25,                                         note: 'after ID resolution' },
         ].map(s => (
           <div key={s.label} className="card" style={{ flex: '1 1 140px', padding: '16px 20px' }}>
             <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--blue)' }}>{s.value}</div>
@@ -72,7 +72,7 @@ export default function MatchedScreens({ genes }) {
               </tr>
             </thead>
             <tbody>
-              {screens.map((s, i) => (
+              {displayScreens.map((s, i) => (
                 <tr key={s.id}>
                   <td style={{ color: 'var(--text-3)', fontWeight: 600, fontFamily: 'monospace' }}>#{i + 1}</td>
                   <td>

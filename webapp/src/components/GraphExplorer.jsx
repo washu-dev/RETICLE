@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
-import { GRAPH_ELEMENTS } from '../mockData';
+import { GRAPH_ELEMENTS as MOCK_GRAPH_ELEMENTS } from '../mockData';
 import { getConnectedScreens, getConnectedGenes } from '../utils/geneGraph';
 import { Info, GitBranch, ExternalLink, BookOpen } from 'lucide-react';
 
@@ -76,12 +76,10 @@ const STYLES = [
   },
 ];
 
-const GENE_NODES = GRAPH_ELEMENTS.nodes.filter(
-  n => n.data.type === 'gene' || n.data.type === 'dark'
-);
-
-export default function GraphExplorer({ focusGene, onGeneSelect }) {
-  const cyRef = useRef(null);
+export default function GraphExplorer({ graphElements, focusGene, onGeneSelect }) {
+  const elements     = graphElements ?? MOCK_GRAPH_ELEMENTS;
+  const geneNodes    = elements.nodes.filter(n => n.data.type === 'gene' || n.data.type === 'dark');
+  const cyRef        = useRef(null);
   const containerRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
@@ -108,13 +106,15 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
 
     const cy = cytoscape({
       container: containerRef.current,
-      elements: [...GRAPH_ELEMENTS.nodes, ...GRAPH_ELEMENTS.edges],
+      elements: [...elements.nodes, ...elements.edges],
       style: STYLES,
-      layout: { name: layout, animate: true, animationDuration: 600, padding: 40 },
       userZoomingEnabled: true,
       userPanningEnabled: true,
       boxSelectionEnabled: false,
     });
+
+    const layoutInstance = cy.layout({ name: layout, animate: true, animationDuration: 600, padding: 40 });
+    layoutInstance.run();
 
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
@@ -160,7 +160,10 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
 
     if (focusGene) applyFocus(cy, focusGene);
 
-    return () => cy.destroy();
+    return () => {
+      layoutInstance.stop();
+      cy.destroy();
+    };
   }, [layout]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Respond to focusGene changes after mount
@@ -176,8 +179,8 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
 
   function renderInfoPanel() {
     if (selectedEdge) {
-      const srcNode = GRAPH_ELEMENTS.nodes.find(n => n.data.id === selectedEdge.source)?.data;
-      const tgtNode = GRAPH_ELEMENTS.nodes.find(n => n.data.id === selectedEdge.target)?.data;
+      const srcNode = elements.nodes.find(n => n.data.id === selectedEdge.source)?.data;
+      const tgtNode = elements.nodes.find(n => n.data.id === selectedEdge.target)?.data;
       const rhoColor = selectedEdge.rho >= 0 ? 'var(--blue)' : 'var(--orange)';
       return (
         <div className="card" style={{ height: '100%' }}>
@@ -212,8 +215,8 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
     if (selectedNode) {
       const isGene    = selectedNode.type === 'gene' || selectedNode.type === 'dark';
       const isScreen  = selectedNode.type === 'screen';
-      const connectedScreens = isGene   ? getConnectedScreens(selectedNode.id) : [];
-      const connectedGenes   = isScreen ? getConnectedGenes(selectedNode.id)   : [];
+      const connectedScreens = isGene   ? getConnectedScreens(selectedNode.id, elements) : [];
+      const connectedGenes   = isScreen ? getConnectedGenes(selectedNode.id, elements)   : [];
 
       return (
         <div className="card" style={{ height: '100%', overflowY: 'auto' }}>
@@ -358,9 +361,9 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
           <Info size={14} /> Node legend
         </div>
         {[
-          { color: '#1a2a4a', border: '#2563b8', label: 'Screen',         desc: `${GRAPH_ELEMENTS.nodes.filter(n => n.data.type === 'screen').length} matched · includes paper` },
-          { color: '#2d1b69', border: '#7c3aed', label: 'Gene',           desc: `${GRAPH_ELEMENTS.nodes.filter(n => n.data.type === 'gene').length} known pathway genes` },
-          { color: '#78350f', border: '#fbbf24', label: 'Dark candidate', desc: `${GRAPH_ELEMENTS.nodes.filter(n => n.data.type === 'dark').length} novel low-pub genes` },
+          { color: '#1a2a4a', border: '#2563b8', label: 'Screen',         desc: `${elements.nodes.filter(n => n.data.type === 'screen').length} matched · includes paper` },
+          { color: '#2d1b69', border: '#7c3aed', label: 'Gene',           desc: `${elements.nodes.filter(n => n.data.type === 'gene').length} known pathway genes` },
+          { color: '#78350f', border: '#fbbf24', label: 'Dark candidate', desc: `${elements.nodes.filter(n => n.data.type === 'dark').length} novel low-pub genes` },
         ].map(n => (
           <div key={n.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 14, height: 14, borderRadius: '50%', background: n.color, border: `2px solid ${n.border}`, flexShrink: 0 }} />
@@ -407,7 +410,7 @@ export default function GraphExplorer({ focusGene, onGeneSelect }) {
       {/* Gene quick-select chips */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
         <span style={{ fontSize: '0.72rem', color: 'var(--text-3)', alignSelf: 'center', marginRight: 4 }}>Select gene:</span>
-        {GENE_NODES.map(n => {
+        {geneNodes.map(n => {
           const isActive = selectedNode?.id === n.data.id || focusGene === n.data.label;
           return (
             <button
