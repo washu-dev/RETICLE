@@ -20,6 +20,7 @@ Column access: rows support both exact-case and lowercase key access.
 import os
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 _AWS_HOST = os.getenv("AWS_DB_HOST", "")
 USE_PG = bool(_AWS_HOST)
@@ -49,7 +50,7 @@ class _Row(dict):
     """Dict row with case-insensitive key access (Postgres returns lowercase column
     names; SQLite column names may be mixed-case from the CREATE TABLE statement)."""
 
-    def __getitem__(self, k: str) -> object:
+    def __getitem__(self, k: str) -> Any:
         try:
             return dict.__getitem__(self, k)
         except KeyError:

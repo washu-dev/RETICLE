@@ -1,12 +1,12 @@
 """
-Mock data service — mirrors webapp/src/mockData.js.
+Data service — real RDS queries when AWS_DB_HOST is set, mock data otherwise.
 
-All functions are async so the call-site API is identical to what a real
-database-backed service will expose.  Aaron replaces these implementations
-with real psycopg2/SQLAlchemy queries against RDS; the router code stays
-unchanged.
+The two public async functions (run_query / get_gene_detail) are the seam
+between the API layer and the database.  All mock reference data below stays
+as a local-dev / no-DB fallback.
 """
 
+import math
 from uuid import uuid4
 
 from models.gene import Citation, GeneDetail, StringInteractor
@@ -303,65 +303,263 @@ _DARK_GENE_INDEX: dict[str, DarkGene] = {g.symbol: g for g in _DARK_GENES}
 # ---------------------------------------------------------------------------
 
 async def run_query(request: QueryRequest) -> QueryResponse:
-    """
-    Return analysis results for the submitted gene list.
+    from services.db_service import USE_PG, db_fetchall
 
-    Currently returns static mock data regardless of the gene list.
-    Replace with real Spearman ρ computation + RDS queries once Aaron's
-    data pipeline is in place.
-    """
-    sig_count   = sum(1 for s in _MATCHED_SCREENS if s.fdr < 0.05)
-    agree_count = sum(1 for s in _MATCHED_SCREENS if s.directionality == "agree")
+    if not USE_PG:
+        sig_count   = sum(1 for s in _MATCHED_SCREENS if s.fdr < 0.05)
+        agree_count = sum(1 for s in _MATCHED_SCREENS if s.directionality == "agree")
+        return QueryResponse(
+            query_id=str(uuid4()),
+            stats=QueryStats(
+                screens_compared=287,
+                significant_matches=sig_count,
+                agree_directionality=agree_count,
+                query_gene_count=len(request.genes),
+            ),
+            matched_screens=_MATCHED_SCREENS,
+            dark_genes=_DARK_GENES,
+            graph_elements=_GRAPH_ELEMENTS,
+        )
+
+    symbols = [g.symbol.upper() for g in request.genes] or ["ATG5"]
+    gene_ph = ", ".join("?" * len(symbols))
+
+    screen_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
+        SELECT
+            sm.screen_id                                        AS biogrid_id,
+            sm.screen_name                                      AS name,
+            COALESCE(sm.author, 'Unknown')                      AS citation,
+            COALESCE(smc.pmid, '')                              AS pmid,
+            COALESCE(sm.organism_official, 'Homo sapiens')      AS organism,
+            COALESCE(smc.selection_method, sm.screen_type, 'KO') AS modality,
+            COALESCE(sm.cell_type, sm.cell_line, 'Unknown')     AS cell_type,
+            AVG(hs.percentile_score) FILTER (WHERE hs.percentile_score IS NOT NULL) AS rho,
+            COALESCE(smc.growth_direction, 'none')              AS directionality,
+            COUNT(DISTINCT hs.gene_symbol)                      AS shared_genes,
+            COALESCE(sm.scores_size, 0)                         AS total_genes
+        FROM reticle.harmonized_scores hs
+        JOIN  reticle.screen_metadata          sm  ON hs.screen_id = sm.screen_id
+        LEFT JOIN reticle.screen_metadata_curated smc ON hs.screen_id = smc.screen_id
+        WHERE hs.gene_symbol IN ({gene_ph})
+          AND hs.is_hit = 1
+        GROUP BY sm.screen_id, sm.screen_name, sm.author, sm.organism_official,
+                 smc.pmid, smc.selection_method, sm.screen_type, sm.cell_type,
+                 sm.cell_line, smc.growth_direction, sm.scores_size
+        ORDER BY shared_genes DESC, rho DESC
+        LIMIT 20
+    """, tuple(symbols))
+
+    matched_screens = [
+        MatchedScreen(
+            id=i + 1,
+            biogrid_id=str(row["biogrid_id"]),
+            name=str(row["name"] or ""),
+            citation=str(row["citation"]),
+            pmid=str(row["pmid"]),
+            organism=str(row["organism"]),
+            modality=str(row["modality"]),
+            cell_type=str(row["cell_type"]),
+            rho=round(float(row["rho"] or 0), 4),
+            fdr=0.0,
+            directionality=str(row["directionality"] or "normal"),
+            shared_genes=int(row["shared_genes"]),
+            total_genes=int(row["total_genes"]),
+        )
+        for i, row in enumerate(screen_rows)
+    ]
+
+    matched_ids = [r["biogrid_id"] for r in screen_rows]
+    dark_genes: list[DarkGene] = []
+
+    if matched_ids:
+        screen_ph = ", ".join("?" * len(matched_ids))
+        dark_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
+            SELECT
+                hs.gene_symbol                          AS symbol,
+                COUNT(DISTINCT hs.screen_id)            AS screen_count,
+                AVG(hs.percentile_score)
+                    FILTER (WHERE hs.percentile_score IS NOT NULL) AS avg_score,
+                COALESCE(dg.total_screens, 1)           AS pubs,
+                COALESCE(dg.total_screens, 1)           AS total_screens
+            FROM reticle.harmonized_scores hs
+            LEFT JOIN public.dim_gene dg
+                   ON LOWER(hs.gene_symbol) = LOWER(dg.gene_symbol) AND dg.is_current = TRUE
+            WHERE hs.screen_id IN ({screen_ph})
+              AND hs.is_hit = 1
+              AND hs.gene_symbol NOT IN ({gene_ph})
+            GROUP BY hs.gene_symbol, dg.total_publications, dg.total_screens
+            ORDER BY screen_count DESC, pubs ASC
+            LIMIT 20
+        """, tuple(matched_ids) + tuple(symbols))
+
+        dark_genes = [
+            DarkGene(
+                symbol=str(row["symbol"]),
+                dark_score=round(10.0 / math.log10(int(row["pubs"]) + 2), 2),
+                correlation=round(float(row["avg_score"] or 0), 4),
+                pubs=int(row["pubs"]),
+                screens=int(row["screen_count"]),
+                go_terms=0,
+                is_bright=int(row["pubs"]) > 100,
+                cluster="co-hit",
+            )
+            for row in dark_rows
+        ]
+
+    # Graph: top 5 screens + top 8 dark genes as nodes; edges from co-hit data
+    screen_nodes = [
+        GraphNode(data=GraphNodeData(
+            id=f"s{i + 1}",
+            label=ms.citation.split(",")[0],
+            type="screen",
+            citation=ms.citation,
+            pmid=ms.pmid,
+            gene_count=ms.total_genes,
+        ))
+        for i, ms in enumerate(matched_screens[:5])
+    ]
+    gene_nodes = [
+        GraphNode(data=GraphNodeData(
+            id=f"g{i + 1}",
+            label=dg.symbol,
+            type="gene",
+            detail=f"{dg.pubs} pubs · {dg.screens} screens",
+            screen_count=dg.screens,
+        ))
+        for i, dg in enumerate(dark_genes[:8])
+    ]
+
+    edges: list[GraphEdge] = []
+    if matched_ids:
+        screen_id_map = {ms.biogrid_id: f"s{i + 1}" for i, ms in enumerate(matched_screens[:5])}
+        gene_id_map   = {dg.symbol: f"g{i + 1}" for i, dg in enumerate(dark_genes[:8])}
+        top_screen_ph = ", ".join("?" * len(matched_ids[:5]))
+        top_gene_syms = list(gene_id_map.keys())
+        top_gene_ph   = ", ".join("?" * len(top_gene_syms))
+        if top_gene_syms:
+            edge_rows = db_fetchall(f"""  # nosec B608 — placeholders only, no user data in SQL
+                SELECT screen_id, gene_symbol, harmonized_score
+                FROM reticle.harmonized_scores
+                WHERE screen_id IN ({top_screen_ph})
+                  AND gene_symbol IN ({top_gene_ph})
+                  AND is_hit = 1
+                LIMIT 40
+            """, tuple(matched_ids[:5]) + tuple(top_gene_syms))
+            for row in edge_rows:
+                s_node = screen_id_map.get(str(row["screen_id"]))
+                g_node = gene_id_map.get(str(row["gene_symbol"]))
+                if s_node and g_node:
+                    edges.append(GraphEdge(data=GraphEdgeData(
+                        source=s_node,
+                        target=g_node,
+                        rho=round(float(row["harmonized_score"] or 0), 4),
+                        edge_label=f"{row['screen_id']} → {row['gene_symbol']}",
+                    )))
+
+    stats = QueryStats(
+        screens_compared=len(matched_screens),
+        significant_matches=sum(1 for ms in matched_screens if ms.rho > 0.7),
+        agree_directionality=sum(
+            1 for ms in matched_screens if ms.directionality in ("promoting", "suppressing")
+        ),
+        query_gene_count=len(symbols),
+    )
 
     return QueryResponse(
         query_id=str(uuid4()),
-        stats=QueryStats(
-            screens_compared=287,
-            significant_matches=sig_count,
-            agree_directionality=agree_count,
-            query_gene_count=len(request.genes),
-        ),
-        matched_screens=_MATCHED_SCREENS,
-        dark_genes=_DARK_GENES,
-        graph_elements=_GRAPH_ELEMENTS,
+        stats=stats,
+        matched_screens=matched_screens,
+        dark_genes=dark_genes,
+        graph_elements=GraphElements(nodes=screen_nodes + gene_nodes, edges=edges),
     )
 
 
 async def get_gene_detail(symbol: str) -> GeneDetail | None:
-    """
-    Return detailed gene information for the gene-detail panel.
+    from services.db_service import USE_PG, db_fetchall
 
-    Currently backed by mock data; swap for a real DB look-up later.
-    Returns None when the gene is not found in either the dark-gene index
-    or the rationale store.
-    """
-    dark     = _DARK_GENE_INDEX.get(symbol)
-    rationale = _GENE_RATIONALES.get(symbol)
-    interactors = _STRING_INTERACTORS.get(symbol)
+    if not USE_PG:
+        dark        = _DARK_GENE_INDEX.get(symbol)
+        rationale   = _GENE_RATIONALES.get(symbol)
+        interactors = _STRING_INTERACTORS.get(symbol)
+        if dark is None and rationale is None:
+            return None
+        return GeneDetail(
+            symbol=symbol,
+            dark_score=dark.dark_score if dark else None,
+            pubs=dark.pubs if dark else None,
+            screens=dark.screens if dark else None,
+            correlation=dark.correlation if dark else None,
+            is_bright=dark.is_bright if dark else None,
+            hypothesis=rationale.get("hypothesis") if rationale else None,
+            mechanistic_context=rationale.get("mechanistic_context") if rationale else None,
+            citations=[
+                Citation(text=c["text"], pmid=c["pmid"])
+                for c in (rationale.get("citations") or [])
+            ] if rationale else [],
+            suggested_validation=rationale.get("suggested_validation") if rationale else None,
+            string_interactors=[
+                StringInteractor(symbol=i["symbol"], combined_score=i["combined_score"],
+                                 direction=i["direction"])
+                for i in interactors
+            ] if interactors else None,
+        )
 
-    if dark is None and rationale is None:
+    stats_rows = db_fetchall("""
+        SELECT total_screens AS screens
+        FROM public.dim_gene
+        WHERE LOWER(gene_symbol) = LOWER(?) AND is_current = TRUE
+        LIMIT 1
+    """, (symbol,))
+
+    if not stats_rows:
         return None
+
+    screens = int(stats_rows[0]["screens"] or 0)
+
+    score_rows = db_fetchall("""
+        SELECT AVG(percentile_score) FILTER (WHERE percentile_score IS NOT NULL) AS avg_score,
+               COUNT(DISTINCT screen_id) AS hit_screens
+        FROM reticle.harmonized_scores
+        WHERE UPPER(gene_symbol) = UPPER(?) AND is_hit = 1
+    """, (symbol,))
+    avg_score   = round(float((score_rows[0]["avg_score"] or 0) if score_rows else 0), 4)
+    hit_screens = int((score_rows[0]["hit_screens"] or 0) if score_rows else 0)
+
+    # Citations: pull screens where gene is a hit, using screen_metadata author/name as proxy
+    citation_rows = db_fetchall("""
+        SELECT DISTINCT smc.pmid, sm.author, sm.screen_name
+        FROM reticle.harmonized_scores hs
+        JOIN reticle.screen_metadata sm ON hs.screen_id = sm.screen_id
+        LEFT JOIN reticle.screen_metadata_curated smc ON hs.screen_id = smc.screen_id
+        WHERE UPPER(hs.gene_symbol) = UPPER(?) AND hs.is_hit = 1 AND smc.pmid IS NOT NULL
+        ORDER BY smc.pmid
+        LIMIT 5
+    """, (symbol,))
+
+    citations = [
+        Citation(text=str(row["author"] or row["screen_name"]), pmid=str(row["pmid"]))
+        for row in citation_rows
+        if row["pmid"]
+    ]
+
+    # Use hit_screens as darkness proxy — more screens hit = better characterized
+    dark_score = round(10.0 / math.log10(hit_screens + 2), 2)
+    is_bright  = hit_screens > 50
+
+    hypothesis = (
+        f"{symbol} appears as a significant hit in {hit_screens} of {screens} CRISPR screens "
+        f"(mean percentile score {avg_score:.3f}). "
+        f"It is a {'well-characterized' if is_bright else 'dark'} candidate — "
+        f"appearing as a hit in {'many' if is_bright else 'few'} screens relative to the dataset."
+    )
 
     return GeneDetail(
         symbol=symbol,
-        dark_score=dark.dark_score if dark else None,
-        pubs=dark.pubs if dark else None,
-        screens=dark.screens if dark else None,
-        correlation=dark.correlation if dark else None,
-        is_bright=dark.is_bright if dark else None,
-        hypothesis=rationale.get("hypothesis") if rationale else None,
-        mechanistic_context=rationale.get("mechanistic_context") if rationale else None,
-        citations=[
-            Citation(text=c["text"], pmid=c["pmid"])
-            for c in (rationale.get("citations") or [])
-        ] if rationale else [],
-        suggested_validation=rationale.get("suggested_validation") if rationale else None,
-        string_interactors=[
-            StringInteractor(
-                symbol=i["symbol"],
-                combined_score=i["combined_score"],
-                direction=i["direction"],
-            )
-            for i in interactors
-        ] if interactors else None,
+        dark_score=dark_score,
+        pubs=hit_screens,
+        screens=screens,
+        correlation=avg_score,
+        is_bright=is_bright,
+        hypothesis=hypothesis,
+        citations=citations,
     )
