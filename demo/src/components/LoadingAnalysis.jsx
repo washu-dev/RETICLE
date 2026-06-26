@@ -12,7 +12,7 @@ const STEPS = [
 
 export default function LoadingAnalysis({ geneCount, onDone }) {
   const [step, setStep] = useState(0);
-  const [pct, setPct] = useState(0);
+  const [pct, setPct] = useState(STEPS[0].pct);
 
   useEffect(() => {
     let s = 0;
@@ -26,7 +26,6 @@ export default function LoadingAnalysis({ geneCount, onDone }) {
         setPct(STEPS[s].pct);
       }
     }, 600);
-    setPct(STEPS[0].pct);
     return () => clearInterval(interval);
   }, [onDone]);
 

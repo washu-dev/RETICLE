@@ -44,6 +44,7 @@ ENV/
 *.sqlite
 .npz
 data/
+!demo/src/data/
 outputs/
 reports/
 cache/
