@@ -12,7 +12,6 @@ from pydantic import BaseModel
 from routers.genes import router as genes_router
 from routers.query import router as query_router
 
-
 # Load environment variables from .env file early
 load_dotenv()
 
