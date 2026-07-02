@@ -1,4 +1,4 @@
-﻿"""
+"""
 Data service â€” real RDS queries when AWS_DB_HOST is set, mock data otherwise.
 
 The two public async functions (run_query / get_gene_detail) are the seam
