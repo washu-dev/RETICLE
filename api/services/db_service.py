@@ -1,9 +1,9 @@
-"""
+﻿"""
 Database access layer for RETICLE FastAPI.
 
 Mirrors the dual-backend pattern in prototype/web/app.py:
-  - AWS_DB_HOST set in environment → Postgres (schema `reticle` on AWS RDS)
-  - AWS_DB_HOST absent → local SQLite fallback
+  - AWS_DB_HOST set in environment â†’ Postgres (schema `reticle` on AWS RDS)
+  - AWS_DB_HOST absent â†’ local SQLite fallback
 
 Usage (from a service module):
     from services.db_service import db_fetchall
@@ -13,7 +13,7 @@ Usage (from a service module):
         ("TP53",),
     )
 
-Placeholders: always use `?` — translated to `%s` for Postgres automatically.
+Placeholders: always use `?` â€” translated to `%s` for Postgres automatically.
 Column access: rows support both exact-case and lowercase key access.
 """
 
@@ -21,6 +21,11 @@ import os
 import sqlite3
 from pathlib import Path
 from typing import Any
+
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (if present)
+load_dotenv()
 
 _AWS_HOST = os.getenv("AWS_DB_HOST", "")
 USE_PG = bool(_AWS_HOST)
@@ -42,7 +47,7 @@ _PG_PARAMS = (
     else None
 )
 
-# Path to local SQLite — only relevant when USE_PG is False.
+# Path to local SQLite â€” only relevant when USE_PG is False.
 _SQLITE_PATH = Path(__file__).resolve().parents[2] / "prototype" / "data" / "reticle.db"
 
 
@@ -69,7 +74,7 @@ def db_fetchall(sql: str, params: tuple = ()) -> list[_Row]:
 
     Returns
     -------
-    List of _Row dicts — supports both exact-case and lowercase key access.
+    List of _Row dicts â€” supports both exact-case and lowercase key access.
     """
     if USE_PG:
         import psycopg2
@@ -92,3 +97,5 @@ def db_fetchall(sql: str, params: tuple = ()) -> list[_Row]:
         return [_Row(dict(r)) for r in rows]
     finally:
         con.close()
+
+

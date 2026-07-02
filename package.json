@@ -1,0 +1,17 @@
+{
+  "name": "reticle-local-dev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-click local dev launcher: FastAPI backend (api/) + React Native Web webapp (webapp/).",
+  "scripts": {
+    "dev:all": "concurrently --kill-others-on-fail --names \"api,webapp\" --prefix-colors \"cyan,magenta\" \"npm:dev:api\" \"npm:dev:webapp\"",
+    "dev:api": "node scripts/run-api.mjs",
+    "dev:webapp": "npm --prefix webapp start",
+    "setup": "npm run setup:api && npm run setup:webapp",
+    "setup:api": "node scripts/run-api.mjs --install",
+    "setup:webapp": "npm --prefix webapp install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

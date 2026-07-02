@@ -28,8 +28,12 @@ wheels/
 
 # Virtual environments
 venv/
+.venv/
 env/
 ENV/
+
+# Node
+node_modules/
 
 # IDE
 .vscode/
@@ -37,6 +41,13 @@ ENV/
 *.swp
 *.swo
 *~
+
+# Claude Code (local config)
+.claude/
+
+# Coverage reports
+coverage/
+demo/coverage/
 
 # Data & artifacts
 *.parquet
