@@ -53,7 +53,7 @@ demo/coverage/
 *.parquet
 *.db
 *.sqlite
-.npz
+*.npz
 data/
 !demo/src/data/
 !webapp/src/data/
@@ -76,3 +76,6 @@ site/
 
 # Local PM inbox (not for version control)
 PM_INBOX.md
+
+# R
+.Rhistory

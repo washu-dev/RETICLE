@@ -127,6 +127,84 @@ body.compact-view .topbar{opacity:1;transform:translateY(0);pointer-events:auto}
 .band.stress .band-h .name{color:var(--ess)}
 .band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
 
+/* stress fact ledger — per-condition, replaces the pooled distribution axis */
+.lkey{font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--muted);
+  margin-top:14px;padding:11px 14px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}
+.lkey b{color:var(--ink);font-weight:600}
+.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}
+.lkey .ldir{font-size:11px}
+.ledger{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.lrow{border-bottom:1px solid var(--line2)}
+.lrow:last-child{border-bottom:0}
+.lrow>summary{list-style:none;cursor:pointer;display:grid;
+  grid-template-columns:70px minmax(0,1fr) 104px 60px 40px;align-items:center;gap:12px;
+  padding:10px 16px;transition:background .12s}
+.lrow>summary::-webkit-details-marker{display:none}
+.lrow>summary:hover{background:#FBFAF7}
+.lcc{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:3px 5px;text-align:center}
+.lcond{font-family:var(--sans);font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldir{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap}
+.ldir.resist{color:var(--adv)} .ldir.sensitise{color:var(--ess)} .ldir.mixed{color:var(--muted)}
+.lbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.lbar i{display:block;height:100%;border-radius:3px;background:var(--faint)}
+.lrow.resist .lbar i{background:var(--adv)} .lrow.sensitise .lbar i{background:var(--ess)}
+.lcount{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.lfacts{display:flex;flex-direction:column;gap:2px;padding:2px 16px 14px 94px;background:#FCFBF9}
+.lfact{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:none;padding:2px 0}
+a.lfact:hover{color:var(--ink);text-decoration:underline}
+.fs.resist{color:var(--adv)} .fs.sensitise{color:var(--ess)}
+/* show-more expander (default shows top 5) */
+.lmore>summary{list-style:none;cursor:pointer;text-align:center;padding:10px;border-top:1px solid var(--line2);
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ess);transition:background .12s}
+.lmore>summary::-webkit-details-marker{display:none}
+.lmore>summary:hover{background:#FBFAF7}
+.lmore>summary .s-hide{display:none}
+.lmore[open]>summary .s-show{display:none}
+.lmore[open]>summary .s-hide{display:inline}
+.lmore .lrow{border-top:1px solid var(--line2);border-bottom:0}
+/* reporter ledger variant — "regulates {process}", no direction */
+.lrow.rep>summary{grid-template-columns:74px minmax(0,1fr) 60px 34px}
+.rreg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.band.reporter .lbar i{background:var(--faint)}
+.rphen{color:var(--faint)}
+/* screen-vs-screen similarity */
+.search-screen{margin-top:10px}
+.search-screen input{font-size:14px}
+.scrtbl{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.scr-row{display:grid;grid-template-columns:34px 64px minmax(0,1fr) 90px 62px 48px 74px 24px;
+  align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .12s}
+.scr-row:last-child{border-bottom:0}
+.scr-row:not(.scr-hd):hover{background:#FBFAF7}
+.scr-hd{cursor:default;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);background:#FCFBF9}
+.scr-rank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
+.scr-id{font-family:var(--mono);font-size:12.5px;color:var(--ess)}
+.scr-lab{font-family:var(--sans);font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scr-bar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.scr-bar i{display:block;height:100%;border-radius:3px;background:var(--adv)}
+.scr-w{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--adv);text-align:right}
+.scr-p{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.scr-ov{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:right}
+.scr-link{font-family:var(--mono);font-size:13px;color:var(--muted);text-decoration:none;text-align:center}
+.scr-link:hover{color:var(--ink)}
+.scr-hd .scr-w,.scr-hd .scr-p,.scr-hd .scr-ov,.scr-hd .scr-rank{font-weight:400}
+.scr-morewrap{text-align:center;margin-top:14px}
+.scr-morebtn{font-family:var(--mono);font-size:12.5px;color:var(--ess);background:#fff;
+  border:1px solid var(--line);border-radius:10px;padding:10px 20px;cursor:pointer;transition:background .12s}
+.scr-morebtn:hover{background:#FBFAF7}
+.scr-morebtn:disabled{color:var(--faint);cursor:default}
+.scr-done{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em}
+/* per-row grounded AI summary */
+.rexplain:empty{display:none}
+.rexplain{margin:0 0 10px;padding:11px 13px;border:1px solid var(--line);border-left:2px solid var(--adv);border-radius:8px;background:#fff}
+.rex-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rex-src{text-transform:none;letter-spacing:0}
+.rex-src a{color:var(--ess);text-decoration:none} .rex-src a:hover{text-decoration:underline}
+.rex-flag{text-transform:none;letter-spacing:0;color:#8A5A16;background:#FBF1E1;border:1px solid #EBD9BC;border-radius:4px;padding:1px 6px}
+.rex-t{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:#2C3037}
+.rex-load,.rex-err{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.rex-err{color:#B23A3A}
+
 .sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:30px 0 6px;display:flex;align-items:center;gap:10px}
 .sec-h .lead{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:12px}
 .sec-h::after{content:"";flex:1;height:1px;background:var(--line2)}
@@ -144,8 +222,6 @@ body.compact-view .topbar{opacity:1;transform:translateY(0);pointer-events:auto}
 .stat .v small{font-size:14px;color:var(--muted);font-weight:400}
 
 .hist-svg{width:100%;height:200px;display:block;overflow:visible;margin-top:8px}
-.sfilter{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#14161A;border:1px solid #D7D5D0;border-radius:6px;padding:4px 9px;background:#fff;cursor:pointer;margin-left:auto}
-#stressBody .sub{display:inline-block;margin-bottom:2px}
 
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
 .col h4{font-family:var(--sans);font-size:13px;font-weight:600;margin:0 0 4px}
@@ -204,6 +280,11 @@ footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line2);fon
       <button id="go">Explore</button>
     </div>
     <div class="hint">Type any human or mouse gene to explore its landscape.</div>
+    <div class="search search-screen">
+      <input id="qs" type="text" placeholder="…or compare a screen — BioGRID screen id, e.g. 702" autocomplete="off" spellcheck="false">
+      <button id="gos">Find similar</button>
+    </div>
+    <div class="hint">Screen comparison: human · proliferation · genome-wide · ranked by weighted correlation.</div>
     <div class="landmarks-list">
       <span class="lm-label">Landmarks:</span>
       <span class="lm-chip" onclick="explore('POLR2A')">POLR2A</span>
@@ -241,13 +322,6 @@ const FIT = {
   eL:'−1 · essential', eLb:'knockout is lethal', eR:'+1 · advantageous', eRb:'knockout favored',
   statK:'fitness screens', cLh:'Most essential in', cLp:'knockout depletes — required here',
   cRh:'Knockout most favored in', cRp:'loss enriches — cells do better without it', caveat:''
-};
-const STR = {
-  name:'Stress', sub:'survival under an applied pressure',
-  eL:'−1 · sensitizes', eLb:'knockout worsens survival', eR:'+1 · resistance', eRb:'knockout aids survival',
-  statK:'stress screens', cLh:'Most sensitizing in', cLp:'knockout depletes under pressure — synthetic-lethal-like',
-  cRh:'Resistance conferred in', cRp:'knockout enriches — survives the pressure',
-  caveat:'Conditional. These compare meaningfully only within the same pressure (same drug/pathogen) — not against the fitness axis above.'
 };
 
 async function explore(sym){
@@ -289,52 +363,117 @@ function domainBand(b, cfg, key, sig, hist){
   </div>`;
 }
 
-// --- stress band: same body as domainBand, but re-sliceable by pressure type ---
-function stressBodyHTML(b,cfg){
-  return `
-    <span class="sub">${cfg.sub} · ${b.n} screens · median ${fmt(b.median)}</span>
-    <svg class="sig-svg" id="sigS" viewBox="0 0 1000 118" preserveAspectRatio="none"></svg>
-    <div class="ends"><div class="l">${cfg.eL}<b>${cfg.eLb}</b></div><div class="r">${cfg.eR}<b>${cfg.eRb}</b></div></div>
-    <div class="stats">
-      ${stat(cfg.statK,b.n,'int')}
-      ${stat('hit rate',b.hit_rate,'pct',b.n_hits+' hits')}
-      ${stat('median position',b.median,'signed')}
-      ${stat('spread (IQR)',b.p75-b.p25,'plain')}
-    </div>
-    <div class="sec-h">Distribution</div>
-    <svg class="hist-svg" id="histS" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
-    ${cfg.caveat?`<div class="caveat">${cfg.caveat}</div>`:''}`;
-}
-function stressBand(S,cfg){
-  const byCC={}; (S.screens||[]).forEach(s=>{byCC[s.cc]=(byCC[s.cc]||0)+1;});
-  const opts=['<option value="__all">all pressures ('+S.n+')</option>']
-    .concat(Object.entries(byCC).sort((a,b)=>b[1]-a[1]).map(([cc,n])=>`<option value="${cc}">${cc} (${n})</option>`));
+// --- stress: a per-condition FACT LEDGER (no pooled axis) ---
+// Each row = one specific condition; direction resolved there, never across
+// conditions; the bar counts independent screens that agree (evidence, not
+// magnitude). Click a row for the cited screens.
+function stressLedger(S){
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const L=S.ledger||[], CAP=4, TOP=5;   // bar: 4+ independent papers = full
+  const row=r=>{
+    const arw=r.direction==='resist'?'▲ resist'
+             :r.direction==='sensitise'?'▼ sensitize':'± mixed';
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    // concordant → just the paper count; papers disagreeing → flag as a fraction
+    const cnt=r.n_agree===r.n_papers ? String(r.n_papers) : `${r.n_agree}/${r.n_papers}`;
+    const facts=r.facts.map(f=>{
+      const sl=f.sign==='pos'?'resist':'sensitise', st=f.sign==='pos'?'resist':'sensitize';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)} · <span class="fs ${sl}">${st}</span>`;
+      return f.pmid
+        ? `<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`
+        : `<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow ${r.direction}">
+      <summary>
+        <span class="lcc">${esc(r.class)}</span>
+        <span class="lcond" title="${esc(r.condition)}">${esc(r.condition)}</span>
+        <span class="ldir ${r.direction}">${arw}</span>
+        <span class="lbar" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)"><i style="width:${w}%"></i></span>
+        <span class="lcount" title="${r.n_papers} independent paper(s) · ${r.n_screens} screen(s)">${cnt}</span>
+      </summary>
+      <div class="lfacts">${facts}</div>
+    </details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP
+    ? `<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more conditions ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`
+    : '';
   return `
   <div class="band stress">
-    <div class="band-h"><span class="name">${cfg.name}</span>
-      <select id="stressFilter" class="sfilter" title="slice the distribution by pressure type">${opts.join('')}</select></div>
-    <div id="stressBody">${stressBodyHTML(S,cfg)}</div>
+    <div class="band-h"><span class="name">Response to drugs, pathogens &amp; immunity</span>
+      <span class="sub">survival under an applied condition · ${S.n} screens · ${S.n_hits} author-called hits</span></div>
+    <div class="lkey">
+      <b>How to read</b> — each row is one <b>specific</b> condition.
+      <span class="ldir resist">▲ resist</span> = knockout lets cells survive the condition <b>better</b> (loss confers resistance);
+      <span class="ldir sensitise">▼ sensitize</span> = knockout makes cells <b>more sensitive</b> to it (the gene is needed to withstand it).
+      This is the mechanism, not a good/bad call — e.g. for a therapeutic drug, <em>sensitize</em> is usually the <b>useful</b> direction.
+      The <b>bar &amp; number</b> = how many <b>independent papers</b> found this effect — more papers = more reproducible (several screens can come from one paper, so we count papers; 4+ fills the bar). A fraction like <em>1/2</em> only appears when papers <b>disagreed</b> on direction. Click any row for the cited papers.
+    </div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`
+      :`<div class="lkey">No author-called modifier hits across these stress screens.</div>`}
   </div>`;
 }
-function computeBlock(scr){
-  const p=scr.map(s=>s.p).slice().sort((a,b)=>a-b), n=p.length;
-  const q=t=>{ if(!n) return 0; const i=(n-1)*t,lo=Math.floor(i),hi=Math.ceil(i); return p[lo]+(p[hi]-p[lo])*(i-lo); };
-  const BINS=26, counts=new Array(BINS).fill(0);
-  p.forEach(v=>{ let bi=Math.floor((v+1)/2*BINS); if(bi<0)bi=0; if(bi>=BINS)bi=BINS-1; counts[bi]++; });
-  const edges=[]; for(let i=0;i<=BINS;i++) edges.push(-1+2*i/BINS);
-  const nh=scr.filter(s=>s.h).length;
-  return {n, n_hits:nh, hit_rate:n?nh/n:0, median:q(.5), p25:q(.25), p75:q(.75),
-          rug:scr.map(s=>s.p), hist:{edges,counts}, screens:scr};
+
+// --- reporter: a per-process REGULATOR ledger (gene → regulates X) ---
+// Reporter screens read a marker, not survival — the fact is which process the
+// gene regulates (from the screen rationale). Direction is gate-dependent, so
+// it is not shown; the gene↔process association is the point.
+function reporterLedger(R, sym){
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const L=R.ledger||[], CAP=4, TOP=6;
+  const row=r=>{
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    const facts=r.facts.map(f=>{
+      const ph=f.phenotype?` · <span class="rphen">${esc(f.phenotype)}</span>`:'';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)}${ph}`;
+      return f.pmid
+        ? `<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`
+        : `<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow rep" data-symbol="${esc(sym||'')}" data-screens="${esc((r.screens||[]).join(','))}">
+      <summary>
+        <span class="rreg">regulates</span>
+        <span class="lcond" title="${esc(r.process)}">${esc(r.process)}</span>
+        <span class="lbar rep" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)"><i style="width:${w}%"></i></span>
+        <span class="lcount" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)">${r.n_papers}</span>
+      </summary>
+      <div class="lfacts"><div class="rexplain" data-loaded="0"></div>${facts}</div>
+    </details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP
+    ? `<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more processes ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`
+    : '';
+  return `
+  <div class="band reporter">
+    <div class="band-h"><span class="name">Reporter</span>
+      <span class="sub">marker / pathway read-outs · ${R.n} screens · ${R.n_hits} regulator hits</span></div>
+    <div class="lkey"><b>How to read</b> — each row is a <b>process or marker this gene regulates</b> (its knockout shifts the reporter). These are held out of the axes above — a marker is its own scale, so essentiality doesn't apply. Reporter screens name the <b>process</b>, not survival, so direction (raises/lowers) isn't shown. The bar &amp; number = how many independent <b>papers</b> (studies). Click a row for the cited papers.</div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`
+      :`<div class="lkey">No author-called regulator hits across these marker screens.</div>`}
+  </div>`;
 }
-function wireStressFilter(S){
-  const sel=$('#stressFilter'); if(!sel||!S.screens) return;
-  sel.addEventListener('change',()=>{
-    const v=sel.value;
-    const scr = v==='__all' ? S.screens : S.screens.filter(s=>s.cc===v);
-    if(!scr.length) return;
-    const b=computeBlock(scr);
-    $('#stressBody').innerHTML = stressBodyHTML(b,STR);
-    drawSig(b,'sigS'); drawHist(b,'histS'); animateStats();
+
+// lazily fetch the grounded AI summary the first time a reporter row is opened
+function wireReporterExplain(){
+  document.querySelectorAll('.lrow.rep').forEach(row=>{
+    row.addEventListener('toggle', ()=>{
+      if(!row.open) return;
+      const box=row.querySelector('.rexplain');
+      if(!box || box.dataset.loaded!=='0') return;   // load once
+      box.dataset.loaded='1';
+      const sym=row.dataset.symbol||'', screens=row.dataset.screens||'';
+      if(!sym||!screens){ box.dataset.loaded='0'; return; }
+      box.innerHTML='<span class="rex-load"><span class="dot"></span> reading the paper…</span>';
+      fetch('/api/reporter_explain?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
+        .then(r=>r.json()).then(d=>{
+          if(d.error){ box.innerHTML='<span class="rex-err">'+d.error+'</span>'; return; }
+          const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+          const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
+          box.innerHTML=`<div class="rex-h"><span>AI summary</span>${cites?`<span class="rex-src">cites ${cites}</span>`:''}</div><div class="rex-t">${esc(d.text)||'—'}</div>`;
+        })
+        .catch(()=>{ box.innerHTML='<span class="rex-err">Could not reach the server.</span>'; });
+    });
   });
 }
 
@@ -354,28 +493,25 @@ function render(d){
   }
   let stress='';
   if(S){
-    const sm=S.median, slean = sm<-0.15?'sensitize':sm>0.15?'resist':'mixed';
-    let base;
-    if(slean==='sensitize')
-      base = `Under stress, losing <em class="e">${d.symbol}</em> tends to <em class="e">sensitize</em> cells — they fare worse under the pressure (median ${fmt(sm)}, ${sn} screens).`;
-    else if(slean==='resist')
-      base = `Under stress, knocking out <em class="a">${d.symbol}</em> tends to confer <em class="a">resistance</em> — cells survive the pressure better without it (median ${fmt(sm)}, ${sn} screens).`;
-    else
-      base = `Under stress, <em>${d.symbol}</em> is <em>mixed</em> — the effect depends on the specific pressure (median ${fmt(sm)}, ${sn} screens).`;
-    let rel='';
-    if(F){
-      const flips = Math.sign(F.median)!==Math.sign(sm) && Math.abs(F.median-sm)>0.25;
-      rel = flips
-        ? ` This <b>flips</b> its fitness behavior (${fmt(F.median)}) — context-dependent, not a contradiction.`
-        : ` Broadly consistent with its fitness behavior (${fmt(F.median)}).`;
+    const L=S.ledger||[];
+    if(L.length){
+      const top=L.slice(0,2).map(r=>{
+        const cls=r.direction==='resist'?'a':r.direction==='sensitise'?'e':'';
+        const verb=r.direction==='resist'?'confers resistance to'
+                 :r.direction==='sensitise'?'sensitizes to':'is mixed on';
+        const cnt=r.n_agree===r.n_papers?r.n_papers:`${r.n_agree}/${r.n_papers}`;
+        return `<em class="${cls}">${verb} ${r.condition}</em> (${cnt} paper${r.n_papers>1?'s':''})`;
+      }).join(', ');
+      stress = `Under drug, pathogen or immune pressure, <em>${d.symbol}</em> is <b>condition-specific</b> — e.g. ${top}. There is no single verdict; each condition is its own fact below.`;
+    }else{
+      stress = `<em>${d.symbol}</em> was measured in <em>${sn}</em> drug / pathogen / immune screens but is not an author-called hit in any.`;
     }
-    stress = base + rel;
   }
 
   const el=$('#result');
   el.innerHTML = `
     <div class="gene-head">
-      <div class="gene-org">${d.organism} · ${d.n_total} screens · <b>${fn} fitness</b> · ${sn} stress · ${rn} reporter</div>
+      <div class="gene-org">${d.organism} · ${d.n_total} screens · <b>${fn} fitness</b> · ${sn} drug/pathogen · ${rn} reporter</div>
       <div class="gene-sym">${d.symbol}</div>
       <div class="verdict">${verdict}</div>
       ${stress?`<div class="verdict-stress">${stress}</div>`:''}
@@ -392,9 +528,19 @@ function render(d){
         <span style="color:var(--faint)">edge width = STRING confidence · hover an edge for its evidence · click a node to explore</span>
       </div>
     </div>
+    <div class="netwrap" id="coesswrap" style="display:none">
+      <div class="sec-h">Co-essentiality network <span class="lead">— from RETICLE's own screens: genes whose CRISPR profiles move together (data-driven, works for dark genes)</span></div>
+      <svg id="coesssvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="netlegend">
+        <span><i style="background:#1F6F8B"></i>essential</span>
+        <span><i style="background:#E08A3C"></i>KO-advantageous</span>
+        <span><i style="background:#9AA0A6"></i>mixed</span>
+        <span style="color:var(--faint)">edge = correlated behavior across fitness screens · hover for Pearson r · click a node to explore</span>
+      </div>
+    </div>
     ${F?domainBand(F,FIT,'fitness','sigF','histF'):''}
-    ${S?stressBand(S,STR):''}
-    ${rn?`<div class="repnote"><b>${rn} reporter / marker screens</b> are held out of the axes above — each marker is its own scale, so essentiality doesn't apply. They are the most specific functional evidence and feed the AI reading below.</div>`:''}
+    ${S?stressLedger(S):''}
+    ${rn?reporterLedger(R,d.symbol):''}
     <div class="sec-h">Interpreted role</div>
     <div class="ai">
       <div class="ai-h"><span class="t">AI reading</span><span class="m" id="aimodel"></span></div>
@@ -405,11 +551,12 @@ function render(d){
   requestAnimationFrame(()=>{
     el.classList.add('show');
     if(F){ drawSig(F,'sigF'); drawHist(F,'histF'); }
-    if(S){ drawSig(S,'sigS'); drawHist(S,'histS'); wireStressFilter(S); }
     animateStats();
+    wireReporterExplain();
   });
   loadContext(d);
   loadNetwork(d);
+  loadCoess(d);
   runInterpret(d);
 }
 
@@ -423,9 +570,21 @@ async function loadNetwork(d){
   }catch(e){ wrap.style.display='none'; }
 }
 
+async function loadCoess(d){
+  const wrap=$('#coesswrap'); if(!wrap) return;
+  try{
+    const r=await fetch('/api/coessential?symbol='+encodeURIComponent(d.symbol)+'&org='+encodeURIComponent(d.organism));
+    const g=await r.json();
+    if(!r.ok || !g.nodes || g.nodes.length<2){ wrap.style.display='none'; return; }
+    renderNetwork(g, '#coesssvg', 'coess'); wrap.style.display='';
+  }catch(e){ wrap.style.display='none'; }
+}
+
 let netRAF=null;
-function renderNetwork(g){
-  if(netRAF) cancelAnimationFrame(netRAF);
+function renderNetwork(g, svgSel, kind){
+  svgSel=svgSel||'#netsvg'; kind=kind||'string';
+  const svg=$(svgSel); if(!svg) return;
+  if(svg._raf) cancelAnimationFrame(svg._raf);
   const NS='http://www.w3.org/2000/svg', W=760,H=400;
   const nodes=g.nodes.map((n,i)=>{const a=2*Math.PI*i/g.nodes.length;
     return {...n, x:W/2+Math.cos(a)*175+(Math.random()-.5)*30, y:H/2+Math.sin(a)*135+(Math.random()-.5)*30, vx:0, vy:0};});
@@ -435,8 +594,9 @@ function renderNetwork(g){
   edges.forEach(e=>{adj[e.a].add(e.b); adj[e.b].add(e.a);});
   const col=l=> l==='essential'?'#1F6F8B':l==='advantageous'?'#E08A3C':l==='mixed'?'#9AA0A6':'#ffffff';
 
-  const svg=$('#netsvg'); svg.innerHTML='';
+  svg.innerHTML='';
   const edgeTip=e=>{
+    if(kind==='coess'){ return `${e.a} — ${e.b}<br><span style="color:#E08A3C">co-essential</span> · Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}`; }
     const chs=Object.entries(e.channels||{}).sort((a,b)=>b[1]-a[1]);
     const known=e.channels&&(e.channels['experiments']||e.channels['databases']);
     const head=known?'known interaction':(chs.length?'predicted / mined link':'association');
@@ -509,7 +669,7 @@ function renderNetwork(g){
     }
     paint();
     frame++;
-    netRAF=requestAnimationFrame(loop);
+    svg._raf=requestAnimationFrame(loop);
   })();
 }
 
@@ -722,8 +882,83 @@ function initWave() {
   animate();
 }
 
+// --- screen-vs-screen similarity (human · proliferation · genome-wide) ---
+const _scrEsc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let _scrState=null;                         // {sid, shown, total, maxw}
+const SCR_PAGE=50;
+
+async function findSimilar(sid){
+  sid=(sid||'').replace(/\D/g,''); if(!sid) return;
+  const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
+  try{
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0`);
+    const d=await r.json();
+    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    st.textContent=''; $('#hero').classList.add('compact'); document.body.classList.add('compact-view');
+    _scrState={sid:d.query.screen_id, shown:d.results.length, total:d.n_total,
+               maxw:d.results.length?d.results[0].weighted:1};
+    renderScreenSimilar(d);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+}
+
+function scrRowsHTML(results, start){
+  const maxw=Math.max(0.01,_scrState.maxw);
+  return results.map((x,i)=>{
+    const w=Math.round(100*Math.max(0,x.weighted)/maxw);
+    return `<div class="scr-row" onclick="document.getElementById('qs').value='${_scrEsc(x.screen_id)}';findSimilar('${_scrEsc(x.screen_id)}')">
+      <span class="scr-rank">${start+i+1}</span>
+      <span class="scr-id">#${_scrEsc(x.screen_id)}</span>
+      <span class="scr-lab">${_scrEsc(x.author)} · <b>${_scrEsc(x.cell_line)}</b></span>
+      <span class="scr-bar"><i style="width:${w}%"></i></span>
+      <span class="scr-w">${x.weighted.toFixed(2)}</span>
+      <span class="scr-p">${x.plain!=null?x.plain.toFixed(2):'—'}</span>
+      <span class="scr-ov">${x.overlap.toLocaleString()}</span>
+      <a class="scr-link" href="https://orcs.thebiogrid.org/Screen/${_scrEsc(x.screen_id)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗</a>
+    </div>`;
+  }).join('');
+}
+
+function scrMoreHTML(){
+  if(!_scrState) return '';
+  if(_scrState.shown>=_scrState.total)
+    return `<div class="scr-done">all ${_scrState.total} correlated screens shown</div>`;
+  const rem=_scrState.total-_scrState.shown;
+  return `<button id="scrmore" class="scr-morebtn" onclick="loadMoreSimilar()">Load more — ${Math.min(SCR_PAGE,rem)} of ${rem} remaining</button>`;
+}
+
+async function loadMoreSimilar(){
+  if(!_scrState) return;
+  const btn=$('#scrmore'); if(btn){ btn.textContent='Loading…'; btn.disabled=true; }
+  try{
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}`);
+    const d=await r.json();
+    $('#scrtbl').insertAdjacentHTML('beforeend', scrRowsHTML(d.results, _scrState.shown));
+    _scrState.shown+=d.results.length; _scrState.total=d.n_total;
+  }catch(e){}
+  $('#scrmorewrap').innerHTML=scrMoreHTML();
+}
+
+function renderScreenSimilar(d){
+  const q=d.query, esc=_scrEsc;
+  $('#result').innerHTML=`
+    <div class="gene-head">
+      <div class="gene-org">highly correlated screens · human · proliferation · genome-wide · pool ${d.n_pool} screens</div>
+      <div class="gene-sym">Screens like #${esc(q.screen_id)}</div>
+      <div class="verdict">${esc(q.author)} · <em>${esc(q.cell_line)}</em>${q.n_genes?` · ${q.n_genes.toLocaleString()} genes measured`:''}${q.pmid?` · <a href="https://pubmed.ncbi.nlm.nih.gov/${esc(q.pmid)}" target="_blank" rel="noopener">PMID ${esc(q.pmid)}</a>`:''} · <em>${d.n_total}</em> comparable</div>
+    </div>
+    <div class="lkey"><b>How to read</b> — ranked by <b>weighted correlation</b>: extreme (hit) genes dominate, the ~random middle is down-weighted. <b>plain</b> is the equal-weight version for contrast — a large gap means the screens agree mainly on their strongest hits. <b>overlap</b> = shared measured genes. Click a row to pivot to that screen; ↗ opens it in BioGRID.</div>
+    <div class="scrtbl" id="scrtbl">
+      <div class="scr-row scr-hd"><span class="scr-rank">#</span><span class="scr-id">screen</span><span class="scr-lab">author · cell line</span><span class="scr-bar"></span><span class="scr-w">weighted</span><span class="scr-p">plain</span><span class="scr-ov">overlap</span><span class="scr-link"></span></div>
+      ${d.results.length?scrRowsHTML(d.results,0):'<div class="lkey">No comparable screens (need ≥200 shared genes).</div>'}
+    </div>
+    <div class="scr-morewrap" id="scrmorewrap">${scrMoreHTML()}</div>`;
+  requestAnimationFrame(()=>$('#result').classList.add('show'));
+}
+
 $('#go').addEventListener('click',()=>explore($('#q').value));
 $('#q').addEventListener('keydown',e=>{if(e.key==='Enter')explore($('#q').value);});
+$('#gos').addEventListener('click',()=>findSimilar($('#qs').value));
+$('#qs').addEventListener('keydown',e=>{if(e.key==='Enter')findSimilar($('#qs').value);});
 initWave();
 </script>
 </body>

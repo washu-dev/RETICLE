@@ -519,18 +519,20 @@ def main():
     create_schema(db)
 
     print("Loading metadata...")
-    with open(os.path.join(raw_dir, "metadata/screen_metadata_musculus.json")) as f:
+    # layout-aware (RIS: BIOGRID-ORCS-2.0.18/<species>/ with json in the same dir;
+    #                local: raw_data/BIOGRID/{metadata,screenings}/) — see paths.py
+    with open(paths.BIOGRID_METADATA["Mus musculus"]) as f:
         meta_mouse = json.load(f)
-    with open(os.path.join(raw_dir, "metadata/screen_metadata_homo_sapiens.json")) as f:
+    with open(paths.BIOGRID_METADATA["Homo sapiens"]) as f:
         meta_human = json.load(f)
 
     stats = {"ok": 0, "no_metadata": 0, "read_error": 0, "missing_cols": 0,
              "hit_only": 0, "basis": {}}
 
-    process_set(glob.glob(os.path.join(raw_dir, "screenings/mus_musculus/*")),
+    process_set(glob.glob(str(paths.BIOGRID_SCREENS["Mus musculus"] / "*")),
                 meta_mouse, os.path.join(proc_dir, "screenings/mus_musculus"),
                 db, stats, "mouse")
-    process_set(glob.glob(os.path.join(raw_dir, "screenings/homo_sapiens/*")),
+    process_set(glob.glob(str(paths.BIOGRID_SCREENS["Homo sapiens"] / "*")),
                 meta_human, os.path.join(proc_dir, "screenings/homo_sapiens"),
                 db, stats, "human")
 
