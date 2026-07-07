@@ -1,5 +1,5 @@
 """
-Data service â€” real RDS queries when AWS_DB_HOST is set, mock data otherwise.
+Data service — real RDS queries when AWS_DB_HOST is set, mock data otherwise.
 
 The two public async functions (run_query / get_gene_detail) are the seam
 between the API layer and the database.  All mock reference data below stays
@@ -36,7 +36,7 @@ _MATCHED_SCREENS: list[MatchedScreen] = [
                   rho=0.82, fdr=0.0003, directionality="agree",
                   shared_genes=18, total_genes=847),
     MatchedScreen(id=2, biogrid_id="ORCS-6102",
-                  name="IFNÎ³ pathway modulators in monocyte-derived macrophages",
+                  name="IFNγ pathway modulators in monocyte-derived macrophages",
                   citation="Zhao et al., 2021", pmid="33782614",
                   organism="Human", modality="KO", cell_type="MDMs",
                   rho=0.74, fdr=0.0011, directionality="agree",
@@ -48,7 +48,7 @@ _MATCHED_SCREENS: list[MatchedScreen] = [
                   rho=0.61, fdr=0.0084, directionality="agree",
                   shared_genes=12, total_genes=1204),
     MatchedScreen(id=4, biogrid_id="ORCS-5519",
-                  name="Macrophage activation enhancers â€” CRISPRa gain-of-function",
+                  name="Macrophage activation enhancers — CRISPRa gain-of-function",
                   citation="Park et al., 2023", pmid="36891234",
                   organism="Human", modality="CRISPRa",
                   cell_type="iPSC-derived macrophages",
@@ -119,82 +119,82 @@ _DARK_GENES: list[DarkGene] = [
 _GRAPH_ELEMENTS = GraphElements(
     nodes=[
         GraphNode(data=GraphNodeData(id="s1", label="Orvedahl 2019", type="screen",
-                                     detail="Autophagy Â· Human Â· KO",
-                                     citation="Orvedahl et al., 2019 Â· Nature Immunology",
+                                     detail="Autophagy · Human · KO",
+                                     citation="Orvedahl et al., 2019 · Nature Immunology",
                                      pmid="31097699", gene_count=847),
                   position=GraphNodePosition(x=300, y=200)),
         GraphNode(data=GraphNodeData(id="s2", label="Zhao 2021", type="screen",
-                                     detail="IFNÎ³ Â· Human Â· KO",
-                                     citation="Zhao et al., 2021 Â· Cell Reports",
+                                     detail="IFNγ · Human · KO",
+                                     citation="Zhao et al., 2021 · Cell Reports",
                                      pmid="33782614", gene_count=912),
                   position=GraphNodePosition(x=500, y=100)),
         GraphNode(data=GraphNodeData(id="s3", label="Lin 2022", type="screen",
-                                     detail="mTOR Â· Human Â· KO",
-                                     citation="Lin et al., 2022 Â· eLife",
+                                     detail="mTOR · Human · KO",
+                                     citation="Lin et al., 2022 · eLife",
                                      pmid="35124892", gene_count=1204),
                   position=GraphNodePosition(x=650, y=280)),
         GraphNode(data=GraphNodeData(id="s4", label="Park 2023", type="screen",
-                                     detail="Activation Â· iPSC Â· CRISPRa",
-                                     citation="Park et al., 2023 Â· Cell Stem Cell",
+                                     detail="Activation · iPSC · CRISPRa",
+                                     citation="Park et al., 2023 · Cell Stem Cell",
                                      pmid="36891234", gene_count=763),
                   position=GraphNodePosition(x=150, y=350)),
         GraphNode(data=GraphNodeData(id="s5", label="Huang 2021", type="screen",
-                                     detail="Cell death Â· Mouse Â· KO",
-                                     citation="Huang et al., 2021 Â· Science Immunology",
+                                     detail="Cell death · Mouse · KO",
+                                     citation="Huang et al., 2021 · Science Immunology",
                                      pmid="33441802", gene_count=688),
                   position=GraphNodePosition(x=480, y=400)),
         GraphNode(data=GraphNodeData(id="g1", label="ATG5",     type="gene",
-                                     detail="Core autophagy Â· 892 pubs",   screen_count=3),
+                                     detail="Core autophagy · 892 pubs",   screen_count=3),
                   position=GraphNodePosition(x=350, y=320)),
         GraphNode(data=GraphNodeData(id="g2", label="ATG7",     type="gene",
-                                     detail="Core autophagy Â· 743 pubs",   screen_count=2),
+                                     detail="Core autophagy · 743 pubs",   screen_count=2),
                   position=GraphNodePosition(x=420, y=250)),
         GraphNode(data=GraphNodeData(id="g3", label="IRGM",     type="gene",
-                                     detail="Selective autophagy Â· 278 pubs", screen_count=3),
+                                     detail="Selective autophagy · 278 pubs", screen_count=3),
                   position=GraphNodePosition(x=280, y=150)),
         GraphNode(data=GraphNodeData(id="g4", label="CCDC6",    type="dark",
-                                     detail="Dark candidate Â· 23 pubs",    screen_count=3),
+                                     detail="Dark candidate · 23 pubs",    screen_count=3),
                   position=GraphNodePosition(x=560, y=200)),
         GraphNode(data=GraphNodeData(id="g5", label="FAM114A1", type="dark",
-                                     detail="Dark candidate Â· 8 pubs",     screen_count=3),
+                                     detail="Dark candidate · 8 pubs",     screen_count=3),
                   position=GraphNodePosition(x=200, y=260)),
         GraphNode(data=GraphNodeData(id="g6", label="ULK1",     type="gene",
-                                     detail="Autophagy initiation Â· 501 pubs", screen_count=2),
+                                     detail="Autophagy initiation · 501 pubs", screen_count=2),
                   position=GraphNodePosition(x=390, y=380)),
     ],
     edges=[
         GraphEdge(data=GraphEdgeData(
-            source="s1", target="g1", rho=0.82, edge_label="Orvedahl 2019 â†’ ATG5")),
+            source="s1", target="g1", rho=0.82, edge_label="Orvedahl 2019 → ATG5")),
         GraphEdge(data=GraphEdgeData(
-            source="s1", target="g2", rho=0.78, edge_label="Orvedahl 2019 â†’ ATG7")),
+            source="s1", target="g2", rho=0.78, edge_label="Orvedahl 2019 → ATG7")),
         GraphEdge(data=GraphEdgeData(
-            source="s1", target="g3", rho=0.74, edge_label="Orvedahl 2019 â†’ IRGM")),
+            source="s1", target="g3", rho=0.74, edge_label="Orvedahl 2019 → IRGM")),
         GraphEdge(data=GraphEdgeData(
-            source="s1", target="g4", rho=0.71, edge_label="Orvedahl 2019 â†’ CCDC6")),
+            source="s1", target="g4", rho=0.71, edge_label="Orvedahl 2019 → CCDC6")),
         GraphEdge(data=GraphEdgeData(
-            source="s2", target="g1", rho=0.68, edge_label="Zhao 2021 â†’ ATG5")),
+            source="s2", target="g1", rho=0.68, edge_label="Zhao 2021 → ATG5")),
         GraphEdge(data=GraphEdgeData(
-            source="s2", target="g3", rho=0.65, edge_label="Zhao 2021 â†’ IRGM")),
+            source="s2", target="g3", rho=0.65, edge_label="Zhao 2021 → IRGM")),
         GraphEdge(data=GraphEdgeData(
-            source="s2", target="g4", rho=0.62, edge_label="Zhao 2021 â†’ CCDC6")),
+            source="s2", target="g4", rho=0.62, edge_label="Zhao 2021 → CCDC6")),
         GraphEdge(data=GraphEdgeData(
-            source="s2", target="g5", rho=0.58, edge_label="Zhao 2021 â†’ FAM114A1")),
+            source="s2", target="g5", rho=0.58, edge_label="Zhao 2021 → FAM114A1")),
         GraphEdge(data=GraphEdgeData(
-            source="s3", target="g2", rho=0.61, edge_label="Lin 2022 â†’ ATG7")),
+            source="s3", target="g2", rho=0.61, edge_label="Lin 2022 → ATG7")),
         GraphEdge(data=GraphEdgeData(
-            source="s3", target="g6", rho=0.57, edge_label="Lin 2022 â†’ ULK1")),
+            source="s3", target="g6", rho=0.57, edge_label="Lin 2022 → ULK1")),
         GraphEdge(data=GraphEdgeData(
-            source="s3", target="g4", rho=0.54, edge_label="Lin 2022 â†’ CCDC6")),
+            source="s3", target="g4", rho=0.54, edge_label="Lin 2022 → CCDC6")),
         GraphEdge(data=GraphEdgeData(
-            source="s4", target="g5", rho=-0.55, edge_label="Park 2023 â†’ FAM114A1")),
+            source="s4", target="g5", rho=-0.55, edge_label="Park 2023 → FAM114A1")),
         GraphEdge(data=GraphEdgeData(
-            source="s4", target="g1", rho=-0.48, edge_label="Park 2023 â†’ ATG5")),
+            source="s4", target="g1", rho=-0.48, edge_label="Park 2023 → ATG5")),
         GraphEdge(data=GraphEdgeData(
-            source="s5", target="g6", rho=0.43, edge_label="Huang 2021 â†’ ULK1")),
+            source="s5", target="g6", rho=0.43, edge_label="Huang 2021 → ULK1")),
         GraphEdge(data=GraphEdgeData(
-            source="s5", target="g3", rho=0.39, edge_label="Huang 2021 â†’ IRGM")),
+            source="s5", target="g3", rho=0.39, edge_label="Huang 2021 → IRGM")),
         GraphEdge(data=GraphEdgeData(
-            source="s5", target="g5", rho=0.36, edge_label="Huang 2021 â†’ FAM114A1")),
+            source="s5", target="g5", rho=0.36, edge_label="Huang 2021 → FAM114A1")),
     ],
 )
 
@@ -202,7 +202,7 @@ _GENE_RATIONALES: dict[str, dict] = {
     "CCDC6": {
         "hypothesis": (
             "CCDC6 (coiled-coil domain containing 6) co-clusters with core autophagy machinery "
-            "(ATG5, ATG7, IRGM) across 4 of 8 matched screens, with a mean Spearman Ï of 0.71 "
+            "(ATG5, ATG7, IRGM) across 4 of 8 matched screens, with a mean Spearman ρ of 0.71 "
             "to the query screen. Despite only 23 indexed publications, its pathway-correlation "
             "profile is indistinguishable from established autophagy genes, suggesting a "
             "functional role in autophagic flux or selective cargo recognition."
@@ -211,9 +211,9 @@ _GENE_RATIONALES: dict[str, dict] = {
             "CCDC6 is known primarily as a fusion partner in thyroid carcinoma (RET/PTC "
             "rearrangements), where it acts as a substrate for ATM-mediated DNA damage "
             "checkpointing. However, its role in non-malignant macrophage biology is completely "
-            "uncharacterized. The co-occurrence pattern with IFNÎ³-responsive genes (TBK1, IRGM) "
+            "uncharacterized. The co-occurrence pattern with IFNγ-responsive genes (TBK1, IRGM) "
             "in matched screens suggests a potential regulatory node connecting innate immune "
-            "signaling to autophagic clearance â€” a mechanism consistent with the itaconate/Irg1 "
+            "signaling to autophagic clearance — a mechanism consistent with the itaconate/Irg1 "
             "axis being studied."
         ),
         "citations": [
@@ -223,7 +223,7 @@ _GENE_RATIONALES: dict[str, dict] = {
         ],
         "suggested_validation": (
             "Orthogonal validation via CRISPRi depletion in bone-marrow-derived macrophages with "
-            "IFNÎ³/LPS co-stimulation. Assess LC3-II flux by western blot and p62/SQSTM1 "
+            "IFNγ/LPS co-stimulation. Assess LC3-II flux by western blot and p62/SQSTM1 "
             "accumulation as proxies for autophagic activity."
         ),
     },
@@ -231,14 +231,14 @@ _GENE_RATIONALES: dict[str, dict] = {
         "hypothesis": (
             "FAM114A1 (family with sequence similarity 114 member A1) has only 8 indexed "
             "publications and appears in 3 matched screens correlated with macrophage death "
-            "regulators. Its functional annotation is limited to 2 GO terms â€” it is among the "
+            "regulators. Its functional annotation is limited to 2 GO terms — it is among the "
             "highest-darkness candidates in this query."
         ),
         "mechanistic_context": (
             "FAM114A1 encodes a poorly characterized transmembrane protein with predicted "
             "coiled-coil domains. It localizes to the ER in proteomics studies but has no "
             "assigned molecular function. The co-occurrence with known autophagy receptors in "
-            "matched screens is unexplained by existing literature â€” this is a true dark matter "
+            "matched screens is unexplained by existing literature — this is a true dark matter "
             "candidate."
         ),
         "citations": [
@@ -425,7 +425,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
             id=f"g{i + 1}",
             label=dg.symbol,
             type="gene",
-            detail=f"{dg.pubs} pubs Â· {dg.screens} screens",
+            detail=f"{dg.pubs} pubs · {dg.screens} screens",
             screen_count=dg.screens,
         ))
         for i, dg in enumerate(dark_genes[:8])
@@ -456,7 +456,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
                         source=s_node,
                         target=g_node,
                         rho=round(float(row["harmonized_score"] or 0), 4),
-                        edge_label=f"{row['screen_id']} â†’ {row['gene_symbol']}",
+                        edge_label=f"{row['screen_id']} → {row['gene_symbol']}",
                     )))
 
     stats = QueryStats(
@@ -545,14 +545,14 @@ async def get_gene_detail(symbol: str) -> GeneDetail | None:
         if row["pmid"]
     ]
 
-    # Use hit_screens as darkness proxy â€” more screens hit = better characterized
+    # Use hit_screens as darkness proxy — more screens hit = better characterized
     dark_score = round(10.0 / math.log10(hit_screens + 2), 2)
     is_bright  = hit_screens > 50
 
     hypothesis = (
         f"{symbol} appears as a significant hit in {hit_screens} of {screens} CRISPR screens "
         f"(mean percentile score {avg_score:.3f}). "
-        f"It is a {'well-characterized' if is_bright else 'dark'} candidate â€” "
+        f"It is a {'well-characterized' if is_bright else 'dark'} candidate — "
         f"appearing as a hit in {'many' if is_bright else 'few'} screens relative to the dataset."
     )
 

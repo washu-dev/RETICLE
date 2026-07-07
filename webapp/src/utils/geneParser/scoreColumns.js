@@ -14,7 +14,7 @@
  * @returns {{ value: string, label: string }[]}
  */
 function buildCandidates(columns, priorityOrder) {
-  // Build sorted list: priority columns first (in priority order), then the rest alphabetically
+  // Build list: priority columns first (in priority order), then the remaining columns in their original order
   const seen    = new Set();
   const ordered = [];
 

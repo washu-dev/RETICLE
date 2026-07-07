@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 import sys
 from collections.abc import AsyncGenerator
@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from routers.genes import router as genes_router
 from routers.query import router as query_router
-
 
 # Load environment variables from .env file early
 load_dotenv()
@@ -131,7 +130,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="0.0.0.0",  # nosec B104 â€” intentional for containerized deployment
+        host="0.0.0.0",  # nosec B104 — intentional for containerized deployment
         port=8000,
     )
 
