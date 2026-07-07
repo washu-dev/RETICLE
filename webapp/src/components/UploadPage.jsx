@@ -72,10 +72,15 @@ export default function UploadPage({ onAnalyze }) {
 
   async function handleSubmit() {
     if (!text.trim()) { setError('Paste a gene list or upload a file.'); return; }
+    // Recompute detection synchronously: the `detected`/`scoreColumn` state is set on a
+    // 200ms debounce, so a fast submit could otherwise parse with a stale/undefined
+    // delimiter. Deriving them here makes submit deterministic regardless of timing.
+    const det = detectFormat(text);
+    const effectiveScoreColumn = scoreColumn || suggestScoreColumn(det.columns, det.format).defaultColumn;
     const { genes, warnings } = parseGeneList(text, {
-      delimiter: detected?.delimiter,
-      idColumn: detected?.idColumn,
-      scoreColumn,
+      delimiter: det.delimiter,
+      idColumn: det.idColumn,
+      scoreColumn: effectiveScoreColumn,
     });
     if (genes.length < 5) { setError(`Need at least 5 genes. ${warnings[0] ?? ''}`); return; }
     const resolveOrganism = organism === 'Mouse' ? 'Mouse' : 'Human';
@@ -83,7 +88,7 @@ export default function UploadPage({ onAnalyze }) {
     setError('');
     onAnalyze(resolved, {
       algorithm, organism, modalities, pathwayAnalysis,
-      format: detected?.format ?? 'SIMPLE', scoreColumn,
+      format: det.format, scoreColumn: effectiveScoreColumn,
     });
   }
 
