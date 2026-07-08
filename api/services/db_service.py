@@ -37,6 +37,10 @@ _PG_PARAMS = (
         "user": os.getenv("AWS_DB_USER"),
         "password": os.getenv("AWS_DB_PASSWORD"),
         "dbname": os.getenv("AWS_DB_NAME"),
+        # Force UTF-8 decoding of text; otherwise psycopg2 falls back to the
+        # client's locale encoding (Latin-1/CP1252 on Windows), which turns
+        # UTF-8 data like "17β-estradiol" into mojibake ("17Î²-estradiol").
+        "client_encoding": "utf-8",
         "connect_timeout": 15,
         "keepalives": 1,
         "keepalives_idle": 20,
