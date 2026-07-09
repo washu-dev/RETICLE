@@ -117,7 +117,8 @@ def _get(url: str, ncbi: bool = False) -> bytes:
             time.sleep(wait)
         _last_ncbi[0] = time.time()
     req = urllib.request.Request(url, headers={"User-Agent": "RETICLE/1.0 (research)"})
-    with urllib.request.urlopen(req, timeout=20) as r:  # noqa: S310 (fixed https hosts)
+    # URLs are built only from the fixed https hosts above (no user-controlled scheme)
+    with urllib.request.urlopen(req, timeout=20) as r:  # noqa: S310  # nosec B310
         return bytes(r.read())
 
 
@@ -203,7 +204,8 @@ def pubmed_abstracts(pmids: list) -> Any:
     def fetch() -> Any:
         ids = ",".join(pmids)
         url = f"{NCBI}/efetch.fcgi?db=pubmed&id={ids}&retmode=xml{_ncbi_suffix()}"
-        root = ET.fromstring(_get(url, ncbi=True))  # noqa: S314 (trusted NCBI source)
+        # XML comes from NCBI efetch (trusted source), parsed read-only
+        root = ET.fromstring(_get(url, ncbi=True))  # noqa: S314  # nosec B314
         out = []
         for art in root.findall(".//PubmedArticle"):
             pmid = art.findtext(".//PMID") or ""
