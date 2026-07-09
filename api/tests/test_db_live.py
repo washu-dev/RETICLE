@@ -285,6 +285,33 @@ class TestExplorerGeneLive:
         assert "Î" not in body, "mojibake detected — psycopg2 client_encoding regressed"
 
 
+class TestExplorerContextLive:
+    """/api/context and /api/network against real RDS + external APIs
+    (MyGene/NCBI/STRING). Cached in reticle.external_cache after first call."""
+
+    def test_context_shape(self, client: Any) -> None:
+        d = client.get("/api/context?symbol=TP53").json()
+        assert d["symbol"] == "TP53"
+        assert d["darkness"]["band"] in ("dark", "grey", "bright")
+        assert d["annotation"]["name"]  # "tumor protein p53"
+        assert isinstance(d["string_partners"], list)
+
+    def test_network_shape(self, client: Any) -> None:
+        g = client.get("/api/network?symbol=TP53").json()
+        assert g["focus"] == "TP53"
+        assert len(g["nodes"]) >= 2
+        assert len(g["edges"]) >= 1
+        # at least one node colored by its CRISPR fitness behavior
+        assert any(n["lean"] for n in g["nodes"])
+
+    def test_external_cache_persists(self, client: Any) -> None:
+        """The 30-day cache lives in shared RDS, not container-local SQLite."""
+        from services.db_service import db_fetchall
+        client.get("/api/context?symbol=TP53")  # ensure populated
+        rows = db_fetchall("SELECT count(*) AS n FROM external_cache")
+        assert int(rows[0]["n"]) > 0
+
+
 class TestDbFetchall:
     def test_returns_list_of_rows(self) -> None:
         from services.db_service import db_fetchall
