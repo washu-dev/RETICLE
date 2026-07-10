@@ -1,12 +1,21 @@
 import json
 import logging
+import os
 import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from routers.explorer import router as explorer_router
+from routers.genes import router as genes_router
+from routers.query import router as query_router
+
+# Load environment variables from .env file early
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +79,27 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
+# CORS. The webapp calls this API cross-origin (S3/CloudFront -> ECS) with a
+# bearer token in the Authorization header, not cookies — so credentials are not
+# needed, and disabling them keeps the wildcard-origin default valid and safe
+# (allow_origins=["*"] WITH allow_credentials=True is the OWASP misconfiguration
+# browsers reject). Lock origins down per environment via CORS_ALLOW_ORIGINS
+# (comma-separated) once the CloudFront domain is known.
+_cors_origins = [
+    o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(query_router)
+app.include_router(genes_router)
+app.include_router(explorer_router)
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -120,6 +143,9 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host="0.0.0.0",  # nosec B104 — intentional for containerized deployment
         port=8000,
     )
+
+
+

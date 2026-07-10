@@ -1,16 +1,27 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, FlaskConical, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
 import { EXAMPLE_GENE_LIST } from '../mockData';
-import { parseGenes } from '../utils/parseGenes';
+import { detectFormat, suggestScoreColumn, parseGeneList, resolveIdentifiers } from '../utils/geneParser';
+import crosswalk from '../data/crosswalk.min.json';
 
-const FORMAT_HINT = `CSV or TSV with header row:
-  gene_symbol, score
-  ATG5, -3.21
-  ULK1, -2.74
-  ...`;
+const FORMAT_HINT = `Paste a ranked gene list — CSV or TSV with a header row.
+
+Supported formats:
+  MAGeCK gene summary  (id, neg|lfc, neg|score, ...)
+  STARS output         (Gene, LFC, q-value, p-value, Rank)
+  DESeq2 results       (gene, baseMean, log2FoldChange, padj)
+  Simple 2-column      (gene_symbol, score)`;
 
 const ALGORITHMS = ['MAGeCK LFC', 'STARS', 'DRUGz', 'DESeq2', 'Custom'];
 const MODALITY_OPTIONS = ['KO', 'CRISPRa', 'CRISPRi'];
+
+const FORMAT_LABELS = {
+  MAGECK: 'MAGeCK gene summary',
+  STARS: 'STARS output',
+  DESEQ2: 'DESeq2 results',
+  SIMPLE: 'Simple CSV/TSV',
+  UNKNOWN: 'Unknown format',
+};
 
 export default function UploadPage({ onAnalyze }) {
   const [text, setText] = useState('');
@@ -21,7 +32,34 @@ export default function UploadPage({ onAnalyze }) {
   const [organism, setOrganism] = useState('Both');
   const [modalities, setModalities] = useState(['KO', 'CRISPRa']);
   const [pathwayAnalysis, setPathwayAnalysis] = useState(false);
+
+  const [detected, setDetected] = useState(null);
+  const [scoreColumn, setScoreColumn] = useState('');
+  const [scoreCands, setScoreCands] = useState([]);
+
   const fileRef = useRef();
+  const detectTimer = useRef(null);
+
+  const runDetect = useCallback((raw) => {
+    if (!raw.trim()) { setDetected(null); setScoreColumn(''); setScoreCands([]); return; }
+    const det = detectFormat(raw);
+    setDetected(det);
+    const { defaultColumn, candidates } = suggestScoreColumn(det.columns, det.format);
+    setScoreColumn(defaultColumn);
+    setScoreCands(candidates);
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(detectTimer.current);
+    detectTimer.current = setTimeout(() => runDetect(text), 200);
+    return () => clearTimeout(detectTimer.current);
+  }, [text, runDetect]);
+
+  const parsedCount = useMemo(() => {
+    if (!text.trim() || !detected) return null;
+    const { genes } = parseGeneList(text, { delimiter: detected.delimiter, idColumn: detected.idColumn, scoreColumn });
+    return genes.length;
+  }, [text, detected, scoreColumn]);
 
   function toggleModality(m) {
     setModalities(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
@@ -32,12 +70,26 @@ export default function UploadPage({ onAnalyze }) {
     setError('');
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!text.trim()) { setError('Paste a gene list or upload a file.'); return; }
-    const genes = parseGenes(text);
-    if (!genes || genes.length < 5) { setError('Need at least 5 genes. Expected format: gene_symbol, score'); return; }
+    // Recompute detection synchronously: the `detected`/`scoreColumn` state is set on a
+    // 200ms debounce, so a fast submit could otherwise parse with a stale/undefined
+    // delimiter. Deriving them here makes submit deterministic regardless of timing.
+    const det = detectFormat(text);
+    const effectiveScoreColumn = scoreColumn || suggestScoreColumn(det.columns, det.format).defaultColumn;
+    const { genes, warnings } = parseGeneList(text, {
+      delimiter: det.delimiter,
+      idColumn: det.idColumn,
+      scoreColumn: effectiveScoreColumn,
+    });
+    if (genes.length < 5) { setError(`Need at least 5 genes. ${warnings[0] ?? ''}`); return; }
+    const resolveOrganism = organism === 'Mouse' ? 'Mouse' : 'Human';
+    const { genes: resolved } = resolveIdentifiers(genes, resolveOrganism, crosswalk);
     setError('');
-    onAnalyze(genes, { algorithm, organism, modalities, pathwayAnalysis });
+    onAnalyze(resolved, {
+      algorithm, organism, modalities, pathwayAnalysis,
+      format: det.format, scoreColumn: effectiveScoreColumn,
+    });
   }
 
   function handleFile(file) {
@@ -46,8 +98,6 @@ export default function UploadPage({ onAnalyze }) {
     reader.onload = e => { setText(e.target.result); setError(''); };
     reader.readAsText(file);
   }
-
-  const parsed = text ? parseGenes(text) : null;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -106,7 +156,7 @@ export default function UploadPage({ onAnalyze }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
                 <CheckCircle2 size={20} color="var(--green)" />
                 <span style={{ color: 'var(--green)', fontWeight: 600 }}>
-                  {parsed?.length ?? '?'} genes loaded
+                  {parsedCount ?? '?'} genes loaded
                 </span>
                 <button
                   onClick={e => { e.stopPropagation(); setText(''); setError(''); }}
@@ -142,6 +192,34 @@ export default function UploadPage({ onAnalyze }) {
               onBlur={e => e.target.style.borderColor = 'var(--border)'}
             />
           </div>
+
+          {/* Format detection + score column row */}
+          {detected && text.trim() && (
+            <div style={{
+              marginTop: 10, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              padding: '8px 12px', background: 'var(--bg-2)', borderRadius: 8, border: '1px solid var(--border)',
+              fontSize: '0.82rem',
+            }}>
+              <span style={{ color: 'var(--text-3)' }}>
+                Detected: <strong style={{ color: 'var(--text-2)' }}>{FORMAT_LABELS[detected.format] ?? detected.format}</strong>
+              </span>
+              {scoreCands.length > 1 && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-3)' }}>
+                  Score column:
+                  <select
+                    value={scoreColumn}
+                    onChange={e => setScoreColumn(e.target.value)}
+                    style={{
+                      background: 'var(--bg-1)', border: '1px solid var(--border)',
+                      borderRadius: 5, color: 'var(--text-1)', padding: '2px 6px', fontSize: '0.82rem',
+                    }}
+                  >
+                    {scoreCands.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </label>
+              )}
+            </div>
+          )}
 
           {/* Analysis options toggle */}
           <div style={{ marginTop: 12 }}>

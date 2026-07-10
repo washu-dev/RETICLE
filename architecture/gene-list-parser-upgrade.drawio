@@ -1,0 +1,120 @@
+<mxfile host="app.diagrams.net" modified="2026-06-26T00:00:00.000Z" agent="RETICLE-architect" version="24.0.0">
+  <diagram id="gene-parser-upgrade" name="Gene List Parser Upgrade (Issue 29)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title" value="RETICLE — Gene List Parser Upgrade (Issue #29)  |  Upload &#8594; Detect &#8594; Parse &#8594; Normalize &#8594; Resolve &#8594; onAnalyze(genes, options)" style="text;html=1;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;arcSize=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- TRUST BOUNDARY: BROWSER -->
+        <mxCell id="browser" value="BROWSER (untrusted input zone) — React webapp (demo/, future webapp/)" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontStyle=1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="980" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- File user -->
+        <mxCell id="user" value="Researcher&#10;drops/pastes file&#10;(MAGeCK gene_summary.txt,&#10;STARS, DESeq2, or simple CSV)" style="shape=actor;html=1;whiteSpace=wrap;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="90" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- UploadPage -->
+        <mxCell id="uploadpage" value="UploadPage.jsx&#10;&#10;- file drop / paste / load example&#10;- renders Score Column dropdown&#10;- renders Organism dropdown&#10;- calls onAnalyze(genes, options)" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#ffffff;strokeColor=#6c8ebf;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="180" y="110" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- detectFormat -->
+        <mxCell id="detect" value="detectFormat(raw)&#10;&#10;utils/geneParser/detectFormat.js&#10;- sniff delimiter (tab vs comma)&#10;- match header against format&#10;  signatures (MAGeCK/STARS/&#10;  DESeq2/SIMPLE)&#10;- return {format, columns, delimiter}" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#d5e8d4;strokeColor=#82b366;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="180" y="300" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- pickScoreColumn -->
+        <mxCell id="pickcol" value="suggestScoreColumn(columns, format)&#10;&#10;utils/geneParser/scoreColumns.js&#10;- rank candidate score columns&#10;  (neg|lfc, pos|lfc, neg|score,&#10;   LFC, log2FoldChange, ...)&#10;- return ordered options + default" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#d5e8d4;strokeColor=#82b366;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="180" y="490" width="240" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- parseGenes -->
+        <mxCell id="parse" value="parseGeneList(raw, {scoreColumn})&#10;&#10;utils/geneParser/parseGeneList.js&#10;- orchestrator (replaces inline&#10;  parseGenes in UploadPage)&#10;- delimiter split, header map&#10;- read symbol col + chosen score&#10;- emit ParsedGene[] + warnings" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#d5e8d4;strokeColor=#82b366;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="470" y="300" width="250" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- resolveIds frontend -->
+        <mxCell id="resolve" value="resolveIdentifiers(genes, organism)&#10;&#10;utils/geneParser/resolveIds.js&#10;- Entrez ID &#8594; HGNC symbol&#10;- mouse symbol &#8594; human ortholog&#10;- thin client: calls backend if&#10;  unresolved set is large,&#10;  else uses bundled mini-map" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#d5e8d4;strokeColor=#82b366;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="760" y="300" width="240" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- onAnalyze -->
+        <mxCell id="onanalyze" value="onAnalyze(genes, options)&#10;&#10;App.jsx state handler&#10;genes: ParsedGene[]&#10;options: AnalysisOptions&#10;  { organism, scoreColumn,&#10;    detectedFormat, ... }" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#fff2cc;strokeColor=#d6b656;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="470" y="510" width="250" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- bundled mini map -->
+        <mxCell id="minimap" value="crosswalk.min.json (bundled, &lt;~60KB gz)&#10;Entrez&#8594;HGNC + mouse&#8594;human for&#10;the ~2-3k genes the demo touches" style="shape=note;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;align=left;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="760" y="510" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- TRUST BOUNDARY: BACKEND -->
+        <mxCell id="backend" value="BACKEND (trusted) — FastAPI api/ on GCP (Cloud Run)" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;fontStyle=1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="70" width="500" height="640" as="geometry" />
+        </mxCell>
+
+        <!-- crosswalk endpoint -->
+        <mxCell id="cwendpoint" value="POST /genes/resolve&#10;&#10;api/routers/genes.py (NEW)&#10;body: { ids[], idType, organism }&#10;returns: { resolved[], unmapped[] }&#10;- authoritative crosswalk lookup&#10;- input validation (pydantic)&#10;- batched, capped payload size" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;verticalAlign=top;align=left;fillColor=#ffffff;strokeColor=#82b366;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="120" width="450" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- crosswalk store -->
+        <mxCell id="cwstore" value="Crosswalk reference data (authoritative)&#10;&#10;Source: HGNC complete set + NCBI gene_info&#10;+ HCOP / Ensembl ortholog table.&#10;NOT the repo-root 'AllGenes' file&#10;(that is a flat MOUSE symbol vocabulary,&#10;~20,675 rows, no Entrez, no mapping).&#10;Stored: SQLite/Parquet GENE + GENE_ORTHOLOG" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="320" width="380" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- AllGenes note -->
+        <mxCell id="allgenesnote" value="repo-root AllGenes = mouse library vocabulary&#10;(used for Missing-Data taxonomy / library&#10;membership, NOT for Entrez&#8594;HGNC). Feeds the&#10;crosswalk build only as the mouse symbol allow-list." style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=left;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="530" width="380" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="user" target="uploadpage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="raw text" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="uploadpage" target="detect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="columns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="detect" target="pickcol">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="default + options&#10;(populate dropdown)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="pickcol" target="uploadpage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="raw + scoreColumn" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="detect" target="parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="ParsedGene[]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="parse" target="resolve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="local hits" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="resolve" target="minimap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="HTTPS: unresolved batch&#10;(misses only)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="resolve" target="cwendpoint">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="resolved genes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="resolve" target="onanalyze">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="660" />
+              <mxPoint x="595" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="cwendpoint" target="cwstore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="build-time feed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="allgenesnote" target="cwstore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

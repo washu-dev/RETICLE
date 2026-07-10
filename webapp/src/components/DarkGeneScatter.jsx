@@ -3,7 +3,7 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, ReferenceArea, Label,
 } from 'recharts';
-import { DARK_GENES } from '../mockData';
+import { DARK_GENES as MOCK_DARK_GENES } from '../mockData';
 import GeneDetailPanel from './GeneDetailPanel';
 
 const CLUSTERS = [
@@ -14,12 +14,12 @@ const CLUSTERS = [
 
 function CustomDot(props) {
   const { cx, cy, payload, onClick, selected } = props;
-  const isDark   = !payload.isBright && payload.darkScore >= 6;
-  const isTop    = payload.darkScore >= 8 && payload.correlation >= 0.55;
-  const r        = isTop ? 9 : isDark ? 7 : 6;
-  const fill     = payload.isBright ? '#4f9cf9' : isTop ? '#fbbf24' : '#f59e0b88';
-  const stroke   = selected ? 'white' : payload.isBright ? '#2563b8' : isTop ? '#f59e0b' : '#78450a';
-  const sw       = selected ? 2.5 : 1.5;
+  const isDark = !payload.isBright && payload.darkScore >= 6;
+  const isTop  = payload.darkScore >= 8 && payload.correlation >= 0.55;
+  const r      = isTop ? 9 : isDark ? 7 : 6;
+  const fill   = payload.isBright ? '#4f9cf9' : isTop ? '#fbbf24' : '#f59e0b88';
+  const stroke = selected ? 'white' : payload.isBright ? '#2563b8' : isTop ? '#f59e0b' : '#78450a';
+  const sw     = selected ? 2.5 : 1.5;
 
   return (
     <circle
@@ -58,8 +58,12 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene }) {
+export default function DarkGeneScatter({ darkGenes, pathwayAnalysis = false, onSelectGene }) {
   const [selected, setSelected] = useState(null);
+
+  const data      = darkGenes ?? MOCK_DARK_GENES;
+  const darkCount = data.filter(g => !g.isBright && g.darkScore >= 6).length;
+  const topCount  = data.filter(g => !g.isBright && g.darkScore >= 8 && g.correlation >= 0.55).length;
 
   const handleClick = (payload) => {
     const next = payload.symbol === selected ? null : payload.symbol;
@@ -67,15 +71,10 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
     if (next && onSelectGene) onSelectGene(next);
   };
 
-  const darkCount = DARK_GENES.filter(g => !g.isBright && g.darkScore >= 6).length;
-  const topCount  = DARK_GENES.filter(g => !g.isBright && g.darkScore >= 8 && g.correlation >= 0.55).length;
-
   return (
     <div>
       {/* Callout box */}
-      <div style={{
-        display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap',
-      }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         <div style={{
           flex: '1 1 300px', padding: '16px 20px', borderRadius: 10,
           background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)',
@@ -102,7 +101,7 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
           background: 'var(--bg-2)', border: '1px solid var(--border)',
         }}>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--green)', marginBottom: 4 }}>
-            {DARK_GENES.filter(g => g.isBright).length}
+            {data.filter(g => g.isBright).length}
           </div>
           <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 2 }}>Known pathway genes</div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-3)' }}>High correlation, well-characterized</div>
@@ -118,7 +117,6 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
               Upper-right quadrant = high pathway correlation AND high darkness. Click any gene for AI rationale.
             </div>
           </div>
-          {/* Legend */}
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.78rem', color: 'var(--text-2)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--amber)" /></svg>
@@ -155,11 +153,9 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
             </YAxis>
             <Tooltip content={<CustomTooltip />} cursor={false} />
 
-            {/* Quadrant lines */}
             <ReferenceLine x={0.6} stroke="rgba(251,191,36,0.25)" strokeDasharray="6 3" />
             <ReferenceLine y={6}   stroke="rgba(251,191,36,0.25)" strokeDasharray="6 3" />
 
-            {/* Pathway co-significance cluster regions */}
             {pathwayAnalysis && CLUSTERS.map(c => (
               <ReferenceArea
                 key={c.key}
@@ -171,7 +167,7 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
             ))}
 
             <Scatter
-              data={DARK_GENES}
+              data={data}
               shape={(props) => (
                 <CustomDot
                   {...props}
@@ -183,9 +179,8 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
           </ScatterChart>
         </ResponsiveContainer>
 
-        {/* Gene labels under chart */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
-          {DARK_GENES.filter(g => !g.isBright && g.darkScore >= 6).map(g => (
+          {data.filter(g => !g.isBright && g.darkScore >= 6).map(g => (
             <button
               key={g.symbol}
               onClick={() => {
@@ -207,7 +202,6 @@ export default function DarkGeneScatter({ pathwayAnalysis = false, onSelectGene 
         </div>
       </div>
 
-      {/* Detail panel */}
       <GeneDetailPanel symbol={selected} onClose={() => setSelected(null)} />
     </div>
   );

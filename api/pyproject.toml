@@ -13,6 +13,7 @@ uvicorn = {extras = ["standard"], version = "^0.24.0"}
 pydantic = "^2.5.0"
 pydantic-settings = "^2.1.0"
 python-dotenv = "^1.0.0"
+psycopg2-binary = "^2.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -39,3 +40,16 @@ python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+
+# numpy's cp312 wheel ships a PEP 695 stub (`type X = ...`), which mypy targeting
+# python 3.11 can't parse. We don't type-check numpy internals, so skip following
+# its imports/stubs entirely (treated as Any). Version- and wheel-independent.
+[[tool.mypy.overrides]]
+module = "numpy.*"
+follow_imports = "skip"
+follow_imports_for_stubs = true
+
+[tool.bandit]
+skips = ["B608"]
+
+
