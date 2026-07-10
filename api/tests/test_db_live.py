@@ -245,6 +245,73 @@ class TestGetGeneDetail:
 # db_fetchall (low-level)
 # ---------------------------------------------------------------------------
 
+class TestExplorerGeneLive:
+    """/api/gene endpoint against real RDS (ported from the prototype)."""
+
+    def test_known_gene_returns_200(self, client: Any) -> None:
+        assert client.get("/api/gene?symbol=TP53").status_code == 200
+
+    def test_payload_shape(self, client: Any) -> None:
+        data = client.get("/api/gene?symbol=TP53").json()
+        assert data["symbol"] == "TP53"
+        assert data["organism"] == "Homo sapiens"
+        assert data["primary"] in ("fitness", "stress", "reporter")
+        assert data["n_total"] > 0
+        # fitness block carries summary stats + histogram
+        fit = data["fitness"]
+        assert {"n", "median", "mean", "p25", "p75", "lean", "hist"} <= fit.keys()
+        assert -1.0 <= fit["median"] <= 1.0
+        assert len(fit["hist"]["counts"]) == 26
+
+    def test_lean_direction_sane(self, client: Any) -> None:
+        # POLR2A is a core-essential gene — knockout is deleterious (negative axis)
+        polr2a = client.get("/api/gene?symbol=POLR2A").json()
+        assert polr2a["fitness"]["lean"] == "essential"
+        assert polr2a["fitness"]["median"] < -0.15
+
+    def test_deterministic_across_calls(self, client: Any) -> None:
+        """Stable ORDER BY makes the payload reproducible."""
+        a = client.get("/api/gene?symbol=KRAS").text
+        b = client.get("/api/gene?symbol=KRAS").text
+        assert a == b
+
+    def test_unknown_gene_returns_404(self, client: Any) -> None:
+        assert client.get("/api/gene?symbol=ZZZNOTAGENE").status_code == 404
+
+    def test_utf8_not_mojibake(self, client: Any) -> None:
+        """Regression: condition names like '17β-estradiol' must decode as UTF-8,
+        not CP1252 mojibake ('17Î²-estradiol')."""
+        body = client.get("/api/gene?symbol=TP53").text
+        assert "Î" not in body, "mojibake detected — psycopg2 client_encoding regressed"
+
+
+class TestExplorerContextLive:
+    """/api/context and /api/network against real RDS + external APIs
+    (MyGene/NCBI/STRING). Cached in reticle.external_cache after first call."""
+
+    def test_context_shape(self, client: Any) -> None:
+        d = client.get("/api/context?symbol=TP53").json()
+        assert d["symbol"] == "TP53"
+        assert d["darkness"]["band"] in ("dark", "grey", "bright")
+        assert d["annotation"]["name"]  # "tumor protein p53"
+        assert isinstance(d["string_partners"], list)
+
+    def test_network_shape(self, client: Any) -> None:
+        g = client.get("/api/network?symbol=TP53").json()
+        assert g["focus"] == "TP53"
+        assert len(g["nodes"]) >= 2
+        assert len(g["edges"]) >= 1
+        # at least one node colored by its CRISPR fitness behavior
+        assert any(n["lean"] for n in g["nodes"])
+
+    def test_external_cache_persists(self, client: Any) -> None:
+        """The 30-day cache lives in shared RDS, not container-local SQLite."""
+        from services.db_service import db_fetchall
+        client.get("/api/context?symbol=TP53")  # ensure populated
+        rows = db_fetchall("SELECT count(*) AS n FROM external_cache")
+        assert int(rows[0]["n"]) > 0
+
+
 class TestDbFetchall:
     def test_returns_list_of_rows(self) -> None:
         from services.db_service import db_fetchall
