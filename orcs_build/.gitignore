@@ -1,6 +1,0 @@
-__pycache__/
-*.pyc
-.DS_Store
-.env
-raw/
-kb_gene_docs*/
