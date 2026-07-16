@@ -1,0 +1,32 @@
+screen_id,direction,hit_percentile_median,score1_type,phenotype,gate,gate_detail
+161,flipped,0.077,p-Value,regulation of signal transduction phenotype,N/A,non-fitness phenotype
+163,flipped,0.077,p-Value,regulation of signal transduction phenotype,N/A,non-fitness phenotype
+165,flipped,0.061,p-Value,regulation of signal transduction phenotype,N/A,non-fitness phenotype
+167,flipped,0.06,p-Value,regulation of signal transduction phenotype,N/A,non-fitness phenotype
+345,as-is,0.966,CasTLE Score,cell proliferation,PASS,196/290 core-essential genes in top decile (0.68)
+687,flipped,0.0,MaGeCK Score,tumorigenicity,WARN,68/239 core-essential genes in top decile (0.28)
+1152,flipped,0.017,MAGeCK neg score,protein/peptide accumulation,N/A,non-fitness phenotype
+1398,flipped,0.0,MaGeCK Score,protein/peptide accumulation,N/A,non-fitness phenotype
+1399,flipped,0.0,MaGeCK Score,protein/peptide accumulation,N/A,non-fitness phenotype
+1438,as-is,0.917,STARS Score,response to virus,N/A,non-fitness phenotype
+1440,flipped,0.22,MAGeCK neg score,protein/peptide accumulation,N/A,non-fitness phenotype
+1468,flipped,0.0,MaGeCK Score,cell cycle progression,WARN,23/277 core-essential genes in top decile (0.08)
+1469,flipped,0.0,MaGeCK Score,cell cycle progression,WARN,31/277 core-essential genes in top decile (0.11)
+1470,flipped,0.0,MaGeCK Score,cell cycle progression,WARN,39/277 core-essential genes in top decile (0.14)
+1481,flipped,0.013,MAGeCK neg score,protein/peptide accumulation,N/A,non-fitness phenotype
+1482,flipped,0.007,MAGeCK pos score,protein/peptide accumulation,N/A,non-fitness phenotype
+1483,flipped,0.038,MaGeCK Score,cell proliferation,PASS,157/270 core-essential genes in top decile (0.58)
+1484,flipped,0.001,MaGeCK Score,cell proliferation,WARN,6/270 core-essential genes in top decile (0.02)
+1565,as-is,0.951,MaGeCK Score,response to chemicals,N/A,non-fitness phenotype
+1838,flipped,0.026,MaGeCK Score,cell proliferation,WARN,20/195 core-essential genes in top decile (0.10)
+1839,flipped,0.026,MaGeCK Score,protein/peptide accumulation,N/A,non-fitness phenotype
+1888,as-is,0.992,CasTLE Score,phagocytosis,N/A,non-fitness phenotype
+1889,as-is,0.999,CERES score,phagocytosis,N/A,non-fitness phenotype
+1890,as-is,1.0,CasTLE Score,phagocytosis,N/A,non-fitness phenotype
+2049,as-is,1.0,p-Value,response to bacteria,N/A,non-fitness phenotype
+2307,as-is,0.967,Beta Score,response to chemicals,N/A,non-fitness phenotype
+2308,as-is,0.912,Beta Score,response to chemicals,N/A,non-fitness phenotype
+2403,flipped,0.003,p-Value,protein/peptide accumulation,N/A,non-fitness phenotype
+2411,as-is,0.5,Log2FC,cell proliferation,WARN,4/177 core-essential genes in top decile (0.02)
+2469,flipped,0.059,MAGeCK pos score,cell viability,WARN,60/257 core-essential genes in top decile (0.23)
+2477,flipped,0.11,MAGeCK neg score,cell proliferation,PASS,200/270 core-essential genes in top decile (0.74)
