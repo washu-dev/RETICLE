@@ -1,0 +1,339 @@
+BioGRID ORCS dossier — Gm3558 (Mus musculus)
+Source: BioGRID ORCS v2.0.18 (offline screen archive) + NCBI PubMed/PMC + NCBI Gene. Generated 2026-07-16 03:23 UTC.
+Purpose: load Gm3558's CRISPR-screen evidence and its source literature into the WashU GatewayAI knowledge base.
+================================================================================
+
+## A. Gene identity
+Gene symbol: Gm3558 | Entrez Gene ID: 100041874 | Organism: Mus musculus (taxid 10090)
+Official name (NCBI Gene): predicted gene 3558
+Locus: 14 4.45 cM
+Note: Gm3558 is a predicted, under-characterized gene — a de-orphanization target; the evidence below is functional-genomic (CRISPR screens) + literature.
+
+## B. Screen summary
+Gm3558 was assayed in 33 BioGRID ORCS Mus musculus CRISPR screens and called a SIGNIFICANT HIT in 11 (33%). The 33 screens derive from 17 publications (the 11 hits from 8). Coverage: 31 genome-wide (FULL) screens, 2 hit-only.
+
+## C. Screens where Gm3558 IS a significant hit (11)
+
+### Screen 163 — regulation of signal transduction phenotype in NIH 3T3 (Embryonic Fibroblast Cell Line)
+- Publication: Pusapati GV (2017), PMID 29290584 (https://pubmed.ncbi.nlm.nih.gov/29290584/)
+- Cell line: NIH 3T3 (Embryonic Fibroblast Cell Line) | Phenotype: regulation of signal transduction phenotype | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Sonic hedgehog protein (mouse) @ 3.2 nM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) < 0.1
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: p-Value=0.010813; FDR=0.307166; Log2=0.23534
+
+### Screen 165 — regulation of signal transduction phenotype in NIH 3T3 (Embryonic Fibroblast Cell Line)
+- Publication: Pusapati GV (2017), PMID 29290584 (https://pubmed.ncbi.nlm.nih.gov/29290584/)
+- Cell line: NIH 3T3 (Embryonic Fibroblast Cell Line) | Phenotype: regulation of signal transduction phenotype | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Sonic hedgehog protein (mouse) @ 25 nM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) < 0.1
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: p-Value=0.0068769; FDR=0.520817; Log2=-0.15004
+
+### Screen 167 — regulation of signal transduction phenotype in NIH 3T3 (Embryonic Fibroblast Cell Line)
+- Publication: Pusapati GV (2017), PMID 29290584 (https://pubmed.ncbi.nlm.nih.gov/29290584/)
+- Cell line: NIH 3T3 (Embryonic Fibroblast Cell Line) | Phenotype: regulation of signal transduction phenotype | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Sonic hedgehog protein (mouse) @ 25 nM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) < 0.1
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: p-Value=0.0004327; FDR=0.069887; Log2=0.11213
+
+### Screen 345 — cell proliferation in NIH 3T3 (Embryonic Fibroblast Cell Line)
+- Publication: Breslow DK (2018), PMID 29459677 (https://pubmed.ncbi.nlm.nih.gov/29459677/)
+- Cell line: NIH 3T3 (Embryonic Fibroblast Cell Line) | Phenotype: cell proliferation | Screen type: Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: CasTLE Score=146.0; CasTLE Effect=-4.0; p-Value=1e-05
+
+### Screen 1483 — cell proliferation in primary Treg (Regulatory T cell)
+- Publication: Loo CS (2020), PMID 32640256 (https://pubmed.ncbi.nlm.nih.gov/32640256/)
+- Cell line: primary Treg (Regulatory T cell) | Phenotype: cell proliferation | Screen type: Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.002 AND Score.3 (Log2FC) < -1.0
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: MaGeCK Score=0.0049859; p-Value=0.00038589; Log2FC=-3.1519
+
+### Screen 1489 — protein/peptide accumulation in BV-2 (Microglial Cell Line)
+- Publication: Ma H (2020), PMID 32156810 (https://pubmed.ncbi.nlm.nih.gov/32156810/)
+- Cell line: BV-2 (Microglial Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: HIT_ONLY
+- Library: CRISPRn/Knockout Cas9 | Condition: IFN-β (Interferon beta) @ 40.0 IU/ml | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: MaGeCK Score=0.0018276; p-Value=0.0018043; FDR=0.972455
+
+### Screen 1565 — response to chemicals in 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line)
+- Publication: Du R (2021), PMID 33676427 (https://pubmed.ncbi.nlm.nih.gov/33676427/)
+- Cell line: 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line) | Phenotype: response to chemicals | Screen type: Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: salirasib (Farnesyl Thiosalicylic Acid) @ 100.0 µM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.3 (FDR) < 0.05
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: MaGeCK Score=0.28859; p-Value=5.8e-05; FDR=0.0011194
+
+### Screen 2308 — response to chemicals in 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line)
+- Publication: Liu Y (2022), PMID 36396656 (https://pubmed.ncbi.nlm.nih.gov/36396656/)
+- Cell line: 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line) | Phenotype: response to chemicals | Screen type: Positive and Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: selinexor @ 0.33 µM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (Beta Score) >= 0.1188 OR Score.1 (Beta Score) < -0.1893
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: Beta Score=0.42503
+
+### Screen 2411 — cell proliferation in OT-I cells (Cytotoxic T-lymphocyte (CD8+ T cells))
+- Publication: Zhao H (2021), PMID 34879274 (https://pubmed.ncbi.nlm.nih.gov/34879274/)
+- Cell line: OT-I cells (Cytotoxic T-lymphocyte (CD8+ T cells)) | Phenotype: cell proliferation | Screen type: Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: Log2FC=-1.63219152
+
+### Screen 2412 — cell proliferation in OT-I cells (Cytotoxic T-lymphocyte (CD8+ T cells))
+- Publication: Zhao H (2021), PMID 34879274 (https://pubmed.ncbi.nlm.nih.gov/34879274/)
+- Cell line: OT-I cells (Cytotoxic T-lymphocyte (CD8+ T cells)) | Phenotype: cell proliferation | Screen type: Negative Selection | Coverage: HIT_ONLY
+- Library: CRISPRn/Knockout Cas9 | Condition: Interleukin-2 (IL-2) | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: Log2FC=-1.84601215
+
+### Screen 2477 — cell proliferation in R1 (Embryonic Stem Cell Line)
+- Publication: Ruan Y (2023), PMID 37059858 (https://pubmed.ncbi.nlm.nih.gov/37059858/)
+- Cell line: R1 (Embryonic Stem Cell Line) | Phenotype: cell proliferation | Screen type: Positive and Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Leukaemia inhibitory factors (LIF)/serum condition (L/S) | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.05 OR Score.4 (p-Value) < 0.05
+- Gm3558 in this screen: SIGNIFICANT HIT; scores: MAGeCK neg score=0.00085939; p-Value=0.0031224; MAGeCK pos score=0.99914; p-Value=0.99914; Log2FC=-1.9458
+
+## D. Screens where Gm3558 was assayed but NOT a hit (22)
+
+### Screen 161 — regulation of signal transduction phenotype in NIH 3T3 (Embryonic Fibroblast Cell Line)
+- Publication: Pusapati GV (2017), PMID 29290584 (https://pubmed.ncbi.nlm.nih.gov/29290584/)
+- Cell line: NIH 3T3 (Embryonic Fibroblast Cell Line) | Phenotype: regulation of signal transduction phenotype | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) < 0.1
+- Gm3558 in this screen: assayed, not a hit; scores: p-Value=0.16315; FDR=0.661515; Log2=-0.34484
+
+### Screen 687 — tumorigenicity in IMC9 (Immortal Mouse Liver-derived Cell Line)
+- Publication: Codina A (2019), PMID 30797773 (https://pubmed.ncbi.nlm.nih.gov/30797773/)
+- Cell line: IMC9 (Immortal Mouse Liver-derived Cell Line) | Phenotype: tumorigenicity | Screen type: Positive Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.1158; p-Value=0.078807; FDR=0.592031; Log2FC=-0.96728
+
+### Screen 1152 — protein/peptide accumulation in Mouse Embryonic Stem Cell (Embryonic Cell Line)
+- Publication: Fu X (2019), PMID 31209294 (https://pubmed.ncbi.nlm.nih.gov/31209294/)
+- Cell line: Mouse Embryonic Stem Cell (Embryonic Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Dux gene induction | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (neg score p-value) < 0.01 OR Score.4 (pos score p-value) < 0.01
+- Gm3558 in this screen: assayed, not a hit; scores: MAGeCK neg score=0.96985; neg score p-value=0.96991; MAGeCK pos score=0.008638; pos score p-value=0.023276; Log2FC=1.335
+
+### Screen 1398 — protein/peptide accumulation in BV-2 (Microglial Cell Line)
+- Publication: Kim B (2019), PMID 31038839 (https://pubmed.ncbi.nlm.nih.gov/31038839/)
+- Cell line: BV-2 (Microglial Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.0005
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.84028; p-Value=0.84028; FDR=0.999316; Log2FC=-6.6782
+
+### Screen 1399 — protein/peptide accumulation in BV-2 (Microglial Cell Line)
+- Publication: Kim B (2019), PMID 31038839 (https://pubmed.ncbi.nlm.nih.gov/31038839/)
+- Cell line: BV-2 (Microglial Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.0005
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.84039; p-Value=0.84029; FDR=0.999233; Log2FC=-6.5903
+
+### Screen 1438 — response to virus in BV-2 (Microglial Cell Line)
+- Publication: Urbanek K (2020), PMID 33087464 (https://pubmed.ncbi.nlm.nih.gov/33087464/)
+- Cell line: BV-2 (Microglial Cell Line) | Phenotype: response to virus | Screen type: Positive Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Virus: Reovirus (strain T3SA+) @ 100.0 MOI | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.3 (FDR) < 0.25
+- Gm3558 in this screen: assayed, not a hit; scores: STARS Score=1.690321006; p-Value=0.113531727; FDR=0.42849071
+
+### Screen 1440 — protein/peptide accumulation in Mouse Embryonic Stem Cell (Embryonic Cell Line)
+- Publication: Fu X (2019), PMID 31209294 (https://pubmed.ncbi.nlm.nih.gov/31209294/)
+- Cell line: Mouse Embryonic Stem Cell (Embryonic Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Dux gene induction | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (neg score p-value) < 0.01 OR Score.4 (pos score p-value) < 0.01
+- Gm3558 in this screen: assayed, not a hit; scores: MAGeCK neg score=0.035364; neg score p-value=0.064136; MAGeCK pos score=0.96464; pos score p-value=0.96479; Log2FC=-1.7861
+
+### Screen 1468 — cell cycle progression in EpH4 (breast epithelium)
+- Publication: Fomicheva M (2020), PMID 33185187 (https://pubmed.ncbi.nlm.nih.gov/33185187/)
+- Cell line: EpH4 (breast epithelium) | Phenotype: cell cycle progression | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.3 (FDR) < 0.25
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.58105; p-Value=0.58115; FDR=0.987413
+
+### Screen 1469 — cell cycle progression in EpH4 (breast epithelium)
+- Publication: Fomicheva M (2020), PMID 33185187 (https://pubmed.ncbi.nlm.nih.gov/33185187/)
+- Cell line: EpH4 (breast epithelium) | Phenotype: cell cycle progression | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.3 (FDR) < 0.25
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.31945; p-Value=0.31886; FDR=0.989358
+
+### Screen 1470 — cell cycle progression in EpH4 (breast epithelium)
+- Publication: Fomicheva M (2020), PMID 33185187 (https://pubmed.ncbi.nlm.nih.gov/33185187/)
+- Cell line: EpH4 (breast epithelium) | Phenotype: cell cycle progression | Screen type: Positive Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.3 (FDR) < 0.25
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.59956; p-Value=0.59948; FDR=0.987813
+
+### Screen 1481 — protein/peptide accumulation in primary Treg (Regulatory T cell)
+- Publication: Loo CS (2020), PMID 32640256 (https://pubmed.ncbi.nlm.nih.gov/32640256/)
+- Cell line: primary Treg (Regulatory T cell) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.01 AND Score.3 (Log2FC) < -0.5
+- Gm3558 in this screen: assayed, not a hit; scores: MAGeCK neg score=0.086194; p-Value=0.12339; Log2FC=-1.2534
+
+### Screen 1482 — protein/peptide accumulation in primary Treg (Regulatory T cell)
+- Publication: Loo CS (2020), PMID 32640256 (https://pubmed.ncbi.nlm.nih.gov/32640256/)
+- Cell line: primary Treg (Regulatory T cell) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.01 AND Score.3 (Log2FC) > 0.5
+- Gm3558 in this screen: assayed, not a hit; scores: MAGeCK pos score=0.54059; p-Value=0.58338; Log2FC=-1.2534
+
+### Screen 1484 — cell proliferation in primary Treg (Regulatory T cell)
+- Publication: Loo CS (2020), PMID 32640256 (https://pubmed.ncbi.nlm.nih.gov/32640256/)
+- Cell line: primary Treg (Regulatory T cell) | Phenotype: cell proliferation | Screen type: Positive Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.002 AND Score.3 (Log2FC) >= 0.65567
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.62208; p-Value=0.80743; Log2FC=-3.1519
+
+### Screen 1838 — cell proliferation in B16-F10 (Melanoma Cell Line)
+- Publication: Freeman AJ (2019), PMID 31509742 (https://pubmed.ncbi.nlm.nih.gov/31509742/)
+- Cell line: B16-F10 (Melanoma Cell Line) | Phenotype: cell proliferation | Screen type: Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: NK (activated natural killer) cells @ 1 Ratio of effector cells/target cells | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.05
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.93773; p-Value=0.93773; FDR=0.998231; Log2FC=1.959
+
+### Screen 1839 — protein/peptide accumulation in B16-F10 (Melanoma Cell Line)
+- Publication: Freeman AJ (2019), PMID 31509742 (https://pubmed.ncbi.nlm.nih.gov/31509742/)
+- Cell line: B16-F10 (Melanoma Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Interferon gamma @ 1.0 ng/mL | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.2 (p-Value) < 0.05
+- Gm3558 in this screen: assayed, not a hit; scores: MaGeCK Score=0.83759; p-Value=0.83752; FDR=0.999929; Log2FC=-2.0789
+
+### Screen 1888 — phagocytosis in J774 (macrophage)
+- Publication: Kamber RA (2021), PMID 34497417 (https://pubmed.ncbi.nlm.nih.gov/34497417/)
+- Cell line: J774 (macrophage) | Phenotype: phagocytosis | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Exposure to magnetic IgG-coated bead | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: assayed, not a hit; scores: CasTLE Score=5.05; CasTLE Effect=0.4; p-Value=0.0843
+
+### Screen 1889 — phagocytosis in J774 (macrophage)
+- Publication: Kamber RA (2021), PMID 34497417 (https://pubmed.ncbi.nlm.nih.gov/34497417/)
+- Cell line: J774 (macrophage) | Phenotype: phagocytosis | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Exposure to APMAP-KO cancer cells | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: assayed, not a hit; scores: CERES score=2.87; CasTLE Effect=1.0; p-Value=0.158
+
+### Screen 1890 — phagocytosis in J774 (macrophage)
+- Publication: Kamber RA (2021), PMID 34497417 (https://pubmed.ncbi.nlm.nih.gov/34497417/)
+- Cell line: J774 (macrophage) | Phenotype: phagocytosis | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Exposure to APMAP-KO cancer cells vs. Control-KO cancer cells | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: not stated
+- Gm3558 in this screen: assayed, not a hit; scores: CasTLE Score=0.048; CasTLE Effect=0.2; p-Value=0.679
+
+### Screen 2049 — response to bacteria in IMCD-3 (renal medulla cell line)
+- Publication: McLellan LK (2021), PMID 33513212 (https://pubmed.ncbi.nlm.nih.gov/33513212/)
+- Cell line: IMCD-3 (renal medulla cell line) | Phenotype: response to bacteria | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Escherichia coli (str. UTI89) @ 150.0 MOI | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) > 2.58 AND Score.2 (Log2FC) > 0.0
+- Gm3558 in this screen: assayed, not a hit; scores: p-Value=0.839942161; Log2FC=-0.189205145
+
+### Screen 2307 — response to chemicals in 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line)
+- Publication: Liu Y (2022), PMID 36396656 (https://pubmed.ncbi.nlm.nih.gov/36396656/)
+- Cell line: 4292  KRASG12D/p53R172H (Pancreatic Ductal Adenocarcinoma Cell Line) | Phenotype: response to chemicals | Screen type: Positive and Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: Gemcitabine @ 20.0 nM | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (Beta Score) > 0.643 OR Score.1 (Beta Score) < -0.575
+- Gm3558 in this screen: assayed, not a hit; scores: Beta Score=0.52224
+
+### Screen 2403 — protein/peptide accumulation in Mouse Embryonic Stem Cell (Embryonic Cell Line)
+- Publication: Al Adhami H (2023), PMID 36772830 (https://pubmed.ncbi.nlm.nih.gov/36772830/)
+- Cell line: Mouse Embryonic Stem Cell (Embryonic Cell Line) | Phenotype: protein/peptide accumulation | Screen type: Phenotype Screen | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (p-Value) < 0.005
+- Gm3558 in this screen: assayed, not a hit; scores: p-Value=0.7003; Log2FC=-2.0562
+
+### Screen 2469 — cell viability in imCC (Immortal mouse chromaffin cells)
+- Publication: custom source 10.1101/2025.08.26.672429
+- Cell line: imCC (Immortal mouse chromaffin cells) | Phenotype: cell viability | Screen type: Positive and Negative Selection | Coverage: FULL
+- Library: CRISPRn/Knockout Cas9 | Condition: none | Enzyme: Cas9 | Throughput: High Throughput
+- Significance criteria: Score.1 (MAGeCK pos score) < 0.05 AND Score.2 (p-Value) < 0.05 OR Score.4 (MAGeCK neg score) < 0.05 AND Score.5 (p-Value) < 0.05
+- Gm3558 in this screen: assayed, not a hit; scores: MAGeCK pos score=0.4593; p-Value=0.46652; Log2FC=-1.1183; MAGeCK neg score=0.070672; p-Value=0.12314
+
+## E. Associated publications (17) — abstracts
+(Open-access full text for these is in Gm3558_publications_fulltext.txt.)
+
+### PMID 29290584 — CRISPR Screens Uncover Genes that Regulate Target Cell Sensitivity to the Morphogen Sonic Hedgehog.
+- Pusapati GV (2017) · Developmental cell (2018) · https://pubmed.ncbi.nlm.nih.gov/29290584/
+- Backs Gm3558 screens: 161, 163(HIT), 165(HIT), 167(HIT)
+- Abstract: To uncover regulatory mechanisms in Hedgehog (Hh) signaling, we conducted genome-wide screens to identify positive and negative pathway components and validated top hits using multiple signaling and differentiation assays in two different cell types. Most positive regulators identified in our screens, including Rab34, Pdcl, and Tubd1, were involved in ciliary functions, confirming the central role for primary cilia in Hh signaling. Negative regulators identified included Megf8, Mgrn1, and an unannotated gene encoding a tetraspan protein we named Atthog. The function of these negative regulators converged on Smoothened (SMO), an oncoprotein that transduces the Hh signal across the membrane. In the absence of Atthog, SMO was stabilized at the cell surface and concentrated in the ciliary membrane, boosting cell sensitivity to the ligand Sonic Hedgehog (SHH) and consequently altering SHH-guided neural cell-fate decisions. Thus, we uncovered genes that modify the interpretation of morphogen signals by regulating protein-trafficking events in target cells. · PMC open-access full text available
+
+### PMID 33185187 — Genome-wide CRISPR screen identifies noncanonical NF-κB signaling as a regulator of density-dependent proliferation.
+- Fomicheva M (2020) · eLife (2020) · https://pubmed.ncbi.nlm.nih.gov/33185187/
+- Backs Gm3558 screens: 1468, 1469, 1470
+- Abstract: Epithelial cells possess intrinsic mechanisms to maintain an appropriate cell density for normal tissue morphogenesis and homeostasis. Defects in such mechanisms likely contribute to hyperplasia and cancer initiation. To identify genes that regulate the density-dependent proliferation of murine mammary epithelial cells, we developed a fluorescence-activated cell sorting assay based on fluorescence ubiquitination cell cycle indicator, which marks different stages of the cell cycle with distinct fluorophores. Using this powerful assay, we performed a genome-wide CRISPR/Cas9 knockout screen, selecting for cells that proliferate normally at low density but continue to divide at high density. Unexpectedly, one top hit was Traf3, a negative regulator of NF-κB signaling that has never previously been linked to density-dependent proliferation. We demonstrate that loss of Traf3 specifically activates noncanonical NF-κB signaling. This in turn triggers an innate immune response and drives cell division independently of known density-dependent proliferation mechanisms, including YAP/TAZ signaling and cyclin-dependent kinase inhibitors, by blocking entry into quiescence. · PMC open-access full text available
+
+### PMID 32640256 — A Genome-wide CRISPR Screen Reveals a Role for the Non-canonical Nucleosome-Remodeling BAF Complex in Foxp3 Expression and Regulatory T Cell Function.
+- Loo CS (2020) · Immunity (2020) · https://pubmed.ncbi.nlm.nih.gov/32640256/
+- Backs Gm3558 screens: 1481, 1482, 1483(HIT), 1484
+- Abstract: Regulatory T (Treg) cells play a pivotal role in suppressing auto-reactive T cells and maintaining immune homeostasis. Treg cell development and function are dependent on the transcription factor Foxp3. Here, we performed a genome-wide CRISPR loss-of-function screen to identify Foxp3 regulators in mouse primary Treg cells. Foxp3 regulators were enriched in genes encoding subunits of the SWI/SNF nucleosome-remodeling and SAGA chromatin-modifying complexes. Among the three SWI/SNF-related complexes, the Brd9-containing non-canonical (nc) BAF complex promoted Foxp3 expression, whereas the PBAF complex was repressive. Chemical-induced degradation of Brd9 led to reduced Foxp3 expression and reduced Treg cell function in vitro. Brd9 ablation compromised Treg cell function in inflammatory disease and tumor immunity in vivo. Furthermore, Brd9 promoted Foxp3 binding and expression of a subset of Foxp3 target genes. Our findings provide an unbiased analysis of the genetic networks regulating Foxp3 and reveal ncBAF as a target for therapeutic manipulation of Treg cell function. · PMC open-access full text available
+
+### PMID 30797773 — Convergent Identification and Interrogation of Tumor-Intrinsic Factors that Modulate Cancer Immunity In Vivo.
+- Codina A (2019) · Cell systems (2019) · https://pubmed.ncbi.nlm.nih.gov/30797773/
+- Backs Gm3558 screens: 687
+- Abstract: The genetic makeup of cancer cells directs oncogenesis and influences the tumor microenvironment. In this study, we massively profiled genes that functionally drive tumorigenesis using genome-scale in vivo CRISPR screens in hosts with different levels of immunocompetence. As a convergent hit from these screens, Prkar1a mutant cells are able to robustly outgrow as tumors in fully immunocompetent hosts. Functional interrogation showed that Prkar1a loss greatly altered the transcriptome and proteome involved in inflammatory and immune responses as well as extracellular protein production. Single-cell transcriptomic profiling and flow cytometry analysis mapped the tumor microenvironment of Prkar1a mutant tumors and revealed the transcriptomic alterations in host myeloid cells. Taken together, our data suggest that tumor-intrinsic mutations in Prkar1a lead to drastic alterations in the genetic program of cancer cells, thereby remodeling the tumor microenvironment. · PMC open-access full text available
+
+### PMID 34879274 — Genome-wide fitness gene identification reveals Roquin as a potent suppressor of CD8 T cell expansion and anti-tumor immunity.
+- Zhao H (2021) · Cell reports (2021) · https://pubmed.ncbi.nlm.nih.gov/34879274/
+- Backs Gm3558 screens: 2411(HIT), 2412(HIT)
+- Abstract: Robust expansion of adoptively transferred T cells is a prerequisite for effective cancer immunotherapy, but how many genes in the genome modulate T cell expansion remains unknown. Here, we perform in vivo and in vitro CRISPR screens to systematically identify genes influencing CD8 T cell expansion. In the mouse genome, ∼2,600 and ∼1,500 genes are required for optimal CD8 T cell expansion in vivo and in vitro, respectively. In vivo-specific CD8 T cell essential genes are enriched in metabolic pathways, including mitochondrial metabolism. The strongest repressor of CD8 T cell expansion is Roquin, the ablation of which drastically boosts T cell proliferation by enhancing cell-cycle progression and upregulation of IRF4. Roquin deficiency or IRF4 overexpression potently enhances anti-tumor immunity. These data provide a functional catalog of CD8 T cell fitness genes and suggest that targeting the Roquin-IRF4 axis is an effective strategy to enhance efficacy of adoptive transfer therapy for cancer.
+
+### PMID 36396656 — mTOR inhibition attenuates chemosensitivity through the induction of chemotherapy resistant persisters.
+- Liu Y (2022) · Nature communications (2022) · https://pubmed.ncbi.nlm.nih.gov/36396656/
+- Backs Gm3558 screens: 2307, 2308(HIT)
+- Abstract: Chemotherapy can eradicate a majority of cancer cells. However, a small population of tumor cells often survives drug treatments through genetic and/or non-genetic mechanisms, leading to tumor recurrence. Here we report a reversible chemoresistance phenotype regulated by the mTOR pathway. Through a genome-wide CRISPR knockout library screen in pancreatic cancer cells treated with chemotherapeutic agents, we have identified the mTOR pathway as a prominent determinant of chemosensitivity. Pharmacological suppression of mTOR activity in cancer cells from diverse tissue origins leads to the persistence of a reversibly resistant population, which is otherwise eliminated by chemotherapeutic agents. Conversely, activation of the mTOR pathway increases chemosensitivity in vitro and in vivo and predicts better survival among various human cancers. Persister cells display a senescence phenotype. Inhibition of mTOR does not induce cellular senescence per se, but rather promotes the survival of senescent cells through regulation of autophagy and G2/M cell cycle arrest, as revealed by a small-molecule chemical library screen. Thus, mTOR plays a causal yet paradoxical role in regulating chemotherapeutic response; inhibition of the mTOR pathway, while suppressing tumor expansion, facilitates the development of a reversible drug-tolerant senescence state. · PMC open-access full text available
+
+### PMID 33087464 — Cytidine Monophosphate N-Acetylneuraminic Acid Synthetase and Solute Carrier Family 35 Member A1 Are Required for Reovirus Binding and Infection.
+- Urbanek K (2020) · Journal of virology (2020) · https://pubmed.ncbi.nlm.nih.gov/33087464/
+- Backs Gm3558 screens: 1438
+- Abstract: Engagement of cell surface receptors by viruses is a critical determinant of viral tropism and disease. The reovirus attachment protein σ1 binds sialylated glycans and proteinaceous receptors to mediate infection, but the specific requirements for different cell types are not entirely known. To identify host factors required for reovirus-induced cell death, we conducted a CRISPR-knockout screen targeting over 20,000 genes in murine microglial BV2 cells. Candidate genes required for reovirus to cause cell death were highly enriched for sialic acid synthesis and transport. Two of the top candidates identified, CMP N-acetylneuraminic acid synthetase (Cmas) and solute carrier family 35 member A1 (Slc35a1), promote sialic acid expression on the cell surface. Two reovirus strains that differ in the capacity to bind sialic acid, T3SA+ and T3SA-, were used to evaluate Cmas and Slc35a1 as potential host genes required for reovirus infection. Following CRISPR-Cas9 disruption of either gene, cell surface expression of sialic acid was diminished. These results correlated with decreased binding of strain T3SA+, which is capable of engaging sialic acid. Disruption of either gene did not alter the low-level binding of T3SA-, which does not engage sialic acid. Furthermore, infectivity of T3SA+ was diminished to levels similar to those of T3SA- in cells lacking Cmas and Slc35a1 by CRISPR ablation. However, exogenous expression of Cmas and Slc35a1 into the respective null cells restored sialic acid expression and T3SA+ binding and infectivity. These results demonstrate that Cmas and Slc35a1, which mediate cell surface expression of sialic acid, are required in murine microglial cells for efficient reovirus binding and infection.IMPORTANCE Attachment factors and receptors are important determinants of dissemination and tropism during reovirus-induced disease. In a CRISPR cell survival screen, we discovered two genes, Cmas and Slc35a1, which encode proteins required for sialic acid expression on the cell surface and mediate reovirus infection of microglial cells. This work elucidates host genes that render microglial cells susceptible to reovirus infection and expands current understanding of the receptors on microglial cells that are engaged by reovirus. Such knowledge may lead to new strategies to selectively target microglial cells for oncolytic applications.
+
+### PMID 29459677 — A CRISPR-based screen for Hedgehog signaling provides insights into ciliary function and ciliopathies.
+- Breslow DK (2018) · Nature genetics (2018) · https://pubmed.ncbi.nlm.nih.gov/29459677/
+- Backs Gm3558 screens: 345(HIT)
+- Abstract: Primary cilia organize Hedgehog signaling and shape embryonic development, and their dysregulation is the unifying cause of ciliopathies. We conducted a functional genomic screen for Hedgehog signaling by engineering antibiotic-based selection of Hedgehog-responsive cells and applying genome-wide CRISPR-mediated gene disruption. The screen can robustly identify factors required for ciliary signaling with few false positives or false negatives. Characterization of hit genes uncovered novel components of several ciliary structures, including a protein complex that contains δ-tubulin and ε-tubulin and is required for centriole maintenance. The screen also provides an unbiased tool for classifying ciliopathies and showed that many congenital heart disorders are caused by loss of ciliary signaling. Collectively, our study enables a systematic analysis of ciliary function and of ciliopathies, and also defines a versatile platform for dissecting signaling pathways through CRISPR-based screening. · PMC open-access full text available
+
+### PMID 32156810 — Barrier-to-Autointegration Factor 1 Protects against a Basal cGAS-STING Response.
+- Ma H (2020) · mBio (2020) · https://pubmed.ncbi.nlm.nih.gov/32156810/
+- Backs Gm3558 screens: 1489(HIT)
+- Abstract: Although the pathogen recognition receptor pathways that activate cell-intrinsic antiviral responses are well delineated, less is known about how the host regulates this response to prevent sustained signaling and possible immune-mediated damage. Using a genome-wide CRISPR-Cas9 screening approach to identify host factors that modulate interferon-stimulated gene (ISG) expression, we identified the DNA binding protein Barrier-to-autointegration factor 1 (Banf1), a previously described inhibitor of retrovirus integration, as a modulator of basal cell-intrinsic immunity. Ablation of Banf1 by gene editing resulted in chromatin activation near host defense genes with associated increased expression of ISGs, including Oas2, Rsad2 (viperin), Ifit1, and ISG15 The phenotype in Banf1-deficient cells occurred through a cGAS-, STING-, and IRF3-dependent signaling axis, was associated with reduced infection of RNA and DNA viruses, and was reversed in Banf1 complemented cells. Confocal microscopy and biochemical studies revealed that a loss of Banf1 expression resulted in higher level of cytosolic double-stranded DNA at baseline. Our study identifies an undescribed role for Banf1 in regulating the levels of cytoplasmic DNA and cGAS-dependent ISG homeostasis and suggests possible therapeutic directions for promoting or inhibiting cell-intrinsic innate immune responses.IMPORTANCE Although the interferon (IFN) signaling pathway is a key host mechanism to restrict infection of a diverse range of viral pathogens, its unrestrained activity either at baseline or in the context of an immune response can result in host cell damage and injury. Here, we used a genome-wide CRISPR-Cas9 screen and identified the DNA binding protein Barrier-to-autointegration factor 1 (Banf1) as a modulator of basal cell-intrinsic immunity. A loss of Banf1 expression resulted in higher level of cytosolic double-stranded DNA at baseline, which triggered IFN-stimulated gene expression via a cGAS-STING-IRF3 axis that did not require type I IFN or STAT1 signaling. Our experiments define a regulatory network in which Banf1 limits basal inflammation by preventing self DNA accumulation in the cytosol. · PMC open-access full text available
+
+### PMID 31209294 — Myc and Dnmt1 impede the pluripotent to totipotent state transition in embryonic stem cells.
+- Fu X (2019) · Nature cell biology (2019) · https://pubmed.ncbi.nlm.nih.gov/31209294/
+- Backs Gm3558 screens: 1152, 1440
+- Abstract: Totipotency refers to the ability of a cell to generate all of the cell types of an organism. Unlike pluripotency, the establishment of totipotency is poorly understood. In mouse embryonic stem cells, Dux drives a small percentage of cells into a totipotent state by expressing 2-cell-embryo-specific transcripts. To understand how this transition takes place, we performed single-cell RNA-seq, which revealed a two-step transcriptional reprogramming process characterized by downregulation of pluripotent genes in the first step and upregulation of the 2-cell-embryo-specific elements in the second step. To identify factors controlling the transition, we performed a CRISPR-Cas9-mediated screen, which revealed Myc and Dnmt1 as two factors preventing the transition. Mechanistic studies demonstrate that Myc prevents downregulation of pluripotent genes in the first step, while Dnmt1 impedes 2-cell-embryo-specific gene activation in the second step. Collectively, the findings of our study reveal insights into the establishment and regulation of the totipotent state in mouse embryonic stem cells. · PMC open-access full text available
+
+### PMID 33513212 — A host receptor enables type 1 pilus-mediated pathogenesis of Escherichia coli pyelonephritis.
+- McLellan LK (2021) · PLoS pathogens (2021) · https://pubmed.ncbi.nlm.nih.gov/33513212/
+- Backs Gm3558 screens: 2049
+- Abstract: Type 1 pili have long been considered the major virulence factor enabling colonization of the urinary bladder by uropathogenic Escherichia coli (UPEC). The molecular pathogenesis of pyelonephritis is less well characterized, due to previous limitations in preclinical modeling of kidney infection. Here, we demonstrate in a recently developed mouse model that beyond bladder infection, type 1 pili also are critical for establishment of ascending pyelonephritis. Bacterial mutants lacking the type 1 pilus adhesin (FimH) were unable to establish kidney infection in male C3H/HeN mice. We developed an in vitro model of FimH-dependent UPEC binding to renal collecting duct cells, and performed a CRISPR screen in these cells, identifying desmoglein-2 as a primary renal epithelial receptor for FimH. The mannosylated extracellular domain of human DSG2 bound directly to the lectin domain of FimH in vitro, and introduction of a mutation in the FimH mannose-binding pocket abolished binding to DSG2. In infected C3H/HeN mice, type 1-piliated UPEC and Dsg2 were co-localized within collecting ducts, and administration of mannoside FIM1033, a potent small-molecule inhibitor of FimH, significantly attenuated bacterial loads in pyelonephritis. Our results broaden the biological importance of FimH, specify the first renal FimH receptor, and indicate that FimH-targeted therapeutics will also have application in pyelonephritis. · PMC open-access full text available
+
+### PMID 36772830 — Systematic identification of factors involved in the silencing of germline genes in mouse embryonic stem cells.
+- Al Adhami H (2023) · Nucleic acids research (2023) · https://pubmed.ncbi.nlm.nih.gov/36772830/
+- Backs Gm3558 screens: 2403
+- Abstract: In mammals, many germline genes are epigenetically repressed to prevent their illegitimate expression in somatic cells. To advance our understanding of the mechanisms restricting the expression of germline genes, we analyzed their chromatin signature and performed a CRISPR-Cas9 knock-out screen for genes involved in germline gene repression using a Dazl-GFP reporter system in mouse embryonic stem cells (mESCs). We show that the repression of germline genes mainly depends on the polycomb complex PRC1.6 and DNA methylation, which function additively in mESCs. Furthermore, we validated novel genes involved in the repression of germline genes and characterized three of them: Usp7, Shfm1 (also known as Sem1) and Erh. Inactivation of Usp7, Shfm1 or Erh led to the upregulation of germline genes, as well as retrotransposons for Shfm1, in mESCs. Mechanistically, USP7 interacts with PRC1.6 components, promotes PRC1.6 stability and presence at germline genes, and facilitates DNA methylation deposition at germline gene promoters for long term repression. Our study provides a global view of the mechanisms and novel factors required for silencing germline genes in embryonic stem cells. · PMC open-access full text available
+
+### PMID 34497417 — Inter-cellular CRISPR screens reveal regulators of cancer cell phagocytosis.
+- Kamber RA (2021) · Nature (2021) · https://pubmed.ncbi.nlm.nih.gov/34497417/
+- Backs Gm3558 screens: 1888, 1889, 1890
+- Abstract: Monoclonal antibody therapies targeting tumour antigens drive cancer cell elimination in large part by triggering macrophage phagocytosis of cancer cells1-7. However, cancer cells evade phagocytosis using mechanisms that are incompletely understood. Here we develop a platform for unbiased identification of factors that impede antibody-dependent cellular phagocytosis (ADCP) using complementary genome-wide CRISPR knockout and overexpression screens in both cancer cells and macrophages. In cancer cells, beyond known factors such as CD47, we identify many regulators of susceptibility to ADCP, including the poorly characterized enzyme adipocyte plasma membrane-associated protein (APMAP). We find that loss of APMAP synergizes with tumour antigen-targeting monoclonal antibodies and/or CD47-blocking monoclonal antibodies to drive markedly increased phagocytosis across a wide range of cancer cell types, including those that are otherwise resistant to ADCP. Additionally, we show that APMAP loss synergizes with several different tumour-targeting monoclonal antibodies to inhibit tumour growth in mice. Using genome-wide counterscreens in macrophages, we find that the G-protein-coupled receptor GPR84 mediates enhanced phagocytosis of APMAP-deficient cancer cells. This work reveals a cancer-intrinsic regulator of susceptibility to antibody-driven phagocytosis and, more broadly, expands our knowledge of the mechanisms governing cancer resistance to macrophage phagocytosis. · PMC open-access full text available
+
+### PMID 31038839 — Visualizing Microglia with a Fluorescence Turn-On Ugt1a7c Substrate.
+- Kim B (2019) · Angewandte Chemie (International ed. in English) (2019) · https://pubmed.ncbi.nlm.nih.gov/31038839/
+- Backs Gm3558 screens: 1398, 1399
+- Abstract: Microglia, the brain-resident macrophage, are involved in brain development and contribute to the progression of neural disorders. Despite the importance of microglia, imaging of live microglia at a cellular resolution has been limited to transgenic mice. Efforts have therefore been dedicated to developing new methods for microglia detection and imaging. Using a thorough structure-activity relationships study, we developed CDr20, a high-performance fluorogenic chemical probe that enables the visualization of microglia both in vitro and in vivo. Using a genome-scale CRISPR-Cas9 knockout screen, the UDP-glucuronosyltransferase Ugt1a7c was identified as the target of CDr20. The glucuronidation of CDr20 by Ugt1a7c in microglia produces fluorescence.
+
+### PMID 31509742 — Natural Killer Cells Suppress T Cell-Associated Tumor Immune Evasion.
+- Freeman AJ (2019) · Cell reports (2019) · https://pubmed.ncbi.nlm.nih.gov/31509742/
+- Backs Gm3558 screens: 1838, 1839
+- Abstract: Despite the clinical success of cancer immunotherapies, the majority of patients fail to respond or develop resistance through disruption of pathways that promote neo-antigen presentation on MHC I molecules. Here, we conducted a series of unbiased, genome-wide CRISPR/Cas9 screens to identify genes that limit natural killer (NK) cell anti-tumor activity. We identified that genes associated with antigen presentation and/or interferon-γ (IFN-γ) signaling protect tumor cells from NK cell killing. Indeed, Jak1-deficient melanoma cells were sensitized to NK cell killing through attenuated NK cell-derived IFN-γ-driven transcriptional events that regulate MHC I expression. Importantly, tumor cells that became resistant to T cell killing through enrichment of MHC I-deficient clones were highly sensitive to NK cell killing. Taken together, we reveal the genes targeted by tumor cells to drive checkpoint blockade resistance but simultaneously increase their vulnerability to NK cells, unveiling NK cell-based immunotherapies as a strategy to antagonize tumor immune escape.
+
+### PMID 33676427 — Inhibition of ERAD synergizes with FTS to eradicate pancreatic cancer cells.
+- Du R (2021) · BMC cancer (2021) · https://pubmed.ncbi.nlm.nih.gov/33676427/
+- Backs Gm3558 screens: 1565(HIT)
+- Abstract: BACKGROUND: Pancreatic ductal adenocarcinoma (PDAC), one of the most lethal cancers, is driven by oncogenic KRAS mutations. Farnesyl thiosalicylic acid (FTS), also known as salirasib, is a RAS inhibitor that selectively dislodges active RAS proteins from cell membrane, inhibiting downstream signaling. FTS has demonstrated limited therapeutic efficacy in PDAC patients despite being well tolerated.
+METHODS: To improve the efficacy of FTS in PDAC, we performed a genome-wide CRISPR synthetic lethality screen to identify genetic targets that synergize with FTS treatment. Among the top candidates, multiple genes in the endoplasmic reticulum-associated protein degradation (ERAD) pathway were identified. The role of ERAD inhibition in enhancing the therapeutic efficacy of FTS was further investigated in pancreatic cancer cells using pharmaceutical and genetic approaches.
+RESULTS: In murine and human PDAC cells, FTS induced unfolded protein response (UPR), which was further augmented upon treatment with a chemical inhibitor of ERAD, Eeyarestatin I (EerI). Combined treatment with FTS and EerI significantly upregulated the expression of UPR marker genes and induced apoptosis in pancreatic cancer cells. Furthermore, CRISPR-based genetic ablation of the key ERAD components, HRD1 and SEL1L, sensitized PDAC cells to FTS treatment.
+CONCLUSION: Our study reveals a critical role for ERAD in therapeutic response of FTS and points to the modulation of UPR as a novel approach to improve the efficacy of FTS in PDAC treatment. · PMC open-access full text available
+
+### PMID 37059858 — A multi-omics integrative analysis based on CRISPR screens re-defines the pluripotency regulatory network in ESCs.
+- Ruan Y (2023) · Communications biology (2023) · https://pubmed.ncbi.nlm.nih.gov/37059858/
+- Backs Gm3558 screens: 2477(HIT)
+- Abstract: A comprehensive and precise definition of the pluripotency gene regulatory network (PGRN) is crucial for clarifying the regulatory mechanisms in embryonic stem cells (ESCs). Here, after a CRISPR/Cas9-based functional genomics screen and integrative analysis with other functional genomes, transcriptomes, proteomes and epigenome data, an expanded pluripotency-associated gene set is obtained, and a new PGRN with nine sub-classes is constructed. By integrating the DNA binding, epigenetic modification, chromatin conformation, and RNA expression profiles, the PGRN is resolved to six functionally independent transcriptional modules (CORE, MYC, PAF, PRC, PCGF and TBX). Spatiotemporal transcriptomics reveal activated CORE/MYC/PAF module activity and repressed PRC/PCGF/TBX module activity in both mouse ESCs (mESCs) and pluripotent cells of early embryos. Moreover, this module activity pattern is found to be shared by human ESCs (hESCs) and cancers. Thus, our results provide novel insights into elucidating the molecular basis of ESC pluripotency. · PMC open-access full text available
