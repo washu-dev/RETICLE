@@ -24,10 +24,13 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: reticle-api
-  ECS_CLUSTER: reticle-cluster
-  ECS_SERVICE: reticle-api-service
-  ECS_TASK_DEFINITION: reticle-api-task
-  CONTAINER_NAME: reticle-api
+  # Must match the live ECS resources (verified via `aws ecs`):
+  #   cluster `default`, service `reticle-washu`, running task def
+  #   `default-reticle-api-c7e2` whose container is named `Main`.
+  ECS_CLUSTER: default
+  ECS_SERVICE: reticle-washu
+  ECS_TASK_DEFINITION: default-reticle-api-c7e2
+  CONTAINER_NAME: Main
 
 jobs:
   # ─────────────────────────────────────────────
@@ -187,7 +190,7 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
@@ -199,6 +202,6 @@ jobs:
       # fails, ECS automatically keeps the running revision stable.
       # Manual rollback:
       #   aws ecs update-service \
-      #     --cluster reticle-cluster \
-      #     --service reticle-api-service \
-      #     --task-definition reticle-api-task:<previous-revision-number>
+      #     --cluster default \
+      #     --service reticle-washu \
+      #     --task-definition default-reticle-api-c7e2:<previous-revision-number>
