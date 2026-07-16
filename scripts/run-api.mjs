@@ -9,11 +9,23 @@ import { dirname, join } from "node:path";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const isWin = process.platform === "win32";
-const python = join(repoRoot, ".venv", isWin ? "Scripts" : "bin", isWin ? "python.exe" : "python");
+const binDir = isWin ? "Scripts" : "bin";
+const exe = isWin ? "python.exe" : "python";
 
-if (!existsSync(python)) {
-  console.error(`\n[api] venv interpreter not found at ${python}`);
-  console.error(`[api] Create it first:  py -3.11 -m venv .venv   (then run: npm run setup)\n`);
+// Look for the interpreter in the usual spots, in priority order: repo-root
+// .venv (README default), then api/.venv and api/venv (where deps may already
+// be installed). The first that exists wins.
+const candidates = [
+  join(repoRoot, ".venv", binDir, exe),
+  join(repoRoot, "api", ".venv", binDir, exe),
+  join(repoRoot, "api", "venv", binDir, exe),
+];
+const python = candidates.find((p) => existsSync(p));
+
+if (!python) {
+  console.error(`\n[api] venv interpreter not found. Looked in:`);
+  candidates.forEach((p) => console.error(`[api]   ${p}`));
+  console.error(`[api] Create one first:  py -3.11 -m venv .venv   (then run: npm run setup)\n`);
   process.exit(1);
 }
 
