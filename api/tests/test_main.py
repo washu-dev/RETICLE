@@ -173,9 +173,17 @@ class TestExplorerContextValidation:
 class TestCors:
     def test_no_wildcard_with_credentials(self, client: TestClient) -> None:
         """The OWASP misconfig (allow_origins='*' + allow_credentials=true) must
-        not be present."""
+        not be present, and an unlisted origin must never be reflected."""
         r = client.get("/api/health", headers={"Origin": "https://foo.example"})
         assert r.headers.get("access-control-allow-credentials") != "true"
+        acao = r.headers.get("access-control-allow-origin")
+        assert acao != "*"
+        assert acao != "https://foo.example"
+
+    def test_allowed_origin_is_reflected(self, client: TestClient) -> None:
+        """The configured frontend origin is allowed for cross-origin XHR."""
+        r = client.get("/api/health", headers={"Origin": "http://localhost:3001"})
+        assert r.headers.get("access-control-allow-origin") == "http://localhost:3001"
 
 
 class TestGenes:
