@@ -34,8 +34,12 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
+
+if TYPE_CHECKING:
+    from boto3.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +65,7 @@ _SECRET_PREFIX = os.getenv("RETICLE_SECRET_PREFIX", "RETICLE")
 _AWS_REGION = os.getenv("AWS_REGION", os.getenv("AWS_DEFAULT_REGION", "us-east-1"))
 
 
-def _boto_session():
+def _boto_session() -> Session:
     """Return a boto3 Session, optionally assuming RETICLE_SECRETS_ROLE_ARN."""
     import boto3
 
