@@ -31,6 +31,10 @@ env:
   ECS_SERVICE: reticle-washu
   ECS_TASK_DEFINITION: default-reticle-api-c7e2
   CONTAINER_NAME: Main
+  # Task role the container runs as — grants runtime read of RETICLE/* in
+  # Secrets Manager (config.py). The role's trust policy already allows
+  # ecs-tasks.amazonaws.com to assume it (terraform trusted_service_principals).
+  ECS_TASK_ROLE_ARN: arn:aws:iam::730335203321:role/RETICLE-secrets-reader
 
 jobs:
   # ─────────────────────────────────────────────
@@ -180,6 +184,15 @@ jobs:
             --task-definition $ECS_TASK_DEFINITION \
             --query taskDefinition \
             > task-definition.json
+
+      # Ensure the task runs as the secrets-reader role so config.py can read
+      # RETICLE/* at runtime. Idempotent: sets it every deploy.
+      - name: Attach secrets-reader task role
+        run: |
+          jq --arg role "$ECS_TASK_ROLE_ARN" '.taskRoleArn = $role' \
+            task-definition.json > task-definition.tmp
+          mv task-definition.tmp task-definition.json
+          echo "taskRoleArn set to $ECS_TASK_ROLE_ARN"
 
       - name: Render updated task definition with new image
         id: task-def
