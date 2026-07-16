@@ -24,10 +24,17 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: reticle-api
-  ECS_CLUSTER: reticle-cluster
-  ECS_SERVICE: reticle-api-service
-  ECS_TASK_DEFINITION: reticle-api-task
-  CONTAINER_NAME: reticle-api
+  # Live ECS Express resources (verified via `aws ecs`): the API runs as service
+  # `reticle-washu` in cluster `default`, from task def `default-reticle-api-c7e2`
+  # whose container is named `Main`.
+  ECS_CLUSTER: default
+  ECS_SERVICE: reticle-washu
+  ECS_TASK_DEFINITION: default-reticle-api-c7e2
+  CONTAINER_NAME: Main
+  # Task role the container runs as — grants runtime read of RETICLE/* in
+  # Secrets Manager (config.py). Its trust policy already allows
+  # ecs-tasks.amazonaws.com to assume it (terraform trusted_service_principals).
+  ECS_TASK_ROLE_ARN: arn:aws:iam::730335203321:role/RETICLE-secrets-reader
 
 jobs:
   # ─────────────────────────────────────────────
@@ -171,16 +178,32 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      - name: Download current ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ECS_TASK_DEFINITION \
+            --query taskDefinition \
+            > task-definition.json
+
+      # Ensure the task runs as the secrets-reader role so config.py can read
+      # RETICLE/* at runtime. Idempotent: sets it every deploy.
+      - name: Attach secrets-reader task role
+        run: |
+          jq --arg role "$ECS_TASK_ROLE_ARN" '.taskRoleArn = $role' \
+            task-definition.json > task-definition.tmp
+          mv task-definition.tmp task-definition.json
+          echo "taskRoleArn set to $ECS_TASK_ROLE_ARN"
+
       - name: Render updated task definition with new image
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: api/ecs-task-definition.json
+          task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
@@ -192,6 +215,6 @@ jobs:
       # fails, ECS automatically keeps the running revision stable.
       # Manual rollback:
       #   aws ecs update-service \
-      #     --cluster reticle-cluster \
-      #     --service reticle-api-service \
-      #     --task-definition reticle-api-task:<previous-revision-number>
+      #     --cluster default \
+      #     --service reticle-washu \
+      #     --task-definition default-reticle-api-c7e2:<previous-revision-number>
