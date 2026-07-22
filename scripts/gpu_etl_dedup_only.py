@@ -289,7 +289,7 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=getattr(logging, args.log_level),
+        level=getattr(logging, args.log_level.upper(), logging.INFO),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 

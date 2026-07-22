@@ -64,7 +64,10 @@ class Config:
     PIPELINE_VERSION = os.getenv('PIPELINE_VERSION', '1.0.0')
 
     # Logging
-    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    # Normalize to upper-case: logging.basicConfig(level=...) only accepts the
+    # canonical upper-case level names (e.g. 'DEBUG'), so a lower-case LOG_LEVEL
+    # like 'debug' would raise "ValueError: Unknown level: 'debug'".
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     # Validation
