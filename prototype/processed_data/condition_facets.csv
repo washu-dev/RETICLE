@@ -1,0 +1,2158 @@
+screen_id,organism,experimental_setup,condition_name,condition_class,growth_direction,readout_type,method,current_domain,needs_llm,needs_review
+381,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+902,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1390,Homo sapiens,Bacteria Exposure,Chlamydia trachomatis,pathogen,suppressing,marker,setup,stress,0,0
+803,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+382,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2430,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,survival,setup,stress,0,0
+1961,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+899,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+806,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2432,Homo sapiens,Virus Exposure,Virus: Human rhinovirus 16,pathogen,suppressing,survival,setup,stress,0,0
+1962,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+805,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1389,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+384,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+804,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1387,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+1960,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+901,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+900,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1388,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2431,Homo sapiens,Virus Exposure,Virus: Respiratory syncytial virus strain A2,pathogen,suppressing,survival,setup,stress,0,0
+383,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1963,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2433,Homo sapiens,Virus Exposure,Virus: Human parainfluenza 3 virus,pathogen,suppressing,survival,setup,stress,0,0
+385,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+807,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+903,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1391,Homo sapiens,Drug Exposure,Erlotinib,drug,suppressing,survival,setup,stress,0,0
+1964,Homo sapiens,Other,Wnt selection conditions,signal,UNRESOLVED,UNRESOLVED,keyword,fitness,1,1
+2435,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+386,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+808,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+904,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1392,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1966,Homo sapiens,Other,-,unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+2436,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+387,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+809,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+905,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1393,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1394,Homo sapiens,Drug Exposure,acetaldehyde,drug,suppressing,survival,setup,stress,0,0
+906,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+388,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+810,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1968,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,marker,setup,reporter,0,0
+1967,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,marker,setup,reporter,0,0
+2437,Homo sapiens,Virus Exposure,Virus: HCoV-NL63 (Human coronavirus NL63),pathogen,suppressing,survival,setup,stress,0,0
+1395,Homo sapiens,Toxin Exposure,F. novicida lipopolysaccharide (LPS),toxin,suppressing,survival,setup,stress,0,0
+2438,Homo sapiens,Virus Exposure,Virus: MERS-CoV,pathogen,suppressing,survival,setup,stress,0,0
+389,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+811,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+907,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1969,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2439,Homo sapiens,Virus Exposure,Virus: MERS-CoV,pathogen,suppressing,survival,setup,stress,0,0
+390,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+812,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+908,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1396,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+1970,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2440,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+1397,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+391,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+813,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+909,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1971,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+2441,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+1401,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+392,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+814,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+910,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1972,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+2442,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+393,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+815,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+911,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1402,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1973,Homo sapiens,Drug Exposure,A159,drug,suppressing,survival,setup,stress,0,0
+2443,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+394,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+816,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+912,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1403,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1974,Homo sapiens,Drug Exposure,A159,drug,suppressing,survival,setup,stress,0,0
+2444,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+395,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+817,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+913,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1404,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1975,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2445,Homo sapiens,Drug Exposure,HB007,drug,suppressing,survival,setup,stress,0,0
+396,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+818,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+914,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1413,Homo sapiens,Drug Exposure,YM-155 (sepantronium bromide),drug,suppressing,survival,setup,stress,0,0
+1976,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2446,Homo sapiens,Drug Exposure,Sunitinib,drug,suppressing,survival,setup,stress,0,0
+397,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+819,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+915,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1414,Homo sapiens,Drug Exposure,navitoclax,drug,suppressing,survival,setup,stress,0,0
+2447,Homo sapiens,Virus Exposure,HPIV-3 (Human parainfluenza 3 virus),pathogen,suppressing,survival,setup,stress,0,0
+1424,Homo sapiens,Other,alkaline stress (pH 8.25),unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+916,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+398,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2448,Homo sapiens,Virus Exposure,HPIV-3 (Human parainfluenza 3 virus),pathogen,suppressing,survival,setup,stress,0,0
+820,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+917,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1423,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+399,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+821,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1978,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+1979,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2449,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+400,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+822,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+918,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1425,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1980,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+2450,Homo sapiens,Drug Exposure,Prexasertib,drug,suppressing,survival,setup,stress,0,0
+1426,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+401,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+823,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+919,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1981,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+2451,Homo sapiens,Drug Exposure,Prexasertib,drug,suppressing,survival,setup,stress,0,0
+402,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+824,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+920,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1427,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1982,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+2452,Homo sapiens,Drug Exposure,Prexasertib,drug,suppressing,survival,setup,stress,0,0
+403,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+825,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+921,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1428,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1983,Homo sapiens,Drug Exposure,golgicide A (GCA),drug,suppressing,survival,setup,stress,0,0
+2453,Homo sapiens,Drug Exposure,Prexasertib,drug,suppressing,survival,setup,stress,0,0
+404,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+826,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+922,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1429,Homo sapiens,Virus Exposure,Virus:  Human gammaherpesvirus 8 (Kaposi's sarcoma-associated herpesvirus KSHV),pathogen,suppressing,survival,setup,stress,0,0
+1985,Homo sapiens,Drug Exposure,cerivastatin,drug,suppressing,survival,setup,stress,0,0
+2454,Homo sapiens,Drug Exposure,Tunicamycin,drug,suppressing,survival,setup,stress,0,0
+1430,Homo sapiens,Virus Exposure,Virus:  Human gammaherpesvirus 8 (Kaposi's sarcoma-associated herpesvirus KSHV),pathogen,suppressing,survival,setup,stress,0,0
+405,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+827,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+923,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1986,Homo sapiens,Drug Exposure,EMI1,drug,suppressing,survival,setup,stress,0,0
+2455,Homo sapiens,Timecourse,Mutation: CFLAR (ETG8837) KO,baseline,none,proliferation,setup,fitness,0,0
+406,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+828,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+924,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1431,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+1987,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2456,Homo sapiens,Drug Exposure,Cisplatin|Etoposide,drug,suppressing,survival,setup,stress,0,0
+407,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+829,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+925,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1432,Homo sapiens,Timecourse,-,baseline,none,marker,setup,stress,0,0
+1988,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2457,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2458,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+408,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1433,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+926,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1989,Homo sapiens,Drug Exposure,UM171,drug,suppressing,survival,setup,stress,0,0
+830,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1990,Homo sapiens,Drug Exposure,UM171,drug,suppressing,survival,setup,stress,0,0
+409,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+927,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+831,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1434,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2459,Homo sapiens,Drug Exposure,"Thioparib (4-[[4-fluoro-3-[(5R)-5-methyl-3-(1,3-thiazol-2-yl)-6,8-dihydro-5H-[1,2,4]triazolo[4,3-a]pyrazine-7-carbonyl]phenyl]methyl]-2H-phthalazin-1-one)",drug,suppressing,survival,setup,stress,0,0
+1435,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2  (Severe acute respiratory syndrome coronavirus 2)|33ºC,pathogen,suppressing,survival,setup,stress,0,0
+410,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+832,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+928,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1991,Homo sapiens,Drug Exposure,UM171,drug,suppressing,survival,setup,stress,0,0
+2460,Homo sapiens,Drug Exposure,"Thioparib (4-[[4-fluoro-3-[(5R)-5-methyl-3-(1,3-thiazol-2-yl)-6,8-dihydro-5H-[1,2,4]triazolo[4,3-a]pyrazine-7-carbonyl]phenyl]methyl]-2H-phthalazin-1-one)",drug,suppressing,survival,setup,stress,0,0
+1436,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2  (Severe acute respiratory syndrome coronavirus 2)|37ºC,pathogen,suppressing,survival,setup,stress,0,0
+411,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+833,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+929,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1993,Homo sapiens,Toxin Exposure,alpha-Amanitin,toxin,suppressing,survival,setup,stress,0,0
+2461,Homo sapiens,Drug Exposure,"Cpd‐391 (4‐(4‐Fluoro‐3‐(5‐methyl‐3‐(thiazol‐2‐yl)‐5,6,7,8‐tetrahydro‐[1,2,4]triazolo[4,3‐a]pyrazine‐7‐carbonyl)benzyl)phthalazin‐1(2H)‐one)",drug,suppressing,survival,setup,stress,0,0
+1441,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+412,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+834,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+930,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1995,Homo sapiens,Drug Exposure,BIBR 1532 (BIBR1532),drug,suppressing,survival,setup,stress,0,0
+2462,Homo sapiens,Drug Exposure,"Cpd‐391 (4‐(4‐Fluoro‐3‐(5‐methyl‐3‐(thiazol‐2‐yl)‐5,6,7,8‐tetrahydro‐[1,2,4]triazolo[4,3‐a]pyrazine‐7‐carbonyl)benzyl)phthalazin‐1(2H)‐one)",drug,suppressing,survival,setup,stress,0,0
+1442,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+413,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+835,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+931,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1996,Homo sapiens,Timecourse,Mutation: HAPSTR1 (TAPR1) (ETG29035) KO,baseline,none,proliferation,setup,fitness,0,0
+2463,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1443,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+414,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+836,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+932,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1997,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (B.1.1.7 Alpha variant),pathogen,suppressing,survival,setup,stress,0,0
+2464,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+1444,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+415,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+837,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+933,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1998,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (B.1.351 Beta variant),pathogen,suppressing,survival,setup,stress,0,0
+2465,Homo sapiens,Other,Transduction with rAAV2-GFP,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+1445,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+416,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+838,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+934,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1999,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2466,Homo sapiens,Other,Spin infection with AAV2-GFP,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+1446,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+839,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+417,Homo sapiens,Virus Exposure,Virus: Dengue virus 2 Thailand/16681/84,pathogen,suppressing,survival,setup,stress,0,0
+2000,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+935,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2467,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+418,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+840,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+936,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1447,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2001,Homo sapiens,Timecourse,Mutation: SPPL3 (ETG121665) KO,baseline,none,marker,setup,reporter,0,0
+2468,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+419,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1448,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+841,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+937,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+420,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+842,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+938,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2002,Homo sapiens,Drug Exposure,Mubritinib,drug,suppressing,survival,setup,stress,0,0
+2470,Homo sapiens,Radiation Exposure,Radiation,radiation,suppressing,survival,setup,fitness,0,1
+1449,Homo sapiens,Toxin Exposure,CfTX-1 (Chironex fleckeri toxin),toxin,suppressing,survival,setup,stress,0,0
+2003,Homo sapiens,Drug Exposure,GPS167,drug,suppressing,survival,setup,stress,0,0
+2471,Homo sapiens,Radiation Exposure,Radiation,radiation,suppressing,survival,setup,fitness,0,1
+1977,Homo sapiens,Drug Exposure,Dinaciclib,drug,suppressing,survival,setup,stress,0,0
+1450,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+421,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+843,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+939,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2004,Homo sapiens,Drug Exposure,TG003,drug,suppressing,survival,setup,stress,0,0
+2472,Homo sapiens,Radiation Exposure,Radiation,radiation,suppressing,survival,setup,fitness,0,1
+422,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+844,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+940,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1451,Homo sapiens,Drug Exposure,Rituximab,drug,suppressing,survival,setup,stress,0,0
+2005,Homo sapiens,Drug Exposure,KH-CB19,drug,suppressing,survival,setup,stress,0,0
+2475,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+423,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+845,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+941,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1452,Homo sapiens,Drug Exposure,Rituximab,drug,suppressing,survival,setup,stress,0,0
+2006,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2476,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+424,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+846,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+942,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1453,Homo sapiens,Drug Exposure,EPZ015666 (GSK3235025),drug,suppressing,survival,setup,stress,0,0
+2007,Homo sapiens,Drug Exposure,Paclitaxel (Taxol),drug,suppressing,survival,setup,stress,0,0
+2478,Homo sapiens,Virus Exposure,Virus: Heartland virus (HRTV) (Strain: MO4),pathogen,suppressing,survival,setup,stress,0,0
+425,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+847,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+943,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1454,Homo sapiens,Drug Exposure,Hydrogen Peroxide (H2O2),drug,suppressing,survival,setup,stress,0,0
+2008,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+2479,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+426,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+848,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+944,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1455,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+2009,Homo sapiens,Drug Exposure,Cisplatin and paclitaxel (taxol),drug,suppressing,survival,setup,stress,0,0
+2480,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+427,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+849,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+945,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1456,Homo sapiens,Drug Exposure,Mutation: BRCA2 (ETG675) KO | Olaparib,drug,suppressing,survival,setup,stress,0,0
+2012,Homo sapiens,Drug Exposure,KI-696 (KI696),drug,suppressing,survival,setup,stress,0,0
+2481,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+428,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+850,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+946,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1457,Homo sapiens,Drug Exposure,Mutation: BRCA2 (ETG675) KO | Olaparib,drug,suppressing,survival,setup,stress,0,0
+2013,Homo sapiens,Drug Exposure,KI-696 (KI696),drug,suppressing,survival,setup,stress,0,0
+2482,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+1458,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+429,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+851,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+947,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2014,Homo sapiens,Drug Exposure,KI-696 (KI696),drug,suppressing,survival,setup,stress,0,0
+2483,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1459,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2015,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+852,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+431,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2484,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+853,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1461,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+948,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+430,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+949,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2016,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+2485,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1464,Homo sapiens,Drug Exposure,Erlotinib,drug,suppressing,survival,setup,stress,0,0
+432,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+854,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+950,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2017,Homo sapiens,Timecourse,Exposure to allogeneic peripheral blood mononuclear cells (PBMCs),baseline,none,proliferation,setup,fitness,0,0
+2486,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1466,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+433,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+855,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+951,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2020,Homo sapiens,Virus Exposure,Virus: Influenza B virus (B/Yamagata/16/1988),pathogen,suppressing,survival,setup,stress,0,0
+2487,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1467,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+434,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+856,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+952,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2021,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1471,Homo sapiens,Drug Exposure,Pictilisib,drug,suppressing,survival,setup,stress,0,0
+435,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+857,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+953,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2022,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1472,Homo sapiens,Drug Exposure,Palbociclib,drug,suppressing,survival,setup,stress,0,0
+436,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+858,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+954,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2023,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1473,Homo sapiens,Drug Exposure,Ribociclib,drug,suppressing,survival,setup,stress,0,0
+437,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+859,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+955,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2024,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1474,Homo sapiens,Drug Exposure,Ipatasertib,drug,suppressing,survival,setup,stress,0,0
+438,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+860,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+956,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2025,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1475,Homo sapiens,Drug Exposure,Methyl methanesulfonate (MMS),drug,suppressing,survival,setup,stress,0,0
+439,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+861,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+957,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2026,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1476,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+440,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+862,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+958,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+959,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1477,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+2027,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+441,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+863,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1479,Homo sapiens,Bacteria Exposure,Salmonella enterica serovar Typhimurium,pathogen,suppressing,survival,setup,stress,0,0
+864,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+442,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2028,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+443,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+960,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1478,Homo sapiens,Drug Exposure,Bleocin,drug,suppressing,survival,setup,stress,0,0
+2029,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+865,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+961,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2030,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1480,Homo sapiens,Bacteria Exposure,Salmonella enterica serovar Typhimurium,pathogen,suppressing,survival,setup,stress,0,0
+444,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+866,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+962,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2031,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+445,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+867,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+963,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1485,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2032,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+446,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+868,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+964,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1486,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2033,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1487,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+447,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+869,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+965,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2034,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1488,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+448,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+870,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+966,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2035,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1491,Homo sapiens,Drug Exposure,Flavopiridol,drug,suppressing,survival,setup,stress,0,0
+449,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+871,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+967,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2036,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1492,Homo sapiens,Drug Exposure,Pladienolide B (PladB),drug,suppressing,survival,setup,stress,0,0
+450,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+872,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+968,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2037,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1493,Homo sapiens,Drug Exposure,Nicotinamide,drug,suppressing,survival,setup,stress,0,0
+451,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+873,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+969,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2038,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1494,Homo sapiens,Drug Exposure,Vorinostat/SAHA,drug,suppressing,survival,setup,stress,0,0
+452,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+874,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+970,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2039,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1495,Homo sapiens,Drug Exposure,BI-2536,drug,suppressing,survival,setup,stress,0,0
+453,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+875,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+971,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2040,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1496,Homo sapiens,Drug Exposure,Colchicine,drug,suppressing,survival,setup,stress,0,0
+454,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+876,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+972,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2041,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+973,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+877,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2042,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1498,Homo sapiens,Drug Exposure,Paclitaxel (Taxol),drug,suppressing,survival,setup,stress,0,0
+1497,Homo sapiens,Drug Exposure,TAK-901,drug,suppressing,survival,setup,stress,0,0
+455,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+456,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+878,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+974,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2043,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1499,Homo sapiens,Drug Exposure,RO-3306,drug,suppressing,survival,setup,stress,0,0
+457,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+879,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+975,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2044,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1500,Homo sapiens,Drug Exposure,JG-231,drug,suppressing,survival,setup,stress,0,0
+458,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+880,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+976,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2045,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1501,Homo sapiens,Drug Exposure,17-AAG/Tanespimycin,drug,suppressing,survival,setup,stress,0,0
+459,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+881,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+977,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2046,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+1502,Homo sapiens,Drug Exposure,CB-5083,drug,suppressing,survival,setup,stress,0,0
+460,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+882,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+978,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2047,Homo sapiens,Virus Exposure,Virus:Vaccinia virus Western Reserve,pathogen,suppressing,survival,setup,stress,0,0
+461,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+883,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+979,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1503,Homo sapiens,Drug Exposure,Pravastatin Sodium,drug,suppressing,survival,setup,stress,0,0
+2048,Homo sapiens,Toxin Exposure,aflatoxin B1 (AFB1),toxin,suppressing,survival,setup,stress,0,0
+1504,Homo sapiens,Drug Exposure,Dichloroacetic acid (DCA),drug,suppressing,survival,setup,stress,0,0
+462,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+884,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+980,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2050,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1505,Homo sapiens,Drug Exposure,Brefeldin A,drug,suppressing,survival,setup,stress,0,0
+463,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+885,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+981,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2051,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1506,Homo sapiens,Drug Exposure,Leptomycin B,drug,suppressing,survival,setup,stress,0,0
+464,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+886,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+982,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2052,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+465,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+887,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+983,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1507,Homo sapiens,Drug Exposure,2-Thenoyltrifluoroacetone (TTFA),drug,suppressing,survival,setup,stress,0,0
+2053,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+466,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+888,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+984,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1508,Homo sapiens,Drug Exposure,BAPTA-AM,drug,suppressing,survival,setup,stress,0,0
+2054,Homo sapiens,Drug Exposure,"1S,3R-RSL3",drug,suppressing,survival,setup,stress,0,0
+467,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+889,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1511,Homo sapiens,Drug Exposure,Bisindolylm. (bisindolylmaleimide/GF109203X),drug,suppressing,survival,setup,stress,0,0
+1509,Homo sapiens,Drug Exposure,Imatinib mesylate,drug,suppressing,survival,setup,stress,0,0
+985,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2056,Homo sapiens,Timecourse,LRP8-Knockout (LRP8-KO),baseline,none,proliferation,setup,fitness,0,0
+2055,Homo sapiens,Drug Exposure,Erastin,drug,suppressing,survival,setup,stress,0,0
+986,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+890,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+468,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1510,Homo sapiens,Drug Exposure,Vismodegib (GDC-0449),drug,suppressing,survival,setup,stress,0,0
+469,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+891,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+987,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2057,Homo sapiens,Timecourse,LRP8-Knockout (LRP8-KO),baseline,none,proliferation,setup,fitness,0,0
+1512,Homo sapiens,Drug Exposure,Pimasertib (AS-703026),drug,suppressing,survival,setup,stress,0,0
+470,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+892,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+988,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2058,Homo sapiens,SARS-CoV-2 Spike-RBD exposure,SARS-CoV-2 Spike-RBD,binding,UNRESOLVED,marker,setup,reporter,1,0
+1513,Homo sapiens,Drug Exposure,Rapamycin,drug,suppressing,survival,setup,stress,0,0
+471,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+893,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+989,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2059,Homo sapiens,SARS-CoV-2 Spike-RBD exposure,SARS-CoV-2 Spike-RBD,binding,UNRESOLVED,marker,setup,reporter,1,0
+1514,Homo sapiens,Drug Exposure,Thapsigargin,drug,suppressing,survival,setup,stress,0,0
+472,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+894,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+990,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2060,Homo sapiens,Virus Exposure,SARS-CoV-2 Spike‐Δ19 protein pseudotyped lentivirus,pathogen,suppressing,survival,setup,fitness,0,1
+1515,Homo sapiens,Drug Exposure,Tunicamycin,drug,suppressing,survival,setup,stress,0,0
+473,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+895,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+991,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2061,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1516,Homo sapiens,Drug Exposure,Harringtonine,drug,suppressing,survival,setup,stress,0,0
+474,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+896,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+992,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2062,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1517,Homo sapiens,Drug Exposure,Cycloheximide,drug,suppressing,survival,setup,stress,0,0
+475,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+897,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+993,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2063,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1518,Homo sapiens,Drug Exposure,Cytochalasin D,drug,suppressing,survival,setup,stress,0,0
+476,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+898,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+994,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2064,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+477,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+995,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1519,Homo sapiens,Drug Exposure,AZD4547,drug,suppressing,survival,setup,stress,0,0
+2066,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+478,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+996,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1520,Homo sapiens,Virus Exposure,Virus: VSV-H18,pathogen,suppressing,survival,setup,stress,0,0
+2067,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+479,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+997,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1524,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,marker,setup,stress,0,0
+2068,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+480,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+998,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1560,Homo sapiens,Other,Prolonged amino acid starvation (16 h) using Earl’s buffered saline solution (EBSS),unknown,UNRESOLVED,marker,unknown,reporter,1,0
+2069,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+999,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1561,Homo sapiens,Virus Exposure,Virus: Human hepatitis A virus HM175,pathogen,suppressing,survival,setup,stress,0,0
+481,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+483,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1001,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1563,Homo sapiens,Drug Exposure,Palbociclib,drug,suppressing,survival,setup,stress,0,0
+1000,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2070,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+1562,Homo sapiens,Drug Exposure,CC-122 (Avadomide),drug,suppressing,survival,setup,stress,0,0
+2071,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+482,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2074,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+484,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1002,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1564,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2075,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2/SB3-TYAGNC,pathogen,suppressing,survival,setup,stress,0,0
+485,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1003,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1566,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2076,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,marker,setup,reporter,0,0
+486,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1004,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1567,Homo sapiens,Virus Exposure,Virus: Hepatitis C Virus,pathogen,suppressing,survival,setup,stress,0,0
+2077,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,marker,setup,reporter,0,0
+487,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1005,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1568,Homo sapiens,Drug Exposure,TAK-243,drug,suppressing,survival,setup,stress,0,0
+2078,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+488,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1006,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1569,Homo sapiens,Drug Exposure,TAK-243,drug,suppressing,survival,setup,stress,0,0
+2079,Homo sapiens,Drug Exposure,BI-2536,drug,suppressing,survival,setup,stress,0,0
+489,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1007,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1571,Homo sapiens,Timecourse,Wnt3a conditioned medium,baseline,none,marker,setup,reporter,0,0
+2080,Homo sapiens,Drug Exposure,BI6727/Volasertib,drug,suppressing,survival,setup,stress,0,0
+490,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1008,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1573,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2081,Homo sapiens,Drug Exposure,GSK461364 (GSK461364A),drug,suppressing,survival,setup,stress,0,0
+491,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1009,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1574,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2082,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+492,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1010,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1575,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2083,Homo sapiens,Drug Exposure,Mutation: ZNF451 (ETG26036) KO|Etoposide,drug,suppressing,survival,setup,stress,0,0
+493,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1011,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1576,Homo sapiens,Timecourse,Mutation: CDC34 (ETG997) KO,baseline,none,proliferation,setup,fitness,0,0
+2084,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+494,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1012,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1577,Homo sapiens,Timecourse,Mutation: UBE2R2 (ETG54926) KO,baseline,none,proliferation,setup,fitness,0,0
+2085,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+495,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1013,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1578,Homo sapiens,Timecourse,Mutation: UBE2R2 (ETG54926) KO,baseline,none,proliferation,setup,fitness,0,0
+2086,Homo sapiens,Timecourse,Mutation: FBXW7 (ETG55294) del,baseline,none,proliferation,setup,fitness,0,0
+496,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1014,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1579,Homo sapiens,Timecourse,Mutation: CDC34 (ETG997)/UBE2R2 (ETG54926) Double KO,baseline,none,proliferation,setup,fitness,0,0
+2087,Homo sapiens,Timecourse,Mutation: FBXW7 (ETG55294) del,baseline,none,proliferation,setup,fitness,0,0
+497,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1015,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2089,Homo sapiens,Timecourse,Mutation: ELOF1 (ETG84337) KO,baseline,none,proliferation,setup,fitness,0,0
+504,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2090,Homo sapiens,Drug Exposure,Mutation: ERCC6 (ETG2074) KO| Illudin S,drug,suppressing,survival,setup,stress,0,0
+503,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1017,Homo sapiens,Virus Exposure,Virus: Ebola virus (Mayinga strain),pathogen,suppressing,survival,setup,stress,0,0
+1580,Homo sapiens,Timecourse,Mutation: CDC34 (ETG997)/UBE2R2 (ETG54926) Double KO,baseline,none,proliferation,setup,fitness,0,0
+1582,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+498,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2088,Homo sapiens,Drug Exposure,Illudin S,drug,suppressing,survival,setup,stress,0,0
+1016,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1581,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+1018,Homo sapiens,Toxin Exposure,Typhoid Toxin,toxin,suppressing,survival,setup,stress,0,0
+1583,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+2091,Homo sapiens,Drug Exposure,Mutation: ELOF1 (ETG84337) KO| Illudin S,drug,suppressing,survival,setup,stress,0,0
+505,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1019,Homo sapiens,Toxin Exposure,Typhoid Toxin,toxin,suppressing,survival,setup,stress,0,0
+1584,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+2092,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+506,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1020,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1586,Homo sapiens,Drug Exposure,TH588,drug,suppressing,survival,setup,stress,0,0
+2093,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+507,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1021,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1588,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2094,Homo sapiens,Drug Exposure,Dichloroacetic acid (DCA),drug,suppressing,survival,setup,stress,0,0
+508,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1022,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1589,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2095,Homo sapiens,Drug Exposure,Dichloroacetic acid (DCA),drug,suppressing,survival,setup,stress,0,0
+509,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1023,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1591,Homo sapiens,Timecourse,Mutation: ATG7 (ETG10533) KO,baseline,none,marker,setup,reporter,0,0
+2096,Homo sapiens,Drug Exposure,Hydrogen Peroxide (H2O2),drug,suppressing,survival,setup,stress,0,0
+510,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1024,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1592,Homo sapiens,Timecourse,Mutation: ATG3 (ETG64422) KO,baseline,none,marker,setup,reporter,0,0
+2097,Homo sapiens,Drug Exposure,Hydrogen Peroxide (H2O2),drug,suppressing,survival,setup,stress,0,0
+511,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1025,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1593,Homo sapiens,Timecourse,Mutation: ATG10 (ETG83734) KO,baseline,none,marker,setup,reporter,0,0
+2098,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+512,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1026,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1608,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2099,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+513,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1027,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1609,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2100,Homo sapiens,Drug Exposure,Mitomycin C,drug,suppressing,survival,setup,stress,0,0
+514,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1028,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1618,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2101,Homo sapiens,Drug Exposure,Mitomycin C,drug,suppressing,survival,setup,stress,0,0
+515,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1029,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1619,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2102,Homo sapiens,Drug Exposure,4-Nitroquinoline N-oxide (NQO),drug,suppressing,survival,setup,stress,0,0
+516,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1030,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1621,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+2103,Homo sapiens,Drug Exposure,4-Nitroquinoline N-oxide (NQO),drug,suppressing,survival,setup,stress,0,0
+517,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1031,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2106,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+518,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1622,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 Sdel (deletion in S1/S2 site of spike protein),pathogen,suppressing,survival,setup,stress,0,0
+2104,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1032,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1033,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1623,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+1624,Homo sapiens,Drug Exposure,Berzosertib (VE822),drug,suppressing,survival,setup,stress,0,0
+2105,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+519,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+520,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1034,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1625,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+2107,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+521,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1035,Homo sapiens,Timecourse,HRASG12V isoform,baseline,none,proliferation,setup,fitness,0,0
+1626,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+2108,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+522,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1037,Homo sapiens,Timecourse,KRASG12V isoform,baseline,none,proliferation,setup,fitness,0,0
+1627,Homo sapiens,Drug Exposure,Berzosertib (VE822),drug,suppressing,survival,setup,stress,0,0
+2109,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+523,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1039,Homo sapiens,Timecourse,NRASG12V isoform,baseline,none,proliferation,setup,fitness,0,0
+1628,Homo sapiens,Drug Exposure,Berzosertib (VE822),drug,suppressing,survival,setup,stress,0,0
+2110,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+524,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1041,Homo sapiens,Ligand Exposure,Mega CD40L,signal,UNRESOLVED,marker,setup,reporter,1,0
+1629,Homo sapiens,Drug Exposure,sorafenib,drug,suppressing,survival,setup,stress,0,0
+2111,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+525,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1042,Homo sapiens,Ligand Exposure,Mega CD40L,signal,UNRESOLVED,marker,setup,reporter,1,0
+1630,Homo sapiens,Other,Cells grown in a transwell with matrigel and allowed to invade toward a higher concentration of serum in the bottom chamber,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+2112,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+526,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1045,Homo sapiens,Drug Exposure,AZD5576 (CDK9i),drug,suppressing,survival,setup,stress,0,0
+1631,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2113,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+527,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1046,Homo sapiens,Drug Exposure,AZD5991 (MCL1i),drug,suppressing,survival,setup,stress,0,0
+1632,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2114,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+528,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1048,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1633,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2115,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+78,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+529,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1050,Homo sapiens,Ligand Exposure,E2 (17β-estradiol),signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1634,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2116,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+79,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+530,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1052,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1635,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,stress,0,0
+2117,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+80,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+531,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1053,Homo sapiens,Timecourse,E2 (17β-estradiol),baseline,none,proliferation,setup,fitness,0,0
+1636,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2118,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+85,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+532,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1056,Homo sapiens,Drug Exposure,CC-122 (Avadomide),drug,suppressing,survival,setup,stress,0,0
+1639,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+2119,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+89,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1641,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+2121,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1058,Homo sapiens,Drug Exposure,Lenalidomide,drug,suppressing,survival,setup,stress,0,0
+94,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2120,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+533,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+534,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+93,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1057,Homo sapiens,Drug Exposure,CC-122 (Avadomide),drug,suppressing,survival,setup,stress,0,0
+1640,Homo sapiens,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+535,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1059,Homo sapiens,Drug Exposure,Lenalidomide,drug,suppressing,survival,setup,stress,0,0
+1642,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2122,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+95,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+536,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1060,Homo sapiens,Drug Exposure,Pomalidomide,drug,suppressing,survival,setup,stress,0,0
+1643,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+2123,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+96,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+537,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1061,Homo sapiens,Drug Exposure,Pomalidomide,drug,suppressing,survival,setup,stress,0,0
+1644,Homo sapiens,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+2124,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+100,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+538,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1062,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1645,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+2128,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+101,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+539,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1063,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1646,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2129,Homo sapiens,Cytokine exposure,IL-1α+TNF+C1q,signal,UNRESOLVED,marker,setup,reporter,1,0
+102,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+540,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1064,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1647,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+2130,Homo sapiens,Cytokine exposure,IL-1α+TNF+C1q,signal,UNRESOLVED,marker,setup,reporter,1,0
+103,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+541,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1065,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1648,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+2131,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+104,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1066,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1649,Homo sapiens,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+2132,Homo sapiens,Cytokine exposure,IL-1α+TNF+C1q,signal,UNRESOLVED,marker,setup,reporter,1,0
+139,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+543,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+542,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1067,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+1650,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2133,Homo sapiens,Cytokine exposure,IL-1α+TNF+C1q,signal,UNRESOLVED,marker,setup,reporter,1,0
+141,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+544,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1074,Homo sapiens,Bacteria Exposure,Salmonella enterica,pathogen,suppressing,survival,setup,stress,0,0
+1651,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+2134,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+545,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1652,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+2135,Homo sapiens,Other,Differentiation Medium,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+1075,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+143,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+142,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1076,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+546,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1653,Homo sapiens,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+2136,Homo sapiens,Drug Exposure,CC-885,drug,suppressing,survival,setup,stress,0,0
+145,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1079,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+547,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1654,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2137,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+149,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+548,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1080,Homo sapiens,Toxin Exposure,Shiga Toxin Stx1,toxin,suppressing,survival,setup,stress,0,0
+1656,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+2139,Homo sapiens,T cell exposure,CD8+ T cells,immune,suppressing,survival,setup,fitness,0,1
+150,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+549,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1081,Homo sapiens,NK cell exposure,IL-2-activated NK cells,immune,suppressing,survival,setup,fitness,0,1
+1657,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+2140,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+151,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+550,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1082,Homo sapiens,NK cell exposure,IL-2-activated NK cells,immune,suppressing,survival,setup,fitness,0,1
+1658,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+2145,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+152,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+551,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1083,Homo sapiens,NK cell exposure,IL-2-activated NK cells,immune,suppressing,survival,setup,fitness,0,1
+1659,Homo sapiens,Other,CD20xCD3 bsAb (bispecific antibodies),unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+2146,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+153,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1092,Homo sapiens,Bacteria Exposure,Legionella pneumophila,pathogen,suppressing,survival,setup,stress,0,0
+552,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1660,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2147,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+154,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+553,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1094,Homo sapiens,Drug Exposure,OTA-5781,drug,suppressing,survival,setup,stress,0,0
+1661,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2148,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+155,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+554,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1095,Homo sapiens,Drug Exposure,Selumetinib,drug,suppressing,survival,setup,stress,0,0
+1669,Homo sapiens,Drug Exposure,CBK77,drug,suppressing,survival,setup,stress,0,0
+2149,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+156,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+555,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1097,Homo sapiens,Drug Exposure,Selumetinib,drug,suppressing,survival,setup,stress,0,0
+1670,Homo sapiens,Drug Exposure,CBK77,drug,suppressing,survival,setup,stress,0,0
+2150,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+157,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+556,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1098,Homo sapiens,Drug Exposure,Bleomycin,drug,suppressing,marker,setup,reporter,0,0
+1677,Homo sapiens,Other,Culture in suspension vs. adherent conditions,unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+2151,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+158,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+557,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1099,Homo sapiens,Drug Exposure,Bleomycin,drug,suppressing,marker,setup,reporter,0,0
+1686,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2152,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+168,Homo sapiens,Toxin Exposure,V. parahaemolyticus with active T3SS1,toxin,suppressing,survival,setup,stress,0,0
+559,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+159,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+558,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1100,Homo sapiens,Drug Exposure,OTA-3998,drug,suppressing,survival,setup,stress,0,0
+1687,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2153,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1103,Homo sapiens,Drug Exposure,Sodium Arsenite,drug,suppressing,marker,setup,reporter,0,0
+1688,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2154,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+169,Homo sapiens,Toxin Exposure,V. parahaemolyticus with active T3SS1,toxin,suppressing,survival,setup,stress,0,0
+560,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1104,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1689,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2155,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+170,Homo sapiens,Toxin Exposure,V. parahaemolyticus with active T3SS2,toxin,suppressing,survival,setup,stress,0,0
+561,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1105,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1690,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2156,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+171,Homo sapiens,Toxin Exposure,V. parahaemolyticus with active T3SS2,toxin,suppressing,survival,setup,stress,0,0
+562,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1107,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1691,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2157,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+172,Homo sapiens,Ligand Exposure,Bone morphogenetic protein 2 (BMP-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+563,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1109,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1692,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2158,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+173,Homo sapiens,Ligand Exposure,Bone morphogenetic protein 2 (BMP-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+564,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1110,Homo sapiens,Drug Exposure,CGS-21680,drug,suppressing,marker,setup,reporter,0,0
+1693,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2159,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+174,Homo sapiens,Ligand Exposure,Interleukin-1 β,signal,UNRESOLVED,marker,setup,reporter,1,0
+565,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1111,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2160,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+175,Homo sapiens,Ligand Exposure,Interleukin-1 β,signal,UNRESOLVED,marker,setup,reporter,1,0
+566,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1112,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1695,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2161,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+176,Homo sapiens,Ligand Exposure,Interleukin-1 β,signal,UNRESOLVED,marker,setup,reporter,1,0
+567,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1113,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1696,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2162,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+177,Homo sapiens,Ligand Exposure,Interleukin-1 β,signal,UNRESOLVED,marker,setup,reporter,1,0
+568,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1114,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1697,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2163,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+178,Homo sapiens,Ligand Exposure,Insulin,signal,UNRESOLVED,marker,setup,reporter,1,0
+569,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2164,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1698,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1115,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+179,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+570,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1119,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+571,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1699,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2165,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+180,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1121,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1694,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1700,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2166,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+181,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+572,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1123,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1701,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2167,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+182,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+573,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1125,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1702,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+2168,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+183,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+574,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1132,Homo sapiens,Virus Exposure,Virus: Dengue virus 2 Jamaica/1409/1983,pathogen,suppressing,survival,setup,stress,0,0
+1703,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+2169,Homo sapiens,Drug Exposure,Gefitinib,drug,suppressing,survival,setup,stress,0,0
+184,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+575,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1135,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1704,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2200,Homo sapiens,Timecourse,Mutation: BRCA2 (ETG675) KO,baseline,none,proliferation,setup,fitness,0,0
+185,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+576,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1137,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1705,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+2201,Homo sapiens,Timecourse,Mutation: BRCA2 (ETG675) KO,baseline,none,proliferation,setup,fitness,0,0
+77,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+186,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+577,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1140,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1706,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2202,Homo sapiens,Drug Exposure,antimycin A/oligomycin A,drug,suppressing,marker,setup,reporter,0,0
+187,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+582,Homo sapiens,Drug Exposure,AZD-1208,drug,suppressing,survival,setup,stress,0,0
+1142,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1707,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+2203,Homo sapiens,Drug Exposure,antimycin A/oligomycin A,drug,suppressing,marker,setup,reporter,0,0
+188,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+583,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1144,Homo sapiens,Drug Exposure,BAA473 (11-oxo-12S-hydroxylithocholic acid methyl ester),drug,suppressing,marker,setup,reporter,0,0
+1708,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2204,Homo sapiens,Drug Exposure,antimycin A/oligomycin A,drug,suppressing,marker,setup,reporter,0,0
+189,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+584,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+1145,Homo sapiens,Oxygen Exposure,High oxygen,metabolic,suppressing,survival,setup,fitness,0,1
+1709,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+2205,Homo sapiens,Drug Exposure,antimycin A/oligomycin A,drug,suppressing,marker,setup,reporter,0,0
+190,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+585,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+1146,Homo sapiens,Oxygen Exposure,Low oxygen,metabolic,suppressing,survival,setup,fitness,0,1
+1710,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+586,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+191,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1147,Homo sapiens,Timecourse,PARP14 knockout,baseline,none,proliferation,setup,fitness,0,0
+2206,Homo sapiens,Drug Exposure,antimycin A/oligomycin A,drug,suppressing,marker,setup,reporter,0,0
+1712,Homo sapiens,SARS-CoV-2 Spike-RBD exposure,SARS-CoV-2 Spike-RBD,binding,UNRESOLVED,marker,setup,reporter,1,0
+587,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1148,Homo sapiens,Virus Exposure,Virus: Influenza A virus (A/Viet Nam/1203/2004(H5N1)),pathogen,suppressing,survival,setup,stress,0,0
+192,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2207,Homo sapiens,Drug Exposure,SHP099,drug,suppressing,survival,setup,stress,0,0
+1713,Homo sapiens,Other,Cultured in the absence of GM-CSF,signal,UNRESOLVED,UNRESOLVED,keyword,fitness,1,1
+2208,Homo sapiens,Drug Exposure,SHP099,drug,suppressing,survival,setup,stress,0,0
+193,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+588,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1149,Homo sapiens,Virus Exposure,Virus: Influenza A virus (A/Viet Nam/1203/2004(H5N1)),pathogen,suppressing,survival,setup,stress,0,0
+1715,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2209,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+194,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+589,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1150,Homo sapiens,Virus Exposure,Virus: Influenza A virus (A/Viet Nam/1203/2004(H5N1)),pathogen,suppressing,survival,setup,stress,0,0
+1718,Homo sapiens,Transferrin receptor (TFRC/CD71) exposure,Transferrin receptor (TFRC/CD71),binding,UNRESOLVED,marker,setup,reporter,1,0
+2210,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+195,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+590,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1151,Homo sapiens,Toxin Exposure,Subtilase Cytotoxin (SubAB),toxin,suppressing,survival,setup,stress,0,0
+1719,Homo sapiens,Drug Exposure,Doxycycline,drug,suppressing,survival,setup,fitness,0,1
+2212,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+196,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+591,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1153,Homo sapiens,Drug Exposure,GSK983,drug,suppressing,survival,setup,stress,0,0
+1721,Homo sapiens,Other,Low oxygen,unknown,UNRESOLVED,UNRESOLVED,unknown,stress,1,0
+2213,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+197,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+592,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1722,Homo sapiens,Drug Exposure,Doxycycline,drug,suppressing,survival,setup,fitness,0,1
+1155,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+2214,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+198,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+593,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1159,Homo sapiens,Drug Exposure,Tunicamycin,drug,suppressing,survival,setup,stress,0,0
+1725,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2215,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+199,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+594,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+1160,Homo sapiens,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+1726,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2216,Homo sapiens,SARS-CoV-2 Spike exposure (293T-spike-GFP11-P2A-mCherry cells),SARS-CoV-2 Spike,binding,UNRESOLVED,marker,setup,reporter,1,0
+200,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+595,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+1161,Homo sapiens,Toxin Exposure,CTx-DTA,toxin,suppressing,survival,setup,stress,0,0
+1727,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2217,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+201,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+596,Homo sapiens,Drug Exposure,Vemurafenib,drug,suppressing,survival,setup,stress,0,0
+1162,Homo sapiens,Toxin Exposure,CTx-DTA,toxin,suppressing,survival,setup,stress,0,0
+1728,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2218,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+202,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+6,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2220,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+1163,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,stress,0,0
+1729,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+597,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2219,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+1164,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,stress,0,0
+203,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+600,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1730,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+204,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+601,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1165,Homo sapiens,Drug Exposure,-,drug,suppressing,survival,setup,stress,0,0
+1731,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+2221,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+5,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+205,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+602,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1166,Homo sapiens,Drug Exposure,RG7834,drug,suppressing,survival,setup,stress,0,0
+1732,Homo sapiens,Cytokine exposure,IFN-β (Interferon beta),signal,UNRESOLVED,marker,setup,reporter,1,0
+2222,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+206,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+603,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1167,Homo sapiens,Virus Exposure,Virus: West Nile virus,pathogen,suppressing,survival,setup,stress,0,0
+1733,Homo sapiens,Cytokine exposure,IFN-β (Interferon beta),signal,UNRESOLVED,marker,setup,reporter,1,0
+2223,Homo sapiens,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+207,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+604,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1168,Homo sapiens,Virus Exposure,Virus: Dengue virus 2 Thailand/16681/84,pathogen,suppressing,survival,setup,stress,0,0
+1735,Homo sapiens,Drug Exposure,Dimethyl sulfoxide (DMSO),drug,suppressing,survival,setup,stress,0,0
+2248,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+208,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+611,Homo sapiens,Ligand Exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1169,Homo sapiens,Virus Exposure,Virus: Hepatitis C Virus JFH1,pathogen,suppressing,survival,setup,stress,0,0
+1736,Homo sapiens,Drug Exposure,Hydroxychloroquine,drug,suppressing,survival,setup,stress,0,0
+2249,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+209,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1170,Homo sapiens,Virus Exposure,Virus: Human rhinovirus C15 (RV-C15),pathogen,suppressing,survival,setup,stress,0,0
+612,Homo sapiens,Drug Exposure,Quizartinib (AC220),drug,suppressing,survival,setup,stress,0,0
+1737,Homo sapiens,Drug Exposure,Remdesivir,drug,suppressing,survival,setup,stress,0,0
+2250,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+210,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+613,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1171,Homo sapiens,Virus Exposure,Virus: Enterovirus 68,pathogen,suppressing,survival,setup,stress,0,0
+1738,Homo sapiens,Drug Exposure,Hydroxychloroquine,drug,suppressing,survival,setup,stress,0,0
+2251,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+76,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+211,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+614,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1172,Homo sapiens,Virus Exposure,Virus: Zika virus,pathogen,suppressing,survival,setup,stress,0,0
+1739,Homo sapiens,Drug Exposure,Remdesivir,drug,suppressing,survival,setup,stress,0,0
+2252,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+212,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+626,Homo sapiens,T cell exposure,CD8+ T cells,immune,suppressing,survival,setup,fitness,0,1
+1173,Homo sapiens,Virus Exposure,Virus: Zika virus,pathogen,suppressing,survival,setup,stress,0,0
+1741,Homo sapiens,Bacteria Exposure,Salmonella enterica serovar Typhimurium and IFNgamma (500 U/ml),pathogen,suppressing,survival,setup,stress,0,0
+2253,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+16,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+213,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+627,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1174,Homo sapiens,Virus Exposure,Virus: West Nile virus,pathogen,suppressing,survival,setup,stress,0,0
+1742,Homo sapiens,Virus Exposure,"Virus: SARS-CoV-2 pseudovirus  + EGFP marker (Zhu, 2021)",pathogen,suppressing,survival,setup,stress,0,0
+2254,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+17,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+214,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1176,Homo sapiens,Drug Exposure,rigosertib,drug,suppressing,survival,setup,stress,0,0
+1175,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,marker,setup,stress,0,0
+2255,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+628,Homo sapiens,T cell exposure,CD8+ T cells,immune,suppressing,survival,setup,fitness,0,1
+215,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+629,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1743,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+18,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2256,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1744,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+24,Homo sapiens,Toxin Exposure,Ricin,toxin,suppressing,survival,setup,stress,0,0
+216,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1177,Homo sapiens,Drug Exposure,rigosertib,drug,suppressing,survival,setup,stress,0,0
+630,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1745,Homo sapiens,Drug Exposure,Niraparib,drug,suppressing,survival,setup,stress,0,0
+2257,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1178,Homo sapiens,Drug Exposure,Abt-751,drug,suppressing,survival,setup,stress,0,0
+25,Homo sapiens,Drug Exposure,PLX-4720,drug,suppressing,survival,setup,stress,0,0
+217,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+631,Homo sapiens,Drug Exposure,Methotrexate,drug,suppressing,survival,setup,stress,0,0
+1746,Homo sapiens,Drug Exposure,Niraparib,drug,suppressing,survival,setup,stress,0,0
+2258,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1179,Homo sapiens,Drug Exposure,rigosertib,drug,suppressing,survival,setup,stress,0,0
+26,Homo sapiens,Drug Exposure,PLX-4720,drug,suppressing,survival,setup,stress,0,0
+218,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+632,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+1747,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2259,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1180,Homo sapiens,Drug Exposure,Alisertib,drug,suppressing,survival,setup,stress,0,0
+27,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+219,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+638,Homo sapiens,Drug Exposure,Lenalidomide,drug,suppressing,survival,setup,stress,0,0
+1748,Homo sapiens,Drug Exposure,5-fluorouracil,drug,suppressing,survival,setup,stress,0,0
+2260,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1181,Homo sapiens,Drug Exposure,BI-2536,drug,suppressing,survival,setup,stress,0,0
+28,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+220,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+639,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1182,Homo sapiens,Drug Exposure,blebbistatin,drug,suppressing,survival,setup,stress,0,0
+1749,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2261,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+29,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+221,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+640,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1750,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2262,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1183,Homo sapiens,Drug Exposure,STLC (S-Trityl-L-cysteine),drug,suppressing,survival,setup,stress,0,0
+64,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+222,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+641,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1751,Homo sapiens,Virus Exposure,Virus: Rhinovirus serotype B14 (RV-B14),pathogen,suppressing,survival,setup,stress,0,0
+2263,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1184,Homo sapiens,Drug Exposure,Vinblastine,drug,suppressing,survival,setup,stress,0,0
+65,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+223,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+642,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1752,Homo sapiens,Virus Exposure,Virus: Rhinovirus serotype B14 (RV-B14),pathogen,suppressing,survival,setup,stress,0,0
+66,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2264,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+224,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1754,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1753,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+643,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1185,Homo sapiens,Drug Exposure,Abt-751,drug,suppressing,survival,setup,stress,0,0
+644,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1186,Homo sapiens,Drug Exposure,rigosertib,drug,suppressing,survival,setup,stress,0,0
+67,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+225,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2265,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+2266,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1187,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+68,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2267,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1755,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+645,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+226,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+69,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+227,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+646,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1188,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1756,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2268,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+70,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+228,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+647,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1190,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1757,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2269,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+71,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1191,Homo sapiens,Drug Exposure,DNMDP,drug,suppressing,survival,setup,stress,0,0
+648,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+229,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1758,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2270,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+72,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+649,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1192,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1759,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2271,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+73,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+232,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+650,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1193,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1760,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2274,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+74,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+233,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+651,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1195,Homo sapiens,Drug Exposure,Erlotinib (100nmol/L) + THZ-1(50nmol/L),drug,suppressing,survival,setup,stress,0,0
+1761,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2275,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+75,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+234,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+652,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1196,Homo sapiens,Drug Exposure,Erlotinib (100nmol/L) + THZ-1(50nmol/L),drug,suppressing,survival,setup,stress,0,0
+1762,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2276,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+235,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1198,Homo sapiens,Cytokine exposure,TNF‐α,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+653,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1763,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1764,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2277,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1199,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+236,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+654,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+237,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+655,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2278,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1200,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+1766,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+2279,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1203,Homo sapiens,Timecourse,Galactose medium,baseline,none,proliferation,setup,fitness,0,0
+238,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+656,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1767,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+2280,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1204,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+239,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+657,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1768,Homo sapiens,Timecourse,lipoprotein-rich culture conditions,baseline,none,marker,setup,reporter,0,0
+2281,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1205,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+240,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+658,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1769,Homo sapiens,Timecourse,lipoprotein-depleted culture conditions,baseline,none,marker,setup,reporter,0,0
+2282,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1206,Homo sapiens,Timecourse,Mutation: ATRX (ETG546) KO,baseline,none,proliferation,setup,fitness,0,0
+241,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+659,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1770,Homo sapiens,Timecourse,lipoprotein-rich culture conditions,baseline,none,marker,setup,reporter,0,0
+2283,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1207,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,survival,setup,stress,0,0
+242,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+660,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1771,Homo sapiens,Timecourse,lipoprotein-depleted culture conditions,baseline,none,marker,setup,reporter,0,0
+2284,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1208,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,survival,setup,stress,0,0
+243,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+661,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1772,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2285,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1209,Homo sapiens,Virus Exposure,Virus: Zika virus,pathogen,suppressing,survival,setup,stress,0,0
+244,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+662,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1773,Homo sapiens,Timecourse,Mutation: LDLR (ETG3949) KO | lipoprotein-rich culture conditions,baseline,none,marker,setup,reporter,0,0
+2286,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+1210,Homo sapiens,Virus Exposure,Virus: Zika virus,pathogen,suppressing,survival,setup,stress,0,0
+245,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+663,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1774,Homo sapiens,Timecourse,Mutation: LDLR (ETG3949) KO | lipoprotein-depleted culture conditions,baseline,none,marker,setup,reporter,0,0
+2287,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+1211,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+246,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+664,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1775,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2288,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+1212,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+247,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+665,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1776,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2289,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+1213,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+248,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+666,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1777,Homo sapiens,Timecourse,lipoprotein-rich culture conditions,baseline,none,marker,setup,reporter,0,0
+2290,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+249,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2291,Homo sapiens,Implantation to Mouse Model,Mutation: MAP2K1 (ETG5604) constitutively active form of MEK1 (MEKDD),in-vivo,none,proliferation,setup,fitness,0,0
+250,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+667,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1778,Homo sapiens,Timecourse,lipoprotein-depleted culture conditions,baseline,none,marker,setup,reporter,0,0
+1214,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+668,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1216,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2292,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1779,Homo sapiens,Drug Exposure,sorafenib,drug,suppressing,survival,setup,stress,0,0
+669,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+251,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1215,Homo sapiens,Virus Exposure,Virus: Yellow Fever Virus 17D,pathogen,suppressing,survival,setup,stress,0,0
+1782,Homo sapiens,Implantation to Mouse Model,Immunotherapy (GVAX + PD-1 blockade),in-vivo,none,proliferation,setup,fitness,0,0
+2293,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1217,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+252,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+670,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1783,Homo sapiens,Radiation Exposure,Ionizing Radiation (IR),radiation,suppressing,survival,setup,stress,0,0
+2294,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+253,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+671,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1218,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,marker,setup,reporter,0,0
+1786,Homo sapiens,Cytokine depletion,GM-CSF withdrawal,signal,UNRESOLVED,marker,setup,reporter,1,0
+2295,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1220,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+254,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+672,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1787,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2296,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+255,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+673,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1221,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+2297,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1788,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1222,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+256,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+674,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1789,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2298,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1223,Homo sapiens,Toxin Exposure,Dieldrin,toxin,suppressing,survival,setup,stress,0,0
+257,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+675,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1790,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2299,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1224,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+258,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+676,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1791,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2300,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1225,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+259,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1792,Homo sapiens,Timecourse,Mutation: TP53 (ETG:7157) KO,baseline,none,proliferation,setup,fitness,0,0
+677,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+230,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2301,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1227,Homo sapiens,Toxin Exposure,PVL (Panton–Valentine leukocidin),toxin,suppressing,survival,setup,stress,0,0
+260,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+678,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1793,Homo sapiens,Timecourse,Mutation: EGFR (ETG1956) T790M/L858R,baseline,none,proliferation,setup,fitness,0,0
+2302,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1228,Homo sapiens,Toxin Exposure,glycine–arginine (GR) dipeptide-repeat (DPR) protein,toxin,suppressing,survival,setup,fitness,0,1
+261,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+679,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1794,Homo sapiens,Drug Exposure,Mutation: EGFR (ETG1956) T790M/L858R| erlotinib,drug,suppressing,survival,setup,stress,0,0
+2303,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1229,Homo sapiens,Toxin Exposure,proline–arginine (PR) dipeptide-repeat (DPR) protein,toxin,suppressing,survival,setup,fitness,0,1
+262,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+680,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+263,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1795,Homo sapiens,Timecourse,Mutation: KRAS (ETG3845) G12V,baseline,none,proliferation,setup,fitness,0,0
+2304,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1230,Homo sapiens,Bacteria Exposure,Escherichia coli (str. EDL933),pathogen,suppressing,survival,setup,fitness,0,1
+1796,Homo sapiens,Drug Exposure,Mutation: KRAS (ETG3845) G12V| erlotinib,drug,suppressing,survival,setup,stress,0,0
+681,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2305,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1232,Homo sapiens,Radiation Exposure,Radiation,radiation,suppressing,survival,setup,stress,0,0
+682,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+264,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2306,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1797,Homo sapiens,Timecourse,Mutation: RIT1 (ETG6016) M90I,baseline,none,proliferation,setup,fitness,0,0
+265,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1233,Homo sapiens,Bacteria Exposure,Mycobacterium tuberculosis variant bovis BCG,pathogen,suppressing,survival,setup,stress,0,0
+683,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1798,Homo sapiens,Drug Exposure,Mutation: RIT1 (ETG6016) M90I| erlotinib,drug,suppressing,survival,setup,stress,0,0
+2309,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+1234,Homo sapiens,Bacteria Exposure,Mycobacterium tuberculosis variant bovis BCG,pathogen,suppressing,survival,setup,stress,0,0
+689,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+266,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1799,Homo sapiens,Timecourse,Mutation: RIT1 (ETG6016) M90I,baseline,none,proliferation,setup,fitness,0,0
+2310,Homo sapiens,Drug Exposure,Rabusertib (LY2603618),drug,suppressing,survival,setup,stress,0,0
+1235,Homo sapiens,Drug Exposure,"1S,3R-RSL3",drug,suppressing,survival,setup,stress,0,0
+267,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+691,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1800,Homo sapiens,Drug Exposure,Mutation: RIT1 (ETG6016) M90I| erlotinib,drug,suppressing,survival,setup,stress,0,0
+2311,Homo sapiens,Drug Exposure,AZD0156,drug,suppressing,survival,setup,stress,0,0
+1236,Homo sapiens,Drug Exposure,"1S,3R-RSL3",drug,suppressing,survival,setup,stress,0,0
+268,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+692,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1801,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2312,Homo sapiens,Drug Exposure,AZD0156,drug,suppressing,survival,setup,stress,0,0
+1237,Homo sapiens,Drug Exposure,"1S,3R-RSL3",drug,suppressing,survival,setup,stress,0,0
+269,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+693,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1802,Homo sapiens,Implantation to Mouse Model,Oxaliplatin,in-vivo,none,proliferation,setup,stress,0,0
+2313,Homo sapiens,Drug Exposure,NU 7441 (KU-57788),drug,suppressing,survival,setup,stress,0,0
+1238,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+270,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+694,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1803,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1239,Homo sapiens,Drug Exposure,ARS-853,drug,suppressing,survival,setup,stress,0,0
+2314,Homo sapiens,Drug Exposure,Rapamycin,drug,suppressing,survival,setup,stress,0,0
+271,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+695,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1804,Homo sapiens,Drug Exposure,panobinostat,drug,suppressing,survival,setup,stress,0,0
+2315,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1240,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1805,Homo sapiens,Drug Exposure,panobinostat,drug,suppressing,survival,setup,stress,0,0
+696,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+272,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2316,Homo sapiens,Drug Exposure,Olaparib|AZD0156,drug,suppressing,survival,setup,stress,0,0
+273,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+697,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1241,Homo sapiens,Drug Exposure,ARS-853|3D spheroid growth,drug,suppressing,survival,setup,stress,0,0
+1806,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2317,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+274,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+698,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1242,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+1807,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2318,Homo sapiens,Drug Exposure,Rabusertib (LY2603618),drug,suppressing,survival,setup,stress,0,0
+1243,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+275,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+276,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+699,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1808,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1244,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+700,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1810,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2320,Homo sapiens,Drug Exposure,bosutinib,drug,suppressing,survival,setup,stress,0,0
+1245,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+277,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+701,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1811,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2321,Homo sapiens,Other,C6 ceramide,drug,suppressing,survival,keyword,fitness,0,1
+1246,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+278,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+702,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1812,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2322,Homo sapiens,Virus Exposure,"Virus: SARS-CoV-2 mouse adapted 1 (SARS-CoV-2MA1) (Spike E484D)  (Yan, 2022)",pathogen,suppressing,survival,setup,stress,0,0
+1247,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+279,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+703,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1813,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2323,Homo sapiens,Drug Exposure,Enzalutamide,drug,suppressing,survival,setup,stress,0,0
+1248,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+280,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+704,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1814,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1815,Homo sapiens,Virus Exposure,Virus: MERS-CoV,pathogen,suppressing,survival,setup,stress,0,0
+2324,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+1249,Homo sapiens,Drug Exposure,Resveratrol,drug,suppressing,survival,setup,stress,0,0
+281,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+705,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2325,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+1250,Homo sapiens,Drug Exposure,Pterostilbene,drug,suppressing,survival,setup,stress,0,0
+282,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+706,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1816,Homo sapiens,Virus Exposure,Virus: MERS-CoV,pathogen,suppressing,survival,setup,stress,0,0
+2326,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+283,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+707,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1251,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+1817,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+2327,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+284,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+708,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1252,Homo sapiens,Drug Exposure,Resveratrol,drug,suppressing,survival,setup,stress,0,0
+1818,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+285,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2328,Homo sapiens,Drug Exposure,Colchicine,drug,suppressing,survival,setup,stress,0,0
+709,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1255,Homo sapiens,Drug Exposure,Apalutamide,drug,suppressing,survival,setup,stress,0,0
+1821,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2329,Homo sapiens,Drug Exposure,Colchicine,drug,suppressing,survival,setup,stress,0,0
+286,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+710,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1256,Homo sapiens,Drug Exposure,ML-210,drug,suppressing,survival,setup,stress,0,0
+1822,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2330,Homo sapiens,Drug Exposure,Colchicine,drug,suppressing,survival,setup,stress,0,0
+1257,Homo sapiens,Drug Exposure,ML-210,drug,suppressing,survival,setup,stress,0,0
+287,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+711,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1823,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2331,Homo sapiens,Drug Exposure,Colchicine,drug,suppressing,survival,setup,stress,0,0
+288,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+712,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1258,Homo sapiens,Drug Exposure,ML-210,drug,suppressing,survival,setup,stress,0,0
+2332,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+1824,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+289,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+713,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1291,Homo sapiens,Drug Exposure,Doxorubicin,drug,suppressing,survival,setup,fitness,0,1
+1825,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2333,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+290,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+714,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1292,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1826,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2334,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+291,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+715,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1293,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1827,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Strain UF-1),pathogen,suppressing,survival,setup,stress,0,0
+2335,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+292,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+716,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1294,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1828,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+2336,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+293,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+717,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1295,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1829,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+2337,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+1296,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+294,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+718,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1830,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+1297,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+295,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+719,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1840,Homo sapiens,Drug Exposure,KSH101,drug,suppressing,survival,setup,stress,0,0
+2339,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+296,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+720,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1298,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2338,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+1843,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+2340,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+297,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+721,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1299,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1845,Homo sapiens,Timecourse,Mutation: ARID1A (ETG8289) KD,baseline,none,proliferation,setup,fitness,0,0
+2341,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+298,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+722,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2342,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1300,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1846,Homo sapiens,Timecourse,Mutation: BAP1 (ETG8314) KO,baseline,none,proliferation,setup,fitness,0,0
+299,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1302,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+723,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1301,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1847,Homo sapiens,Timecourse,Mutation: CDH1 (ETG999) KO,baseline,none,proliferation,setup,fitness,0,0
+2343,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+300,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+724,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1848,Homo sapiens,Timecourse,Mutation: KEAP1 (ETG9817) KO,baseline,none,proliferation,setup,fitness,0,0
+2344,Homo sapiens,Drug Exposure,Temozolomide,drug,suppressing,survival,setup,stress,0,0
+301,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+725,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1303,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1849,Homo sapiens,Timecourse,Mutation: STK11/LKB1 (ETG:6794) KO,baseline,none,proliferation,setup,fitness,0,0
+2345,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+302,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+726,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1304,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1850,Homo sapiens,Timecourse,Mutation: NF1 (ETG4763) KO,baseline,none,proliferation,setup,fitness,0,0
+2346,Homo sapiens,Drug Exposure,talazoparib,drug,suppressing,survival,setup,stress,0,0
+303,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2319,Homo sapiens,Drug Exposure,bosutinib,drug,suppressing,survival,setup,stress,0,0
+727,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1305,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1851,Homo sapiens,Timecourse,Mutation: NF2 (ETG4771) KO,baseline,none,proliferation,setup,fitness,0,0
+2347,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+304,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+728,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1306,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1852,Homo sapiens,Timecourse,Mutation: PBRM1 (ETG55193) KO,baseline,none,proliferation,setup,fitness,0,0
+2348,Homo sapiens,Drug Exposure,talazoparib,drug,suppressing,survival,setup,stress,0,0
+305,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+729,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1307,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1853,Homo sapiens,Timecourse,Mutation: PTEN (ETG5728) KO,baseline,none,proliferation,setup,fitness,0,0
+2349,Homo sapiens,Virus Exposure,Induction of KSHV lytic reactivation,pathogen,suppressing,marker,setup,stress,0,0
+306,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+730,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1308,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1854,Homo sapiens,Timecourse,Mutation: RB1 (ETG5925) KO,baseline,none,proliferation,setup,fitness,0,0
+2350,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+307,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+731,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1309,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1855,Homo sapiens,Timecourse,Mutation: TP53 (ETG:7157) KO,baseline,none,proliferation,setup,fitness,0,0
+2351,Homo sapiens,Drug Exposure,Paclitaxel (Taxol),drug,suppressing,survival,setup,stress,0,0
+308,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+732,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1310,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1856,Homo sapiens,Timecourse,Mutation: VHL (ETG7428) KO,baseline,none,proliferation,setup,fitness,0,0
+2352,Homo sapiens,Drug Exposure,Cisplatin and paclitaxel (taxol),drug,suppressing,survival,setup,stress,0,0
+309,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+733,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1311,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1857,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2353,Homo sapiens,Drug Exposure,Cisplatin and paclitaxel (taxol),drug,suppressing,survival,setup,stress,0,0
+310,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+734,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1312,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1858,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2354,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+311,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+735,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1313,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+1314,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+1315,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2356,Homo sapiens,Drug Exposure,Paclitaxel (Taxol),drug,suppressing,survival,setup,stress,0,0
+1859,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2355,Homo sapiens,Drug Exposure,Cisplatin and paclitaxel (taxol),drug,suppressing,survival,setup,stress,0,0
+312,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+736,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1860,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+313,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+737,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1861,Homo sapiens,Timecourse,Mutation: TP53BP1 (ETG7158) KO,baseline,none,proliferation,setup,fitness,0,0
+2357,Homo sapiens,Drug Exposure,Cisplatin and paclitaxel (taxol),drug,suppressing,survival,setup,stress,0,0
+1316,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+314,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+738,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1862,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2358,Homo sapiens,Drug Exposure,Berzosertib (VE822),drug,suppressing,survival,setup,stress,0,0
+1317,Homo sapiens,Radiation Exposure,Ionizing Radiation (IR),radiation,suppressing,survival,setup,fitness,0,1
+315,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+739,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1863,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2360,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2),pathogen,suppressing,survival,setup,stress,0,0
+1318,Homo sapiens,Drug Exposure,Doxorubicin,drug,suppressing,survival,setup,stress,0,0
+316,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+740,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1864,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2361,Homo sapiens,Virus Exposure,"Virus: SARS-CoV-2 (Severe acute respiratory syndrome coronavirus 2)|IFN pretreatment (IFN-α2a, 1pM)",pathogen,suppressing,survival,setup,stress,0,0
+1319,Homo sapiens,Drug Exposure,Hydrogen Peroxide (H2O2),drug,suppressing,survival,setup,stress,0,0
+317,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+741,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1865,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2362,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1320,Homo sapiens,Drug Exposure,Methyl methanesulfonate (MMS),drug,suppressing,survival,setup,stress,0,0
+318,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+742,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1879,Homo sapiens,Drug Exposure,polymyxin B,drug,suppressing,survival,setup,stress,0,0
+2363,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1321,Homo sapiens,Drug Exposure,Pyridostatin,drug,suppressing,survival,setup,stress,0,0
+319,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+743,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1322,Homo sapiens,Radiation Exposure,Ultraviolet Light (UV),radiation,suppressing,survival,setup,fitness,0,1
+1880,Homo sapiens,Other,J774 macrophages; anti-CD20,unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+2364,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+320,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+744,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1882,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2365,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+321,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+745,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1323,Homo sapiens,Drug Exposure,Bleomycin,drug,suppressing,survival,setup,stress,0,0
+1883,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2366,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+322,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+746,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1324,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1884,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2367,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+323,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2368,Homo sapiens,Other,Infection with HPV18PsV-BE2,unknown,UNRESOLVED,UNRESOLVED,unknown,stress,1,0
+1325,Homo sapiens,Drug Exposure,AZD6738,drug,suppressing,survival,setup,stress,0,0
+747,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1885,Homo sapiens,Other,J774 macrophages; anti-CD20/anti-CD47,unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+324,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+748,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1326,Homo sapiens,Drug Exposure,Cisplatin-2/Cisplatin-3,drug,suppressing,survival,setup,stress,0,0
+1886,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2369,Homo sapiens,Other,anti-IgM,unknown,UNRESOLVED,UNRESOLVED,unknown,stress,1,0
+325,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+749,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1327,Homo sapiens,Drug Exposure,Cisplatin-2/Cisplatin-3,drug,suppressing,survival,setup,stress,0,0
+1887,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2370,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+326,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+750,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1328,Homo sapiens,Drug Exposure,Dexrazoxane (ICRF-187),drug,suppressing,survival,setup,stress,0,0
+1891,Homo sapiens,Virus Exposure,Virus: Zika virus,pathogen,suppressing,survival,setup,stress,0,0
+2371,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+327,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+751,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1329,Homo sapiens,Drug Exposure,Formaldehyde,drug,suppressing,survival,setup,stress,0,0
+1892,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2373,Homo sapiens,Timecourse,L-Selenocystine,baseline,none,proliferation,setup,fitness,0,0
+328,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+752,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1330,Homo sapiens,Drug Exposure,Phen-DC3,drug,suppressing,survival,setup,stress,0,0
+1893,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2374,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+329,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+753,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1331,Homo sapiens,Drug Exposure,Duocarmycin sa,drug,suppressing,survival,setup,stress,0,0
+1894,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2375,Homo sapiens,Drug Exposure,Cisplatin,drug,suppressing,survival,setup,stress,0,0
+330,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+754,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1332,Homo sapiens,Drug Exposure,Trabectedin,drug,suppressing,survival,setup,stress,0,0
+1895,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 ( isolate BetaCoV/France/ IDF0372/2020),pathogen,suppressing,survival,setup,stress,0,0
+2376,Homo sapiens,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+331,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+755,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1333,Homo sapiens,Drug Exposure,Calicheamicin,drug,suppressing,survival,setup,stress,0,0
+1897,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2377,Homo sapiens,Drug Exposure,Cladribine,drug,suppressing,survival,setup,stress,0,0
+1334,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+332,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+756,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1898,Homo sapiens,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,marker,setup,reporter,1,0
+2378,Homo sapiens,Drug Exposure,Cytarabine,drug,suppressing,survival,setup,stress,0,0
+1335,Homo sapiens,Drug Exposure,Illudin S,drug,suppressing,survival,setup,stress,0,0
+333,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+757,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1900,Homo sapiens,Drug Exposure,CGS-21680,drug,suppressing,survival,setup,fitness,0,1
+2379,Homo sapiens,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+1336,Homo sapiens,Drug Exposure,MLN4924 (Pevonedistat),drug,suppressing,survival,setup,stress,0,0
+334,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+758,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1901,Homo sapiens,Drug Exposure,Cyclosporin A,drug,suppressing,survival,setup,fitness,0,1
+2380,Homo sapiens,Drug Exposure,6-Mercaptopurine,drug,suppressing,survival,setup,stress,0,0
+1337,Homo sapiens,Drug Exposure,MNNG,drug,suppressing,survival,setup,stress,0,0
+335,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1338,Homo sapiens,Drug Exposure,KBrO3,drug,suppressing,survival,setup,stress,0,0
+336,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1902,Homo sapiens,Drug Exposure,Tacrolimus,drug,suppressing,survival,setup,fitness,0,1
+759,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2381,Homo sapiens,Drug Exposure,Thioguanine,drug,suppressing,survival,setup,stress,0,0
+337,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+760,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1903,Homo sapiens,Cytokine exposure,TGFβ1,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+2382,Homo sapiens,Drug Exposure,docetaxel,drug,suppressing,survival,setup,stress,0,0
+1339,Homo sapiens,Drug Exposure,CD437,drug,suppressing,survival,setup,stress,0,0
+761,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1904,Homo sapiens,T cell exposure,CD4+CD127lowCD25+ Treg cells,immune,suppressing,survival,setup,fitness,0,1
+2383,Homo sapiens,Drug Exposure,Paclitaxel (Taxol),drug,suppressing,survival,setup,stress,0,0
+1340,Homo sapiens,Drug Exposure,Camptothecin-2,drug,suppressing,survival,setup,stress,0,0
+338,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+762,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1905,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2384,Homo sapiens,Drug Exposure,Vincristine,drug,suppressing,survival,setup,stress,0,0
+1341,Homo sapiens,Drug Exposure,Benzo[a]pyrene Diol Epoxide (BPDE),drug,suppressing,survival,setup,stress,0,0
+339,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+763,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1906,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2385,Homo sapiens,Drug Exposure,Vinorelbine,drug,suppressing,survival,setup,stress,0,0
+1342,Homo sapiens,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+340,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+764,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1907,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2386,Homo sapiens,Drug Exposure,Methotrexate,drug,suppressing,survival,setup,stress,0,0
+1343,Homo sapiens,Drug Exposure,Pladienolide B (PladB),drug,suppressing,survival,setup,stress,0,0
+341,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+765,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1909,Homo sapiens,Virus Exposure,Virus: Enterovirus 71,pathogen,suppressing,survival,setup,stress,0,0
+2387,Homo sapiens,Drug Exposure,Camptothecin,drug,suppressing,survival,setup,stress,0,0
+1344,Homo sapiens,Drug Exposure,M3541 (ATM inhibitor),drug,suppressing,survival,setup,stress,0,0
+342,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+766,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1910,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2388,Homo sapiens,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+1345,Homo sapiens,Drug Exposure,M3541 (ATM inhibitor),drug,suppressing,survival,setup,stress,0,0
+343,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+767,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1911,Homo sapiens,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+2389,Homo sapiens,Drug Exposure,Topotecan,drug,suppressing,survival,setup,stress,0,0
+346,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1346,Homo sapiens,Drug Exposure,M3541 (ATM inhibitor),drug,suppressing,survival,setup,stress,0,0
+768,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1912,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+2390,Homo sapiens,Drug Exposure,Idarubicin,drug,suppressing,survival,setup,stress,0,0
+1347,Homo sapiens,Drug Exposure,M3541 (ATM inhibitor),drug,suppressing,survival,setup,stress,0,0
+347,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+769,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1913,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+2391,Homo sapiens,Drug Exposure,sorafenib,drug,suppressing,survival,setup,stress,0,0
+348,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+770,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1348,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1914,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+2392,Homo sapiens,Drug Exposure,Imatinib,drug,suppressing,survival,setup,stress,0,0
+1349,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+349,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+771,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2393,Homo sapiens,Drug Exposure,RO-3306,drug,suppressing,survival,setup,stress,0,0
+1915,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+350,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+772,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1916,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+1350,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+2394,Homo sapiens,Drug Exposure,AZD7762,drug,suppressing,survival,setup,stress,0,0
+1351,Homo sapiens,Drug Exposure,Mutation: RNASEH2A (ETG0535) KO|  Talazoparib,drug,suppressing,survival,setup,stress,0,0
+351,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+773,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1917,Homo sapiens,T cell exposure,TIL (Tumor Infiltrating Lymphocyte) co-culture,immune,suppressing,survival,setup,fitness,0,1
+2395,Homo sapiens,Drug Exposure,Vorinostat/SAHA,drug,suppressing,survival,setup,stress,0,0
+1352,Homo sapiens,Drug Exposure,Mutation: RNASEH2A (ETG0535) KO|Talazoparib,drug,suppressing,survival,setup,stress,0,0
+352,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+774,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1918,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2396,Homo sapiens,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1353,Homo sapiens,Drug Exposure,anti-CD22-asparagine-PEG2-maytansine,drug,suppressing,survival,setup,stress,0,0
+353,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+775,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1919,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2397,Homo sapiens,Drug Exposure,Tretinoin,drug,suppressing,survival,setup,stress,0,0
+1354,Homo sapiens,Drug Exposure,XL413,drug,suppressing,survival,setup,stress,0,0
+354,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+776,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1932,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2398,Homo sapiens,Drug Exposure,ABT263 (Navitoclax),drug,suppressing,survival,setup,stress,0,0
+1355,Homo sapiens,Drug Exposure,Aspariginase,drug,suppressing,survival,setup,stress,0,0
+355,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+777,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1933,Homo sapiens,Timecourse,Mutation: TP53 (ETG:7157) KO,baseline,none,proliferation,setup,fitness,0,0
+2399,Homo sapiens,Drug Exposure,Obatoclax,drug,suppressing,survival,setup,stress,0,0
+1356,Homo sapiens,Drug Exposure,Malformin A1,drug,suppressing,survival,setup,stress,0,0
+356,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+778,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1934,Homo sapiens,Timecourse,3D spheroid growth,baseline,none,proliferation,setup,fitness,0,0
+2400,Homo sapiens,Drug Exposure,PAC-1,drug,suppressing,survival,setup,stress,0,0
+1357,Homo sapiens,Drug Exposure,Malformin A1,drug,suppressing,survival,setup,stress,0,0
+357,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+779,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1935,Homo sapiens,Timecourse,3D spheroid growth | Mutation:TP53 (ETG:7157) KO,baseline,none,proliferation,setup,fitness,0,0
+2401,Homo sapiens,Drug Exposure,Tasisulam,drug,suppressing,survival,setup,stress,0,0
+1360,Homo sapiens,Drug Exposure,Mutation: TP53 (ETG:7157) KO|Cisplatin,drug,suppressing,survival,setup,stress,0,0
+358,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+780,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1936,Homo sapiens,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2402,Homo sapiens,Toxin Exposure,Panton–Valentine leukocidin (PVL),toxin,suppressing,survival,setup,stress,0,0
+1361,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+359,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+781,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1938,Homo sapiens,Drug Exposure,Atamparib (RBN-2397),drug,suppressing,survival,setup,stress,0,0
+2404,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1362,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+360,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+782,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1939,Homo sapiens,Drug Exposure,Atamparib (RBN-2397),drug,suppressing,survival,setup,stress,0,0
+2405,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,survival,setup,stress,0,0
+361,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1363,Homo sapiens,Drug Exposure,Venetoclax,drug,suppressing,survival,setup,stress,0,0
+783,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+362,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1364,Homo sapiens,Drug Exposure,Antimycin,drug,suppressing,survival,setup,fitness,0,1
+1940,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+2406,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,survival,setup,stress,0,0
+784,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1941,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+2407,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,survival,setup,stress,0,0
+1365,Homo sapiens,Drug Exposure,ONC201 (TIC10),drug,suppressing,survival,setup,stress,0,0
+363,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+785,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1942,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2408,Homo sapiens,Virus Exposure,Virus: VSV-G pseudotyped HIV-1,pathogen,suppressing,survival,setup,stress,0,0
+1366,Homo sapiens,Drug Exposure,ONC212,drug,suppressing,survival,setup,stress,0,0
+364,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+786,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1943,Homo sapiens,Drug Exposure,Trametinib,drug,suppressing,survival,setup,stress,0,0
+2409,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,survival,setup,stress,0,0
+1367,Homo sapiens,Drug Exposure,Antimycin and Oligomycin,drug,suppressing,survival,setup,fitness,0,1
+365,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+787,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1944,Homo sapiens,Drug Exposure,Palbociclib,drug,suppressing,survival,setup,stress,0,0
+2410,Homo sapiens,Virus Exposure,Virus: HIV (Human immunodeficiency virus),pathogen,suppressing,survival,setup,stress,0,0
+366,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+788,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1368,Homo sapiens,Drug Exposure,Chloramphenicol,drug,suppressing,survival,setup,fitness,0,1
+1945,Homo sapiens,Drug Exposure,Trametinib|Palbociclib,drug,suppressing,survival,setup,stress,0,0
+2414,Homo sapiens,Drug Exposure,ABBV-744,drug,suppressing,survival,setup,stress,0,0
+1369,Homo sapiens,Drug Exposure,Ethidium bromide,drug,suppressing,survival,setup,fitness,0,1
+367,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+789,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1946,Homo sapiens,Timecourse,Blasticidin,baseline,none,marker,setup,reporter,0,0
+2415,Homo sapiens,Drug Exposure,JQ1,drug,suppressing,survival,setup,stress,0,0
+1370,Homo sapiens,Drug Exposure,Metformin,drug,suppressing,survival,setup,fitness,0,1
+368,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+790,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1947,Homo sapiens,Drug Exposure,Doxorubicin,drug,suppressing,survival,setup,stress,0,0
+2416,Homo sapiens,Drug Exposure,dBet1,drug,suppressing,survival,setup,stress,0,0
+1371,Homo sapiens,Drug Exposure,Oligomycin,drug,suppressing,survival,setup,fitness,0,1
+369,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+791,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1948,Homo sapiens,Drug Exposure,tigecycline,drug,suppressing,survival,setup,stress,0,0
+2417,Homo sapiens,Drug Exposure,ABBV-744,drug,suppressing,survival,setup,stress,0,0
+370,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+792,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1372,Homo sapiens,Drug Exposure,Piericidin A,drug,suppressing,survival,setup,fitness,0,1
+1949,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2418,Homo sapiens,Drug Exposure,ABBV-744,drug,suppressing,survival,setup,stress,0,0
+371,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+793,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1373,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1950,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2419,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+1374,Homo sapiens,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+372,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+794,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1951,Homo sapiens,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+2420,Homo sapiens,Drug Exposure,Bortezomib,drug,suppressing,survival,setup,stress,0,0
+1379,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+795,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+373,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1952,Homo sapiens,Radiation Exposure,Radiation,radiation,suppressing,survival,setup,stress,0,0
+374,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1380,Homo sapiens,Virus Exposure,Virus: HCoV-NL63 (Human coronavirus NL63),pathogen,suppressing,survival,setup,stress,0,0
+1953,Homo sapiens,T cell exposure,CAR T cells,immune,suppressing,survival,setup,fitness,0,1
+2421,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+796,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+797,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2422,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1381,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+375,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1954,Homo sapiens,T cell exposure,CAR T cells,immune,suppressing,survival,setup,fitness,0,1
+2423,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1382,Homo sapiens,Virus Exposure,Virus: HCoV-229E (Human coronavirus 229E),pathogen,suppressing,survival,setup,stress,0,0
+376,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+798,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1955,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2424,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1383,Homo sapiens,Virus Exposure,Virus: HCoV-NL63 (Human coronavirus NL63),pathogen,suppressing,survival,setup,stress,0,0
+377,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+799,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1956,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2 (isolate USA-WA1/2020),pathogen,suppressing,survival,setup,stress,0,0
+2425,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1384,Homo sapiens,Virus Exposure,Virus: HCoV-OC43 (Human coronavirus OC43),pathogen,suppressing,survival,setup,stress,0,0
+378,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1957,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2426,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1385,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2  (Severe acute respiratory syndrome coronavirus 2)|33ºC,pathogen,suppressing,survival,setup,stress,0,0
+379,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+801,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1958,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2427,Homo sapiens,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,marker,setup,reporter,1,0
+1386,Homo sapiens,Virus Exposure,Virus: SARS-CoV-2  (Severe acute respiratory syndrome coronavirus 2)|37ºC,pathogen,suppressing,survival,setup,stress,0,0
+380,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+802,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2428,Homo sapiens,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,survival,setup,stress,0,0
+800,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1959,Homo sapiens,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1152,Mus musculus,Other,Dux gene induction,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+1483,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1664,Mus musculus,Implantation to Mouse Model,BALB/c VS. BALB/c Foxn1nu/nu hosts,in-vivo,none,proliferation,setup,fitness,0,0
+81,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1662,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+84,Mus musculus,Timecourse,Murine Interleukin 3,baseline,none,proliferation,setup,fitness,0,0
+1280,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+2183,Mus musculus,Implantation to Mouse Model,Rag1-/- mice,in-vivo,none,proliferation,setup,fitness,0,0
+1158,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+2429,Mus musculus,Virus Exposure,Virus: Influenza A (A/Puerto Rico/8/1934(H1N1),pathogen,suppressing,survival,setup,stress,0,0
+1281,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1908,Mus musculus,Virus Exposure,Virus: Reovirus strains T1L or T3D,pathogen,suppressing,survival,setup,stress,0,0
+1890,Mus musculus,Other,Exposure to APMAP-KO cancer cells vs. Control-KO cancer cells,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+2184,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+2474,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1542,Mus musculus,Drug Exposure,Irinotecan,drug,suppressing,survival,setup,stress,0,0
+2469,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1481,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1663,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1541,Mus musculus,Drug Exposure,Hydroxyurea,drug,suppressing,survival,setup,stress,0,0
+1157,Mus musculus,T cell exposure,Pmel-1 T cells,immune,suppressing,survival,setup,fitness,0,1
+1482,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2185,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+161,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1282,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1543,Mus musculus,Drug Exposure,KU-57788,drug,suppressing,survival,setup,stress,0,0
+1937,Mus musculus,Cytokine exposure | Drug exposure,TNF‐α | Z-VAD-FMK,drug,suppressing,survival,keyword,fitness,0,1
+2477,Mus musculus,Other,Leukaemia inhibitory factors (LIF)/serum condition (L/S),unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+1197,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1484,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1666,Mus musculus,Implantation to Mouse Model,BALB/c VS. BALB/c Foxn1nu/nu hosts,in-vivo,none,proliferation,setup,fitness,0,0
+2186,Mus musculus,Implantation to Mouse Model,Rag1-/- mice,in-vivo,none,proliferation,setup,fitness,0,0
+163,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1283,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1544,Mus musculus,Drug Exposure,KU-60019,drug,suppressing,survival,setup,stress,0,0
+2019,Mus musculus,Drug Exposure,docetaxel,drug,suppressing,survival,setup,stress,0,0
+2488,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1259,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1489,Mus musculus,Cytokine exposure,IFN-β (Interferon beta),signal,UNRESOLVED,marker,setup,reporter,1,0
+1667,Mus musculus,Implantation to Mouse Model,BALB/c +OVA VS. BALB/c Foxn1nu/nu hosts,in-vivo,none,proliferation,setup,fitness,0,0
+2187,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+165,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1284,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1545,Mus musculus,Drug Exposure,Melphalan,drug,suppressing,survival,setup,stress,0,0
+2049,Mus musculus,Bacteria Exposure,Escherichia coli (str. UTI89),pathogen,suppressing,survival,setup,stress,0,0
+1260,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1490,Mus musculus,Cytokine exposure,IFN-β (Interferon beta),signal,UNRESOLVED,marker,setup,reporter,1,0
+2490,Mus musculus,Drug Exposure,dabrafenib,drug,suppressing,survival,setup,stress,0,0
+2127,Mus musculus,Other,Chronic T cell stimulation,unknown,UNRESOLVED,UNRESOLVED,unknown,fitness,1,0
+1285,Mus musculus,Cytokine exposure,Mutation: FITM2 (ETG228859) KO|IFNgamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+167,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1668,Mus musculus,Implantation to Mouse Model,BALB/c +OVA+anti-PD-1 antibody VS. BALB/c Foxn1nu/nu hosts,in-vivo,none,proliferation,setup,fitness,0,0
+1546,Mus musculus,Drug Exposure,Mitomycin C,drug,suppressing,survival,setup,stress,0,0
+2188,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2491,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1261,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1521,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1678,Mus musculus,Timecourse,5 μg/ml LPS in DMEM with 5% FBS,baseline,none,marker,setup,reporter,0,0
+2189,Mus musculus,Implantation to Mouse Model,Rag1-/- mice,in-vivo,none,proliferation,setup,fitness,0,0
+1889,Mus musculus,Other,Exposure to APMAP-KO cancer cells,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+345,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1286,Mus musculus,Cytokine exposure,Mutation: FITM2 (ETG228859) KO|IFNgamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1547,Mus musculus,Drug Exposure,MK-4827,drug,suppressing,survival,setup,stress,0,0
+2141,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+2492,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1262,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1522,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1679,Mus musculus,Drug Exposure,CCCP,drug,suppressing,marker,setup,reporter,0,0
+2190,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+578,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1287,Mus musculus,Cytokine exposure,TNF‐α,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1548,Mus musculus,Drug Exposure,Methyl methanesulfonate (MMS),drug,suppressing,survival,setup,stress,0,0
+2142,Mus musculus,T cell exposure,OT-I T cells implanted into the pancreata of RAG1-/- mice,immune,suppressing,survival,setup,fitness,0,1
+2493,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1263,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1523,Mus musculus,Drug Exposure,6-Mercaptopurine,drug,suppressing,survival,setup,stress,0,0
+1680,Mus musculus,Drug Exposure,"OAR (1.0 μg/mL Oligomycin, 1.0 μg/mL Antimycin A and 100 nM Rotenone)",drug,suppressing,marker,setup,reporter,0,0
+2191,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+579,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1288,Mus musculus,Cytokine exposure,TNF‐α,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1549,Mus musculus,Drug Exposure,Olaparib,drug,suppressing,survival,setup,stress,0,0
+1089,Mus musculus,Implantation to Mouse Model,Anti–PD-1,in-vivo,none,proliferation,setup,fitness,0,0
+2143,Mus musculus,Virus Exposure,MNV (murine norovirus) CR6,pathogen,suppressing,survival,setup,stress,0,0
+1264,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1525,Mus musculus,Drug Exposure,A-966492,drug,suppressing,survival,setup,stress,0,0
+1681,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+2192,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+599,Mus musculus,Implantation to Mouse Model,Immunotherapy (GVAX + PD-1 blockade),in-vivo,none,proliferation,setup,fitness,0,0
+1289,Mus musculus,Cytokine exposure,Mutation: ATG12 (ETG67526) KO | TNF,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1550,Mus musculus,Drug Exposure,Oxaliplatin,drug,suppressing,survival,setup,stress,0,0
+2144,Mus musculus,Virus Exposure,MNV (murine norovirus) 1 (CW3),pathogen,suppressing,survival,setup,stress,0,0
+1265,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1526,Mus musculus,Drug Exposure,ABT-888,drug,suppressing,survival,setup,stress,0,0
+1682,Mus musculus,Drug Exposure,CCCP,drug,suppressing,marker,setup,reporter,0,0
+2193,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+615,Mus musculus,Implantation to Mouse Model,Immunotherapy (GVAX + PD-1 blockade),in-vivo,none,proliferation,setup,fitness,0,0
+1290,Mus musculus,Cytokine exposure,Mutation: ATG12 (ETG67526) KO | TNF,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1551,Mus musculus,Drug Exposure,Pirarubicin,drug,suppressing,survival,setup,stress,0,0
+2170,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1266,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1527,Mus musculus,Drug Exposure,Amonafide,drug,suppressing,survival,setup,stress,0,0
+1683,Mus musculus,Drug Exposure,"OAR (1.0 μg/mL Oligomycin, 1.0 μg/mL Antimycin A and 100 nM Rotenone)",drug,suppressing,marker,setup,reporter,0,0
+2194,Mus musculus,T cell exposure,OT-I T cells,immune,suppressing,survival,setup,fitness,0,1
+1358,Mus musculus,Ligand Exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+616,Mus musculus,Implantation to Mouse Model,Immunotherapy (GVAX only),in-vivo,none,proliferation,setup,fitness,0,0
+1552,Mus musculus,Drug Exposure,Pyridostatin,drug,suppressing,survival,setup,stress,0,0
+2171,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1267,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1684,Mus musculus,Drug Exposure,CCCP,drug,suppressing,marker,setup,reporter,0,0
+1528,Mus musculus,Drug Exposure,Amsacrine,drug,suppressing,survival,setup,stress,0,0
+2195,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,marker,setup,reporter,1,0
+1359,Mus musculus,Ligand Exposure,Interferon gamma,signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+617,Mus musculus,Implantation to Mouse Model,Immunotherapy (GVAX only),in-vivo,none,proliferation,setup,fitness,0,0
+1685,Mus musculus,Drug Exposure,"OAR (1.0 μg/mL Oligomycin, 1.0 μg/mL Antimycin A and 100 nM Rotenone)",drug,suppressing,marker,setup,reporter,0,0
+1529,Mus musculus,Drug Exposure,5-Azacytidine,drug,suppressing,survival,setup,stress,0,0
+2172,Mus musculus,Implantation to Mouse Model,SCID BALB/c host,in-vivo,none,proliferation,setup,fitness,0,0
+1268,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1553,Mus musculus,Drug Exposure,Rucaparib,drug,suppressing,survival,setup,stress,0,0
+2196,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+684,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1398,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1554,Mus musculus,Drug Exposure,SN-38,drug,suppressing,survival,setup,stress,0,0
+2173,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1269,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1530,Mus musculus,Drug Exposure,AZD-2461,drug,suppressing,survival,setup,stress,0,0
+1714,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+685,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1399,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1555,Mus musculus,Drug Exposure,SRT 1720,drug,suppressing,survival,setup,stress,0,0
+2174,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1270,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1531,Mus musculus,Drug Exposure,BMH-21,drug,suppressing,survival,setup,stress,0,0
+1716,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2198,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+687,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1422,Mus musculus,Virus Exposure,Virus:  Venezuelan equine encephalitis virus (VEEV) based chimera (SINV–VEEV–GFP),pathogen,suppressing,survival,setup,stress,0,0
+1556,Mus musculus,Drug Exposure,Thio-TEPA,drug,suppressing,survival,setup,stress,0,0
+2175,Mus musculus,Implantation to Mouse Model,SCID BALB/c host,in-vivo,none,proliferation,setup,fitness,0,0
+1271,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1532,Mus musculus,Drug Exposure,Cytarabine,drug,suppressing,survival,setup,stress,0,0
+1717,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+2211,Mus musculus,Bacteria Exposure,Mycobacterium abscessus,pathogen,suppressing,survival,setup,stress,0,0
+688,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1438,Mus musculus,Virus Exposure,Virus: Reovirus (strain T3SA+),pathogen,suppressing,survival,setup,stress,0,0
+1557,Mus musculus,Drug Exposure,Topotecan,drug,suppressing,survival,setup,stress,0,0
+2176,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+83,Mus musculus,Timecourse,Murine Interleukin 3,baseline,none,proliferation,setup,fitness,0,0
+1272,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1533,Mus musculus,Drug Exposure,Dacarbazine,drug,suppressing,survival,setup,stress,0,0
+1720,Mus musculus,Drug Exposure,silvestrol,drug,suppressing,survival,setup,stress,0,0
+2307,Mus musculus,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+690,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1439,Mus musculus,Virus Exposure,Virus: Reovirus (strain T3SA-),pathogen,suppressing,survival,setup,stress,0,0
+1558,Mus musculus,Drug Exposure,Treosulfan,drug,suppressing,survival,setup,stress,0,0
+2177,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1273,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+82,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1534,Mus musculus,Drug Exposure,Daunorubicin,drug,suppressing,survival,setup,stress,0,0
+1781,Mus musculus,Implantation to Mouse Model,PD-1/CTLA-4 blockade,in-vivo,none,proliferation,setup,fitness,0,0
+2308,Mus musculus,Drug Exposure,selinexor,drug,suppressing,survival,setup,stress,0,0
+1043,Mus musculus,Timecourse,Starvation,baseline,none,marker,setup,reporter,0,0
+1440,Mus musculus,Other,Dux gene induction,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+1559,Mus musculus,Drug Exposure,Zeocin,drug,suppressing,survival,setup,stress,0,0
+2178,Mus musculus,Implantation to Mouse Model,SCID BALB/c host,in-vivo,none,proliferation,setup,fitness,0,0
+1274,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1535,Mus musculus,Drug Exposure,DR 2313,drug,suppressing,survival,setup,stress,0,0
+1784,Mus musculus,Cytokine depletion,IL-3 withdrawal,signal,UNRESOLVED,marker,setup,reporter,1,0
+2359,Mus musculus,Drug Exposure,Gemcitabine,drug,suppressing,survival,setup,stress,0,0
+1460,Mus musculus,Implantation to Mouse Model,Mutation: HrasG12V (ETG15461),in-vivo,none,proliferation,setup,fitness,0,0
+1044,Mus musculus,Timecourse,Starvation,baseline,none,marker,setup,reporter,0,0
+1536,Mus musculus,Drug Exposure,Ellipticine,drug,suppressing,survival,setup,stress,0,0
+2179,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1275,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1565,Mus musculus,Drug Exposure,salirasib (Farnesyl Thiosalicylic Acid),drug,suppressing,survival,setup,stress,0,0
+2372,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1785,Mus musculus,Cytokine depletion,IL-3 withdrawal,signal,UNRESOLVED,marker,setup,reporter,1,0
+1570,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1468,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1047,Mus musculus,Timecourse,"Reprogramming conditions (5% O2, 2 μM SB431542/Alk5i)",baseline,none,marker,setup,reporter,0,0
+1276,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1537,Mus musculus,Drug Exposure,Epirubicin,drug,suppressing,survival,setup,stress,0,0
+2180,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1838,Mus musculus,NK cell exposure,NK (activated natural killer) cells,immune,suppressing,survival,setup,fitness,0,1
+2403,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1077,Mus musculus,Timecourse,Differentiation conditions (absence of 2i),baseline,none,marker,setup,reporter,0,0
+1130,Mus musculus,Ligand Exposure,Sonic hedgehog protein (mouse),signal,UNRESOLVED,marker,setup,reporter,1,0
+1469,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1585,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,marker,setup,reporter,1,0
+2181,Mus musculus,Implantation to Mouse Model,SCID BALB/c host,in-vivo,none,proliferation,setup,fitness,0,0
+1277,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1538,Mus musculus,Drug Exposure,Etoposide,drug,suppressing,survival,setup,stress,0,0
+1839,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,marker,setup,reporter,1,0
+2411,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1540,Mus musculus,Drug Exposure,Hydroxycamptothecin,drug,suppressing,survival,setup,stress,0,0
+1470,Mus musculus,Timecourse,-,baseline,none,marker,setup,reporter,0,0
+1087,Mus musculus,Implantation to Mouse Model,-,in-vivo,none,proliferation,setup,fitness,0,0
+1133,Mus musculus,Virus Exposure,Virus: CHIKV (Chikungunya virus),pathogen,suppressing,survival,setup,stress,0,0
+1587,Mus musculus,Drug Exposure,-,drug,suppressing,marker,setup,reporter,0,0
+2182,Mus musculus,Timecourse,-,baseline,none,proliferation,setup,fitness,0,0
+1278,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+1539,Mus musculus,Drug Exposure,EX-527,drug,suppressing,survival,setup,stress,0,0
+1888,Mus musculus,Other,Exposure to magnetic IgG-coated bead,unknown,UNRESOLVED,marker,unknown,reporter,1,0
+2412,Mus musculus,Cytokine exposure,Interleukin-2 (IL-2),signal,UNRESOLVED,UNRESOLVED,setup,fitness,1,1
+1279,Mus musculus,T cell exposure,cytotoxic T lymphocytes (CTLs),immune,suppressing,survival,setup,fitness,0,1
+2197,Mus musculus,Cytokine exposure,Interferon gamma,signal,UNRESOLVED,marker,setup,reporter,1,0

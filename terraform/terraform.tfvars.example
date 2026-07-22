@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars (git-ignored) and adjust.
+#   cp terraform.tfvars.example terraform.tfvars
+
+aws_region = "us-east-1"
+
+# Leave empty to trust whoever runs `terraform apply`, or pin your stable IAM
+# principal ARN so only you can assume the read role. Find yours with:
+#   aws sts get-caller-identity --query Arn --output text
+# assume_role_principal_arns = ["arn:aws:iam::123456789012:user/arifs"]
+
+# CI (GitHub Actions) user allowed to assume the SSO-only reader role that
+# injects REACT_APP_SSO_* into the web build. Leave empty to skip the role.
+# ci_principal_arns = ["arn:aws:iam::123456789012:user/ci-user"]
+
+# name_prefix             = "RETICLE"
+# role_name               = "RETICLE-secrets-reader"
+# ci_role_name            = "RETICLE-sso-ci-reader"
+# recovery_window_in_days = 7

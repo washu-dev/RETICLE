@@ -1,0 +1,2078 @@
+{
+  "_meta": {
+    "generated": "2026-06-17T19:35:01+00:00",
+    "model": "gpt-4o",
+    "prompt_version": "dir-v1.0",
+    "confidence_threshold": 0.7,
+    "counts": {
+      "auto": 71,
+      "needs_review": 29,
+      "binary_only": 11
+    },
+    "axis": "+1 = loss-of-function advantageous/enriched; -1 = gene essential/depleted",
+    "anchor_resolved": [
+      "1050",
+      "1052",
+      "1053"
+    ]
+  },
+  "overrides": {
+    "89": {
+      "mode": "PAIR",
+      "sign": null,
+      "positive_column": "SCORE.3",
+      "negative_column": "SCORE.1",
+      "confidence": 1.0,
+      "evidence": "Genes with a significant negative MAGeCK score are cell-essential genes in the LNCaP cell line, their KO results in decreased proliferation. Genes with a significant positive MAGeCK score are growth restrictive genes in the LNCaP cell line, their KO results in increased proliferation.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "MaGeCK Score",
+        "SCORE.4": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:31:57+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.3\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significant negative MAGeCK score are cell-essential genes in the LNCaP cell line, their KO results in decreased proliferation. Genes with a significant positive MAGeCK score are growth restrictive genes in the LNCaP cell line, their KO results in increased proliferation.\"\n}"
+    },
+    "145": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.8,
+      "evidence": "SCREEN_RATIONALE: Cell cycle regulators",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Reduced Chi Squared"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:31:59+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.8,\n  \"evidence\": \"SCREEN_RATIONALE: Cell cycle regulators\"\n}"
+    },
+    "172": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with low reporter expression should be those in which the sgRNA targeted an activator of the BMP pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:00+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with low reporter expression should be those in which the sgRNA targeted an activator of the BMP pathway.\"\n}"
+    },
+    "173": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with high reporter expression should be those in which the sgRNA targeted an inhibitor of the BMP pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:01+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with high reporter expression should be those in which the sgRNA targeted an inhibitor of the BMP pathway.\"\n}"
+    },
+    "174": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with low reporter expression should be those in which the sgRNA targeted an activator of the NFkB pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:03+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with low reporter expression should be those in which the sgRNA targeted an activator of the NFkB pathway.\"\n}"
+    },
+    "175": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with high reporter expression should be those in which the sgRNA targeted an inhibitor of the NFkB pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:04+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with high reporter expression should be those in which the sgRNA targeted an inhibitor of the NFkB pathway.\"\n}"
+    },
+    "176": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with low reporter expression should be those in which the sgRNA targeted an activator of the NFkB pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:05+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with low reporter expression should be those in which the sgRNA targeted an activator of the NFkB pathway.\"\n}"
+    },
+    "177": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with high reporter expression should be those in which the sgRNA targeted a repressor of the NFkB pathway.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:07+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with high reporter expression should be those in which the sgRNA targeted a repressor of the NFkB pathway.\"\n}"
+    },
+    "178": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened cells for exocytosis defects. Hela cells expressing tagged GLUT4 were exposed to insulin and then FACs sorted to identify cells with reduced surface expression of Glut4.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value",
+        "SCORE.2": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:09+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened cells for exocytosis defects. Hela cells expressing tagged GLUT4 were exposed to insulin and then FACs sorted to identify cells with reduced surface expression of Glut4.\"\n}"
+    },
+    "405": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened for genes required for cell surface localization of Gal-3.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:11+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened for genes required for cell surface localization of Gal-3.\"\n}"
+    },
+    "583": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: knock-out of hit genes results in an accumulation of GFP-tagged NCOA4 in cells",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "RSA",
+        "SCORE.2": "DESeq2"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:12+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: knock-out of hit genes results in an accumulation of GFP-tagged NCOA4 in cells\"\n}"
+    },
+    "599": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs that are significantly depleted from tumours treated with immunotherapy (GVAX + PD-1 blockade) relative to TCRalpha KO mice which are unable to apply adaptive immune-selective pressure on the tumours, indicate that loss of the targeted gene increased the sensitivity of tumour cells to immune attack",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:13+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs that are significantly depleted from tumours treated with immunotherapy (GVAX + PD-1 blockade) relative to TCRalpha KO mice which are unable to apply adaptive immune-selective pressure on the tumours, indicate that loss of the targeted gene increased the sensitivity of tumour cells to immune attack\"\n}"
+    },
+    "615": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs that are significantly enriched from tumours treated with immunotherapy (GVAX + PD-1 blockade) relative to TCRalpha KO mice which are unable to apply adaptive immune-selective pressure on the tumours, indicate that loss of the targeted gene decreased the sensitivity of tumour cells to immune attack",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:15+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs that are significantly enriched from tumours treated with immunotherapy (GVAX + PD-1 blockade) relative to TCRalpha KO mice which are unable to apply adaptive immune-selective pressure on the tumours, indicate that loss of the targeted gene decreased the sensitivity of tumour cells to immune attack\"\n}"
+    },
+    "616": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs that are significantly depleted from tumours treated with the immunotherapy cancer vaccine GVAX ... indicate that loss of the targeted gene increased the sensitivity of tumour cells to GVAX",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:17+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs that are significantly depleted from tumours treated with the immunotherapy cancer vaccine GVAX ... indicate that loss of the targeted gene increased the sensitivity of tumour cells to GVAX\"\n}"
+    },
+    "617": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs that are significantly enriched in tumours treated with the immunotherapy cancer vaccine GVAX ... indicate that loss of the targeted gene decreased the sensitivity of tumour cells to GVAX",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:19+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs that are significantly enriched in tumours treated with the immunotherapy cancer vaccine GVAX ... indicate that loss of the targeted gene decreased the sensitivity of tumour cells to GVAX\"\n}"
+    },
+    "630": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Accumulation of TCRalpha suggests a loss of ERAD activity. The authors used FACS to isolate the top 1% of YFP expressing cells.",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:20+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Accumulation of TCRalpha suggests a loss of ERAD activity. The authors used FACS to isolate the top 1% of YFP expressing cells.\"\n}"
+    },
+    "690": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Activation of the gene induces reprogramming in a differentiated cell",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:21+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Activation of the gene induces reprogramming in a differentiated cell\"\n}"
+    },
+    "1041": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with the highest FAS abundance were determined to likely contain knockouts of CD40 pathway negative regulators.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:24+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with the highest FAS abundance were determined to likely contain knockouts of CD40 pathway negative regulators.\"\n}"
+    },
+    "1042": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with the lowest FAS abundance were determined to likely contain knockouts of CD40 pathway positive regulators.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:25+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with the lowest FAS abundance were determined to likely contain knockouts of CD40 pathway positive regulators.\"\n}"
+    },
+    "1043": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with a high pHluorin/mCherry ratio, indicating the impairment of autophagic flux, were enriched and next-generation sequencing (NGS) was used to identify integrated gRNA region which identified 1303 genes involved in autophagic activity.",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:27+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with a high pHluorin/mCherry ratio, indicating the impairment of autophagic flux, were enriched and next-generation sequencing (NGS) was used to identify integrated gRNA region which identified 1303 genes involved in autophagic activity.\"\n}"
+    },
+    "1044": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with a high pHluorin/mCherry ratio, indicating the impairment of autophagic flux, were enriched.",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:28+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with a high pHluorin/mCherry ratio, indicating the impairment of autophagic flux, were enriched.\"\n}"
+    },
+    "1050": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "core-essential genes pinned to negative axis (deterministic ground truth; overrides LLM's PAIR +SCORE.1/-SCORE.2)",
+      "status": "auto",
+      "resolution": "essential-gene-anchor",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0"
+    },
+    "1052": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "core-essential genes pinned to negative axis (deterministic ground truth; overrides LLM's PAIR +SCORE.1/-SCORE.2)",
+      "status": "auto",
+      "resolution": "essential-gene-anchor",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0"
+    },
+    "1053": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "core-essential genes pinned to negative axis (deterministic ground truth; overrides LLM's PAIR +SCORE.1/-SCORE.2)",
+      "status": "auto",
+      "resolution": "essential-gene-anchor",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0"
+    },
+    "1074": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The authors used GECKOv2 expressing THP-1 cells to identify factors whose loss prevents macrophage infection by Salmonella using GFP expressing Salmonella enterica as a read-out for infection and FACS to sort out the resistant cells.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:35+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The authors used GECKOv2 expressing THP-1 cells to identify factors whose loss prevents macrophage infection by Salmonella using GFP expressing Salmonella enterica as a read-out for infection and FACS to sort out the resistant cells.\"\n}"
+    },
+    "1077": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "authors used the presence of GFP-tagged Rex1 (a self-renewing ESC reporter) to screen for genes whose loss prevented differentiation",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:36+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"authors used the presence of GFP-tagged Rex1 (a self-renewing ESC reporter) to screen for genes whose loss prevented differentiation\"\n}"
+    },
+    "1081": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:38+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative beta score indicate knock-out of the gene results in increased sensitivity to natural killer cells, genes with a positive beta score indicate knock-out of the gene shows reduced sensitivity to natural killer cells\"\n}"
+    },
+    "1082": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:39+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative beta score indicate knock-out of the gene results in increased sensitivity to natural killer cells, genes with a positive beta score indicate knock-out of the gene shows reduced sensitivity to natural killer cells\"\n}"
+    },
+    "1083": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:41+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative beta score indicate knock-out of the gene results in increased sensitivity to natural killer cells, genes with a positive beta score indicate knock-out of the gene shows reduced sensitivity to natural killer cells\"\n}"
+    },
+    "1098": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The author states that 30 genes found to be significantly enriched (p<0.05) in two replicates represent candidate senescence genes",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:43+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The author states that 30 genes found to be significantly enriched (p<0.05) in two replicates represent candidate senescence genes\"\n}"
+    },
+    "1099": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The author states that 30 genes found to be significantly enriched (p<0.05) in two replicates represent candidate senescence genes",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:44+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The author states that 30 genes found to be significantly enriched (p<0.05) in two replicates represent candidate senescence genes\"\n}"
+    },
+    "1104": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: the authors use HA-GLUT4-GFP as a reporter for clathrin-mediated endocytosis",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:46+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: the authors use HA-GLUT4-GFP as a reporter for clathrin-mediated endocytosis\"\n}"
+    },
+    "1111": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "the authors used an A1AT(NHK)-GFP tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:47+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"the authors used an A1AT(NHK)-GFP tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted\"\n}"
+    },
+    "1112": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "the authors used an GFPu* tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:49+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"the authors used an GFPu* tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted\"\n}"
+    },
+    "1113": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "the authors used a GFP-RTA-E177Q tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:51+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"the authors used a GFP-RTA-E177Q tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted\"\n}"
+    },
+    "1114": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "the authors used an INSIG-GFP tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:53+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"the authors used an INSIG-GFP tagged reporter to screen for genes whose loss caused an increase in GFP levels, indicating ERAD was disrupted\"\n}"
+    },
+    "1144": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: Inflammasome induced pyroptosis (inflammasome-associated cell death) was used as a read-out",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "RSA",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:54+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: Inflammasome induced pyroptosis (inflammasome-associated cell death) was used as a read-out\"\n}"
+    },
+    "1173": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: KO of hit genes increases survival of H1-HeLa cells exposed to Zika virus",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "sgRNA number",
+        "SCORE.2": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:56+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: KO of hit genes increases survival of H1-HeLa cells exposed to Zika virus\"\n}"
+    },
+    "1174": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: KO of these genes increases survival of cell exposed to West Nile virus",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:57+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: KO of these genes increases survival of cell exposed to West Nile virus\"\n}"
+    },
+    "1187": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: genes for which knockdown ablates the delivery of NA-647 by biotinylated LYTACs",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:32:59+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: genes for which knockdown ablates the delivery of NA-647 by biotinylated LYTACs\"\n}"
+    },
+    "1188": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "cells transduced with sgRNAs targeting L1 suppressors would have more retrotransposition events than negative control cells and would be enriched through the G418 selection",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:00+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"cells transduced with sgRNAs targeting L1 suppressors would have more retrotransposition events than negative control cells and would be enriched through the G418 selection\"\n}"
+    },
+    "1190": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "cells transduced with sgRNAs targeting L1 suppressors would have more retrotransposition events than negative control cells and would be enriched through the G418 selection",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:02+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"cells transduced with sgRNAs targeting L1 suppressors would have more retrotransposition events than negative control cells and would be enriched through the G418 selection\"\n}"
+    },
+    "1197": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of hit genes leads to low PD-1 expression, suggesting the gene normally activates PD-1 expression, contributing to T cell exhaustion",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:05+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of hit genes leads to low PD-1 expression, suggesting the gene normally activates PD-1 expression, contributing to T cell exhaustion\"\n}"
+    },
+    "1198": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: KO of the gene conferred resistance to TNF-alpha",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "sgRNA number",
+        "SCORE.2": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:06+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: KO of the gene conferred resistance to TNF-alpha\"\n}"
+    },
+    "1207": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs enriched in this bin should represent host dependency factors.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value",
+        "SCORE.2": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:08+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs enriched in this bin should represent host dependency factors.\"\n}"
+    },
+    "1208": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Cells with low viral HA were sorted into an 'uninfected' bin and sgRNAs enriched in this bin should represent host dependency factors.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:09+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Cells with low viral HA were sorted into an 'uninfected' bin and sgRNAs enriched in this bin should represent host dependency factors.\"\n}"
+    },
+    "1211": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The authors screened for genes whose loss resulted in loss of lysosome function as determined by the build-up of acidic vacuoles in the cell",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Percent sorted cells"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:11+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The authors screened for genes whose loss resulted in loss of lysosome function as determined by the build-up of acidic vacuoles in the cell\"\n}"
+    },
+    "1215": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: Authors use yellow fever virus expressing Venus (YFV-Venus) to sort cells that are infected despite treatment with a highly suppressive dose of IFN-a",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:13+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: Authors use yellow fever virus expressing Venus (YFV-Venus) to sort cells that are infected despite treatment with a highly suppressive dose of IFN-a\"\n}"
+    },
+    "1232": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: KO of the hit gene confers resistance to radiation",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "Read counts"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:14+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: KO of the hit gene confers resistance to radiation\"\n}"
+    },
+    "1427": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "gp350 abundance was used as a physiologically relevant reporter of CRISPR/Cas9 targets, whose knockout (KO) induced EBV lytic reactivation.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:16+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"gp350 abundance was used as a physiologically relevant reporter of CRISPR/Cas9 targets, whose knockout (KO) induced EBV lytic reactivation.\"\n}"
+    },
+    "1428": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "gp350 abundance was used as a physiologically relevant reporter of CRISPR/Cas9 targets, whose knockout (KO) induced EBV lytic reactivation.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:17+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"gp350 abundance was used as a physiologically relevant reporter of CRISPR/Cas9 targets, whose knockout (KO) induced EBV lytic reactivation.\"\n}"
+    },
+    "1441": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "SINGLE without valid sign",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:19+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes essential for proliferation. Genes with a positive score are enriched upon KO and represent genes that are normally growth restrictive.\"\n}"
+    },
+    "1442": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:21+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes essential for proliferation. Genes with a positive score are enriched upon KO and represent genes that are normally growth restrictive.\"\n}"
+    },
+    "1443": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:23+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes essential for proliferation in a BBDI-resistant breast cancer cell line. Genes with a positive score are enriched upon KO and represent genes that are normally growth restrictive in a BBDI-resistant breast cancer cell line.\"\n}"
+    },
+    "1444": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:25+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes essential for proliferation in a BBDI-resistant breast cancer cell line. Genes with a positive score are enriched upon KO and represent genes that are normally growth restrictive in a BBDI-resistant breast cancer cell line.\"\n}"
+    },
+    "1445": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:26+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes whose loss increases sensitivity to JQ1. Genes with a positive score are enriched upon KO and represent genes whose loss decreases sensitivity to JQ1.\"\n}"
+    },
+    "1446": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:27+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes whose loss increases sensitivity to JQ1. Genes with a positive score are enriched upon KO and represent genes whose loss decreases sensitivity to JQ1.\"\n}"
+    },
+    "1447": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:29+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes whose loss increases sensitivity to JQ1 in a BBDI-resistant cell line. Genes with a positive score are enriched upon KO and represent genes whose loss decreases sensitivity to JQ1 in a BBDI-resistant cell line.\"\n}"
+    },
+    "1448": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "Log10 (p-value)"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:31+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a negative score are depleted upon KO and represent genes whose loss increases sensitivity to JQ1 in a BBDI-resistant cell line. Genes with a positive score are enriched upon KO and represent genes whose loss decreases sensitivity to JQ1 in a BBDI-resistant cell line.\"\n}"
+    },
+    "1466": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The authors screened for genes whose loss induced MHC-I expression as determined by a reporter pan-HLA-A/B/C antibody, suggesting the gene normally functions as a negative regulator of MHC-I expression",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value",
+        "SCORE.2": "RSA"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:33+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The authors screened for genes whose loss induced MHC-I expression as determined by a reporter pan-HLA-A/B/C antibody, suggesting the gene normally functions as a negative regulator of MHC-I expression\"\n}"
+    },
+    "1467": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The authors screened for genes whose loss induced MHC-I expression as determined by a reporter HLA-B antibody, suggesting the gene normally functions as a negative regulator of MHC-I expression",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value",
+        "SCORE.2": "RSA"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:34+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The authors screened for genes whose loss induced MHC-I expression as determined by a reporter HLA-B antibody, suggesting the gene normally functions as a negative regulator of MHC-I expression\"\n}"
+    },
+    "1468": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened for genes whose KO resulted in proliferation despite high cell density, suggesting the gene normally contributes to density-dependent cell cycle arrest",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:35+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened for genes whose KO resulted in proliferation despite high cell density, suggesting the gene normally contributes to density-dependent cell cycle arrest\"\n}"
+    },
+    "1469": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened for genes whose KO resulted in proliferation despite high cell density, suggesting the gene normally contributes to density-dependent cell cycle arrest",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:37+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened for genes whose KO resulted in proliferation despite high cell density, suggesting the gene normally contributes to density-dependent cell cycle arrest\"\n}"
+    },
+    "1489": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "sgRNAs enriched in this population suggesting that KO of the hit gene resulted in increased IFN pathway activity",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:38+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"sgRNAs enriched in this population suggesting that KO of the hit gene resulted in increased IFN pathway activity\"\n}"
+    },
+    "1490": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: To screen for negative regulators of the IFN pathway the authors used Bst2 (tetherin), a cell surface protein induced by type I IFNs, to select cells with high IFN pathway activity and then looked at sgRNAs enriched in this population suggesting that KO of the hit gene resulted in increased IFN pathway activity",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:41+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: To screen for negative regulators of the IFN pathway the authors used Bst2 (tetherin), a cell surface protein induced by type I IFNs, to select cells with high IFN pathway activity and then looked at sgRNAs enriched in this population suggesting that KO of the hit gene resulted in increased IFN pathway activity\"\n}"
+    },
+    "1564": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of hit genes results in high levels of Cyclin D1 as determined by FACs sorting of a fluorescent reporter",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:42+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of hit genes results in high levels of Cyclin D1 as determined by FACs sorting of a fluorescent reporter\"\n}"
+    },
+    "1571": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the gene results in high signaling and the gene normally functions as a negative regulator of WNT signaling.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "RSA",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:44+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the gene results in high signaling and the gene normally functions as a negative regulator of WNT signaling.\"\n}"
+    },
+    "1587": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.8,
+      "evidence": "SCREEN_RATIONALE: Regulators of phagocytosis",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CasTLE Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:45+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.8,\n  \"evidence\": \"SCREEN_RATIONALE: Regulators of phagocytosis\"\n}"
+    },
+    "1588": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the hit gene resulted in increased growth on BVdU and the gene normally results in increased ASCL1 levels",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:47+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the hit gene resulted in increased growth on BVdU and the gene normally results in increased ASCL1 levels\"\n}"
+    },
+    "1589": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "NOTES: ... suggesting that the KO of the hit gene resulted in increased growth on BVdU and the gene normally results in increased ASCL1 levels",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "q-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:48+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: ... suggesting that the KO of the hit gene resulted in increased growth on BVdU and the gene normally results in increased ASCL1 levels\"\n}"
+    },
+    "1608": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Hit genes encode proteins that enable S1PR1 coupling to Beta-arrestin",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "p-Value",
+        "SCORE.2": "MaGeCK Score",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:50+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Hit genes encode proteins that enable S1PR1 coupling to Beta-arrestin\"\n}"
+    },
+    "1697": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "No explicit phrase in NOTES, SIGNIFICANCE_CRITERIA, or SCREEN_RATIONALE to determine polarity.",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:52+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"UNDEFINED\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.0,\n  \"evidence\": \"No explicit phrase in NOTES, SIGNIFICANCE_CRITERIA, or SCREEN_RATIONALE to determine polarity.\"\n}"
+    },
+    "1698": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "The NOTES and provided information do not specify which genes are enriched or depleted, nor do they clarify the directionality of the significance scores relative to the unified axis.",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:54+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"UNDEFINED\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.0,\n  \"evidence\": \"The NOTES and provided information do not specify which genes are enriched or depleted, nor do they clarify the directionality of the significance scores relative to the unified axis.\"\n}"
+    },
+    "1699": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "No explicit information provided in NOTES, criteria, or rationale to determine polarity.",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:56+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"UNDEFINED\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.0,\n  \"evidence\": \"No explicit information provided in NOTES, criteria, or rationale to determine polarity.\"\n}"
+    },
+    "1700": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "No explicit phrase or directionality provided in NOTES, SIGNIFICANCE_CRITERIA, or SCREEN_RATIONALE to determine polarity.",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:58+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"UNDEFINED\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.0,\n  \"evidence\": \"No explicit phrase or directionality provided in NOTES, SIGNIFICANCE_CRITERIA, or SCREEN_RATIONALE to determine polarity.\"\n}"
+    },
+    "1701": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "No explicit directionality or polarity information provided in NOTES, criteria, or rationale.",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:33:59+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"UNDEFINED\",\n  \"sign\": null,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 0.0,\n  \"evidence\": \"No explicit directionality or polarity information provided in NOTES, criteria, or rationale.\"\n}"
+    },
+    "1712": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:01+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: Genes were knocked down by CRISPRi and those that decreased (negative score) or increased (positive score) Spike-RBD binding were identified.\"\n}"
+    },
+    "1718": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:03+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"NOTES: Genes were knocked down by CRISPRi and those that decreased (negative score) or increased (positive score) TFRC levels were identified.\"\n}"
+    },
+    "1742": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Gene hits are provided for cells with the top 2% of EGFP fluorescence intensity, which represented the strength of candidate host factors facilitating virus entry.",
+      "status": "binary_only",
+      "is_unresolved": true,
+      "score_layout": {
+        "SCORE.1": "RRA rank"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:05+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Gene hits are provided for cells with the top 2% of EGFP fluorescence intensity, which represented the strength of candidate host factors facilitating virus entry.\"\n}"
+    },
+    "1906": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the hit gene results in depletion of the clone after implantation into a mouse model and tumor growth",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:07+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the hit gene results in depletion of the clone after implantation into a mouse model and tumor growth\"\n}"
+    },
+    "1949": {
+      "mode": "PAIR",
+      "sign": null,
+      "positive_column": "SCORE.1",
+      "negative_column": "SCORE.2",
+      "confidence": 1.0,
+      "evidence": "Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:08+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.2\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.\"\n}"
+    },
+    "1950": {
+      "mode": "PAIR",
+      "sign": null,
+      "positive_column": "SCORE.1",
+      "negative_column": "SCORE.2",
+      "confidence": 1.0,
+      "evidence": "Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:10+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.2\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.\"\n}"
+    },
+    "1951": {
+      "mode": "PAIR",
+      "sign": null,
+      "positive_column": "SCORE.1",
+      "negative_column": "SCORE.2",
+      "confidence": 1.0,
+      "evidence": "Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:12+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.2\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a positive score are those whose KO results in increased resistance to etoposide, so the gene normally functions as an etoposide sensitivity gene. Genes with a negative score are those whose KO results in increased sensitivity to etoposide, so the gene normally functions as an etoposide resistance gene.\"\n}"
+    },
+    "1967": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Hit genes were enriched in a population which retained transcription (based on EU incorporation and FACS) in the presence of CDK9i",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MAGeCK pos score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "sgRNA number"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:14+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Hit genes were enriched in a population which retained transcription (based on EU incorporation and FACS) in the presence of CDK9i\"\n}"
+    },
+    "1968": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Hit genes were enriched in a population which retained transcription (based on EU incorporation and FACS) in the presence of CDK9i",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MAGeCK pos score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR",
+        "SCORE.4": "sgRNA number"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:15+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Hit genes were enriched in a population which retained transcription (based on EU incorporation and FACS) in the presence of CDK9i\"\n}"
+    },
+    "2000": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the hit gene results in low TSPAN8 surface expression, suggesting the gene plays a role in tetraspanin surface expression",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:17+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the hit gene results in low TSPAN8 surface expression, suggesting the gene plays a role in tetraspanin surface expression\"\n}"
+    },
+    "2001": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the hit gene results in rescue of TSPAN8 surface expression in an SPPL3 KO background",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:19+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the hit gene results in rescue of TSPAN8 surface expression in an SPPL3 KO background\"\n}"
+    },
+    "2104": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of the hit gene is enriched in a pool of NMD inhibited cells as measured by a fluorescent reporter, suggesting the gene normally plays a role in promoting NMD",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:20+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of the hit gene is enriched in a pool of NMD inhibited cells as measured by a fluorescent reporter, suggesting the gene normally plays a role in promoting NMD\"\n}"
+    },
+    "2137": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "The authors screened for genes that negatively regulate IFN using Viperin accumulation as a readout",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "RRA score",
+        "SCORE.2": "p-Value"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:22+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"The authors screened for genes that negatively regulate IFN using Viperin accumulation as a readout\"\n}"
+    },
+    "2324": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:24+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO\"\n}"
+    },
+    "2325": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:26+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO\"\n}"
+    },
+    "2326": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:29+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to bortezomib upon KO. Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO.\"\n}"
+    },
+    "2327": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:31+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to bortezomib upon KO\"\n}"
+    },
+    "2328": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:32+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to colchicine upon KO. Genes with a significantly positive CGI score show increased resistance to colchicine upon KO.\"\n}"
+    },
+    "2329": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:34+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to colchicine upon KO. Genes with a significantly positive CGI score show increased resistance to colchicine upon KO.\"\n}"
+    },
+    "2330": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:36+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to colchicine upon KO. Genes with a significantly positive CGI score show increased resistance to colchicine upon KO.\"\n}"
+    },
+    "2331": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:38+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to colchicine upon KO. Genes with a significantly positive CGI score show increased resistance to colchicine upon KO.\"\n}"
+    },
+    "2332": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:39+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO\"\n}"
+    },
+    "2333": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:41+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO\"\n}"
+    },
+    "2334": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:42+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO\"\n}"
+    },
+    "2335": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:44+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to camptothecin upon KO\"\n}"
+    },
+    "2336": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:45+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to hydroxyurea upon KO. Genes with a significantly positive CGI score show increased resistance to hydroxyurea upon KO.\"\n}"
+    },
+    "2337": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:47+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to hydroxyurea upon KO; Genes with a significantly positive CGI score show increased resistance to hydroxyurea upon KO\"\n}"
+    },
+    "2338": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:49+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to hydroxyurea upon KO; Genes with a significantly positive CGI score show increased resistance to hydroxyurea upon KO\"\n}"
+    },
+    "2339": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Genes with a significantly positive CGI score show increased resistance to olaparib upon KO",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:50+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly positive CGI score show increased resistance to olaparib upon KO\"\n}"
+    },
+    "2340": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:52+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to olaparib upon KO. Genes with a significantly positive CGI score show increased resistance to olaparib upon KO.\"\n}"
+    },
+    "2341": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:54+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to olaparib upon KO. Genes with a significantly positive CGI score show increased resistance to olaparib upon KO.\"\n}"
+    },
+    "2342": {
+      "mode": "UNDEFINED",
+      "sign": null,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 0.0,
+      "evidence": "",
+      "parse_note": "PAIR with columns not in layout (SCORE.1,SCORE.1)",
+      "status": "needs_review",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "CGI",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:56+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"PAIR\",\n  \"sign\": null,\n  \"positive_column\": \"SCORE.1\",\n  \"negative_column\": \"SCORE.1\",\n  \"confidence\": 1.0,\n  \"evidence\": \"Genes with a significantly negative CGI score show increased sensitivity to olaparib upon KO. Genes with a significantly positive CGI score show increased resistance to olaparib upon KO.\"\n}"
+    },
+    "2349": {
+      "mode": "SINGLE",
+      "sign": 1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "KO of hit genes results in increased levels of the late gene reporter, ORF52-GFP, suggesting that the gene normally functions to restrict herpesvirus (KSHV) lytic reactivation",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "MaGeCK Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:57+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": 1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"KO of hit genes results in increased levels of the late gene reporter, ORF52-GFP, suggesting that the gene normally functions to restrict herpesvirus (KSHV) lytic reactivation\"\n}"
+    },
+    "2370": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened for genes whose KO resulted in increased markers of latency III (ICAM-1high/CD10low) cells, suggesting the gene normally plays a role in repressing latency III.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:34:59+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened for genes whose KO resulted in increased markers of latency III (ICAM-1high/CD10low) cells, suggesting the gene normally plays a role in repressing latency III.\"\n}"
+    },
+    "2371": {
+      "mode": "SINGLE",
+      "sign": -1,
+      "positive_column": null,
+      "negative_column": null,
+      "confidence": 1.0,
+      "evidence": "Authors screened for genes whose KO resulted in increased markers of latency III (ICAM-1high/CD10high) cells, suggesting the gene normally plays a role in repressing latency III.",
+      "status": "auto",
+      "is_unresolved": false,
+      "score_layout": {
+        "SCORE.1": "STARS Score",
+        "SCORE.2": "p-Value",
+        "SCORE.3": "FDR"
+      },
+      "llm_model": "gpt-4o",
+      "prompt_version": "dir-v1.0",
+      "timestamp": "2026-06-17T19:35:00+00:00",
+      "raw_llm_output": "{\n  \"mode\": \"SINGLE\",\n  \"sign\": -1,\n  \"positive_column\": null,\n  \"negative_column\": null,\n  \"confidence\": 1.0,\n  \"evidence\": \"Authors screened for genes whose KO resulted in increased markers of latency III (ICAM-1high/CD10high) cells, suggesting the gene normally plays a role in repressing latency III.\"\n}"
+    }
+  }
+}

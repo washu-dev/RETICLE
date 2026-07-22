@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETICLE — Pipeline & Database Documentation</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f8fafc; --panel2:#eef2f7; --line:#e2e8f0; --line2:#cbd5e1;
+    --ink:#1a2433; --muted:#52617a; --faint:#94a3b8;
+    --accent:#0284c7; --accent2:#059669; --warn:#d97706; --pink:#db2777; --violet:#7c3aed; --red:#dc2626;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:1px 6px;border-radius:5px;color:#0b4f6c;border:1px solid var(--line)}
+
+  .wrap{display:flex;min-height:100vh}
+  nav.side{width:282px;flex:0 0 282px;background:var(--panel);border-right:1px solid var(--line);
+           position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 16px}
+  main{flex:1;max-width:1020px;margin:0 auto;padding:42px 48px 120px}
+  @media(max-width:880px){nav.side{display:none}main{padding:24px}}
+
+  .brand{font-weight:800;font-size:22px;letter-spacing:.5px;color:#0f172a}
+  .brand .dot{color:var(--accent)}
+  .tag{color:var(--muted);font-size:12px;margin-bottom:20px}
+  nav.side h4{color:var(--faint);text-transform:uppercase;font-size:10.5px;letter-spacing:1.4px;margin:18px 8px 6px}
+  nav.side a{display:block;color:var(--muted);padding:6px 10px;border-radius:7px;font-size:13.5px;border-left:2px solid transparent}
+  nav.side a:hover{background:#fff;color:var(--ink);text-decoration:none}
+  nav.side a.active{color:#0f172a;background:#fff;border-left:2px solid var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+
+  h1{font-size:35px;margin:0 0 8px;letter-spacing:-.6px;color:#0f172a}
+  h2{font-size:26px;margin:0 0 16px;padding-bottom:9px;border-bottom:2px solid var(--line);scroll-margin-top:20px;color:#0f172a}
+  h3{font-size:18.5px;margin:28px 0 8px;color:#0f172a}
+  h4{font-size:15px;margin:18px 0 6px;color:var(--accent2)}
+  section{margin-bottom:64px;scroll-margin-top:20px}
+  p{color:#33415a}
+  .lead{font-size:17px;color:var(--muted)}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;vertical-align:middle;letter-spacing:.4px}
+  .pill.done{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+  .pill.auto{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-align:center}
+  .stat .n{font-size:27px;font-weight:800;color:#0f172a;font-family:var(--mono)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .note{border-left:3px solid var(--accent);background:#f0f9ff;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0}
+  .note.warn{border-color:var(--warn);background:#fffbeb}
+  .note.good{border-color:var(--accent2);background:#f0fdf4}
+  .note b{color:#0f172a}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--faint);text-transform:uppercase;font-size:10.5px;letter-spacing:.8px;background:var(--panel)}
+  tbody tr:hover{background:var(--panel2)}
+  td.col{font-family:var(--mono);color:#0b4f6c;white-space:nowrap}
+  td.ty{font-family:var(--mono);color:var(--pink);font-size:12px;white-space:nowrap}
+  .src{font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap}
+  .src.raw{background:#fef3c7;color:#b45309}
+  .src.derived{background:#e0f2fe;color:#0369a1}
+  .src.llm{background:#fce7f3;color:#be185d}
+  .src.rule{background:#dcfce7;color:#15803d}
+  .src.computed{background:#ede9fe;color:#6d28d9}
+
+  details{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:10px 0;padding:0 16px}
+  details[open]{padding-bottom:12px}
+  summary{cursor:pointer;padding:13px 0;font-weight:600;color:#0f172a;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);margin-right:10px;display:inline-block;transition:transform .15s}
+  details[open] summary::before{transform:rotate(90deg)}
+
+  .flow{display:flex;align-items:stretch;gap:0;margin:24px 0;flex-wrap:wrap}
+  .stage{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:.15s}
+  .stage:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 6px 16px rgba(2,132,199,.12)}
+  .stage .ph{font-size:10.5px;color:var(--faint);letter-spacing:1px;text-transform:uppercase}
+  .stage .ti{font-weight:700;color:#0f172a;margin:4px 0;font-size:15px}
+  .stage .de{font-size:12px;color:var(--muted)}
+  .arrow{display:flex;align-items:center;color:var(--accent);font-size:22px;padding:0 6px}
+  @media(max-width:720px){.arrow{transform:rotate(90deg);width:100%;justify-content:center;padding:4px 0}}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 4px}
+  .tab{padding:7px 15px;border-radius:8px 8px 0 0;background:var(--panel);border:1px solid var(--line);border-bottom:none;cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:#fff;color:#0f172a;border-top:2px solid var(--accent)}
+  .searchbar{display:flex;gap:10px;align-items:center;margin:8px 0 0}
+  .searchbar input{flex:1;background:#fff;border:1px solid var(--line2);border-radius:8px;color:var(--ink);padding:10px 14px;font-size:14px;font-family:var(--sans)}
+  .searchbar input:focus{outline:none;border-color:var(--accent)}
+  .cnt{color:var(--faint);font-size:12px;white-space:nowrap}
+  .hidden{display:none!important}
+
+  ul.tight{margin:6px 0;padding-left:22px}
+  ul.tight li{margin:3px 0;color:#33415a}
+  .axis{font-family:var(--mono);font-size:13px;background:#0f172a;color:#cfe8ff;border-radius:8px;padding:13px 16px;overflow-x:auto;line-height:1.7}
+  .axis .g{color:#34d399}.axis .r{color:#f87171}.axis .y{color:#fbbf24}.axis .m{color:#7dd3fc}
+  hr.soft{border:none;border-top:1px solid var(--line);margin:34px 0}
+  .footer{color:var(--faint);font-size:12px;border-top:1px solid var(--line);padding-top:18px;margin-top:40px}
+
+  /* viz: horizontal bars */
+  .chart{margin:14px 0}
+  .barrow{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}
+  .barlbl{flex:0 0 130px;text-align:right;color:var(--muted);font-size:12.5px}
+  .bartrack{flex:1;background:var(--panel2);border-radius:6px;height:20px;overflow:hidden}
+  .bar{height:100%;border-radius:6px;background:linear-gradient(90deg,#38bdf8,#0284c7)}
+  .bar.g{background:linear-gradient(90deg,#34d399,#059669)}
+  .bar.v{background:linear-gradient(90deg,#a78bfa,#7c3aed)}
+  .bar.w{background:linear-gradient(90deg,#fbbf24,#d97706)}
+  .barval{flex:0 0 56px;font-family:var(--mono);font-size:12px;color:#0f172a}
+  .split{display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin:10px 0}
+  .split>div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:4px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  .axisgrad{height:34px;border-radius:8px;margin:10px 0 4px;
+    background:linear-gradient(90deg,#dc2626 0%,#f59e0b 30%,#e2e8f0 50%,#10b981 70%,#059669 100%)}
+  .axisticks{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:var(--mono)}
+  svg{max-width:100%;height:auto}
+  .cap{font-size:12px;color:var(--faint);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="side">
+  <div class="brand">RETI<span class="dot">C</span>LE</div>
+  <div class="tag">Pipeline &amp; database documentation</div>
+  <h4>Start</h4>
+  <a href="#overview" class="navlink">Overview</a>
+  <a href="#rawdata" class="navlink">Raw Data</a>
+  <h4>Pipeline</h4>
+  <a href="#phase1" class="navlink">Phase 1 · Harmonization</a>
+  <a href="#phase2" class="navlink">Phase 2 · Metadata (LLM)</a>
+  <a href="#phase3" class="navlink">Phase 3 · Correlation</a>
+  <h4>Database</h4>
+  <a href="#schema" class="navlink">Schema overview</a>
+  <a href="#dictionary" class="navlink">Data dictionary (search)</a>
+  <h4>Reference</h4>
+  <a href="#glossary" class="navlink">Glossary</a>
+</nav>
+
+<main>
+
+<!-- ===================== OVERVIEW ===================== -->
+<section id="overview">
+  <h1>RETICLE</h1>
+  <p class="lead">A pipeline that turns 2,157 mutually-incomparable public CRISPR screens into one
+  harmonized, queryable similarity network — so a gene's behaviour in one screen can be read in the
+  context of every other screen that ever measured it.</p>
+
+  <div class="grid3" style="margin-top:22px">
+    <div class="stat"><div class="n">2,157</div><div class="l">CRISPR screens (1,952 human · 205 mouse)</div></div>
+    <div class="stat"><div class="n">28.2 M</div><div class="l">harmonized gene-level scores</div></div>
+    <div class="stat"><div class="n">542,698</div><div class="l">stored screen-pair correlations</div></div>
+  </div>
+
+  <h3>The problem</h3>
+  <p>Every public screen is an island. One reports a <em>CERES score</em> near −2, another a <em>BAGEL
+  Bayes Factor</em> of 0–10, a third a <em>STARS score</em> of 0–130. They use knockout, CRISPRi, or
+  CRISPRa; negative, positive, or phenotype selection; whole-genome or focused libraries. The same
+  number means totally different biology across screens — so they cannot be compared out of the box.</p>
+
+  <h3>The pipeline (click a stage)</h3>
+  <div class="flow">
+    <div class="stage" onclick="go('rawdata')"><div class="ph">Input</div><div class="ti">Raw Data</div><div class="de">BioGRID ORCS<br>screens + metadata</div></div>
+    <div class="arrow">→</div>
+    <div class="stage" onclick="go('phase1')"><div class="ph">Phase 1</div><div class="ti">Harmonize</div><div class="de">one signed axis<br>+ percentiles</div></div>
+    <div class="arrow">→</div>
+    <div class="stage" onclick="go('phase2')"><div class="ph">Phase 2</div><div class="ti">Curate</div><div class="de">rules + LLM<br>normalize metadata</div></div>
+    <div class="arrow">→</div>
+    <div class="stage" onclick="go('phase3')"><div class="ph">Phase 3</div><div class="ti">Correlate</div><div class="de">Spearman / Jaccard<br>across all pairs</div></div>
+  </div>
+
+  <div class="note">
+    <b>How to read this document.</b> Each phase explains the <em>logic</em> (why) and the <em>outputs</em>
+    (which tables/columns it writes). The <a href="#dictionary">Data dictionary</a> then lists
+    <b>every column in every table and exactly where its value comes from</b> — searchable.
+  </div>
+</section>
+
+<!-- ===================== RAW DATA ===================== -->
+<section id="rawdata">
+  <h2>Raw Data</h2>
+  <p>Everything starts from <b>BioGRID ORCS</b> (Open Repository of CRISPR Screens), release 2.0.18,
+  under <code>raw_data/BIOGRID/</code>. Two kinds of files per organism.</p>
+
+  <h3>1 · Screening files — the gene-level scores</h3>
+  <p><code>screenings/&lt;organism&gt;/BIOGRID-ORCS-SCREEN_&lt;id&gt;-2.0.18.screen.tab.txt</code> — one
+  tab-separated file per screen, one row per gene; header line begins with <code>#</code>.</p>
+  <table>
+    <thead><tr><th>Column</th><th>Meaning &amp; role in the pipeline</th></tr></thead>
+    <tbody>
+      <tr><td class="col">SCREEN_ID</td><td>BioGRID screen id — joins the file to its metadata and to every downstream table.</td></tr>
+      <tr><td class="col">IDENTIFIER_ID</td><td>Stable <b>Entrez gene id</b>. The robust gene key (more reliable than the symbol, which fragments by alias).</td></tr>
+      <tr><td class="col">OFFICIAL_SYMBOL</td><td>Gene symbol → becomes <code>GENE_SYMBOL</code>, the key used to match genes across screens in Phase 3.</td></tr>
+      <tr><td class="col">ALIASES</td><td>Pipe-separated alternative symbols (not currently used for matching).</td></tr>
+      <tr><td class="col">ORGANISM_ID / ORGANISM_OFFICIAL</td><td>9606 = human, 10090 = mouse. Correlation pairs are formed strictly within one organism.</td></tr>
+      <tr><td class="col">SCORE.1 … SCORE.5</td><td>Up to five raw numeric scores. <b>The meaning of each is defined per-screen by the metadata's <code>SCORE.k_TYPE</code> fields.</b> This is the input Phase 1 converts. <code>-</code> = missing.</td></tr>
+      <tr><td class="col">HIT</td><td>YES/NO — the authors' own significance call → becomes <code>IS_HIT</code>, which drives the binary correlation mode.</td></tr>
+      <tr><td class="col">SOURCE</td><td>Always <code>BioGRID ORCS</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2 · Metadata files — the screen context</h3>
+  <p><code>metadata/screen_metadata_homo_sapiens.json</code> / <code>…_musculus.json</code> — keyed by
+  screen id, ~38 fields each. Below, each field is annotated with <b>what it drives</b> — especially
+  whether it informs <span style="color:var(--accent)">directionality</span> (which way is "essential")
+  or <span style="color:var(--accent2)">classification</span> (Phase 2 labels).</p>
+  <table>
+    <thead><tr><th>Field</th><th>What it is</th><th>Role in the pipeline</th></tr></thead>
+    <tbody>
+      <tr><td class="col">SCORE.1_TYPE … SCORE.5_TYPE</td><td>The label of each raw SCORE column ("CERES score", "Bayes Factor", "p-Value"…).</td><td><b style="color:var(--accent)">Directionality — primary.</b> This is the single most important field: it tells Phase 1 which role each score has (DIR_POS/DIR_NEG/SIG_P/SIG_MAG) and therefore which way to flip it.</td></tr>
+      <tr><td class="col">SCREEN_TYPE</td><td>Negative / Positive / Positive and Negative / Phenotype Screen.</td><td><b style="color:var(--accent)">Directionality</b> for unsigned significance scores (the selection sign: Negative→−1, Positive→+1). Also → <code>selection_method</code> in Phase 2.</td></tr>
+      <tr><td class="col">METHODOLOGY</td><td>Knockout / Activation / Inhibition.</td><td><b style="color:var(--accent)">Directionality</b> via the perturbation multiplier (CRISPRa is inverted). Also → <code>screen_type</code> in Phase 2.</td></tr>
+      <tr><td class="col">ANALYSIS</td><td>Statistical method (MaGeCK, BAGEL, CERES…).</td><td>Context for which SCORE type to expect; recorded for provenance. (See the <a href="#convtable">per-method conversion table</a>.)</td></tr>
+      <tr><td class="col">LIBRARY_TYPE</td><td>CRISPRn / CRISPRa / CRISPRi.</td><td><b style="color:var(--accent2)">Classification</b> — primary signal for Phase 2 <code>screen_type</code>.</td></tr>
+      <tr><td class="col">ENZYME</td><td>Cas9 / dCas9-KRAB / …</td><td><b style="color:var(--accent2)">Classification</b> — disambiguates KO vs CRISPRi/a (dCas9-KRAB ⇒ CRISPRi).</td></tr>
+      <tr><td class="col">FULL_SIZE</td><td>Number of genes targeted.</td><td>→ <code>coverage_type</code> (Genome-wide vs Focused) in Phase 2.</td></tr>
+      <tr><td class="col">FULL_SIZE_AVAILABLE</td><td>Yes/No — were full results deposited?</td><td><b>Routing</b> — sets <code>COVERAGE_TYPE</code> (FULL vs HIT_ONLY), which decides continuous vs binary correlation in Phase 3.</td></tr>
+      <tr><td class="col">NOTES</td><td>Free-text BioGRID curator notes.</td><td><b style="color:var(--pink)">LLM input</b> — the main raw material the Phase 2 model mines for <code>control_comparison</code>.</td></tr>
+      <tr><td class="col">SIGNIFICANCE_CRITERIA</td><td>How hits were called (e.g. "FDR &lt; 0.05").</td><td><b style="color:var(--pink)">LLM input</b> — context for the control/reference description.</td></tr>
+      <tr><td class="col">SCREEN_RATIONALE / PHENOTYPE</td><td>Goal + measured phenotype.</td><td><b style="color:var(--pink)">LLM input</b> + experimental context; helps disambiguate Phenotype screens.</td></tr>
+      <tr><td class="col">LIBRARY</td><td>Library name (Avana, Brunello, GeCKO…).</td><td>Context (provided to the LLM; useful provenance).</td></tr>
+      <tr><td class="col">CELL_LINE / CELL_TYPE</td><td>Model system.</td><td>Biological context (not used for harmonization; available for downstream stratification).</td></tr>
+      <tr><td class="col">CONDITION_NAME / CONDITION_DOSAGE / DURATION / MOI / EXPERIMENTAL_SETUP / THROUGHPUT / SCREEN_FORMAT</td><td>Assay conditions.</td><td>Descriptive context; stored, not used by Phases 1–3.</td></tr>
+      <tr><td class="col">SOURCE_ID</td><td>PMID of the source paper.</td><td>Identity / join key carried into <code>screen_metadata_curated.pmid</code>.</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px;color:var(--faint)"><code>raw_data/NCBI/</code>, <code>raw_data/STRING/</code>,
+  <code>raw_data/pubmed/</code> exist but are currently empty and unused by the pipeline.</p>
+</section>
+
+<!-- ===================== PHASE 1 ===================== -->
+<section id="phase1">
+  <h2>Phase 1 · Harmonization <span class="pill done">DONE</span></h2>
+  <p class="lead">Map every screen into one common coordinate system where <em>the same number means the
+  same biology</em>. Script: <code>script/harmonize_scores.py</code>.</p>
+
+  <h3>The unified axis</h3>
+  <p>Every gene is placed on a single signed axis, always in the <b>loss-of-function frame</b>:</p>
+  <div class="axisgrad"></div>
+  <div class="axisticks"><span>−1 · essential (depletes)</span><span>0 · no effect</span><span>+1 · protective (enriches)</span></div>
+  <div class="axis" style="margin-top:14px">HARMONIZED_SCORE = S_raw × perturbation_multiplier</div>
+  <h4>Perturbation multiplier</h4>
+  <ul class="tight">
+    <li><b>Knockout / CRISPRi / CRISPRn → +1</b></li>
+    <li><b>Activation (CRISPRa) → −1</b> — if <em>activating</em> a gene is protective, then <em>losing</em> it is deleterious, so we invert to stay in the loss-of-function frame.</li>
+  </ul>
+
+  <h3>How each raw score becomes <code>S_raw</code></h3>
+  <p>The meaning of a SCORE column is resolved from an explicit registry of the real
+  <code>SCORE.k_TYPE</code> strings (≈58 of them), each assigned one role:</p>
+
+  <!-- routing diagram -->
+  <svg viewBox="0 0 760 250" role="img" aria-label="Score-type routing">
+    <style>
+      .bx{fill:#f8fafc;stroke:#cbd5e1;rx:8} .tt{font:600 12px var(--sans,sans-serif);fill:#0f172a}
+      .sub{font:11px var(--sans,sans-serif);fill:#52617a} .ar{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#a)}
+      .out{font:700 12px monospace}
+    </style>
+    <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#94a3b8"/></marker></defs>
+    <rect class="bx" x="20" y="100" width="150" height="50" rx="8"/>
+    <text class="tt" x="95" y="122" text-anchor="middle">raw SCORE.k</text>
+    <text class="sub" x="95" y="138" text-anchor="middle">+ its SCORE.k_TYPE</text>
+    <path class="ar" d="M170,125 L215,125"/>
+    <rect class="bx" x="215" y="95" width="150" height="60" rx="8"/>
+    <text class="tt" x="290" y="120" text-anchor="middle">classify_type()</text>
+    <text class="sub" x="290" y="137" text-anchor="middle">registry lookup</text>
+    <!-- five role outputs -->
+    <path class="ar" d="M365,108 L430,40"/>
+    <path class="ar" d="M365,116 L430,90"/>
+    <path class="ar" d="M365,125 L430,125"/>
+    <path class="ar" d="M365,134 L430,160"/>
+    <path class="ar" d="M365,142 L430,210"/>
+    <text class="out" x="438" y="44"  fill="#059669">DIR_POS</text><text class="sub" x="520" y="44">→ use <tspan font-family="monospace">+value</tspan></text>
+    <text class="out" x="438" y="94"  fill="#dc2626">DIR_NEG</text><text class="sub" x="520" y="94">→ use <tspan font-family="monospace">−value</tspan></text>
+    <text class="out" x="438" y="129" fill="#7c3aed">SIG_MAG</text><text class="sub" x="520" y="129">→ <tspan font-family="monospace">|mag| × sel</tspan></text>
+    <text class="out" x="438" y="164" fill="#0284c7">SIG_P</text><text class="sub" x="520" y="164">→ <tspan font-family="monospace">−log10(p) × sel</tspan></text>
+    <text class="out" x="438" y="214" fill="#94a3b8">IGNORE</text><text class="sub" x="520" y="214">→ skipped (rank, counts…)</text>
+  </svg>
+  <p style="font-size:13px"><b>Priority:</b> a directional column always wins over a significance column;
+  a positive/negative <em>pair</em> (e.g. MAGeCK pos + neg p-values) is differenced; only unsigned
+  significance falls back to the <b>selection sign</b> (Negative → −1, Positive → +1; ambiguous → +1, tagged
+  <code>[AMBIGUOUS_SELECTION]</code>).</p>
+
+  <h3 id="convtable">Per stat-method conversion</h3>
+  <p>What actually happens to each BioGRID stat method, grounded in the real <code>SCORE_BASIS</code> the
+  pipeline recorded (n = screens):</p>
+  <table>
+    <thead><tr><th>Stat method (ANALYSIS)</th><th>Score column used</th><th>Role</th><th>Conversion → HARMONIZED_SCORE</th></tr></thead>
+    <tbody>
+      <tr><td>CERES <span class="cnt">(378)</span></td><td class="col">CERES score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code> — negative already = essential, used as-is (the bug-fixed case).</td></tr>
+      <tr><td>BAGEL <span class="cnt">(387)</span></td><td class="col">Bayes Factor</td><td><span class="src raw">DIR_NEG</span></td><td><code>−value</code> — high BF = essential, so flipped to the negative axis.</td></tr>
+      <tr><td>Log2 Fold Change <span class="cnt">(209)</span></td><td class="col">Log2FC / CRISPR Score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>MaGeCK <span class="cnt">(630)</span></td><td class="col">Log2FC (preferred)</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code> when an LFC column exists (most screens).</td></tr>
+      <tr><td>MaGeCK (RRA, paired)</td><td class="col">pos &amp; neg p-values</td><td><span class="src computed">PAIR_PVALUE</span></td><td><code>−log10(p_pos) − (−log10(p_neg))</code></td></tr>
+      <tr><td>MaGeCK (RRA, single)</td><td class="col">MaGeCK Score / p-Value</td><td><span class="src computed">SIG_P</span></td><td><code>−log10(p) × selection_sign</code></td></tr>
+      <tr><td>MAGeCK-MLE <span class="cnt">(36)</span></td><td class="col">Beta Score / Z-score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>DrugZ <span class="cnt">(83)</span></td><td class="col">Z-score (normZ)</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>CasTLE <span class="cnt">(42)</span></td><td class="col">CasTLE Effect</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code> — prefers the signed Effect over the unsigned confidence Score.</td></tr>
+      <tr><td>STARS <span class="cnt">(69)</span></td><td class="col">STARS Score</td><td><span class="src violet" style="background:#ede9fe;color:#6d28d9;font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px">SIG_MAG</span></td><td><code>magnitude × selection_sign</code></td></tr>
+      <tr><td>RSA <span class="cnt">(32)</span></td><td class="col">RSA</td><td><span class="src computed">SIG_MAG</span></td><td><code>magnitude × selection_sign</code></td></tr>
+      <tr><td>RIGER <span class="cnt">(25)</span></td><td class="col">NES</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>RANKS <span class="cnt">(23)</span></td><td class="col">RANKS score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>Robust-rank agg. (RRA) <span class="cnt">(14)</span></td><td class="col">RRA score</td><td><span class="src computed">SIG_P</span></td><td><code>−log10(p) × selection_sign</code></td></tr>
+      <tr><td>Delta Z scores <span class="cnt">(21)</span></td><td class="col">Z-score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>Differential CRISPR score <span class="cnt">(13)</span></td><td class="col">CRISPR Score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>EdgeR <span class="cnt">(24)</span></td><td class="col">Log2FC</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>Phenotype (log2 enrich.) <span class="cnt">(11)</span></td><td class="col">T-score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>Mann-Whitney U <span class="cnt">(11)</span></td><td class="col">CRISPR Score</td><td><span class="src derived">DIR_POS</span></td><td><code>+value</code></td></tr>
+      <tr><td>None / bespoke (eBAR, χ²) <span class="cnt">(11)</span></td><td class="col">—</td><td><span class="src raw" style="background:#fee2e2;color:#b91c1c">UNRESOLVED</span></td><td>NULL — excluded from analysis until handled individually.</td></tr>
+    </tbody>
+  </table>
+  <div class="chart">
+    <div class="cap" style="text-align:left;margin-bottom:6px"><b>How the 2,157 screens resolved</b> (resolution basis):</div>
+    <div class="barrow"><span class="barlbl">DIR_POS</span><div class="bartrack"><div class="bar g" style="width:100%"></div></div><span class="barval">1363</span></div>
+    <div class="barrow"><span class="barlbl">DIR_NEG</span><div class="bartrack"><div class="bar" style="width:28.8%"></div></div><span class="barval">393</span></div>
+    <div class="barrow"><span class="barlbl">SIG_P</span><div class="bartrack"><div class="bar" style="width:13.1%"></div></div><span class="barval">179</span></div>
+    <div class="barrow"><span class="barlbl">SIG_MAG</span><div class="bartrack"><div class="bar v" style="width:8.0%"></div></div><span class="barval">109</span></div>
+    <div class="barrow"><span class="barlbl">PAIR_PVALUE</span><div class="bartrack"><div class="bar" style="width:7.0%"></div></div><span class="barval">96</span></div>
+    <div class="barrow"><span class="barlbl">UNRESOLVED</span><div class="bartrack"><div class="bar w" style="width:0.8%"></div></div><span class="barval">11</span></div>
+  </div>
+
+  <h3>Two scale-free metrics — and which one Phase 3 uses</h3>
+  <div class="grid2">
+    <div class="card"><h4 style="margin-top:0">PERCENTILE_SCORE ∈ [−1,+1] &nbsp;<span class="pill done">used by correlation</span></h4>
+      <div class="axis">Percentile = 2·(rank / maxrank) − 1</div>
+      <p style="font-size:13.5px;margin-bottom:0">Average-rank of HARMONIZED_SCORE over measured genes. <b>This is the
+      value Phase 3 correlates</b> — because it is a pure rank, a Pearson correlation of two screens'
+      percentile vectors <em>is</em> Spearman's ρ, and it neutralizes every scale difference (STARS 134 and a
+      fold-change 6e-5 both map near +1).</p></div>
+    <div class="card"><h4 style="margin-top:0">ROBUST_Z_SCORE &nbsp;<span class="cnt">stored, not used in correlation</span></h4>
+      <div class="axis">Z = (S − median) / (1.4826 · MAD)</div>
+      <p style="font-size:13.5px;margin-bottom:0">Median/MAD standardization. <b>It is deliberately not used for
+      correlation</b> (it keeps each screen's raw scale, so it is not cross-comparable like a rank). Its job is
+      to <b>preserve effect magnitude</b> for magnitude-aware uses — ranking how strong a hit is within a screen,
+      tail/effect-size thresholds — which a flat percentile rank throws away. Both are stored so each analysis
+      can pick the right one.</p></div>
+  </div>
+
+  <h3>Missing data &amp; provenance</h3>
+  <ul class="tight">
+    <li><b>Missing value</b> (<code>-</code>) → NaN, excluded from ranking, stored as NULL percentile/z (never dumped at 0.0).</li>
+    <li><b>COVERAGE_TYPE</b> from <code>FULL_SIZE_AVAILABLE</code>: FULL → continuous comparison, HIT_ONLY → binary.</li>
+    <li>Each screen records <code>SCORE_BASIS</code> (which path produced S_raw) and <code>IS_DIRECTIONAL</code>.</li>
+  </ul>
+  <div class="chart">
+    <div class="cap" style="text-align:left;margin-bottom:6px"><b>Where the sign came from</b> (IS_DIRECTIONAL):</div>
+    <div class="split">
+      <div style="width:86.1%;background:#0284c7">directional metric — 1,858 (86%)</div>
+      <div style="width:13.9%;background:#7c3aed">selection type — 299 (14%)</div>
+    </div>
+  </div>
+  <div class="note good"><b>Outputs:</b> the <code>harmonized_scores</code> table (28.2 M rows) + three
+  provenance columns on <code>screen_metadata</code>. Validated by <code>validate_harmonization.py</code>:
+  core-essential genes (POLR2A, RPL3, PSMB3…) must sit at percentile ≈ −1 in every viability screen,
+  regardless of method — currently <b>PASS</b>.</div>
+</section>
+
+<!-- ===================== PHASE 2 ===================== -->
+<section id="phase2">
+  <h2>Phase 2 · Metadata Curation <span class="pill auto">FULLY AUTOMATED</span></h2>
+  <p class="lead">Two jobs. (1) A normalized label for every screen, by <b>deterministic rules</b>
+  (<code>script/llm_metadata_extractor.py</code>). (2) The LLM's <b>one real job</b> — assigning a score
+  <b>direction</b> to the minority of screens Phase 1 could not sign
+  (<code>script/directionality_mapper.py</code> → <code>apply_directionality.py</code>).</p>
+
+  <h3>The rule / LLM split</h3>
+  <p>Most labels are already structured in BioGRID, so they are computed <b>deterministically by rules</b>
+  (instant, confidence 1.0). The LLM is reserved for the one thing rules genuinely cannot get from structured
+  fields — <b>directionality</b> (which sign of a screen's score means "knockout helps" vs "gene is essential").
+  There is <b>no human-review step</b>; confidence is for downstream filtering, not manual sign-off.</p>
+  <div class="grid2">
+    <div class="card"><h4 style="margin-top:0"><span class="src rule">RULE</span> normalized labels</h4>
+      <ul class="tight" style="margin-bottom:0">
+        <li><code>screen_type</code> ← METHODOLOGY + LIBRARY_TYPE + ENZYME</li>
+        <li><code>selection_method</code> ← SCREEN_TYPE</li>
+        <li><code>coverage_type</code> ← FULL_SIZE + FULL_SIZE_AVAILABLE</li>
+      </ul></div>
+    <div class="card"><h4 style="margin-top:0"><span class="src llm">LLM</span> gpt-4o · directionality</h4>
+      <ul class="tight" style="margin-bottom:0">
+        <li>Reads BioGRID free text → the <b>sign</b> of an ambiguous screen's score.</li>
+        <li>Returns mode + sign + a <b>verbatim evidence quote</b> + confidence; schema-validated JSON.</li>
+        <li>Output frozen to <code>directionality_overrides.json</code> — a deterministic input so Phase 1 stays a pure function.</li>
+      </ul></div>
+  </div>
+
+  <h3>When is a screen "ambiguous"? (what triggers the LLM)</h3>
+  <p>Phase 1 already signs <b>86%</b> of screens with no LLM, straight from the score's own type (a
+  <code>log2FC</code> or <code>CERES</code> value carries its direction in its sign). A screen is handed to the
+  LLM only when <b>both</b> of these are true:</p>
+  <ul class="tight">
+    <li>its only usable column is an <b>unsigned significance</b> metric — a <code>p-value</code>, <code>FDR</code>,
+    <code>STARS</code>, <code>CasTLE</code>, <code>RSA</code>, or RRA/<code>MaGeCK</code> p — a number that says
+    "this gene changed significantly" but <b>not</b> whether it went up or down; <b>and</b></li>
+    <li><code>SCREEN_TYPE</code> can't supply the missing sign — it is <code>Phenotype Screen</code> (a FACS/reporter
+    sort with no built-in enrich/deplete axis) or <code>Positive and Negative Selection</code> (both directions at once).</li>
+  </ul>
+  <p>That is <b>100 screens (AMBIGUOUS)</b>. A further <b>11 (UNRESOLVED)</b> have no usable effect column at all
+  (only read counts / sgRNA number / rank) → no continuous score is possible, so they are routed straight to
+  Phase 3's BINARY mode. The polarity the rules lack is, for <b>96%</b> of screens, spelled out in plain English
+  in the curator <code>NOTES</code> — e.g. screen 89: <i>"negative MaGeCK score = cell-essential genes, their KO
+  results in decreased proliferation."</i> That sentence is exactly what the LLM mines.</p>
+
+  <h3>What the LLM sees, and what it returns</h3>
+  <p>The call is deterministic (<code>temperature = 0</code>), JSON mode. The system prompt fixes the unified axis
+  (<code>+1</code> = loss-of-function advantageous/enriched, <code>−1</code> = gene essential/depleted), the three
+  output modes, and the schema. The user message carries <b>only BioGRID fields</b> (no PubMed, no paper full text):</p>
+  <div class="grid2">
+    <div class="card"><h4 style="margin-top:0">INPUT → model</h4>
+      <div class="axis" style="font-size:12px"><span class="m">SYSTEM:</span> axis (+1/−1) · decide SINGLE | PAIR |
+UNDEFINED · quote the exact NOTES phrase · return ONLY JSON
+
+<span class="m">USER:</span>  <span style="color:#fbbf24">(screen 89)</span>
+  METHODOLOGY: Knockout
+  SCREEN_TYPE: Positive and Negative Selection
+  PHENOTYPE: cell proliferation
+  EXPERIMENTAL_SETUP: Timecourse
+  SCORE COLUMN LAYOUT: SCORE.1=MaGeCK Score,
+     SCORE.2=p-Value, SCORE.3=MaGeCK Score, SCORE.4=p-Value
+  SIGNIFICANCE_CRITERIA: Score.1 (MaGeCK) &lt;= … OR
+     Score.3 (MaGeCK) &lt;= …
+  SCREEN_RATIONALE: Cell-essential & growth restrictive
+  NOTES: "negative MaGeCK score = cell-essential genes,
+     KO → decreased proliferation; positive MaGeCK score
+     = growth restrictive, KO → increased…"  <span style="color:#fbbf24">(≤1500 ch)</span></div>
+    </div>
+    <div class="card"><h4 style="margin-top:0">OUTPUT ← model</h4>
+      <p style="font-size:13px;margin:0 0 6px">One validated JSON object. <b>SINGLE</b> → a global <code>sign</code>;
+      <b>PAIR</b> → which column is the +/− side; <b>UNDEFINED</b> → polarity not in the text.</p>
+      <div class="axis" style="font-size:12.5px">{
+  <span class="g">"mode"</span>: "PAIR",
+  <span class="g">"positive_column"</span>: "SCORE.3",   <span style="color:#64748b"># enriched / +</span>
+  <span class="g">"negative_column"</span>: "SCORE.1",   <span style="color:#64748b"># depleted / −</span>
+  <span class="g">"sign"</span>: null,
+  <span class="g">"confidence"</span>: 1.0,
+  <span class="g">"evidence"</span>: "negative MaGeCK score are
+     cell-essential genes… positive… growth restrictive"
+}</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Frozen into
+      <code>directionality_overrides.json</code> with <code>status</code>, <code>evidence</code>, model, and
+      prompt version for provenance and audit.</p>
+    </div>
+  </div>
+
+  <h3>How the answer becomes a sign — and the safety net</h3>
+  <ul class="tight">
+    <li><b>SINGLE</b> → <code>HARMONIZED_SCORE = magnitude × sign</code>.
+    <b>PAIR</b> → <code>signal(positive_column) − signal(negative_column)</code>. This is the <i>final</i> sign
+    (perturbation already folded in), applied non-destructively in place by <code>apply_directionality.py</code>.</li>
+    <li><b>Confidence gate:</b> <code>confidence &lt; 0.7</code> or <code>UNDEFINED</code> → <code>needs_review</code>,
+    not applied.</li>
+    <li><b>Biological sanity veto:</b> in a knockout viability screen, core-essential genes
+    (<code>POLR2A, RPL3, PSMB3…</code>) <b>must</b> sit at the negative extreme. If an override lands them on the
+    positive side, the call is <b>rejected</b>. This is not optional: <code>gpt-4o-mini</code> inverted screen 89 at
+    <b>confidence 1.0</b> — only the essential-gene check caught it, which is why the model was upgraded to
+    <code>gpt-4o</code>.</li>
+    <li><b>Ground-truth override:</b> where essential genes give a deterministic answer, that answer beats the LLM —
+    3 screens were auto-corrected this way (<code>ANCHOR_SINGLE</code>).</li>
+  </ul>
+
+  <h3>Rule labels — all 2,157 screens</h3>
+  <p style="font-size:13.5px">The deterministic normalized labels (no LLM). <code>screen_type</code> matches the raw
+  METHODOLOGY exactly, confirming the rules capture 100% of what an LLM classifier would.</p>
+  <div class="grid2">
+    <div class="chart">
+      <div class="cap" style="text-align:left;margin-bottom:6px"><b>screen_type</b> (rule)</div>
+      <div class="barrow"><span class="barlbl">KO</span><div class="bartrack"><div class="bar g" style="width:100%"></div></div><span class="barval">2030</span></div>
+      <div class="barrow"><span class="barlbl">CRISPRa</span><div class="bartrack"><div class="bar g" style="width:3.9%"></div></div><span class="barval">79</span></div>
+      <div class="barrow"><span class="barlbl">CRISPRi</span><div class="bartrack"><div class="bar g" style="width:2.4%"></div></div><span class="barval">48</span></div>
+    </div>
+    <div class="chart">
+      <div class="cap" style="text-align:left;margin-bottom:6px"><b>coverage_type</b> (rule)</div>
+      <div class="barrow"><span class="barlbl">Genome-wide</span><div class="bartrack"><div class="bar v" style="width:100%"></div></div><span class="barval">1687</span></div>
+      <div class="barrow"><span class="barlbl">Focused</span><div class="bartrack"><div class="bar v" style="width:25.0%"></div></div><span class="barval">422</span></div>
+      <div class="barrow"><span class="barlbl">Unknown</span><div class="bartrack"><div class="bar v" style="width:2.8%"></div></div><span class="barval">48</span></div>
+    </div>
+  </div>
+  <div class="chart">
+    <div class="cap" style="text-align:left;margin-bottom:6px"><b>selection_method</b> (rule) — matches the raw SCREEN_TYPE distribution exactly</div>
+    <div class="barrow"><span class="barlbl">Negative</span><div class="bartrack"><div class="bar" style="width:100%"></div></div><span class="barval">1077</span></div>
+    <div class="barrow"><span class="barlbl">Bidirectional</span><div class="bartrack"><div class="bar" style="width:43.7%"></div></div><span class="barval">471</span></div>
+    <div class="barrow"><span class="barlbl">Positive</span><div class="bartrack"><div class="bar" style="width:33.4%"></div></div><span class="barval">360</span></div>
+    <div class="barrow"><span class="barlbl">Phenotype</span><div class="bartrack"><div class="bar" style="width:23.0%"></div></div><span class="barval">248</span></div>
+    <div class="barrow"><span class="barlbl">Unknown</span><div class="bartrack"><div class="bar" style="width:0.1%"></div></div><span class="barval">1</span></div>
+  </div>
+
+  <h3>Directionality — the 111 screens Phase 1 could not sign</h3>
+  <p style="font-size:13.5px">gpt-4o, ~96 K tokens total. <b>71 of 100</b> ambiguous screens resolved with high
+  confidence and passing the sanity check; the rest the model honestly left undefined.</p>
+  <div class="chart">
+    <div class="cap" style="text-align:left;margin-bottom:6px"><b>Outcome</b> (100 AMBIGUOUS + 11 UNRESOLVED)</div>
+    <div class="barrow"><span class="barlbl">LLM SINGLE</span><div class="bartrack"><div class="bar g" style="width:100%"></div></div><span class="barval">64</span></div>
+    <div class="barrow"><span class="barlbl">LLM PAIR</span><div class="bartrack"><div class="bar g" style="width:6.3%"></div></div><span class="barval">4</span></div>
+    <div class="barrow"><span class="barlbl">anchor-fixed</span><div class="bartrack"><div class="bar g" style="width:4.7%"></div></div><span class="barval">3</span></div>
+    <div class="barrow"><span class="barlbl">needs_review</span><div class="bartrack"><div class="bar" style="width:45.3%"></div></div><span class="barval">29</span></div>
+    <div class="barrow"><span class="barlbl">binary_only</span><div class="bartrack"><div class="bar v" style="width:17.2%"></div></div><span class="barval">11</span></div>
+    <div class="legend" style="margin-top:8px">
+      <span><i style="background:var(--accent2)"></i>71 resolved &amp; applied (signed)</span>
+      <span><i style="background:var(--accent)"></i>29 undefined → left for review</span>
+      <span><i style="background:var(--violet)"></i>11 no effect column → BINARY only</span>
+    </div>
+  </div>
+
+  <h3>Calling the LLM (WashU AI gateway)</h3>
+  <ul class="tight">
+    <li><b>Auth:</b> Azure AD client-credentials → bearer token (cached, auto-refreshed). No API key on the official endpoint.</li>
+    <li><b>Endpoint:</b> <code>https://api.openai.wustl.edu/models/v1/chat/completions</code> — token only.</li>
+    <li><b>Network:</b> WashU-only — must be on campus or VPN (off-network → APIM 403).</li>
+    <li><b>Robustness:</b> retry+backoff on 429/5xx, JSON-mode validation, and a <b>preflight ping</b> that aborts a full run cleanly if the gateway is unreachable (so an offline run never writes garbage rows).</li>
+  </ul>
+  <div class="note good"><b>Outputs:</b> (1) <code>screen_metadata_curated</code> — one rule-labeled row per screen
+  (all 2,157), and (2) <code>directionality_overrides.json</code> — the frozen LLM sign decisions, applied back
+  into <code>harmonized_scores</code> (71 screens re-signed, <code>SCORE_BASIS</code> = <code>LLM_SINGLE</code> /
+  <code>LLM_PAIR</code> / <code>ANCHOR_SINGLE</code>).</div>
+</section>
+
+<!-- ===================== PHASE 3 ===================== -->
+<section id="phase3">
+  <h2>Phase 3 · Correlation Engine <span class="pill done">DONE</span></h2>
+  <p class="lead">For every comparable pair of screens, how similar are their gene-level results? Script:
+  <code>script/compute_correlations.py</code>.</p>
+
+  <h3>What may be compared</h3>
+  <ul class="tight">
+    <li><b>Same organism only</b> (human/mouse share almost no gene symbols).</li>
+    <li><b>On the gene intersection</b> — only genes both screens measured count; the overlap size is stored so a ρ can be weighted by how many genes back it.</li>
+  </ul>
+
+  <h3>Which score does a correlation use? (one screen has many scores)</h3>
+  <p>Exactly <b>one number per (screen, gene)</b>: the <code>PERCENTILE_SCORE</code>. A screen can report several raw
+  columns — and some report <b>both</b> a positive (enrichment) and a negative (depletion) score for the same gene —
+  but none of that reaches Phase 3. <b>Phase 1 has already collapsed every raw column into a single signed
+  <code>HARMONIZED_SCORE</code> per gene</b> before correlation runs:</p>
+  <ul class="tight">
+    <li><b>many columns</b> → the resolver prefers the directional one, or, for a pos/neg pair, combines them as
+    <code>(positive − negative)</code> on one axis;</li>
+    <li><b>positive vs negative score</b> → not a choice made at correlation time. A gene significant on the
+    depletion side lands near <code>−1</code>, significant on the enrichment side near <code>+1</code>; the
+    percentile is its single net position on the loss-of-function axis;</li>
+    <li>that one value is ranked within the screen → <code>PERCENTILE_SCORE ∈ [−1, +1]</code>.</li>
+  </ul>
+  <p style="font-size:13.5px">So CONTINUOUS mode correlates two screens' <b>percentile vectors</b> — never two
+  competing scores, never the raw columns, and <b>not</b> <code>ROBUST_Z_SCORE</code> (that one is kept only for
+  magnitude/thresholding). The "which score?" question is fully settled upstream in Phase 1; Phase 3 just sees the
+  one harmonized rank. (This is also why the directionality work above matters: a wrong sign in Phase 1 would put a
+  gene at the wrong end of this axis and flip its correlations.)</p>
+
+  <h3>Two modes, routed by COVERAGE_TYPE</h3>
+  <div class="chart">
+    <div class="split">
+      <div style="width:58%;background:#0284c7">CONTINUOUS — 314,963 (58%)</div>
+      <div style="width:42%;background:#7c3aed">BINARY — 227,735 (42%)</div>
+    </div>
+    <div class="legend"><span><i style="background:#0284c7"></i>both screens FULL → Spearman on percentiles</span>
+      <span><i style="background:#7c3aed"></i>≥1 screen HIT_ONLY → Jaccard/Fisher on hit sets</span></div>
+  </div>
+
+  <h3>CONTINUOUS — the math</h3>
+  <p>A per-pair <code>scipy.spearmanr</code> over ~1.5 M pairs would be far too slow. Instead the engine builds
+  two dense matrices over the gene universe (symbols measured in ≥2 FULL screens of that organism):</p>
+  <ul class="tight">
+    <li><b>X</b> (genes × screens) — the <code>PERCENTILE_SCORE</code> (0 placeholder where a gene is absent);</li>
+    <li><b>M</b> (genes × screens) — a mask, 1 where the gene was measured, else 0.</li>
+  </ul>
+  <p>All pairwise correlations over <b>pairwise-complete</b> genes then come from six matrix products — the
+  mask <b>M</b> zeroes out absent genes in every term, so each pair is computed only on shared genes:</p>
+  <div class="axis">n   = Mᵀ·M          <span style="color:#64748b"># shared-gene count per pair</span>
+sx  = Xᵀ·M          <span style="color:#64748b"># Σ x over genes shared with the other screen</span>
+sy  = sxᵀ
+sxy = Xᵀ·X
+sxx = (X∘X)ᵀ·M
+syy = sxxᵀ
+
+<span class="g">ρ</span> = (n·sxy − sx·sy) / √( (n·sxx − sx²)·(n·syy − sy²) )</div>
+  <p style="font-size:13.5px">Because <code>PERCENTILE_SCORE</code> is a rank, this Pearson-of-percentiles
+  <b>is</b> Spearman's ρ. The p-value is then derived analytically from (ρ, n), vectorised over all surviving
+  pairs — no per-pair test:</p>
+  <div class="axis">t = ρ · √( (n − 2) / (1 − ρ²) )      p = 2 · P(T<sub>n−2</sub> &gt; |t|)</div>
+  <p style="font-size:13.5px"><b>Tail correlation</b> (<code>spearman_rho_tails</code>): the same correlation but
+  restricted to genes that are a real hit (|percentile| &gt; 0.5) in either screen — since ~80% of genes sit in
+  the noisy middle, this isolates the signal.</p>
+
+  <h3>BINARY — the math</h3>
+  <p>A HIT_ONLY screen has no genome-wide ranking, so similarity is computed on the author hit sets
+  (<code>IS_HIT = 1</code>): H₁, H₂, drawn from a gene universe of size N.</p>
+  <div class="axis">Jaccard   = |H₁ ∩ H₂| / |H₁ ∪ H₂|
+
+Fisher p  = hypergeom.sf( s − 1,  N,  |H₁|,  |H₂| )     <span style="color:#64748b"># s = |H₁ ∩ H₂|</span>
+          = P(observing ≥ s shared hits by chance)</div>
+  <p style="font-size:13.5px">Both are kept because they disagree informatively: a pair can have tiny Jaccard
+  (one screen has thousands of hits) yet a Fisher p of 1e-38 — a wildly non-random overlap Jaccard alone would
+  hide. <b>Trust Fisher</b> when they disagree.</p>
+
+  <details>
+    <summary>Storage thresholds (only pairs worth a row are kept)</summary>
+    <table><tbody>
+      <tr><td class="col">MIN_OVERLAP_GENES</td><td>500</td><td>reject underpowered continuous pairs</td></tr>
+      <tr><td class="col">RHO_MIN</td><td>0.30</td><td>minimum |ρ| to store</td></tr>
+      <tr><td class="col">TAIL_CUTOFF</td><td>0.50</td><td>|percentile| above which a gene counts as a hit (tail)</td></tr>
+      <tr><td class="col">MIN_TAIL_GENES</td><td>20</td><td>minimum tail genes to report ρ_tails</td></tr>
+      <tr><td class="col">MIN_SHARED_HITS</td><td>3</td><td>minimum shared hits for a binary pair</td></tr>
+    </tbody></table>
+  </details>
+
+  <h3>Interpreting a row</h3>
+  <ul class="tight">
+    <li><b>ρ ≈ +0.6, p ≈ 0</b> — same biology; a shared hit is cross-validated.</li>
+    <li><b>ρ ≈ 0</b> — no relationship (a hit is treatment-specific, not generic fitness).</li>
+    <li><b>ρ &lt; 0, significant</b> — opposite rankings → antagonistic / context-dependent biology.</li>
+    <li><b>High Fisher, low Jaccard</b> — strong asymmetric hit overlap; trust Fisher.</li>
+  </ul>
+  <div class="note good"><b>Output:</b> the <code>correlation_analysis</code> table (542,698 rows), indexed for
+  "give me the screens most similar to screen X, ranked."</div>
+</section>
+
+<!-- ===================== SCHEMA ===================== -->
+<section id="schema">
+  <h2>Database — Schema Overview</h2>
+  <p>One SQLite file: <code>processed_data/reticle_master.db</code>. Four tables, in pipeline order.</p>
+  <table>
+    <thead><tr><th>Table</th><th>Grain (one row per…)</th><th>Rows</th><th>Written by</th></tr></thead>
+    <tbody>
+      <tr><td class="col">screen_metadata</td><td>screen</td><td>2,157</td><td>Phase 1 (from BioGRID JSON)</td></tr>
+      <tr><td class="col">harmonized_scores</td><td>screen × gene</td><td>28,237,649</td><td>Phase 1</td></tr>
+      <tr><td class="col">screen_metadata_curated</td><td>screen</td><td>2,157</td><td>Phase 2 (rules + LLM)</td></tr>
+      <tr><td class="col">correlation_analysis</td><td>screen pair</td><td>542,698</td><td>Phase 3</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Two different "coverage" columns — don't confuse them.</b>
+  <code>screen_metadata.COVERAGE_TYPE</code> = <em>data availability</em> (FULL vs HIT_ONLY; routes the
+  correlation mode). <code>screen_metadata_curated.coverage_type</code> = <em>screen scope</em>
+  (Genome-wide vs Focused). A screen can be "Genome-wide scope, HIT_ONLY deposit" at once.</div>
+</section>
+
+<!-- ===================== DATA DICTIONARY ===================== -->
+<section id="dictionary">
+  <h2>Data Dictionary — every variable &amp; where it comes from</h2>
+  <p>Filter by table, or type to search any column, meaning, or source. The <b>Source</b> tag shows how each
+  value is produced.</p>
+  <p style="font-size:13px">
+    <span class="src raw">RAW</span> copied from a BioGRID file &nbsp;
+    <span class="src derived">DERIVED</span> computed in Phase 1 &nbsp;
+    <span class="src rule">RULE</span> Phase 2 deterministic rule &nbsp;
+    <span class="src llm">LLM</span> Phase 2 model output &nbsp;
+    <span class="src computed">COMPUTED</span> Phase 3 statistic
+  </p>
+  <div class="tabs" id="dictTabs">
+    <div class="tab active" data-t="all">All</div>
+    <div class="tab" data-t="screen_metadata">screen_metadata</div>
+    <div class="tab" data-t="harmonized_scores">harmonized_scores</div>
+    <div class="tab" data-t="screen_metadata_curated">screen_metadata_curated</div>
+    <div class="tab" data-t="correlation_analysis">correlation_analysis</div>
+  </div>
+  <div class="searchbar">
+    <input id="dictSearch" type="text" placeholder="Search columns, meanings, sources…">
+    <span class="cnt" id="dictCount"></span>
+  </div>
+  <table id="dictTable">
+    <thead><tr><th>Table</th><th>Column</th><th>Type</th><th>Source</th><th>Meaning &amp; origin</th></tr></thead>
+    <tbody>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCREEN_ID</td><td class="ty">TEXT PK</td><td><span class="src raw">RAW</span></td><td>BioGRID screen id (matches the raw filename &amp; metadata key).</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SOURCE_ID</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>PMID of the source paper. Join key for Phase 2.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">AUTHOR</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>First author + year, e.g. "Meyers RM (2017)".</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCREEN_NAME</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>BioGRID screen name.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCORES_SIZE</td><td class="ty">INTEGER</td><td><span class="src raw">RAW</span></td><td>Number of gene rows deposited.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">ANALYSIS</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Statistical method (MaGeCK, BAGEL, CERES…). Guides score resolution.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCREEN_TYPE</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Negative/Positive/Pos&amp;Neg/Phenotype. Drives selection sign &amp; selection_method.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCREEN_FORMAT</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Pool / Array.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">METHODOLOGY</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Knockout/Activation/Inhibition. Drives perturbation multiplier &amp; screen_type.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">CELL_LINE</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Cell line used.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">CELL_TYPE</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Cell type / tissue.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">PHENOTYPE</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Phenotype measured.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">ORGANISM_OFFICIAL</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Homo sapiens / Mus musculus. Pairs never cross this.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCREEN_RATIONALE</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>Stated goal of the screen.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">COVERAGE_TYPE</td><td class="ty">TEXT</td><td><span class="src derived">DERIVED</span></td><td><b>Data availability:</b> FULL vs HIT_ONLY (from FULL_SIZE_AVAILABLE). Routes Phase-3 mode.</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">SCORE_BASIS</td><td class="ty">TEXT</td><td><span class="src derived">DERIVED</span></td><td>Provenance: which column/path produced S_raw (e.g. "SIG_P(p-Value)×sel=−1").</td></tr>
+      <tr data-t="screen_metadata"><td>screen_metadata</td><td class="col">IS_DIRECTIONAL</td><td class="ty">INTEGER</td><td><span class="src derived">DERIVED</span></td><td>1 = sign from a directional metric; 0 = from selection type.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">SCREEN_ID</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>FK to screen_metadata.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">GENE_SYMBOL</td><td class="ty">TEXT</td><td><span class="src raw">RAW</span></td><td>From the raw OFFICIAL_SYMBOL. Indexed; the cross-screen match key.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">HARMONIZED_SCORE</td><td class="ty">REAL</td><td><span class="src derived">DERIVED</span></td><td>S_raw × perturbation_multiplier on the loss-of-function axis. NULL if metric missing.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">PERCENTILE_SCORE</td><td class="ty">REAL</td><td><span class="src derived">DERIVED</span></td><td>Within-screen rank mapped to [−1,1]. <b>The value Phase 3 correlates.</b> NULL if unmeasured.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">ROBUST_Z_SCORE</td><td class="ty">REAL</td><td><span class="src derived">DERIVED</span></td><td>Median/MAD standardization. Preserves magnitude; <b>not</b> used in correlation. NULL if no spread.</td></tr>
+      <tr data-t="harmonized_scores"><td>harmonized_scores</td><td class="col">IS_HIT</td><td class="ty">INTEGER</td><td><span class="src raw">RAW</span></td><td>Authors' original hit call (raw HIT). Drives the binary correlation mode.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">screen_id</td><td class="ty">TEXT PK</td><td><span class="src rule">RULE</span></td><td>FK to screen_metadata.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">pmid</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td>Copied from SOURCE_ID.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">screen_type</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td>KO/CRISPRi/CRISPRa/RNAi/Other — from METHODOLOGY + LIBRARY_TYPE + ENZYME.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">selection_method</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td>Negative/Positive/Bidirectional/Phenotype/Unknown — normalized from SCREEN_TYPE.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">control_comparison</td><td class="ty">TEXT</td><td><span class="src llm">LLM</span></td><td>Free-text control/reference, mined by the LLM from NOTES + criteria.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">coverage_type</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td><b>Screen scope:</b> Genome-wide/Focused/Unknown (≠ screen_metadata.COVERAGE_TYPE).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">confidence_screen_type</td><td class="ty">REAL</td><td><span class="src rule">RULE</span></td><td>Rule confidence (1.0 certain · 0.9–0.7 heuristic).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">confidence_selection</td><td class="ty">REAL</td><td><span class="src rule">RULE</span></td><td>Rule confidence for selection_method.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">confidence_control</td><td class="ty">REAL</td><td><span class="src llm">LLM</span></td><td>The model's self-reported confidence for control_comparison.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">confidence_coverage</td><td class="ty">REAL</td><td><span class="src rule">RULE</span></td><td>Rule confidence for coverage_type.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">notes</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td>Machine notes (e.g. base-edited flag, or an LLM-failure reason).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">llm_model</td><td class="ty">TEXT</td><td><span class="src llm">LLM</span></td><td>Model used (e.g. gpt-4o-mini).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">prompt_version</td><td class="ty">TEXT</td><td><span class="src llm">LLM</span></td><td>Prompt/schema version (e.g. v3.0).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">extraction_timestamp</td><td class="ty">TEXT</td><td><span class="src rule">RULE</span></td><td>ISO timestamp of extraction.</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">raw_llm_output</td><td class="ty">TEXT</td><td><span class="src llm">LLM</span></td><td>The model's full raw JSON response (audit trail).</td></tr>
+      <tr data-t="screen_metadata_curated"><td>screen_metadata_curated</td><td class="col">token_usage</td><td class="ty">TEXT</td><td><span class="src llm">LLM</span></td><td>JSON of prompt/completion token counts.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">screen_id_1 / screen_id_2</td><td class="ty">TEXT</td><td><span class="src computed">COMPUTED</span></td><td>The pair, ordered id1 &lt; id2 (each pair once). FK to screen_metadata.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">organism</td><td class="ty">TEXT</td><td><span class="src computed">COMPUTED</span></td><td>Shared organism (pairs are within-organism only).</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">correlation_type</td><td class="ty">TEXT</td><td><span class="src computed">COMPUTED</span></td><td>CONTINUOUS (both FULL) or BINARY (≥1 HIT_ONLY).</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">gene_overlap_count</td><td class="ty">INTEGER</td><td><span class="src computed">COMPUTED</span></td><td>Genes measured in both screens.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">gene_overlap_fraction</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td>Overlap ÷ the smaller screen's measured-gene count.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">spearman_rho</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td><i>CONTINUOUS.</i> Rank correlation of PERCENTILE_SCORE, ∈ [−1,1].</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">spearman_pvalue</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td><i>CONTINUOUS.</i> Analytic p-value from (ρ, n).</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">spearman_rho_tails</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td><i>CONTINUOUS.</i> Correlation on tail (hit) genes, |percentile| &gt; 0.5.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">jaccard_similarity</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td><i>BINARY.</i> |H₁ ∩ H₂| / |H₁ ∪ H₂|.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">fisher_pvalue</td><td class="ty">REAL</td><td><span class="src computed">COMPUTED</span></td><td><i>BINARY.</i> Hypergeometric p-value of the hit overlap.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">shared_hits_count</td><td class="ty">INTEGER</td><td><span class="src computed">COMPUTED</span></td><td><i>BINARY.</i> Hits in both screens.</td></tr>
+      <tr data-t="correlation_analysis"><td>correlation_analysis</td><td class="col">computed_at</td><td class="ty">TEXT</td><td><span class="src computed">COMPUTED</span></td><td>ISO timestamp of the run.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== GLOSSARY ===================== -->
+<section id="glossary">
+  <h2>Glossary</h2>
+  <table><tbody>
+    <tr><td class="col">CRISPRn / KO</td><td>Nuclease-active Cas9 — permanent gene knockout.</td></tr>
+    <tr><td class="col">CRISPRi / CRISPRa</td><td>dCas9-based transcriptional inhibition / activation (no DNA cut).</td></tr>
+    <tr><td class="col">Negative selection</td><td>Hits <b>deplete</b> — essential / lethal genes (viability / dropout).</td></tr>
+    <tr><td class="col">Positive selection</td><td>Hits <b>enrich</b> — survival / resistance genes.</td></tr>
+    <tr><td class="col">FULL vs HIT_ONLY</td><td>Whether the full genome's results, or only hits, were deposited. Decides continuous vs binary comparison.</td></tr>
+    <tr><td class="col">Percentile score</td><td>Within-screen rank mapped to [−1,1]; scale-free. The value correlated in Phase 3.</td></tr>
+    <tr><td class="col">Robust Z</td><td>Median/MAD standardization; keeps effect magnitude. Stored, not used for correlation.</td></tr>
+    <tr><td class="col">Spearman ρ</td><td>Rank correlation; here, Pearson on percentile vectors over shared genes.</td></tr>
+    <tr><td class="col">Jaccard / Fisher</td><td>Hit-set overlap fraction / hypergeometric significance of that overlap.</td></tr>
+  </tbody></table>
+  <div class="footer">
+    RETICLE — generated documentation. Source of truth: <code>script/*.py</code> and
+    <code>processed_data/reticle_master.db</code>. Single-file; replaces the former multi-file documentation set.
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+  function go(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+  const links=[...document.querySelectorAll('nav .navlink')];
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));
+      const a=map[e.target.id];if(a)a.classList.add('active');}});
+  },{rootMargin:'-15% 0px -75% 0px'});
+  document.querySelectorAll('section').forEach(s=>obs.observe(s));
+
+  const rows=[...document.querySelectorAll('#dictTable tbody tr')];
+  const tabs=[...document.querySelectorAll('#dictTabs .tab')];
+  const search=document.getElementById('dictSearch');
+  const count=document.getElementById('dictCount');
+  let curTab='all';
+  function apply(){
+    const q=search.value.trim().toLowerCase();let shown=0;
+    rows.forEach(r=>{
+      const okTab=curTab==='all'||r.dataset.t===curTab;
+      const okTxt=!q||r.textContent.toLowerCase().includes(q);
+      const vis=okTab&&okTxt;r.classList.toggle('hidden',!vis);if(vis)shown++;
+    });
+    count.textContent=shown+' variable'+(shown===1?'':'s');
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');curTab=t.dataset.t;apply();
+  }));
+  search.addEventListener('input',apply);apply();
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RETICLE</title>
+    <link rel="preconnect" href="https://use.typekit.net" />
+    <link rel="stylesheet" href="https://use.typekit.net/mav2zlt.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <% if (injectChatWidget) { %>
+    <!--
+      di2chat AI chat widget (issue #45).
+      Injected only into the production web build (see webpack.config.js).
+      Loaded asynchronously so it never blocks the React app mount at #root.
+      Title, initial message, disclaimer and color are configured server-side in
+      the widget admin console — only the loader + init belong here.
+      NOTE: the loader points at the STAGING gateway (gateway-ai-admin-stage.wustl.edu);
+      revisit before a production launch if a prod gateway becomes available.
+    -->
+    <script>
+      (function () {
+        var s = document.createElement("script");
+        s.src = "https://gateway-ai-admin-stage.wustl.edu/chatbotwidget.min.js";
+        s.async = true;
+        s.onload = function () {
+          new ChatWidget({
+            chatbotId: "ec6973f7-95f4-45e1-9228-dc1f3c59ac41",
+            serverUrl: "https://di2chat.azurewebsites.net/api",
+            metadataKeys: {},
+          });
+        };
+        document.body.appendChild(s);
+      })();
+    </script>
+    <% } %>
+  </body>
+</html>

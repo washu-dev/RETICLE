@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RETICLE · Gene Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FCFCFB; --ink:#14161A; --muted:#6B7280; --faint:#9AA0A6;
+  --line:#E8E6E1; --line2:#F0EEEA;
+  --ess:#1F6F8B; --adv:#E08A3C;
+  --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:400;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(31, 111, 139, 0.04), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(224, 138, 60, 0.03), transparent 50%),
+    radial-gradient(#00000005 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,22px 22px;background-attachment:fixed}
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(26px,6vw,96px)}
+
+.topbar{display:flex;align-items:baseline;gap:14px;padding:24px 0;opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .4s ease,transform .4s ease}
+body.compact-view .topbar{opacity:1;transform:translateY(0);pointer-events:auto}
+.mark{font-family:var(--serif);font-weight:500;letter-spacing:.02em;font-size:19px}
+.mark b{color:var(--ess)}
+.tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
+
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12vh 0 6vh;transition:padding .5s ease,min-height .5s ease}
+.hero.compact{padding:24px 0 12px;align-items:stretch;text-align:left;display:block}
+
+.hero-brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:38px;animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both}
+.hero-logo{font-family:var(--serif);font-size:clamp(58px,8vw,82px);font-weight:500;letter-spacing:-.02em;margin:0;color:var(--ink);line-height:1.05}
+.hero-logo span{color:var(--ess);font-weight:600}
+.hero-tagline{font-family:var(--sans);font-size:clamp(14px,2.2vw,17px);font-weight:300;color:var(--muted);margin:12px 0 0;max-width:54ch;line-height:1.55}
+
+.hero.compact .hero-brand{display:none}
+
+.search{display:flex;align-items:center;width:100%;max-width:640px;margin:0 auto;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 30px -10px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.02);transition:all .3s cubic-bezier(0.2,0.8,0.2,1);padding:4px;animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both;animation-delay:.12s}
+.hero.compact .search{margin:0;max-width:600px}
+.search:hover{border-color:var(--faint);box-shadow:0 12px 35px -10px rgba(0,0,0,0.09),0 1px 4px rgba(0,0,0,0.03)}
+.search:focus-within{border-color:var(--ess);box-shadow:0 0 0 4px var(--ess-soft),0 12px 35px -10px rgba(0,0,0,0.09)}
+.search input{flex:1;border:0;outline:0;background:transparent;font-family:var(--sans);font-size:18px;color:var(--ink);padding:14px 18px}
+.search input::placeholder{color:var(--faint)}
+.search button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 24px;border-radius:12px;cursor:pointer;transition:all .2s ease}
+.search button:hover{background:var(--ess);box-shadow:0 4px 12px rgba(31,111,139,0.2)}
+.search button:active{transform:scale(.97)}
+
+.hint{margin-top:18px;font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both;animation-delay:.22s}
+.hero.compact .hint{display:none}
+
+#wave-canvas{width:100%;height:100px;display:block;margin:6vh auto 0;max-width:900px;overflow:visible;animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both;animation-delay:.32s}
+.hero.compact #wave-canvas{display:none}
+
+.landmarks-list{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:16px;font-family:var(--sans);font-size:13px;color:var(--muted);animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both;animation-delay:.22s}
+.hero.compact .landmarks-list{display:none}
+.lm-label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+.lm-chip{font-family:var(--mono);font-size:12px;background:rgba(0,0,0,0.02);border:1px solid var(--line);padding:3px 10px;border-radius:12px;cursor:pointer;color:var(--ink);transition:all 0.2s ease}
+.lm-chip:hover{background:var(--ess-soft);border-color:var(--ess);color:var(--ess);transform:translateY(-1px)}
+
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:18px;min-height:18px;text-align:center}
+.hero.compact .status{text-align:left}
+.status.err{color:#b4541f}
+
+#result{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1)}
+#result.show{opacity:1;transform:none}
+.gene-head{padding:34px 0 6px;border-top:1px solid var(--line2);margin-top:24px}
+.gene-org{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--faint)}
+.gene-org b{color:var(--ess);font-weight:500}
+.gene-sym{font-family:var(--serif);font-weight:400;font-size:clamp(46px,9vw,84px);line-height:.96;letter-spacing:-.02em;margin:6px 0 12px}
+.verdict{font-family:var(--serif);font-weight:300;font-size:clamp(18px,2.6vw,24px);color:var(--ink);max-width:36ch;line-height:1.32}
+.verdict em{font-style:normal;font-weight:500}
+.verdict .e{color:var(--ess)} .verdict .a{color:var(--adv)}
+.flip{font-family:var(--sans);font-size:13.5px;color:var(--muted);margin-top:12px;max-width:54ch}
+.flip b{color:var(--ink);font-weight:500}
+.verdict-stress{font-family:var(--sans);font-size:15px;color:#3a3d44;margin-top:16px;max-width:58ch;line-height:1.5;padding-left:13px;border-left:2px solid var(--line)}
+.verdict-stress em{font-style:normal;font-weight:600;color:var(--ink)}
+.verdict-stress em.e{color:var(--ess)} .verdict-stress em.a{color:var(--adv)}
+.verdict-stress b{color:var(--ink);font-weight:600}
+
+/* known-to-science + darkness band */
+.ctxband{display:grid;grid-template-columns:210px 1fr;gap:28px;margin-top:24px;padding:20px 0 6px;border-top:1px solid var(--line2)}
+.ctxband.loading{display:block;color:var(--faint);font-family:var(--mono);font-size:12px}
+.dark .darknum{font-family:var(--serif);font-weight:400;font-size:48px;line-height:1}
+.dark .darknum small{font-size:18px;color:var(--faint)}
+.dark .band-lbl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+.darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}
+.darkfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.dark .darkmeta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+.known .kh{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.known p{margin:0;font-size:13.5px;color:#33363c;line-height:1.55;max-width:78ch}
+.partners{margin-top:11px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.partners .lab{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.pchip2{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:16px;padding:2px 10px;color:var(--muted);cursor:pointer;transition:.15s}
+.pchip2:hover{border-color:var(--ess);color:var(--ess)}
+.sources{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.sources a{color:var(--ess);text-decoration:none}
+.sources a:hover{text-decoration:underline}
+@media(max-width:680px){.ctxband{grid-template-columns:1fr;gap:16px}}
+
+/* STRING interaction network */
+.netwrap{margin-top:30px}
+.netsvg{width:100%;height:auto;max-width:840px;display:block;margin-top:12px;background:#fff;border:1px solid var(--line2);border-radius:14px}
+.netlegend{display:flex;gap:16px;flex-wrap:wrap;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center}
+.netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.gnode text{transition:fill .15s}
+.gnode:hover text{fill:#14161A!important;font-weight:600}
+.gnode:hover circle{filter:brightness(1.08)}
+
+/* domain band — visually groups everything under one assay domain */
+.band{margin-top:30px;padding-top:4px}
+.band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:10px;border-bottom:2px solid var(--ink)}
+.band-h .name{font-family:var(--serif);font-size:23px;font-weight:500}
+.band.stress .band-h .name{color:var(--ess)}
+.band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+
+/* stress fact ledger — per-condition, replaces the pooled distribution axis */
+.lkey{font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--muted);
+  margin-top:14px;padding:11px 14px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}
+.lkey b{color:var(--ink);font-weight:600}
+.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}
+.lkey .ldir{font-size:11px}
+.ledger{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.lrow{border-bottom:1px solid var(--line2)}
+.lrow:last-child{border-bottom:0}
+.lrow>summary{list-style:none;cursor:pointer;display:grid;
+  grid-template-columns:70px minmax(0,1fr) 104px 60px 40px;align-items:center;gap:12px;
+  padding:10px 16px;transition:background .12s}
+.lrow>summary::-webkit-details-marker{display:none}
+.lrow>summary:hover{background:#FBFAF7}
+.lcc{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:3px 5px;text-align:center}
+.lcond{font-family:var(--sans);font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldir{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap}
+.ldir.resist{color:var(--adv)} .ldir.sensitise{color:var(--ess)} .ldir.mixed{color:var(--muted)}
+.lbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.lbar i{display:block;height:100%;border-radius:3px;background:var(--faint)}
+.lrow.resist .lbar i{background:var(--adv)} .lrow.sensitise .lbar i{background:var(--ess)}
+.lcount{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.lfacts{display:flex;flex-direction:column;gap:2px;padding:2px 16px 14px 94px;background:#FCFBF9}
+.lfact{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:none;padding:2px 0}
+a.lfact:hover{color:var(--ink);text-decoration:underline}
+.fs.resist{color:var(--adv)} .fs.sensitise{color:var(--ess)}
+/* show-more expander (default shows top 5) */
+.lmore>summary{list-style:none;cursor:pointer;text-align:center;padding:10px;border-top:1px solid var(--line2);
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ess);transition:background .12s}
+.lmore>summary::-webkit-details-marker{display:none}
+.lmore>summary:hover{background:#FBFAF7}
+.lmore>summary .s-hide{display:none}
+.lmore[open]>summary .s-show{display:none}
+.lmore[open]>summary .s-hide{display:inline}
+.lmore .lrow{border-top:1px solid var(--line2);border-bottom:0}
+/* reporter ledger variant — "regulates {process}", no direction */
+.lrow.rep>summary{grid-template-columns:74px minmax(0,1fr) 60px 34px}
+.rreg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.band.reporter .lbar i{background:var(--faint)}
+.rphen{color:var(--faint)}
+/* screen-vs-screen similarity */
+.search-screen{margin-top:10px}
+.search-screen input{font-size:14px}
+.scrtbl{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.scr-row{display:grid;grid-template-columns:34px 64px minmax(0,1fr) 90px 62px 48px 74px 24px;
+  align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .12s}
+.scr-row:last-child{border-bottom:0}
+.scr-row:not(.scr-hd):hover{background:#FBFAF7}
+.scr-hd{cursor:default;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);background:#FCFBF9}
+.scr-rank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
+.scr-id{font-family:var(--mono);font-size:12.5px;color:var(--ess)}
+.scr-lab{font-family:var(--sans);font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scr-bar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.scr-bar i{display:block;height:100%;border-radius:3px;background:var(--adv)}
+.scr-w{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--adv);text-align:right}
+.scr-p{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.scr-ov{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:right}
+.scr-link{font-family:var(--mono);font-size:13px;color:var(--muted);text-decoration:none;text-align:center}
+.scr-link:hover{color:var(--ink)}
+.scr-hd .scr-w,.scr-hd .scr-p,.scr-hd .scr-ov,.scr-hd .scr-rank{font-weight:400}
+.scr-morewrap{text-align:center;margin-top:14px}
+.scr-morebtn{font-family:var(--mono);font-size:12.5px;color:var(--ess);background:#fff;
+  border:1px solid var(--line);border-radius:10px;padding:10px 20px;cursor:pointer;transition:background .12s}
+.scr-morebtn:hover{background:#FBFAF7}
+.scr-morebtn:disabled{color:var(--faint);cursor:default}
+.scr-done{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em}
+/* per-row grounded AI summary */
+.rexplain:empty{display:none}
+.rexplain{margin:0 0 10px;padding:11px 13px;border:1px solid var(--line);border-left:2px solid var(--adv);border-radius:8px;background:#fff}
+.rex-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rex-src{text-transform:none;letter-spacing:0}
+.rex-src a{color:var(--ess);text-decoration:none} .rex-src a:hover{text-decoration:underline}
+.rex-flag{text-transform:none;letter-spacing:0;color:#8A5A16;background:#FBF1E1;border:1px solid #EBD9BC;border-radius:4px;padding:1px 6px}
+.rex-t{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:#2C3037}
+.rex-load,.rex-err{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.rex-err{color:#B23A3A}
+
+.sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:30px 0 6px;display:flex;align-items:center;gap:10px}
+.sec-h .lead{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:12px}
+.sec-h::after{content:"";flex:1;height:1px;background:var(--line2)}
+
+.sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}
+.ends{display:flex;justify-content:space-between;margin-top:2px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ends .l b,.ends .r b{display:block;font-family:var(--sans);font-size:12.5px;font-weight:500}
+.ends .l b{color:var(--ess)} .ends .r{text-align:right} .ends .r b{color:var(--adv)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;background:#fff;margin:24px 0;overflow:hidden}
+.stat{padding:18px 20px;border-right:1px solid var(--line2)}
+.stat:last-child{border-right:0}
+.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.stat .v{font-family:var(--mono);font-size:27px;font-weight:500;margin-top:7px;letter-spacing:-.01em}
+.stat .v small{font-size:14px;color:var(--muted);font-weight:400}
+
+.hist-svg{width:100%;height:200px;display:block;overflow:visible;margin-top:8px}
+
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
+.col h4{font-family:var(--sans);font-size:13px;font-weight:600;margin:0 0 4px}
+.col.e h4{color:var(--ess)} .col.a h4{color:var(--adv)}
+.col p{margin:0 0 10px;font-size:12px;color:var(--muted)}
+.ctx{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line2)}
+.ctx .cl{flex:1;min-width:0}
+.ctx .cl b{font-weight:500;display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctx .cl span{font-size:11.5px;color:var(--faint);font-family:var(--mono)}
+.pchip{font-family:var(--mono);font-size:12px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
+
+.caveat{font-size:13px;color:var(--muted);margin-top:16px;padding-left:12px;border-left:2px solid var(--line)}
+.repnote{border:1px dashed var(--line);border-radius:12px;padding:14px 18px;margin-top:26px;font-size:13px;color:var(--muted)}
+.repnote b{color:var(--ink);font-weight:500}
+
+.ai{border:1px solid var(--line);border-radius:14px;background:#fff;padding:24px 26px;margin:14px 0 0;position:relative;overflow:hidden}
+.ai::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--ess),var(--adv))}
+.ai-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ai-h .t{font-weight:600;font-size:14px}
+.ai-h .m{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.ai-body{font-size:15px;line-height:1.62;color:#23262b;font-family:var(--serif);font-weight:300;max-width:80ch}
+.ai-body a{color:var(--ess);font-weight:600;text-decoration:none;border-bottom:1px solid var(--ess-soft);font-family:var(--sans);font-size:13.5px}
+.ai-body a:hover{border-bottom-color:var(--ess)}
+.ai-body.loading{color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:400;display:flex;align-items:center;gap:10px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ess);animation:pulse 1.1s infinite ease-in-out}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.disc{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px}
+
+footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.tooltip{position:fixed;pointer-events:none;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:7px;opacity:0;transform:translateY(4px);transition:opacity .12s;z-index:50;white-space:nowrap}
+.tooltip.on{opacity:1;transform:none}
+
+@media(max-width:680px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:0}
+  .stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}
+  .cols{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#result{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <span class="mark">RETI<b>C</b>LE</span>
+    <span class="tag">functional genomics · 2,157 CRISPR screens</span>
+  </div>
+
+  <section class="hero" id="hero">
+    <div class="hero-brand">
+      <h1 class="hero-logo">RETI<span>C</span>LE</h1>
+      <p class="hero-tagline">Functional genomics explorer · 2,157 CRISPR screens mapped on a unified axis</p>
+    </div>
+    <div class="search">
+      <input id="q" type="text" placeholder="Enter a gene — e.g. TP53" autocomplete="off" spellcheck="false" autofocus>
+      <button id="go">Explore</button>
+    </div>
+    <div class="hint">Type any human or mouse gene to explore its landscape.</div>
+    <div class="search search-screen">
+      <input id="qs" type="text" placeholder="…or compare a screen — BioGRID screen id, e.g. 702" autocomplete="off" spellcheck="false">
+      <button id="gos">Find similar</button>
+    </div>
+    <div class="hint">Screen comparison: human · proliferation · genome-wide · ranked by weighted correlation.</div>
+    <div class="landmarks-list">
+      <span class="lm-label">Landmarks:</span>
+      <span class="lm-chip" onclick="explore('POLR2A')">POLR2A</span>
+      <span class="lm-chip" onclick="explore('KRAS')">KRAS</span>
+      <span class="lm-chip" onclick="explore('EGFR')">EGFR</span>
+      <span class="lm-chip" onclick="explore('TP53')">TP53</span>
+      <span class="lm-chip" onclick="explore('PTEN')">PTEN</span>
+    </div>
+    <div class="status" id="status"></div>
+    <canvas id="wave-canvas"></canvas>
+  </section>
+
+  <section id="result" aria-live="polite"></section>
+
+  <footer>
+    <span>Position = within-screen rank percentile, −1 (essential) … +1 (KO-advantageous). Split by assay domain.</span>
+    <span>BioGRID ORCS · local</span>
+  </footer>
+</div>
+<div class="tooltip" id="tip"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tip = $('#tip');
+const showTip=(h,x,y)=>{tip.innerHTML=h;tip.style.left=(x+12)+'px';tip.style.top=(y+12)+'px';tip.classList.add('on')};
+const hideTip=()=>tip.classList.remove('on');
+const COL = p => p<0 ? '#1F6F8B' : '#E08A3C';
+const op  = p => 0.32 + 0.62*Math.min(1,Math.abs(p));
+const fmt = (v,d=2)=> (v>=0?'+':'')+v.toFixed(d);
+
+// per-domain copy — same layout, domain-appropriate language
+const FIT = {
+  name:'Fitness', sub:'baseline growth & viability',
+  eL:'−1 · essential', eLb:'knockout is lethal', eR:'+1 · advantageous', eRb:'knockout favored',
+  statK:'fitness screens', cLh:'Most essential in', cLp:'knockout depletes — required here',
+  cRh:'Knockout most favored in', cRp:'loss enriches — cells do better without it', caveat:''
+};
+
+async function explore(sym){
+  sym=(sym||'').trim(); if(!sym) return;
+  const st=$('#status'); st.className='status'; st.textContent='Reading screens…';
+  try{
+    const r=await fetch('/api/gene?symbol='+encodeURIComponent(sym));
+    const d=await r.json();
+    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    st.textContent='';
+    $('#hero').classList.add('compact');
+    document.body.classList.add('compact-view');
+    render(d);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+}
+
+function domainBand(b, cfg, key, sig, hist){
+  return `
+  <div class="band ${key}">
+    <div class="band-h"><span class="name">${cfg.name}</span>
+      <span class="sub">${cfg.sub} · ${b.n} screens · median ${fmt(b.median)}</span></div>
+
+    <svg class="sig-svg" id="${sig}" viewBox="0 0 1000 118" preserveAspectRatio="none"></svg>
+    <div class="ends">
+      <div class="l">${cfg.eL}<b>${cfg.eLb}</b></div>
+      <div class="r">${cfg.eR}<b>${cfg.eRb}</b></div>
+    </div>
+
+    <div class="stats">
+      ${stat(cfg.statK,b.n,'int')}
+      ${stat('hit rate',b.hit_rate,'pct',b.n_hits+' hits')}
+      ${stat('median position',b.median,'signed')}
+      ${stat('spread (IQR)',b.p75-b.p25,'plain')}
+    </div>
+
+    <div class="sec-h">Distribution</div>
+    <svg class="hist-svg" id="${hist}" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+    ${cfg.caveat?`<div class="caveat">${cfg.caveat}</div>`:''}
+  </div>`;
+}
+
+// --- stress: a per-condition FACT LEDGER (no pooled axis) ---
+// Each row = one specific condition; direction resolved there, never across
+// conditions; the bar counts independent screens that agree (evidence, not
+// magnitude). Click a row for the cited screens.
+function stressLedger(S){
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const L=S.ledger||[], CAP=4, TOP=5;   // bar: 4+ independent papers = full
+  const row=r=>{
+    const arw=r.direction==='resist'?'▲ resist'
+             :r.direction==='sensitise'?'▼ sensitize':'± mixed';
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    // concordant → just the paper count; papers disagreeing → flag as a fraction
+    const cnt=r.n_agree===r.n_papers ? String(r.n_papers) : `${r.n_agree}/${r.n_papers}`;
+    const facts=r.facts.map(f=>{
+      const sl=f.sign==='pos'?'resist':'sensitise', st=f.sign==='pos'?'resist':'sensitize';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)} · <span class="fs ${sl}">${st}</span>`;
+      return f.pmid
+        ? `<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`
+        : `<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow ${r.direction}">
+      <summary>
+        <span class="lcc">${esc(r.class)}</span>
+        <span class="lcond" title="${esc(r.condition)}">${esc(r.condition)}</span>
+        <span class="ldir ${r.direction}">${arw}</span>
+        <span class="lbar" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)"><i style="width:${w}%"></i></span>
+        <span class="lcount" title="${r.n_papers} independent paper(s) · ${r.n_screens} screen(s)">${cnt}</span>
+      </summary>
+      <div class="lfacts">${facts}</div>
+    </details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP
+    ? `<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more conditions ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`
+    : '';
+  return `
+  <div class="band stress">
+    <div class="band-h"><span class="name">Response to drugs, pathogens &amp; immunity</span>
+      <span class="sub">survival under an applied condition · ${S.n} screens · ${S.n_hits} author-called hits</span></div>
+    <div class="lkey">
+      <b>How to read</b> — each row is one <b>specific</b> condition.
+      <span class="ldir resist">▲ resist</span> = knockout lets cells survive the condition <b>better</b> (loss confers resistance);
+      <span class="ldir sensitise">▼ sensitize</span> = knockout makes cells <b>more sensitive</b> to it (the gene is needed to withstand it).
+      This is the mechanism, not a good/bad call — e.g. for a therapeutic drug, <em>sensitize</em> is usually the <b>useful</b> direction.
+      The <b>bar &amp; number</b> = how many <b>independent papers</b> found this effect — more papers = more reproducible (several screens can come from one paper, so we count papers; 4+ fills the bar). A fraction like <em>1/2</em> only appears when papers <b>disagreed</b> on direction. Click any row for the cited papers.
+    </div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`
+      :`<div class="lkey">No author-called modifier hits across these stress screens.</div>`}
+  </div>`;
+}
+
+// --- reporter: a per-process REGULATOR ledger (gene → regulates X) ---
+// Reporter screens read a marker, not survival — the fact is which process the
+// gene regulates (from the screen rationale). Direction is gate-dependent, so
+// it is not shown; the gene↔process association is the point.
+function reporterLedger(R, sym){
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const L=R.ledger||[], CAP=4, TOP=6;
+  const row=r=>{
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    const facts=r.facts.map(f=>{
+      const ph=f.phenotype?` · <span class="rphen">${esc(f.phenotype)}</span>`:'';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)}${ph}`;
+      return f.pmid
+        ? `<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`
+        : `<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow rep" data-symbol="${esc(sym||'')}" data-screens="${esc((r.screens||[]).join(','))}">
+      <summary>
+        <span class="rreg">regulates</span>
+        <span class="lcond" title="${esc(r.process)}">${esc(r.process)}</span>
+        <span class="lbar rep" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)"><i style="width:${w}%"></i></span>
+        <span class="lcount" title="${r.n_papers} paper(s) · ${r.n_screens} screen(s)">${r.n_papers}</span>
+      </summary>
+      <div class="lfacts"><div class="rexplain" data-loaded="0"></div>${facts}</div>
+    </details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP
+    ? `<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more processes ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`
+    : '';
+  return `
+  <div class="band reporter">
+    <div class="band-h"><span class="name">Reporter</span>
+      <span class="sub">marker / pathway read-outs · ${R.n} screens · ${R.n_hits} regulator hits</span></div>
+    <div class="lkey"><b>How to read</b> — each row is a <b>process or marker this gene regulates</b> (its knockout shifts the reporter). These are held out of the axes above — a marker is its own scale, so essentiality doesn't apply. Reporter screens name the <b>process</b>, not survival, so direction (raises/lowers) isn't shown. The bar &amp; number = how many independent <b>papers</b> (studies). Click a row for the cited papers.</div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`
+      :`<div class="lkey">No author-called regulator hits across these marker screens.</div>`}
+  </div>`;
+}
+
+// lazily fetch the grounded AI summary the first time a reporter row is opened
+function wireReporterExplain(){
+  document.querySelectorAll('.lrow.rep').forEach(row=>{
+    row.addEventListener('toggle', ()=>{
+      if(!row.open) return;
+      const box=row.querySelector('.rexplain');
+      if(!box || box.dataset.loaded!=='0') return;   // load once
+      box.dataset.loaded='1';
+      const sym=row.dataset.symbol||'', screens=row.dataset.screens||'';
+      if(!sym||!screens){ box.dataset.loaded='0'; return; }
+      box.innerHTML='<span class="rex-load"><span class="dot"></span> reading the paper…</span>';
+      fetch('/api/reporter_explain?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
+        .then(r=>r.json()).then(d=>{
+          if(d.error){ box.innerHTML='<span class="rex-err">'+d.error+'</span>'; return; }
+          const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+          const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
+          box.innerHTML=`<div class="rex-h"><span>AI summary</span>${cites?`<span class="rex-src">cites ${cites}</span>`:''}</div><div class="rex-t">${esc(d.text)||'—'}</div>`;
+        })
+        .catch(()=>{ box.innerHTML='<span class="rex-err">Could not reach the server.</span>'; });
+    });
+  });
+}
+
+function render(d){
+  const F=d.fitness,S=d.stress,R=d.reporter;
+  const fn=F?F.n:0,sn=S?S.n:0,rn=R?R.n:0;
+
+  let verdict;
+  if(F){
+    verdict = F.lean==='essential'
+      ? `Across <em>${fn}</em> fitness screens, losing <em class="e">${d.symbol}</em> is usually costly — it behaves like an <em class="e">essential</em> gene.`
+      : F.lean==='advantageous'
+      ? `Across <em>${fn}</em> fitness screens, knocking out <em class="a">${d.symbol}</em> is usually <em class="a">advantageous</em> — loss tends to help cells grow.`
+      : `Across <em>${fn}</em> fitness screens, <em>${d.symbol}</em> cuts both ways — its baseline effect is context-dependent.`;
+  }else{
+    verdict = `<em>${d.symbol}</em> wasn't measured in baseline fitness screens — showing stress / marker behavior.`;
+  }
+  let stress='';
+  if(S){
+    const L=S.ledger||[];
+    if(L.length){
+      const top=L.slice(0,2).map(r=>{
+        const cls=r.direction==='resist'?'a':r.direction==='sensitise'?'e':'';
+        const verb=r.direction==='resist'?'confers resistance to'
+                 :r.direction==='sensitise'?'sensitizes to':'is mixed on';
+        const cnt=r.n_agree===r.n_papers?r.n_papers:`${r.n_agree}/${r.n_papers}`;
+        return `<em class="${cls}">${verb} ${r.condition}</em> (${cnt} paper${r.n_papers>1?'s':''})`;
+      }).join(', ');
+      stress = `Under drug, pathogen or immune pressure, <em>${d.symbol}</em> is <b>condition-specific</b> — e.g. ${top}. There is no single verdict; each condition is its own fact below.`;
+    }else{
+      stress = `<em>${d.symbol}</em> was measured in <em>${sn}</em> drug / pathogen / immune screens but is not an author-called hit in any.`;
+    }
+  }
+
+  const el=$('#result');
+  el.innerHTML = `
+    <div class="gene-head">
+      <div class="gene-org">${d.organism} · ${d.n_total} screens · <b>${fn} fitness</b> · ${sn} drug/pathogen · ${rn} reporter</div>
+      <div class="gene-sym">${d.symbol}</div>
+      <div class="verdict">${verdict}</div>
+      ${stress?`<div class="verdict-stress">${stress}</div>`:''}
+    </div>
+    <div class="ctxband loading" id="ctxband">looking up NCBI · GO · STRING…</div>
+    <div class="netwrap" id="netwrap" style="display:none">
+      <div class="sec-h">Interaction network <span class="lead">— STRING, node color = its CRISPR fitness behavior</span></div>
+      <svg id="netsvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="netlegend">
+        <span><i style="background:#1F6F8B"></i>essential</span>
+        <span><i style="background:#E08A3C"></i>KO-advantageous</span>
+        <span><i style="background:#9AA0A6"></i>mixed</span>
+        <span><i style="background:#fff;border:1px solid #C7C4BE"></i>not measured</span>
+        <span style="color:var(--faint)">edge width = STRING confidence · hover an edge for its evidence · click a node to explore</span>
+      </div>
+    </div>
+    <div class="netwrap" id="coesswrap" style="display:none">
+      <div class="sec-h">Co-essentiality network <span class="lead">— from RETICLE's own screens: genes whose CRISPR profiles move together (data-driven, works for dark genes)</span></div>
+      <svg id="coesssvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="netlegend">
+        <span><i style="background:#1F6F8B"></i>essential</span>
+        <span><i style="background:#E08A3C"></i>KO-advantageous</span>
+        <span><i style="background:#9AA0A6"></i>mixed</span>
+        <span style="color:var(--faint)">edge = correlated behavior across fitness screens · hover for Pearson r · click a node to explore</span>
+      </div>
+    </div>
+    ${F?domainBand(F,FIT,'fitness','sigF','histF'):''}
+    ${S?stressLedger(S):''}
+    ${rn?reporterLedger(R,d.symbol):''}
+    <div class="sec-h">Interpreted role</div>
+    <div class="ai">
+      <div class="ai-h"><span class="t">AI reading</span><span class="m" id="aimodel"></span></div>
+      <div class="ai-body loading" id="aibody"><span class="dot"></span> Reading ${d.symbol} across ${d.n_total} screens…</div>
+      <div class="disc">Fitness essentiality + stress divergence + reporter functional probes. Verify against primary screens.</div>
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    el.classList.add('show');
+    if(F){ drawSig(F,'sigF'); drawHist(F,'histF'); }
+    animateStats();
+    wireReporterExplain();
+  });
+  loadContext(d);
+  loadNetwork(d);
+  loadCoess(d);
+  runInterpret(d);
+}
+
+async function loadNetwork(d){
+  const wrap=$('#netwrap'); if(!wrap) return;
+  try{
+    const r=await fetch('/api/network?symbol='+encodeURIComponent(d.symbol)+'&org='+encodeURIComponent(d.organism));
+    const g=await r.json();
+    if(!r.ok || !g.nodes || g.nodes.length<2){ wrap.style.display='none'; return; }
+    renderNetwork(g); wrap.style.display='';
+  }catch(e){ wrap.style.display='none'; }
+}
+
+async function loadCoess(d){
+  const wrap=$('#coesswrap'); if(!wrap) return;
+  try{
+    const r=await fetch('/api/coessential?symbol='+encodeURIComponent(d.symbol)+'&org='+encodeURIComponent(d.organism));
+    const g=await r.json();
+    if(!r.ok || !g.nodes || g.nodes.length<2){ wrap.style.display='none'; return; }
+    renderNetwork(g, '#coesssvg', 'coess'); wrap.style.display='';
+  }catch(e){ wrap.style.display='none'; }
+}
+
+let netRAF=null;
+function renderNetwork(g, svgSel, kind){
+  svgSel=svgSel||'#netsvg'; kind=kind||'string';
+  const svg=$(svgSel); if(!svg) return;
+  if(svg._raf) cancelAnimationFrame(svg._raf);
+  const NS='http://www.w3.org/2000/svg', W=760,H=400;
+  const nodes=g.nodes.map((n,i)=>{const a=2*Math.PI*i/g.nodes.length;
+    return {...n, x:W/2+Math.cos(a)*175+(Math.random()-.5)*30, y:H/2+Math.sin(a)*135+(Math.random()-.5)*30, vx:0, vy:0};});
+  const idx={}; nodes.forEach((n,i)=>idx[n.name]=i);
+  const edges=g.edges.filter(e=>idx[e.a]!=null && idx[e.b]!=null);
+  const adj={}; nodes.forEach(n=>adj[n.name]=new Set([n.name]));
+  edges.forEach(e=>{adj[e.a].add(e.b); adj[e.b].add(e.a);});
+  const col=l=> l==='essential'?'#1F6F8B':l==='advantageous'?'#E08A3C':l==='mixed'?'#9AA0A6':'#ffffff';
+
+  svg.innerHTML='';
+  const edgeTip=e=>{
+    if(kind==='coess'){ return `${e.a} — ${e.b}<br><span style="color:#E08A3C">co-essential</span> · Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}`; }
+    const chs=Object.entries(e.channels||{}).sort((a,b)=>b[1]-a[1]);
+    const known=e.channels&&(e.channels['experiments']||e.channels['databases']);
+    const head=known?'known interaction':(chs.length?'predicted / mined link':'association');
+    const list=chs.length?chs.map(([k,v])=>`${k} ${v.toFixed(2)}`).join(' · '):'combined evidence';
+    return `${e.a} — ${e.b}<br><span style="color:#E08A3C">${head}</span> · combined ${e.score.toFixed(2)}<br>${list}`;
+  };
+  const eEls=edges.map(e=>{const ln=document.createElementNS(NS,'line');
+    ln.setAttribute('stroke','#cfccc6'); ln.setAttribute('stroke-width',(0.5+e.score*2.2).toFixed(2));
+    ln.setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); ln.dataset.a=e.a; ln.dataset.b=e.b;
+    svg.appendChild(ln); return ln;});
+  // transparent wide "hit" lines on top of the thin edges so they're easy to hover
+  const hitEls=edges.map((e,i)=>{const hit=document.createElementNS(NS,'line');
+    hit.setAttribute('stroke','transparent'); hit.setAttribute('stroke-width','13'); hit.style.cursor='help';
+    hit.addEventListener('mousemove',ev=>{ eEls[i].setAttribute('stroke','#14161A'); eEls[i].setAttribute('stroke-opacity','1'); showTip(edgeTip(e),ev.clientX,ev.clientY); });
+    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke','#cfccc6'); eEls[i].setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); hideTip(); });
+    svg.appendChild(hit); return hit;});
+  const nEls=nodes.map(n=>{const r=n.focus?13:9, grp=document.createElementNS(NS,'g');
+    grp.setAttribute('class','gnode'); grp.style.transition='opacity .2s';
+    let ring=null;
+    if(n.focus){ring=document.createElementNS(NS,'circle'); ring.setAttribute('r',r+5);
+      ring.setAttribute('fill','none'); ring.setAttribute('stroke','#14161A'); ring.setAttribute('stroke-width','1.5'); grp.appendChild(ring);}
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('r',r);
+    c.setAttribute('fill',col(n.lean)); c.setAttribute('stroke',n.lean?col(n.lean):'#C7C4BE'); c.setAttribute('stroke-width','1.6'); grp.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','IBM Plex Mono'); t.setAttribute('font-size','12');
+    t.setAttribute('fill',n.focus?'#14161A':'#4A4E57'); t.setAttribute('font-weight',n.focus?'600':'400'); t.textContent=n.name; grp.appendChild(t);
+    grp._n=n; grp._c=c; grp._t=t; grp._ring=ring; grp._r=r; svg.appendChild(grp);
+    grp.addEventListener('click',()=>{ $('#q').value=n.name; explore(n.name); });
+    grp.addEventListener('mouseenter',()=>hi(n.name));
+    grp.addEventListener('mouseleave',()=>hi(null));
+    return grp;});
+
+  function hi(name){
+    nEls.forEach(grp=>{ grp.style.opacity = (!name || adj[name].has(grp._n.name)) ? 1 : 0.16; });
+    eEls.forEach(ln=>{ const on = !name || ln.dataset.a===name || ln.dataset.b===name;
+      ln.style.opacity = on?1:0.05; ln.setAttribute('stroke', (name&&on)?'#9aa0a6':'#cfccc6'); });
+  }
+  function physics(alpha){
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      let dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y, dd=dx*dx+dy*dy||1, dist=Math.sqrt(dd), rep=9800/dd;
+      nodes[i].vx+=dx/dist*rep; nodes[i].vy+=dy/dist*rep; nodes[j].vx-=dx/dist*rep; nodes[j].vy-=dy/dist*rep;}
+    edges.forEach(e=>{const a=nodes[idx[e.a]],b=nodes[idx[e.b]];
+      let dx=b.x-a.x, dy=b.y-a.y, dist=Math.hypot(dx,dy)||1, att=(dist-118)*0.012*(0.4+e.score);
+      a.vx+=dx/dist*att; a.vy+=dy/dist*att; b.vx-=dx/dist*att; b.vy-=dy/dist*att;});
+    nodes.forEach(n=>{ n.vx+=(W/2-n.x)*0.006; n.vy+=(H/2-n.y)*0.006;
+      n.x+=Math.max(-16,Math.min(16,n.vx))*alpha; n.y+=Math.max(-16,Math.min(16,n.vy))*alpha;
+      n.vx*=0.82; n.vy*=0.82;
+      n.x=Math.max(46,Math.min(W-46,n.x)); n.y=Math.max(26,Math.min(H-30,n.y)); });
+  }
+  function paint(){
+    eEls.forEach((ln,i)=>{const a=nodes[idx[edges[i].a]],b=nodes[idx[edges[i].b]];
+      const x1=a.x.toFixed(1),y1=a.y.toFixed(1),x2=b.x.toFixed(1),y2=b.y.toFixed(1);
+      ln.setAttribute('x1',x1); ln.setAttribute('y1',y1); ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+      const hit=hitEls[i]; hit.setAttribute('x1',x1); hit.setAttribute('y1',y1); hit.setAttribute('x2',x2); hit.setAttribute('y2',y2);});
+    nEls.forEach(grp=>{const n=grp._n;
+      grp._c.setAttribute('cx',n.x.toFixed(1)); grp._c.setAttribute('cy',n.y.toFixed(1));
+      if(grp._ring){grp._ring.setAttribute('cx',n.x.toFixed(1)); grp._ring.setAttribute('cy',n.y.toFixed(1));}
+      grp._t.setAttribute('x',n.x.toFixed(1)); grp._t.setAttribute('y',(n.y+grp._r+13).toFixed(1));});
+  }
+  if(RM){ for(let i=0;i<240;i++) physics(1); paint(); return; }
+  let frame=0, swaying=false;
+  (function loop(){
+    if(frame<130){
+      physics(1);                       // settle into the force layout
+    }else{
+      // smooth, low-frequency drift around the settled position — no per-frame jitter
+      if(!swaying){ nodes.forEach(n=>{ n.sx=n.x; n.sy=n.y; n.ph=Math.random()*6.283; }); swaying=true; }
+      const t=frame*0.014;
+      nodes.forEach(n=>{ n.x=n.sx+Math.sin(t+n.ph)*4.5; n.y=n.sy+Math.cos(t*0.85+n.ph)*4.5; });
+    }
+    paint();
+    frame++;
+    svg._raf=requestAnimationFrame(loop);
+  })();
+}
+
+async function loadContext(d){
+  const el=$('#ctxband');
+  try{
+    const r=await fetch('/api/context?symbol='+encodeURIComponent(d.symbol)+'&org='+encodeURIComponent(d.organism));
+    const c=await r.json();
+    if(!r.ok){ el.style.display='none'; return; }
+    const dk=c.darkness, a=c.annotation, parts=c.string_partners||[];
+    const col = dk ? (dk.band==='dark'?'#6d5bbd':dk.band==='grey'?'#C98A3C':'#2F8F6B') : '#9AA0A6';
+    const lbl = dk ? (dk.band==='dark'?'dark matter':dk.band==='grey'?'grey zone':'well studied') : 'n/a';
+    el.className='ctxband';
+    el.innerHTML = `
+      <div class="dark">
+        ${dk?`<div class="darknum" style="color:${col}">${dk.score}<small>/10</small></div>
+        <div class="band-lbl" style="color:${col}">darkness · ${lbl}</div>
+        <div class="darkbar"><div class="darkfill" id="dfill" style="width:0;background:${col}"></div></div>
+        <div class="darkmeta">${dk.pubmed_count.toLocaleString()} papers · ${dk.go_total} GO terms</div>`
+        :`<div class="darkmeta">darkness unavailable</div>`}
+      </div>
+      <div class="known">
+        <div class="kh">Known to science${a&&a.name?` · ${a.name}`:''}</div>
+        <p>${a&&a.summary ? a.summary : 'Poorly characterized — no curated functional summary. The screen behavior below is the main functional evidence RETICLE has.'}</p>
+        ${parts.length?`<div class="partners"><span class="lab">STRING partners</span>${parts.slice(0,8).map(p=>`<span class="pchip2" onclick="explore('${p.partner}')">${p.partner}</span>`).join('')}</div>`:''}
+      </div>`;
+    if(dk){ const f=$('#dfill'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ f.style.width=(dk.score*10)+'%'; })); }
+  }catch(e){ el.style.display='none'; }
+}
+
+function stat(k,v,kind,sub){
+  let disp;
+  if(kind==='pct') disp=`<span class="cu" data-v="${v*100}" data-kind="pct">0</span><small>%</small>`;
+  else if(kind==='signed') disp=`<span class="cu" data-v="${v}" data-kind="signed">0</span>`;
+  else if(kind==='plain') disp=`<span class="cu" data-v="${v}" data-kind="plain">0</span>`;
+  else disp=`<span class="cu" data-v="${v}" data-kind="int">0</span>`;
+  return `<div class="stat"><div class="k">${k}</div><div class="v">${disp}${sub?` <small>${sub}</small>`:''}</div></div>`;
+}
+function ctxList(items){
+  return items.slice(0,6).map(i=>{const c=COL(i.percentile);
+    return `<div class="ctx"><div class="cl"><b>${i.cell_line}</b><span>${i.screen_type||i.analysis||'screen'}${i.is_hit?' · hit':''}</span></div>
+      <div class="pchip" style="background:${c}1c;color:${c}">${fmt(i.percentile)}</div></div>`;}).join('');
+}
+
+function drawSig(b,id){
+  const svg=$('#'+id),W=1000,pad=8,midY=64,x=p=>pad+(p+1)/2*(W-2*pad);
+  let s=`<line x1="${pad}" y1="${midY}" x2="${W-pad}" y2="${midY}" stroke="#E2E0DB"/>`;
+  s+=`<line x1="${x(0)}" y1="22" x2="${x(0)}" y2="${midY+18}" stroke="#D7D5D0" stroke-dasharray="2 3"/>`;
+  s+=`<rect x="${x(b.p25)}" y="${midY-15}" width="${x(b.p75)-x(b.p25)}" height="30" rx="4" fill="#1416180a"/>`;
+  const ticks = b.screens || b.rug.map(p=>({p}));
+  ticks.forEach(t=>{const p=t.p, xx=x(p), lbl=(t.cn||'').replace(/[<&">]/g,' ');
+    s+=`<line class="tick" x1="${xx}" y1="${midY-13}" x2="${xx}" y2="${midY+13}" stroke="${COL(p)}" stroke-width="1.4" stroke-opacity="${op(p)}" style="--d:${(Math.abs(p)*420).toFixed(0)}ms">${lbl?`<title>${lbl} · ${fmt(p)}</title>`:''}</line>`;});
+  const mx=x(b.median);
+  s+=`<line x1="${mx}" y1="${midY-26}" x2="${mx}" y2="${midY+22}" stroke="#14161A" stroke-width="1.5"/>`;
+  s+=`<path d="M${mx-5} ${midY-26} L${mx+5} ${midY-26} L${mx} ${midY-19} Z" fill="#14161A"/>`;
+  s+=`<text x="${mx}" y="${midY-31}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#14161A">median ${fmt(b.median)}</text>`;
+  svg.innerHTML=s;
+  if(!RM) svg.querySelectorAll('.tick').forEach(t=>{
+    t.style.cssText+=';transition:transform .5s ease,stroke-opacity .5s;transform-origin:center;transform-box:fill-box;transform:scaleY(0);transition-delay:'+t.style.getPropertyValue('--d');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{t.style.transform='scaleY(1)';}));});
+}
+
+function drawHist(b,id){
+  const svg=$('#'+id),W=1000,H=200,padX=8,padB=26,padT=10;
+  const {edges,counts}=b.hist,n=counts.length,max=Math.max(...counts,1),bw=(W-2*padX)/n,gap=2,x=p=>padX+(p+1)/2*(W-2*padX);
+  let s=`<line x1="${x(0)}" y1="${padT}" x2="${x(0)}" y2="${H-padB}" stroke="#E2E0DB" stroke-dasharray="2 3"/>`;
+  counts.forEach((c,i)=>{const cen=(edges[i]+edges[i+1])/2,h=(c/max)*(H-padB-padT),bx=padX+i*bw+gap/2;
+    s+=`<rect class="bar" data-c="${c}" data-lo="${edges[i].toFixed(2)}" data-hi="${edges[i+1].toFixed(2)}" x="${bx}" y="${H-padB}" width="${bw-gap}" height="0" rx="2" fill="${COL(cen)}" fill-opacity="${op(cen)}" data-y="${H-padB-h}" data-h="${h}"></rect>`;});
+  [['−1',-1],['0',0],['+1',1]].forEach(([t,p])=>{s+=`<text x="${x(p)}" y="${H-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9AA0A6">${t}</text>`;});
+  svg.innerHTML=s;
+  svg.querySelectorAll('.bar').forEach((bar,i)=>{const y=bar.dataset.y,h=bar.dataset.h;
+    if(RM){bar.setAttribute('y',y);bar.setAttribute('height',h);}
+    else{bar.style.transition='y .6s cubic-bezier(.2,.7,.2,1),height .6s cubic-bezier(.2,.7,.2,1)';bar.style.transitionDelay=(i*14)+'ms';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.setAttribute('y',y);bar.setAttribute('height',h);}));}
+    bar.addEventListener('mousemove',e=>showTip(`${bar.dataset.c} screens<br>${bar.dataset.lo} … ${bar.dataset.hi}`,e.clientX,e.clientY));
+    bar.addEventListener('mouseleave',hideTip);});
+}
+
+function animateStats(){
+  document.querySelectorAll('.cu').forEach(el=>{
+    const v=parseFloat(el.dataset.v),kind=el.dataset.kind;
+    const out=x=>kind==='int'?Math.round(x).toString():kind==='pct'?x.toFixed(0):kind==='signed'?(x>=0?'+':'')+x.toFixed(2):x.toFixed(2);
+    if(RM){el.textContent=out(v);return;}
+    const t0=performance.now();(function step(t){const k=Math.min(1,(t-t0)/750),e=1-Math.pow(1-k,3);
+      el.textContent=out(v*e);if(k<1)requestAnimationFrame(step);else el.textContent=out(v);})(t0);});
+}
+
+function linkifyPMIDs(text){
+  const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // (PMID 35354024) / PMID: 12345678 / PMIDs 12345678  ->  bold hyperlink
+  return esc.replace(/PMIDs?[:\s]*(\d{5,9})/gi,
+    (m,id)=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${id}/" target="_blank" rel="noopener">PMID ${id}</a>`);
+}
+
+async function runInterpret(d){
+  const body=$('#aibody'),me=$('#aimodel');
+  try{
+    const r=await fetch('/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const j=await r.json();
+    if(!r.ok){body.className='ai-body';body.style.color='#b4541f';body.textContent=j.error||'Interpretation unavailable.';return;}
+    me.textContent=j.model;body.className='ai-body';body.style.opacity=0;body.innerHTML=linkifyPMIDs(j.text);
+    requestAnimationFrame(()=>{body.style.transition='opacity .6s';body.style.opacity=1;});
+    if(j.sources && j.sources.length){
+      const ai=body.closest('.ai'), disc=ai.querySelector('.disc'), s=document.createElement('div');
+      s.className='sources';
+      s.innerHTML='Grounded in: '+j.sources.map(x=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${x.pmid}/" target="_blank" rel="noopener" title="${(x.title||'').replace(/"/g,'')}">PMID ${x.pmid}</a>`).join(' · ');
+      ai.insertBefore(s, disc);
+    }
+  }catch(e){body.className='ai-body';body.style.color='#b4541f';body.textContent='Interpretation request failed.';}
+}
+
+function initWave() {
+  const canvas = document.getElementById('wave-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  let width, height;
+  let animationFrameId;
+  let mouse = { x: -1000, y: -1000, active: false };
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width * (window.devicePixelRatio || 1);
+    height = rect.height * (window.devicePixelRatio || 1);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  }
+  
+  window.addEventListener('resize', resize);
+  resize();
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    mouse.active = false;
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  const cols = 50;
+  const rows = 8;
+  const colSpacing = () => canvas.width / (window.devicePixelRatio || 1) / (cols - 1);
+  const rowSpacing = 8;
+  const centerY = () => canvas.height / (window.devicePixelRatio || 1) / 2;
+
+  let time = 0;
+
+  function animate() {
+    const hero = document.getElementById('hero');
+    if (hero && hero.classList.contains('compact')) {
+      cancelAnimationFrame(animationFrameId);
+      return;
+    }
+
+    ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+
+    time += 0.015;
+
+    const spacingX = colSpacing();
+    const midY = centerY();
+
+    for (let r = 0; r < rows; r++) {
+      const depth = r / (rows - 1);
+      const alpha = 0.12 + depth * 0.4;
+      const size = 1.0 + depth * 2.0;
+
+      for (let c = 0; c < cols; c++) {
+        const baseX = c * spacingX;
+        const baseY = midY + (r - (rows - 1) / 2) * rowSpacing;
+
+        const angle = c * 0.15 + time + r * 0.4;
+        const waveOffset = Math.sin(angle) * 12 * (0.6 + depth * 0.8);
+        
+        let x = baseX;
+        let y = baseY + waveOffset;
+
+        if (mouse.active) {
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 80) {
+            const force = (80 - dist) / 80;
+            const angle = Math.atan2(dy, dx);
+            x += Math.cos(angle) * force * 15;
+            y += Math.sin(angle) * force * 10;
+          }
+        }
+
+        const progress = c / (cols - 1);
+        const red = Math.round(31 + progress * (224 - 31));
+        const green = Math.round(111 + progress * (138 - 111));
+        const blue = Math.round(139 + progress * (60 - 139));
+
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+        ctx.fill();
+      }
+    }
+
+    animationFrameId = requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// --- screen-vs-screen similarity (human · proliferation · genome-wide) ---
+const _scrEsc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let _scrState=null;                         // {sid, shown, total, maxw}
+const SCR_PAGE=50;
+
+async function findSimilar(sid){
+  sid=(sid||'').replace(/\D/g,''); if(!sid) return;
+  const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
+  try{
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0`);
+    const d=await r.json();
+    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    st.textContent=''; $('#hero').classList.add('compact'); document.body.classList.add('compact-view');
+    _scrState={sid:d.query.screen_id, shown:d.results.length, total:d.n_total,
+               maxw:d.results.length?d.results[0].weighted:1};
+    renderScreenSimilar(d);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+}
+
+function scrRowsHTML(results, start){
+  const maxw=Math.max(0.01,_scrState.maxw);
+  return results.map((x,i)=>{
+    const w=Math.round(100*Math.max(0,x.weighted)/maxw);
+    return `<div class="scr-row" onclick="document.getElementById('qs').value='${_scrEsc(x.screen_id)}';findSimilar('${_scrEsc(x.screen_id)}')">
+      <span class="scr-rank">${start+i+1}</span>
+      <span class="scr-id">#${_scrEsc(x.screen_id)}</span>
+      <span class="scr-lab">${_scrEsc(x.author)} · <b>${_scrEsc(x.cell_line)}</b></span>
+      <span class="scr-bar"><i style="width:${w}%"></i></span>
+      <span class="scr-w">${x.weighted.toFixed(2)}</span>
+      <span class="scr-p">${x.plain!=null?x.plain.toFixed(2):'—'}</span>
+      <span class="scr-ov">${x.overlap.toLocaleString()}</span>
+      <a class="scr-link" href="https://orcs.thebiogrid.org/Screen/${_scrEsc(x.screen_id)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗</a>
+    </div>`;
+  }).join('');
+}
+
+function scrMoreHTML(){
+  if(!_scrState) return '';
+  if(_scrState.shown>=_scrState.total)
+    return `<div class="scr-done">all ${_scrState.total} correlated screens shown</div>`;
+  const rem=_scrState.total-_scrState.shown;
+  return `<button id="scrmore" class="scr-morebtn" onclick="loadMoreSimilar()">Load more — ${Math.min(SCR_PAGE,rem)} of ${rem} remaining</button>`;
+}
+
+async function loadMoreSimilar(){
+  if(!_scrState) return;
+  const btn=$('#scrmore'); if(btn){ btn.textContent='Loading…'; btn.disabled=true; }
+  try{
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}`);
+    const d=await r.json();
+    $('#scrtbl').insertAdjacentHTML('beforeend', scrRowsHTML(d.results, _scrState.shown));
+    _scrState.shown+=d.results.length; _scrState.total=d.n_total;
+  }catch(e){}
+  $('#scrmorewrap').innerHTML=scrMoreHTML();
+}
+
+function renderScreenSimilar(d){
+  const q=d.query, esc=_scrEsc;
+  $('#result').innerHTML=`
+    <div class="gene-head">
+      <div class="gene-org">highly correlated screens · human · proliferation · genome-wide · pool ${d.n_pool} screens</div>
+      <div class="gene-sym">Screens like #${esc(q.screen_id)}</div>
+      <div class="verdict">${esc(q.author)} · <em>${esc(q.cell_line)}</em>${q.n_genes?` · ${q.n_genes.toLocaleString()} genes measured`:''}${q.pmid?` · <a href="https://pubmed.ncbi.nlm.nih.gov/${esc(q.pmid)}" target="_blank" rel="noopener">PMID ${esc(q.pmid)}</a>`:''} · <em>${d.n_total}</em> comparable</div>
+    </div>
+    <div class="lkey"><b>How to read</b> — ranked by <b>weighted correlation</b>: extreme (hit) genes dominate, the ~random middle is down-weighted. <b>plain</b> is the equal-weight version for contrast — a large gap means the screens agree mainly on their strongest hits. <b>overlap</b> = shared measured genes. Click a row to pivot to that screen; ↗ opens it in BioGRID.</div>
+    <div class="scrtbl" id="scrtbl">
+      <div class="scr-row scr-hd"><span class="scr-rank">#</span><span class="scr-id">screen</span><span class="scr-lab">author · cell line</span><span class="scr-bar"></span><span class="scr-w">weighted</span><span class="scr-p">plain</span><span class="scr-ov">overlap</span><span class="scr-link"></span></div>
+      ${d.results.length?scrRowsHTML(d.results,0):'<div class="lkey">No comparable screens (need ≥200 shared genes).</div>'}
+    </div>
+    <div class="scr-morewrap" id="scrmorewrap">${scrMoreHTML()}</div>`;
+  requestAnimationFrame(()=>$('#result').classList.add('show'));
+}
+
+$('#go').addEventListener('click',()=>explore($('#q').value));
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter')explore($('#q').value);});
+$('#gos').addEventListener('click',()=>findSimilar($('#qs').value));
+$('#qs').addEventListener('keydown',e=>{if(e.key==='Enter')findSimilar($('#qs').value);});
+initWave();
+</script>
+</body>
+</html>
