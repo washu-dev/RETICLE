@@ -14,9 +14,13 @@ from pydantic import BaseModel
 # imported transitively by the routers below).
 from config import settings
 from routers.auth import router as auth_router
+from routers.coessential import router as coessential_router
 from routers.explorer import router as explorer_router
 from routers.genes import router as genes_router
+from routers.interpret import router as interpret_router
+from routers.pathways import router as pathways_router
 from routers.query import router as query_router
+from routers.screen_similar import router as screen_similar_router
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +102,10 @@ app.include_router(auth_router)
 app.include_router(query_router)
 app.include_router(genes_router)
 app.include_router(explorer_router)
+app.include_router(coessential_router)
+app.include_router(screen_similar_router)
+app.include_router(interpret_router)
+app.include_router(pathways_router)
 
 
 @app.get("/api/health", response_model=HealthResponse)
