@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, FlaskConical, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
+import { Upload, FileText, ArrowRight, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Settings2 } from 'lucide-react';
+import WashuLogo from './washu/WashuLogo';
 import { EXAMPLE_GENE_LIST } from '../mockData';
 import { detectFormat, suggestScoreColumn, parseGeneList, resolveIdentifiers } from '../utils/geneParser';
 import crosswalk from '../data/crosswalk.min.json';
@@ -104,18 +105,14 @@ export default function UploadPage({ onAnalyze }) {
       {/* Nav */}
       <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 40px', borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-0)',
+        padding: '11px 40px', borderTop: '3px solid var(--washu-red)',
+        borderBottom: '1px solid var(--border)', background: 'var(--white)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: 'linear-gradient(135deg, #2563b8, #4f9cf9)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <FlaskConical size={16} color="white" />
-          </div>
-          <span style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>RETICLE</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <WashuLogo height={28} />
+          <span style={{ fontWeight: 700, letterSpacing: '0.02em', paddingLeft: 16, borderLeft: '1px solid var(--border-2)' }}>
+            RETI<span style={{ color: 'var(--washu-red)' }}>C</span>LE
+          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* Stepper */}
@@ -123,12 +120,12 @@ export default function UploadPage({ onAnalyze }) {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: i === 0 ? 'var(--blue)' : 'var(--bg-3)',
-                fontSize: '0.72rem', fontWeight: 700, color: i === 0 ? 'white' : 'var(--text-3)',
+                background: i === 0 ? 'var(--washu-red)' : 'var(--warm-gray)',
+                fontSize: '0.72rem', fontWeight: 700, color: i === 0 ? 'white' : 'var(--faint)',
                 border: i === 0 ? 'none' : '1px solid var(--border)',
               }}>{i + 1}</div>
-              <span style={{ fontSize: '0.875rem', color: i === 0 ? 'var(--text-1)' : 'var(--text-3)', fontWeight: i === 0 ? 600 : 400 }}>{step}</span>
-              {i < 2 && <span style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>›</span>}
+              <span style={{ fontSize: '0.875rem', color: i === 0 ? 'var(--fg)' : 'var(--faint)', fontWeight: i === 0 ? 600 : 400 }}>{step}</span>
+              {i < 2 && <span style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>›</span>}
             </div>
           ))}
         </div>
@@ -229,7 +226,7 @@ export default function UploadPage({ onAnalyze }) {
                 display: 'flex', alignItems: 'center', gap: 7,
                 padding: '8px 14px', borderRadius: 8,
                 border: `1px solid ${optionsOpen ? 'var(--blue-dim)' : 'var(--border)'}`,
-                background: optionsOpen ? 'rgba(79,156,249,0.06)' : 'var(--bg-2)',
+                background: optionsOpen ? 'rgba(0,125,138,0.06)' : 'var(--bg-2)',
                 color: optionsOpen ? 'var(--blue)' : 'var(--text-2)',
                 fontSize: '0.85rem', width: '100%', justifyContent: 'space-between',
                 transition: 'all 0.15s',
@@ -259,7 +256,7 @@ export default function UploadPage({ onAnalyze }) {
                         onClick={() => setAlgorithm(a)}
                         style={{
                           padding: '5px 12px', borderRadius: 6, fontSize: '0.82rem',
-                          background: algorithm === a ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          background: algorithm === a ? 'rgba(0,125,138,0.12)' : 'var(--bg-1)',
                           border: `1px solid ${algorithm === a ? 'var(--blue)' : 'var(--border)'}`,
                           color: algorithm === a ? 'var(--blue)' : 'var(--text-2)',
                           fontWeight: algorithm === a ? 600 : 400,
@@ -285,7 +282,7 @@ export default function UploadPage({ onAnalyze }) {
                         onClick={() => setOrganism(o)}
                         style={{
                           padding: '5px 14px', borderRadius: 6, fontSize: '0.82rem',
-                          background: organism === o ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          background: organism === o ? 'rgba(0,125,138,0.12)' : 'var(--bg-1)',
                           border: `1px solid ${organism === o ? 'var(--blue)' : 'var(--border)'}`,
                           color: organism === o ? 'var(--blue)' : 'var(--text-2)',
                           fontWeight: organism === o ? 600 : 400,
@@ -308,7 +305,7 @@ export default function UploadPage({ onAnalyze }) {
                         onClick={() => toggleModality(m)}
                         style={{
                           padding: '5px 14px', borderRadius: 6, fontSize: '0.82rem',
-                          background: modalities.includes(m) ? 'rgba(79,156,249,0.12)' : 'var(--bg-1)',
+                          background: modalities.includes(m) ? 'rgba(0,125,138,0.12)' : 'var(--bg-1)',
                           border: `1px solid ${modalities.includes(m) ? 'var(--blue)' : 'var(--border)'}`,
                           color: modalities.includes(m) ? 'var(--blue)' : 'var(--text-2)',
                           fontWeight: modalities.includes(m) ? 600 : 400,
@@ -371,10 +368,11 @@ export default function UploadPage({ onAnalyze }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '11px 24px', borderRadius: 9,
-                background: text.trim() ? 'linear-gradient(135deg, #2563b8, #4f9cf9)' : 'var(--bg-3)',
+                background: text.trim() ? 'var(--washu-red)' : 'var(--bg-3)',
                 color: text.trim() ? 'white' : 'var(--text-3)',
-                fontSize: '0.9rem', fontWeight: 600,
-                boxShadow: text.trim() ? '0 4px 16px rgba(79,156,249,0.3)' : 'none',
+                fontSize: '0.9rem', fontWeight: 700,
+                border: text.trim() ? '2px solid var(--washu-red)' : '1px solid var(--border)',
+                boxShadow: 'none',
                 transition: 'all 0.15s',
               }}
             >
