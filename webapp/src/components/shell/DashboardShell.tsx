@@ -26,6 +26,8 @@ interface DashboardShellProps {
   initials?: string;
   onNewAnalysis: () => void;
   onLookupGene: (symbol: string) => void;
+  /** When provided, a secondary "Export CSV" action appears in the rail. */
+  onExport?: () => void;
   /** The scrolling sections. Each child's top-level element id must match a
    *  section id above for scroll-spy to track it. */
   children: ReactNode;
@@ -37,6 +39,7 @@ export default function DashboardShell({
   initials = 'OO',
   onNewAnalysis,
   onLookupGene,
+  onExport,
   children,
 }: DashboardShellProps) {
   const [active, setActive] = useState(sections[0]?.id ?? '');
@@ -116,6 +119,9 @@ export default function DashboardShell({
           })}
           <div style={{ flex: 1 }} />
           <button className="btn-primary" style={btnPrimary} onClick={onNewAnalysis}>New analysis</button>
+          {onExport && (
+            <button style={btnSecondary} onClick={onExport}>Export CSV</button>
+          )}
         </nav>
 
         {/* ===== MAIN ===== */}
@@ -187,6 +193,11 @@ const btnPrimary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
   fontSize: '0.875rem', padding: '11px 16px', borderRadius: 6,
   border: '2px solid var(--washu-red)', background: 'var(--washu-red)', color: '#fff', width: '100%',
+};
+const btnSecondary: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
+  fontSize: '0.8rem', padding: '9px 16px', borderRadius: 6, marginTop: 8,
+  border: '1px solid var(--border-2)', background: '#fff', color: 'var(--fg-muted)', width: '100%',
 };
 const ctxbar: React.CSSProperties = {
   background: 'var(--white)', borderBottom: '1px solid var(--border)', padding: '13px 34px',

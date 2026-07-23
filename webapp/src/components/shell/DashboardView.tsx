@@ -28,6 +28,8 @@ interface DashboardViewProps {
 
 export default function DashboardView({ genes, options, queryResults, onNewAnalysis }: DashboardViewProps) {
   const [drawerGene, setDrawerGene] = useState<string | null>(null);
+  const [numScreens, setNumScreens] = useState(false);
+  const [numGenes, setNumGenes] = useState(false);
   const openGene = (symbol: string) => setDrawerGene(symbol);
 
   const geneCount = genes?.length ?? 0;
@@ -42,6 +44,20 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
   const screens = queryResults?.matchedScreens ?? [];
   const darkGenes = queryResults?.darkGenes ?? [];
 
+  // Client-side export of the matched-screens table. Column names flag the
+  // uncalibrated stats so a downstream reader can't mistake them for calibrated.
+  const exportResults = () => {
+    const header = [
+      'screen', 'citation', 'pmid', 'organism', 'modality', 'cell_type', 'direction',
+      'shared_genes', 'total_genes', 'raw_rho_uncalibrated', 'fdr_placeholder',
+    ];
+    const rows = screens.map((s) => [
+      s.name, s.citation, s.pmid, s.organism, s.modality, s.cellType, s.directionality,
+      s.sharedGenes, s.totalGenes, s.rho, s.fdr,
+    ]);
+    downloadCsv('reticle-matched-screens.csv', header, rows);
+  };
+
   return (
     <>
       <DashboardShell
@@ -49,6 +65,7 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
         context={context}
         onNewAnalysis={onNewAnalysis}
         onLookupGene={openGene}
+        onExport={screens.length > 0 ? exportResults : undefined}
       >
         <ProvenanceLegend style={{ marginBottom: 4 }} />
 
@@ -85,7 +102,10 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
 
         {/* ── MATCHED SCREENS ── */}
         <section id="screens" style={section}>
-          <SecHead title="Matched screens" />
+          <SecHead
+            title="Matched screens"
+            right={screens.length > 0 ? <NumbersToggle on={numScreens} onClick={() => setNumScreens((v) => !v)} /> : undefined}
+          />
           <Provenance kind="computed" sub="ranked by shared hits · support = shared genes" style={{ marginTop: 8 }} />
           <p style={sub}>Published screens probing biology like yours, ranked by overlap.</p>
           {screens.length > 0 ? (
@@ -93,7 +113,10 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Screen</th><th>Shared context</th><th>Direction</th><th style={{ textAlign: 'right' }}>Shared genes</th>
+                    <th>Screen</th><th>Shared context</th><th>Direction</th>
+                    <th style={{ textAlign: 'right' }}>Shared genes</th>
+                    {numScreens && <th style={{ textAlign: 'right' }}>raw ρ*</th>}
+                    {numScreens && <th style={{ textAlign: 'right' }}>FDR*</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -101,8 +124,10 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
                     <tr key={s.id}>
                       <td><b>{s.name}</b><div style={faint}>{s.citation}</div></td>
                       <td>{[s.cellType, s.modality].filter(Boolean).join(' · ') || '—'}</td>
-                      <td>{s.directionality}</td>
+                      <td><DirectionBadge d={s.directionality} /></td>
                       <td style={{ textAlign: 'right' }} className="tnum">{s.sharedGenes}/{s.totalGenes}</td>
+                      {numScreens && <td style={{ textAlign: 'right' }} className="tnum">{s.rho.toFixed(2)}</td>}
+                      {numScreens && <td style={{ textAlign: 'right' }} className="tnum">{s.fdr.toExponential(1)}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -112,8 +137,9 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
             <EmptyNote>No matched screens in this result. Run an analysis to populate this list.</EmptyNote>
           )}
           <p style={faintHint}>
-            Similarity statistics (ρ, FDR) are shown as plain support here until the correlation
-            engine reports calibrated values — see the backend track.
+            {numScreens
+              ? '* Raw pipeline values: ρ is an uncalibrated aggregate and FDR is a placeholder until the correlation engine reports calibrated statistics. Read support from shared genes for now.'
+              : 'Support is shown as shared genes. Similarity statistics (ρ, FDR) are still uncalibrated — reveal them with “show numbers,” and read with care.'}
           </p>
         </section>
 
@@ -139,14 +165,22 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
 
         {/* ── GENES WORTH A LOOK ── */}
         <section id="genes" style={{ ...section, borderBottom: 'none' }}>
-          <SecHead title="Genes worth a look" />
+          <SecHead
+            title="Genes worth a look"
+            right={darkGenes.length > 0 ? <NumbersToggle on={numGenes} onClick={() => setNumGenes((v) => !v)} /> : undefined}
+          />
           <Provenance kind="computed" sub="dark-matter candidates from your result" style={{ marginTop: 8 }} />
           <p style={sub}>Low-ranked in your list, but the corpus flags them as important. Open any gene.</p>
           {darkGenes.length > 0 ? (
             <div className="card" style={{ padding: 0, overflow: 'hidden', marginTop: 14 }}>
               <table className="data-table">
                 <thead>
-                  <tr><th>Gene</th><th style={{ textAlign: 'right' }}>Darkness</th><th style={{ textAlign: 'right' }}>Screens</th></tr>
+                  <tr>
+                    <th>Gene</th><th style={{ textAlign: 'right' }}>Darkness</th><th style={{ textAlign: 'right' }}>Screens</th>
+                    {numGenes && <th style={{ textAlign: 'right' }}>Corr.</th>}
+                    {numGenes && <th style={{ textAlign: 'right' }}>Pubs</th>}
+                    {numGenes && <th style={{ textAlign: 'right' }}>GO terms</th>}
+                  </tr>
                 </thead>
                 <tbody>
                   {darkGenes.map((g) => (
@@ -156,9 +190,13 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
                         {!g.isBright && g.darkScore >= 6 && (
                           <span className="badge badge-dark" style={{ marginLeft: 8 }}>dark</span>
                         )}
+                        {g.isBright && <span className="badge badge-ko" style={{ marginLeft: 8 }}>known</span>}
                       </td>
                       <td style={{ textAlign: 'right' }} className="tnum">{g.darkScore}/10</td>
                       <td style={{ textAlign: 'right' }} className="tnum">{g.screens}</td>
+                      {numGenes && <td style={{ textAlign: 'right' }} className="tnum">{g.correlation.toFixed(2)}</td>}
+                      {numGenes && <td style={{ textAlign: 'right' }} className="tnum">{g.pubs}</td>}
+                      {numGenes && <td style={{ textAlign: 'right' }} className="tnum">{g.goTerms}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -184,8 +222,24 @@ function Stat({ n, label }: { n?: number; label: string }) {
     </div>
   );
 }
-function SecHead({ title }: { title: string }) {
-  return <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}><h2 style={h2}>{title}</h2></div>;
+function SecHead({ title, right }: { title: string; right?: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+      <h2 style={h2}>{title}</h2>
+      {right && <><span style={{ flex: 1 }} />{right}</>}
+    </div>
+  );
+}
+function NumbersToggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return <button onClick={onClick} style={numBtn}>{on ? 'hide numbers' : 'show numbers'}</button>;
+}
+function DirectionBadge({ d }: { d: string }) {
+  const v = (d || '').toLowerCase();
+  if (v.includes('agree') || v.includes('same') || v.includes('concord'))
+    return <span className="badge badge-agree">same direction</span>;
+  if (v.includes('invert') || v.includes('oppos') || v.includes('discord'))
+    return <span className="badge badge-inverted">opposite</span>;
+  return <span style={{ color: 'var(--fg-muted)' }}>{d || '—'}</span>;
 }
 function ComingNote({ children }: { children: React.ReactNode }) {
   return (
@@ -211,3 +265,24 @@ const h2: React.CSSProperties = { fontWeight: 700, fontSize: '1.55rem', lineHeig
 const sub: React.CSSProperties = { color: 'var(--fg-muted)', fontSize: '1rem', maxWidth: '72ch', margin: '6px 0 0' };
 const faint: React.CSSProperties = { fontSize: '0.78rem', color: 'var(--faint)', marginTop: 2 };
 const faintHint: React.CSSProperties = { fontSize: '0.82rem', color: 'var(--faint)', marginTop: 10 };
+const numBtn: React.CSSProperties = {
+  fontSize: '0.78rem', color: 'var(--fg-muted)', border: '1px solid var(--border-2)',
+  borderRadius: 6, padding: '6px 11px', background: '#fff',
+};
+
+/* ---- CSV export (client-side) ---- */
+function csvCell(v: unknown): string {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function downloadCsv(filename: string, header: string[], rows: unknown[][]) {
+  const text = [header, ...rows].map((r) => r.map(csvCell).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8;' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
