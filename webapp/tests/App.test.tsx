@@ -47,14 +47,19 @@ describe("App (signed in)", () => {
     await screen.findByText("Launch app");
   });
 
-  it("shows RETICLE branding on the landing page", async () => {
+  it("shows WashU Medicine + RETICLE branding on the landing page", async () => {
     render(<App />);
-    expect((await screen.findAllByText("RETICLE")).length).toBeGreaterThan(0);
+    // The official WashU Medicine lockup is the primary brand mark.
+    expect((await screen.findAllByRole("img", { name: "WashU Medicine" })).length).toBeGreaterThan(0);
+    // The RETICLE wordmark colors the "C", so its text spans multiple nodes.
+    expect(
+      await screen.findByText((_content, el) => el?.tagName === "SPAN" && el.textContent === "RETICLE")
+    ).toBeTruthy();
   });
 
-  it("shows the upload gene list call-to-action", async () => {
+  it("shows the compare-to-the-corpus call-to-action", async () => {
     render(<App />);
-    expect(await screen.findByText("Upload gene list")).toBeTruthy();
+    expect(await screen.findByText("Compare to the corpus")).toBeTruthy();
   });
 
   it("navigates into a sub-flow and back via the sticky Home control", async () => {

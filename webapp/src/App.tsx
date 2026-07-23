@@ -4,11 +4,17 @@ import LandingPage from './components/LandingPage';
 import LoginLanding from './components/LoginLanding';
 import UploadPage from './components/UploadPage';
 import LoadingAnalysis from './components/LoadingAnalysis';
-import ResultsPage from './components/ResultsPage';
+import DashboardView from './components/shell/DashboardView';
 import ExplorerPage from './components/explorer/ExplorerPage';
 import StickyControls from './components/StickyControls';
 import type { QueryResponse } from './services/reticleApi';
 import { initAuth, type User } from './services/auth';
+
+// Local-dev escape hatch: preview the UI without WashU SSO. Engages ONLY in a
+// non-production build with REACT_APP_DEV_NO_AUTH="true" (see webpack DefinePlugin),
+// so it can never weaken auth in a deployed bundle.
+const DEV_NO_AUTH =
+  process.env.NODE_ENV !== 'production' && process.env.REACT_APP_DEV_NO_AUTH === 'true';
 
 export default function App() {
   // ── Auth gate ──────────────────────────────────────────────────────────
@@ -16,6 +22,11 @@ export default function App() {
   const [, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    if (DEV_NO_AUTH) {
+      setUser({ oid: 'dev', name: 'Dev User', email: 'dev@wustl.edu', tenant: 'dev' });
+      setAuthState('in');
+      return;
+    }
     let cancelled = false;
     initAuth()
       .then((u) => {
@@ -94,11 +105,11 @@ export default function App() {
     );
   } else if (screen === 'results') {
     screenEl = (
-      <ResultsPage
+      <DashboardView
         genes={genes}
         options={analysisOptions}
         queryResults={queryResults}
-        onReset={handleReset}
+        onNewAnalysis={handleReset}
       />
     );
   }

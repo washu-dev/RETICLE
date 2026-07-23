@@ -66,6 +66,12 @@ module.exports = (env, argv) => {
         "process.env.REACT_APP_SSO_REDIRECT_URI": JSON.stringify(
           process.env.REACT_APP_SSO_REDIRECT_URI || ""
         ),
+        // Local-dev only: when "true", App skips the SSO gate and mounts with a
+        // fake user so the UI can be previewed without Entra. Double-gated in
+        // App.tsx on NODE_ENV !== "production", so it is inert in prod bundles.
+        "process.env.REACT_APP_DEV_NO_AUTH": JSON.stringify(
+          process.env.REACT_APP_DEV_NO_AUTH || ""
+        ),
       }),
     ],
     devServer: {
