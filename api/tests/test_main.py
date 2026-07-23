@@ -136,6 +136,56 @@ class TestQuery:
         assert "graph_elements" not in data
 
 
+class TestExplorerGeneValidation:
+    """Input validation for /api/gene — these short-circuit before any DB call,
+    so they run in CI without a database."""
+
+    def test_missing_symbol_rejected(self, client: TestClient) -> None:
+        response = client.get("/api/gene")
+        assert response.status_code == 422
+
+    def test_empty_symbol_rejected(self, client: TestClient) -> None:
+        response = client.get("/api/gene?symbol=")
+        assert response.status_code == 422
+
+    def test_injection_attempt_rejected(self, client: TestClient) -> None:
+        response = client.get("/api/gene", params={"symbol": "TP53; DROP TABLE x"})
+        assert response.status_code == 422
+
+    def test_overlong_symbol_rejected(self, client: TestClient) -> None:
+        response = client.get("/api/gene", params={"symbol": "A" * 50})
+        assert response.status_code == 422
+
+
+class TestExplorerContextValidation:
+    """Validation for /api/context and /api/network — short-circuits before any
+    DB/external call, so CI-safe."""
+
+    def test_context_injection_rejected(self, client: TestClient) -> None:
+        r = client.get("/api/context", params={"symbol": "TP53; DROP"})
+        assert r.status_code == 422
+
+    def test_network_overlong_rejected(self, client: TestClient) -> None:
+        r = client.get("/api/network", params={"symbol": "A" * 50})
+        assert r.status_code == 422
+
+
+class TestCors:
+    def test_no_wildcard_with_credentials(self, client: TestClient) -> None:
+        """The OWASP misconfig (allow_origins='*' + allow_credentials=true) must
+        not be present, and an unlisted origin must never be reflected."""
+        r = client.get("/api/health", headers={"Origin": "https://foo.example"})
+        assert r.headers.get("access-control-allow-credentials") != "true"
+        acao = r.headers.get("access-control-allow-origin")
+        assert acao != "*"
+        assert acao != "https://foo.example"
+
+    def test_allowed_origin_is_reflected(self, client: TestClient) -> None:
+        """The configured frontend origin is allowed for cross-origin XHR."""
+        r = client.get("/api/health", headers={"Origin": "http://localhost:3001"})
+        assert r.headers.get("access-control-allow-origin") == "http://localhost:3001"
+
+
 class TestGenes:
     def test_known_gene_returns_200(self, client: TestClient) -> None:
         response = client.get("/api/genes/CCDC6")

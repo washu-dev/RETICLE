@@ -1,33 +1,35 @@
 #!/usr/bin/env python3
 """
-CPU-Only Database Loading Phase for RETICLE ETL.
+CPU-Only ETL Transformation Phase for RETICLE.
 
-Reads CSV files from GPU deduplication phase and batch inserts into PostgreSQL.
+Reads deduplicated CSV files from GPU phase and loads directly to production tables.
 This is Phase 2 of the split GPU/CPU pipeline.
 
-The GPU phase (gpu_etl_dedup_only.py) produces:
-  - staging_screen_v2.csv
-  - staging_screen_gene_v2.csv
-  - dedup_metadata_v2.json
+The GPU phase (gpu_etl_dedup_only.py) produces deduplicated data in CSV files:
+  - staging_screen_v{VERSION_ID}.csv (deduplicated screens)
+  - staging_screen_gene_v{VERSION_ID}.csv (deduplicated pairs)
+  - dedup_metadata_v{VERSION_ID}.json (statistics)
 
 This phase:
-  1. Reads the CSV files
-  2. Uses PostgreSQL COPY for fast bulk inserts
-  3. Validates inserted data matches expected counts
-  4. Logs results to database
+  1. Loads screens → production screen table
+  2. Loads genes → production gene table (deduplicated)
+  3. Loads pairs → production screen_gene_raw table
+  4. Builds fact and dimension tables via stored procedures
+  5. No staging tables involved (they're in CSV for debugging only)
 
 Performance:
-  - Insert 500 screens: ~2 seconds
-  - Insert 6M deduplicated pairs: ~20 seconds
-  - Total CPU time: ~30 seconds
+  - Load 500 screens: ~2 seconds
+  - Load 6M deduplicated pairs: ~30 seconds
+  - Build aggregates: ~20 seconds
+  - Total: ~1 minute
 
 Usage:
   python cpu_etl_load_only.py --version 2
 
 Prerequisites:
   - gpu_etl_dedup_only.py must have completed successfully
-  - CSV files must exist in /tmp/reticle_staging/
-  - Database tables (staging_screen, staging_screen_gene) must exist
+  - CSV files must exist in ${STAGING_DIR} or /tmp/reticle_staging/
+  - Production tables (screen, gene, screen_gene_raw) must exist
 """
 
 import argparse
@@ -35,14 +37,19 @@ import csv
 import json
 import logging
 import sys
-import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional, List, Dict, Tuple
 
 import psycopg2
 import psycopg2.extras
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
 try:
     from tqdm import tqdm
@@ -64,25 +71,27 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 PIPE_DELIMITER = '|'
-TEMP_DIR = Path(tempfile.gettempdir()) / 'reticle_staging'
+TEMP_DIR = Config.STAGING_OUTPUT_DIR
 
 
-class CPULoadPhase:
-    """CPU-based database loading phase."""
+class CPUTransformPhase:
+    """CPU-based ETL transformation phase - CSV to production tables."""
 
     def __init__(self, version_id: int):
         self.version_id = version_id
         self.conn = None
+        self.run_id = None
         self.stats = {
-            'screens_inserted': 0,
-            'pairs_inserted': 0,
-            'validation_passed': False,
+            'screens_loaded': 0,
+            'genes_loaded': 0,
+            'pairs_loaded': 0,
+            'aggregates_built': False,
         }
 
     def run(self) -> bool:
-        """Execute CPU loading phase."""
+        """Execute CPU transformation phase."""
         logger.info("="*80)
-        logger.info("CPU LOADING PHASE")
+        logger.info("CPU TRANSFORMATION PHASE")
         logger.info("="*80)
         logger.info(f"Version ID: {self.version_id}")
         logger.info("")
@@ -94,56 +103,118 @@ class CPULoadPhase:
             self.conn = psycopg2.connect(**Config.get_psycopg2_params())
             logger.info("✓ Connected to database")
 
+            # Create run record
+            self._create_run_record()
+
             # Load metadata from GPU phase
             metadata = self._load_metadata()
             if not metadata:
                 logger.error("GPU dedup metadata not found. Run gpu_etl_dedup_only.py first.")
                 return False
 
-            logger.info(f"  Dedup completed: {metadata['timestamp']}")
-            logger.info(f"  Dedup elapsed: {metadata['elapsed_seconds']:.1f}s")
+            logger.info(f"  GPU dedup completed: {metadata['timestamp']}")
+            logger.info(f"  GPU dedup elapsed: {metadata['elapsed_seconds']:.1f}s")
             logger.info("")
 
-            # Load screens
-            if not self._load_screens():
+            # Load screens to production table
+            if not self._load_screens_csv():
                 logger.error("Failed to load screens")
                 return False
 
-            # Load pairs
-            if not self._load_pairs():
+            # Load genes to production table
+            if not self._load_genes_csv():
+                logger.error("Failed to load genes")
+                return False
+
+            # Load pairs to production table
+            if not self._load_pairs_csv():
                 logger.error("Failed to load pairs")
                 return False
 
-            # Validate inserted data
-            if not self._validate_load():
-                logger.error("Data validation failed")
+            # Build aggregates (fact and dimension tables)
+            if not self._build_aggregates():
+                logger.error("Failed to build aggregates")
                 return False
 
             elapsed = time.time() - start_time
 
             logger.info("\n" + "="*80)
-            logger.info("CPU LOADING PHASE COMPLETE")
+            logger.info("CPU TRANSFORMATION PHASE COMPLETE")
             logger.info("="*80)
             logger.info(f"Elapsed time: {elapsed:.1f}s")
-            logger.info(f"Screens inserted: {self.stats['screens_inserted']:,}")
-            logger.info(f"Pairs inserted: {self.stats['pairs_inserted']:,}")
-            logger.info(f"Validation: {'PASSED' if self.stats['validation_passed'] else 'FAILED'}")
+            logger.info(f"Screens loaded: {self.stats['screens_loaded']:,}")
+            logger.info(f"Genes loaded: {self.stats['genes_loaded']:,}")
+            logger.info(f"Pairs loaded: {self.stats['pairs_loaded']:,}")
+            logger.info(f"Aggregates: {'BUILT' if self.stats['aggregates_built'] else 'FAILED'}")
             logger.info("="*80 + "\n")
+
+            # Mark run as completed in database
+            self._mark_run_completed(elapsed)
 
             return True
 
         except Exception as e:
-            logger.error(f"CPU load phase failed: {e}", exc_info=True)
+            logger.error(f"CPU transform phase failed: {e}", exc_info=True)
+            if self.conn:
+                self._mark_run_failed(str(e))
             return False
         finally:
             if self.conn:
                 self.conn.close()
                 logger.info("✓ Database connection closed")
 
+    def _create_run_record(self) -> None:
+        """Create ETL pipeline run record."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            INSERT INTO etl_pipeline_run (
+                data_load_version_id, pipeline_version, started_at, status
+            ) VALUES (%s, %s, CURRENT_TIMESTAMP, 'running')
+            RETURNING run_id
+        """, (self.version_id, '2.0-split-gpu-cpu'))
+        self.run_id = cursor.fetchone()[0]
+        self.conn.commit()
+        logger.info(f"✓ Created run record (run_id: {self.run_id})")
+
+        # Initialize progress tracking for resumable pipeline
+        self._init_checkpoint()
+
+    def _init_checkpoint(self) -> None:
+        """Initialize progress checkpoint for resumable pipeline."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            INSERT INTO etl_progress (run_id, stage, rows_processed)
+            VALUES (%s, 'screens', 0)
+            ON CONFLICT (run_id) DO UPDATE SET stage = 'screens', rows_processed = 0
+        """, (self.run_id,))
+        self.conn.commit()
+
+    def _get_checkpoint(self, stage: str) -> int:
+        """Get last checkpoint for a stage (rows already processed)."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT rows_processed FROM etl_progress
+            WHERE run_id = %s AND stage = %s
+        """, (self.run_id, stage))
+        result = cursor.fetchone()
+        return result[0] if result else 0
+
+    def _update_checkpoint(self, stage: str, rows_processed: int, error_msg: Optional[str] = None) -> None:
+        """Update progress checkpoint for a stage."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            INSERT INTO etl_progress (run_id, stage, rows_processed, error_message, last_updated)
+            VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (run_id) DO UPDATE SET
+                stage = EXCLUDED.stage,
+                rows_processed = EXCLUDED.rows_processed,
+                error_message = EXCLUDED.error_message,
+                last_updated = CURRENT_TIMESTAMP
+        """, (self.run_id, stage, rows_processed, error_msg))
+        self.conn.commit()
+
     def _load_metadata(self) -> Optional[dict]:
         """Load deduplication metadata from GPU phase."""
-        logger.info("Loading GPU dedup metadata...")
-
         metadata_file = TEMP_DIR / f'dedup_metadata_v{self.version_id}.json'
         try:
             if not metadata_file.exists():
@@ -157,16 +228,15 @@ class CPULoadPhase:
                 logger.error(f"Version mismatch: {metadata['version_id']} != {self.version_id}")
                 return None
 
-            logger.info(f"✓ Loaded metadata (GPU: {metadata['gpu_available']})")
             return metadata
 
         except Exception as e:
             logger.error(f"Failed to load metadata: {e}")
             return None
 
-    def _load_screens(self) -> bool:
-        """Load screens into staging_screen table using COPY."""
-        logger.info("Loading screens via COPY...")
+    def _load_screens_csv(self) -> bool:
+        """Load screens from CSV to production screen table with checkpoint resumption."""
+        logger.info("Loading screens to production table...")
 
         csv_file = TEMP_DIR / f'staging_screen_v{self.version_id}.csv'
         if not csv_file.exists():
@@ -176,65 +246,75 @@ class CPULoadPhase:
         try:
             cursor = self.conn.cursor()
 
-            # Count rows for progress bar
-            with open(csv_file, 'r') as f:
-                total_rows = sum(1 for _ in f) - 1  # Exclude header
+            # Check for checkpoint (resumable pipeline)
+            resume_from = self._get_checkpoint('screens')
+            if resume_from > 0:
+                logger.info(f"  Resuming from row {resume_from:,} (checkpoint found)")
+
+            # Count rows
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                total_rows = sum(1 for _ in f)
 
             logger.info(f"  Total screens: {total_rows:,}")
 
-            # COPY command with progress tracking
-            with open(csv_file, 'r') as f:
+            # Load screens from CSV
+            # CSV format: version_id|screen_id|biogrid_screen_id|organism|annotation_source|moi|notes
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
+
                 if TQDM_AVAILABLE:
-                    pbar = tqdm(total=total_rows, desc='  COPY screens', unit=' rows', ncols=80)
+                    pbar = tqdm(total=total_rows, desc='  Loading screens', unit=' rows', ncols=80)
 
-                    # Read rows with progress reporting
-                    lines = []
-                    for i, line in enumerate(f):
-                        lines.append(line)
-                        if (i + 1) % 100 == 0:
-                            pbar.update(100)
+                screens = []
+                row_num = 0
+                for row in reader:
+                    # Skip rows before checkpoint
+                    if row_num < resume_from:
+                        row_num += 1
+                        if TQDM_AVAILABLE:
+                            pbar.update(1)
+                        continue
 
-                    # Update remaining
-                    if len(lines) % 100 != 0:
-                        pbar.update(len(lines) % 100)
+                    if len(row) >= 4:  # Need at least version_id, screen_id, biogrid_screen_id, organism
+                        version_id = int(row[0])
+                        biogrid_screen_id = row[2]
+                        organism = row[3]
+                        annotation_source = row[4] if len(row) > 4 and row[4] else None
+
+                        screens.append((version_id, biogrid_screen_id, organism, annotation_source, True))
+
+                    if TQDM_AVAILABLE:
+                        pbar.update(1)
+                    row_num += 1
+
+                if TQDM_AVAILABLE:
                     pbar.close()
 
-                    # Submit to COPY
-                    from io import StringIO
-                    csv_buffer = StringIO(''.join(lines))
-                    cursor.copy_from(
-                        csv_buffer,
-                        'staging_screen',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
-                                 'annotation_source', 'moi', 'notes'),
-                        null='',
-                    )
-                else:
-                    # No tqdm, use COPY directly
-                    cursor.copy_from(
-                        f,
-                        'staging_screen',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'organism',
-                                 'annotation_source', 'moi', 'notes'),
-                        null='',
-                    )
+            # Batch insert
+            for i in range(0, len(screens), 1000):
+                batch = screens[i:i + 1000]
+                psycopg2.extras.execute_batch(cursor, """
+                    INSERT INTO screen (version_id, biogrid_screen_id, organism, annotation_source, is_current)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (version_id, biogrid_screen_id) DO UPDATE SET is_current = TRUE
+                """, batch)
 
             self.conn.commit()
-            self.stats['screens_inserted'] = cursor.rowcount
+            self.stats['screens_loaded'] = len(screens)
+            self._update_checkpoint('screens', row_num)
 
-            logger.info(f"✓ Inserted {self.stats['screens_inserted']:,} screens")
+            logger.info(f"✓ Loaded {len(screens):,} screens to production table")
             return True
 
         except Exception as e:
             self.conn.rollback()
+            self._update_checkpoint('screens', row_num, str(e))
             logger.error(f"Failed to load screens: {e}")
             return False
 
-    def _load_pairs(self) -> bool:
-        """Load screen-gene pairs into staging_screen_gene table using COPY."""
-        logger.info("Loading screen-gene pairs via COPY...")
+    def _load_genes_csv(self) -> bool:
+        """Load genes from CSV to production gene table (deduplicated) with checkpoint resumption."""
+        logger.info("Loading genes to production table...")
 
         csv_file = TEMP_DIR / f'staging_screen_gene_v{self.version_id}.csv'
         if not csv_file.exists():
@@ -244,145 +324,305 @@ class CPULoadPhase:
         try:
             cursor = self.conn.cursor()
 
-            # Count rows first (for progress bar)
-            logger.info("  Counting rows...")
-            with open(csv_file, 'r') as f:
-                total_rows = sum(1 for _ in f) - 1  # Exclude header
+            # Check for checkpoint
+            resume_from = self._get_checkpoint('genes')
+            if resume_from > 0:
+                logger.info(f"  Resuming from row {resume_from:,} (checkpoint found)")
 
-            logger.info(f"  Total pairs: {total_rows:,}")
+            # Read genes from CSV (extract unique genes from pairs)
+            # CSV format: version_id|screen_id|biogrid_screen_id|identifier_id|gene_symbol|official_symbol|hit_flag|...
+            genes_dict = {}  # identifier_id -> gene_symbol
 
-            # COPY command with progress tracking
-            with open(csv_file, 'r') as f:
-                if TQDM_AVAILABLE:
-                    pbar = tqdm(total=total_rows, desc='  COPY pairs', unit=' rows', ncols=80, unit_scale=True)
+            logger.info("  Extracting unique genes from pairs...")
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
+                row_num = 0
+                for row in reader:
+                    # Skip rows before checkpoint
+                    if row_num < resume_from:
+                        row_num += 1
+                        continue
 
-                    # Read rows with progress reporting
-                    lines = []
-                    for i, line in enumerate(f):
-                        lines.append(line)
-                        if (i + 1) % 10000 == 0:
-                            pbar.update(10000)
+                    if len(row) >= 5:
+                        identifier_id = row[3]
+                        gene_symbol = row[4]
 
-                    # Update remaining
-                    remaining = len(lines) % 10000
-                    if remaining > 0:
-                        pbar.update(remaining)
-                    pbar.close()
+                        # Store if not seen before
+                        if identifier_id not in genes_dict:
+                            genes_dict[identifier_id] = gene_symbol
 
-                    # Submit to COPY
-                    from io import StringIO
-                    csv_buffer = StringIO(''.join(lines))
-                    cursor.copy_from(
-                        csv_buffer,
-                        'staging_screen_gene',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
-                                 'gene_symbol', 'official_symbol', 'hit_flag',
-                                 'score_1', 'score_2', 'score_3', 'score_4', 'score_5',
-                                 'tsv_filename', 'tsv_row_number'),
-                        null='',
-                    )
-                else:
-                    # No tqdm, use COPY directly
-                    cursor.copy_from(
-                        f,
-                        'staging_screen_gene',
-                        sep=PIPE_DELIMITER,
-                        columns=('version_id', 'screen_id', 'biogrid_screen_id', 'identifier_id',
-                                 'gene_symbol', 'official_symbol', 'hit_flag',
-                                 'score_1', 'score_2', 'score_3', 'score_4', 'score_5',
-                                 'tsv_filename', 'tsv_row_number'),
-                        null='',
-                    )
+                    row_num += 1
+
+            logger.info(f"  Total unique genes: {len(genes_dict):,}")
+
+            # Prepare gene data (assume organism is mus_musculus for now)
+            genes = [
+                (self.version_id, identifier_id, gene_symbol, 'mus_musculus', True)
+                for identifier_id, gene_symbol in genes_dict.items()
+            ]
+
+            # Batch insert
+            for i in range(0, len(genes), 1000):
+                batch = genes[i:i + 1000]
+                psycopg2.extras.execute_batch(cursor, """
+                    INSERT INTO gene (version_id, identifier_id, gene_symbol, organism, is_current)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (version_id, identifier_id) DO UPDATE SET is_current = TRUE
+                """, batch)
 
             self.conn.commit()
-            self.stats['pairs_inserted'] = cursor.rowcount
+            self.stats['genes_loaded'] = len(genes)
+            self._update_checkpoint('genes', row_num)
 
-            logger.info(f"✓ Inserted {self.stats['pairs_inserted']:,} pairs")
+            logger.info(f"✓ Loaded {len(genes):,} genes to production table")
             return True
 
         except Exception as e:
             self.conn.rollback()
-            logger.error(f"Failed to load pairs: {e}")
+            self._update_checkpoint('genes', row_num, str(e))
+            logger.error(f"Failed to load genes: {e}")
             return False
 
-    def _validate_load(self) -> bool:
-        """Validate that all data was inserted correctly."""
-        logger.info("Validating loaded data...")
+    def _load_pairs_csv(self) -> bool:
+        """Load screen-gene pairs from CSV to production screen_gene_raw table with checkpoint resumption."""
+        logger.info("Loading screen-gene pairs to production table...")
+
+        csv_file = TEMP_DIR / f'staging_screen_gene_v{self.version_id}.csv'
+        if not csv_file.exists():
+            logger.error(f"Pair CSV not found: {csv_file}")
+            return False
 
         try:
             cursor = self.conn.cursor()
 
-            # Check screen count
-            cursor.execute(
-                "SELECT COUNT(*) FROM staging_screen WHERE version_id = %s",
-                (self.version_id,)
-            )
-            screen_count = cursor.fetchone()[0]
+            # Check for checkpoint (resumable pipeline)
+            resume_from = self._get_checkpoint('pairs')
+            if resume_from > 0:
+                logger.info(f"  Resuming from row {resume_from:,} (checkpoint found)")
 
-            if screen_count != self.stats['screens_inserted']:
-                logger.error(f"Screen count mismatch: {screen_count} != {self.stats['screens_inserted']}")
-                return False
+            # Count rows
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                total_rows = sum(1 for _ in f)
 
-            logger.info(f"  Screens: {screen_count:,} ✓")
+            logger.info(f"  Total pairs: {total_rows:,}")
 
-            # Check pair count
-            cursor.execute(
-                "SELECT COUNT(*) FROM staging_screen_gene WHERE version_id = %s",
-                (self.version_id,)
-            )
+            # Pre-load screen and gene IDs into memory (avoid N+1 queries)
+            logger.info("  Loading screen/gene ID lookups into memory...")
+            cursor.execute("""
+                SELECT version_id, biogrid_screen_id, screen_id
+                FROM screen WHERE is_current = TRUE
+            """)
+            screens_dict = {
+                (row[0], row[1]): row[2]
+                for row in cursor.fetchall()
+            }
+
+            cursor.execute("""
+                SELECT version_id, identifier_id, gene_id
+                FROM gene WHERE is_current = TRUE
+            """)
+            genes_dict = {
+                (row[0], row[1]): row[2]
+                for row in cursor.fetchall()
+            }
+
+            logger.info(f"  Loaded {len(screens_dict):,} screens, {len(genes_dict):,} genes into memory")
+
+            # Read pairs from CSV and insert
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
+
+                if TQDM_AVAILABLE:
+                    pbar = tqdm(total=total_rows, desc='  Loading pairs', unit=' rows', ncols=80, unit_scale=True)
+
+                pairs_batch = []
+                row_num = 0
+
+                for row in reader:
+                    # Skip rows before checkpoint
+                    if row_num < resume_from:
+                        row_num += 1
+                        if TQDM_AVAILABLE:
+                            pbar.update(1)
+                        continue
+
+                    if len(row) >= 13:  # Full row needed
+                        version_id = int(row[0])
+                        biogrid_screen_id = row[2]
+                        identifier_id = row[3]
+                        hit_flag = row[6].lower() == 'true' if row[6] else False
+                        score_1 = float(row[7]) if row[7] else None
+
+                        # Look up IDs from pre-loaded dicts (instant, no DB queries)
+                        screen_id = screens_dict.get((version_id, biogrid_screen_id))
+                        gene_id = genes_dict.get((version_id, identifier_id))
+
+                        if screen_id and gene_id:
+                            pairs_batch.append((
+                                version_id, self.run_id, screen_id, gene_id,
+                                biogrid_screen_id, identifier_id,
+                                hit_flag, score_1, score_1, True
+                            ))
+
+                            # Batch insert every 5000 rows
+                            if len(pairs_batch) >= 5000:
+                                psycopg2.extras.execute_batch(cursor, """
+                                    INSERT INTO screen_gene_raw
+                                    (version_id, run_id, screen_id, gene_id, biogrid_screen_id, identifier_id,
+                                     hit_flag, score_1, raw_score, is_current)
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                    ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
+                                        hit_flag = EXCLUDED.hit_flag, is_current = TRUE
+                                """, pairs_batch)
+                                self.conn.commit()
+
+                                # Update checkpoint every 5000 rows
+                                self._update_checkpoint('pairs', row_num)
+
+                                pairs_batch = []
+
+                    if TQDM_AVAILABLE:
+                        pbar.update(1)
+                    row_num += 1
+
+                # Insert remaining
+                if pairs_batch:
+                    psycopg2.extras.execute_batch(cursor, """
+                        INSERT INTO screen_gene_raw
+                        (version_id, run_id, screen_id, gene_id, biogrid_screen_id, identifier_id,
+                         hit_flag, score_1, raw_score, is_current)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
+                            hit_flag = EXCLUDED.hit_flag, is_current = TRUE
+                    """, pairs_batch)
+
+                if TQDM_AVAILABLE:
+                    pbar.close()
+
+            self.conn.commit()
+            self._update_checkpoint('pairs', row_num)
+
+            # Count inserted rows
+            cursor.execute("SELECT COUNT(*) FROM screen_gene_raw WHERE version_id = %s AND run_id = %s",
+                          (self.version_id, self.run_id))
             pair_count = cursor.fetchone()[0]
+            self.stats['pairs_loaded'] = pair_count
 
-            if pair_count != self.stats['pairs_inserted']:
-                logger.error(f"Pair count mismatch: {pair_count} != {self.stats['pairs_inserted']}")
-                return False
-
-            logger.info(f"  Pairs: {pair_count:,} ✓")
-
-            # Check that no NULL critical values exist
-            cursor.execute("""
-                SELECT COUNT(*) FROM staging_screen WHERE version_id = %s
-                AND (screen_id IS NULL OR organism IS NULL)
-            """, (self.version_id,))
-            null_screens = cursor.fetchone()[0]
-
-            if null_screens > 0:
-                logger.error(f"Found {null_screens} screens with NULL critical values")
-                return False
-
-            cursor.execute("""
-                SELECT COUNT(*) FROM staging_screen_gene WHERE version_id = %s
-                AND (screen_id IS NULL OR identifier_id IS NULL)
-            """, (self.version_id,))
-            null_pairs = cursor.fetchone()[0]
-
-            if null_pairs > 0:
-                logger.error(f"Found {null_pairs} pairs with NULL critical values")
-                return False
-
-            logger.info(f"  NULL validation: PASSED ✓")
-
-            self.stats['validation_passed'] = True
+            logger.info(f"✓ Loaded {pair_count:,} pairs to production table")
             return True
 
         except Exception as e:
-            logger.error(f"Validation failed: {e}", exc_info=True)
+            self.conn.rollback()
+            self._update_checkpoint('pairs', row_num, str(e))
+            logger.error(f"Failed to load pairs: {e}")
             return False
+
+    def _build_aggregates(self) -> bool:
+        """Build fact and dimension tables via stored procedures."""
+        logger.info("Building fact and dimension tables...")
+
+        # Check if already completed
+        resume_from = self._get_checkpoint('aggregates')
+        if resume_from > 0:
+            logger.info("  Aggregates already built (checkpoint found)")
+            self.stats['aggregates_built'] = True
+            return True
+
+        try:
+            cursor = self.conn.cursor()
+
+            # Call stored procedures to build aggregates
+            steps = [
+                'build_fact_screen_gene',
+                'build_dim_screen',
+                'build_dim_gene',
+            ]
+
+            for step_name in steps:
+                logger.info(f"  Running: {step_name}...")
+                cursor.execute(f"SELECT {step_name}(%s, %s)", (self.run_id, self.version_id))
+                cursor.fetchone()
+
+            self.conn.commit()
+            self.stats['aggregates_built'] = True
+            self._update_checkpoint('aggregates', 1)
+
+            logger.info("✓ Aggregates built successfully")
+            return True
+
+        except Exception as e:
+            self.conn.rollback()
+            self._update_checkpoint('aggregates', 0, str(e))
+            logger.error(f"Failed to build aggregates: {e}")
+            return False
+
+    def _mark_run_failed(self, error_msg: str) -> None:
+        """Mark ETL run as failed."""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                UPDATE etl_pipeline_run
+                SET status = 'failed', completed_at = CURRENT_TIMESTAMP, error_message = %s
+                WHERE run_id = %s
+            """, (error_msg, self.run_id))
+            self.conn.commit()
+        except Exception as e:
+            logger.error(f"Failed to mark run as failed: {e}")
+
+    def _mark_run_completed(self, elapsed_seconds):
+        """Mark ETL run as completed and update version counts."""
+        try:
+            cursor = self.conn.cursor()
+
+            # Update etl_pipeline_run status
+            cursor.execute("""
+                UPDATE etl_pipeline_run
+                SET status = 'completed', completed_at = CURRENT_TIMESTAMP, total_duration_seconds = %s
+                WHERE run_id = %s
+            """, (elapsed_seconds, self.run_id))
+
+            # Update data_load_version status and counts
+            cursor.execute("""
+                SELECT COUNT(*) FROM screen WHERE version_id = %s
+            """, (self.version_id,))
+            num_screens = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT COUNT(*) FROM gene WHERE version_id = %s
+            """, (self.version_id,))
+            num_genes = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT COUNT(*) FROM screen_gene_raw WHERE version_id = %s AND run_id = %s
+            """, (self.version_id, self.run_id))
+            num_gene_hits = cursor.fetchone()[0]
+
+            cursor.execute("""
+                UPDATE data_load_version
+                SET status = 'valid', num_screens = %s, num_genes = %s, num_gene_hits = %s, is_current = TRUE
+                WHERE version_id = %s
+            """, (num_screens, num_genes, num_gene_hits, self.version_id))
+
+            self.conn.commit()
+            logger.info(f"✓ Marked run as completed (screens: {num_screens:,}, genes: {num_genes:,}, hits: {num_gene_hits:,})")
+
+        except Exception as e:
+            logger.error(f"Failed to mark run as completed: {e}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CPU Loading Phase")
+    parser = argparse.ArgumentParser(description="CPU Transformation Phase")
     parser.add_argument('--version', type=int, required=True, help='Data load version ID')
     parser.add_argument('--log-level', default='INFO', help='Logging level')
 
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=getattr(logging, args.log_level),
+        level=getattr(logging, args.log_level.upper(), logging.INFO),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    phase = CPULoadPhase(version_id=args.version)
+    phase = CPUTransformPhase(version_id=args.version)
     success = phase.run()
     sys.exit(0 if success else 1)
 

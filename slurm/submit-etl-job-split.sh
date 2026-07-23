@@ -93,6 +93,9 @@ CPU_TIME_LIMIT="01:00:00"
 CPU_CORES=8
 CPU_PARTITION=${RETICLE_PARTITION_CPU:-cpu}
 
+# HPC Accounting (set RETICLE_ACCOUNT for proper billing)
+ACCOUNT="${RETICLE_ACCOUNT:-}"
+
 # Parse options
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -171,8 +174,9 @@ if [ "$PGPASS_PERMS" != "600" ]; then
     exit 1
 fi
 
-# Create logs directory
-mkdir -p "$RETICLE_DIR/logs"
+# Setup log directory
+LOG_DIR="${LOG_DIR:-$RETICLE_DIR/logs}"
+mkdir -p "$LOG_DIR"
 
 # Show configuration
 echo ""
@@ -186,35 +190,39 @@ echo ""
 
 # Function to submit Phase 1 (GPU Dedup)
 submit_phase1() {
-    echo -e "${BLUE}PHASE 1 (GPU Deduplication)${NC}"
-    echo "  GPU Cores:        $GPU_CORES"
-    echo "  GPUs:             $GPU_GPUS"
-    echo "  Time Limit:       $GPU_TIME_LIMIT"
-    echo "  Partition:        $GPU_PARTITION"
-    echo ""
+    echo -e "${BLUE}PHASE 1 (GPU Deduplication)${NC}" >&2
+    echo "  GPU Cores:        $GPU_CORES" >&2
+    echo "  GPUs:             $GPU_GPUS" >&2
+    echo "  Time Limit:       $GPU_TIME_LIMIT" >&2
+    echo "  Partition:        $GPU_PARTITION" >&2
+    echo "" >&2
 
-    log_step "Submitting Phase 1 (GPU Dedup)..."
-    echo ""
+    log_step "Submitting Phase 1 (GPU Dedup)..." >&2
+    echo "" >&2
 
     GPU_JOB_ID=$(sbatch \
         --cpus-per-task=$GPU_CORES \
         --mem=$((GPU_CORES * 4))G \
         --time=$GPU_TIME_LIMIT \
         --partition=$GPU_PARTITION \
+        $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
         --gres=gpu:$GPU_GPUS \
-        --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+        --output=$LOG_DIR/reticle-etl-dedup-gpu-%j.out \
+        --error=$LOG_DIR/reticle-etl-dedup-gpu-%j.err \
+        --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
         "$SCRIPT_DIR/reticle-etl-dedup-gpu.sh" | awk '{print $NF}')
 
-    echo ""
-    log_info "Phase 1 submitted successfully!"
-    echo ""
-    echo "Job ID:           $GPU_JOB_ID"
-    echo "Status:           Check with: squeue -j $GPU_JOB_ID"
-    echo "Output:           $RETICLE_DIR/logs/reticle-etl-dedup-gpu-$GPU_JOB_ID.out"
-    echo ""
-    echo -e "${GREEN}Watch output:     tail -f $RETICLE_DIR/logs/reticle-etl-dedup-gpu-$GPU_JOB_ID.out${NC}"
-    echo ""
+    echo "" >&2
+    log_info "Phase 1 submitted successfully!" >&2
+    echo "" >&2
+    echo "Job ID:           $GPU_JOB_ID" >&2
+    echo "Status:           Check with: squeue -j $GPU_JOB_ID" >&2
+    echo "Output:           $LOG_DIR/reticle-etl-dedup-gpu-$GPU_JOB_ID.out" >&2
+    echo "" >&2
+    echo -e "${GREEN}Watch output:     tail -f $LOG_DIR/reticle-etl-dedup-gpu-$GPU_JOB_ID.out${NC}" >&2
+    echo "" >&2
 
+    # Return ONLY the job ID on stdout
     echo "$GPU_JOB_ID"
 }
 
@@ -224,55 +232,62 @@ submit_phase2() {
 
     if [ -z "$DEPENDENCY" ]; then
         # No dependency: submit immediately
-        echo -e "${BLUE}PHASE 2 (CPU Loading)${NC}"
-        echo "  CPU Cores:        $CPU_CORES"
-        echo "  Time Limit:       $CPU_TIME_LIMIT"
-        echo "  Partition:        $CPU_PARTITION"
-        echo "  Depends on:       (none - manual submission)"
-        echo ""
+        echo -e "${BLUE}PHASE 2 (CPU Loading)${NC}" >&2
+        echo "  CPU Cores:        $CPU_CORES" >&2
+        echo "  Time Limit:       $CPU_TIME_LIMIT" >&2
+        echo "  Partition:        $CPU_PARTITION" >&2
+        echo "  Depends on:       (none - manual submission)" >&2
+        echo "" >&2
 
-        log_step "Submitting Phase 2 (CPU Load)..."
-        echo ""
+        log_step "Submitting Phase 2 (CPU Load)..." >&2
+        echo "" >&2
 
         CPU_JOB_ID=$(sbatch \
             --cpus-per-task=$CPU_CORES \
             --mem=$((CPU_CORES * 4))G \
             --time=$CPU_TIME_LIMIT \
             --partition=$CPU_PARTITION \
-            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+            $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
+            --output=$LOG_DIR/reticle-etl-load-cpu-%j.out \
+            --error=$LOG_DIR/reticle-etl-load-cpu-%j.err \
+            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')
     else
         # With dependency: wait for Phase 1 to complete
-        echo -e "${BLUE}PHASE 2 (CPU Loading)${NC}"
-        echo "  CPU Cores:        $CPU_CORES"
-        echo "  Time Limit:       $CPU_TIME_LIMIT"
-        echo "  Partition:        $CPU_PARTITION"
-        echo "  Depends on:       Phase 1 (job $DEPENDENCY)"
-        echo ""
+        echo -e "${BLUE}PHASE 2 (CPU Loading)${NC}" >&2
+        echo "  CPU Cores:        $CPU_CORES" >&2
+        echo "  Time Limit:       $CPU_TIME_LIMIT" >&2
+        echo "  Partition:        $CPU_PARTITION" >&2
+        echo "  Depends on:       Phase 1 (job $DEPENDENCY)" >&2
+        echo "" >&2
 
-        log_step "Submitting Phase 2 (CPU Load) with dependency on Phase 1..."
-        echo ""
+        log_step "Submitting Phase 2 (CPU Load) with dependency on Phase 1..." >&2
+        echo "" >&2
 
         CPU_JOB_ID=$(sbatch \
             --cpus-per-task=$CPU_CORES \
             --mem=$((CPU_CORES * 4))G \
             --time=$CPU_TIME_LIMIT \
             --partition=$CPU_PARTITION \
+            $([ -n "$ACCOUNT" ] && echo "--account=$ACCOUNT") \
             --dependency=afterok:$DEPENDENCY \
-            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR" \
+            --output=$LOG_DIR/reticle-etl-load-cpu-%j.out \
+            --error=$LOG_DIR/reticle-etl-load-cpu-%j.err \
+            --export=VERSION_ID="$VERSION_ID",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
             "$SCRIPT_DIR/reticle-etl-load-cpu.sh" | awk '{print $NF}')
     fi
 
-    echo ""
-    log_info "Phase 2 submitted successfully!"
-    echo ""
-    echo "Job ID:           $CPU_JOB_ID"
-    echo "Status:           Check with: squeue -j $CPU_JOB_ID"
-    echo "Output:           $RETICLE_DIR/logs/reticle-etl-load-cpu-$CPU_JOB_ID.out"
-    echo ""
-    echo -e "${GREEN}Watch output:     tail -f $RETICLE_DIR/logs/reticle-etl-load-cpu-$CPU_JOB_ID.out${NC}"
-    echo ""
+    echo "" >&2
+    log_info "Phase 2 submitted successfully!" >&2
+    echo "" >&2
+    echo "Job ID:           $CPU_JOB_ID" >&2
+    echo "Status:           Check with: squeue -j $CPU_JOB_ID" >&2
+    echo "Output:           $LOG_DIR/reticle-etl-load-cpu-$CPU_JOB_ID.out" >&2
+    echo "" >&2
+    echo -e "${GREEN}Watch output:     tail -f $LOG_DIR/reticle-etl-load-cpu-$CPU_JOB_ID.out${NC}" >&2
+    echo "" >&2
 
+    # Return ONLY the job ID on stdout
     echo "$CPU_JOB_ID"
 }
 

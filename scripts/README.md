@@ -86,6 +86,13 @@ python hpc_staging_loader.py --organism homo_sapiens --log-level DEBUG
 - ✅ Same reliability (single COPY operation is atomic)
 - ✅ Same output as sequential loader
 
+**For HPC Users:**
+Use the SLURM wrapper instead of running directly:
+```bash
+sbatch ../slurm/reticle-staging.sh homo_sapiens 8
+```
+The wrapper handles environment setup, logging, and job tracking. See `slurm/README.md` for details.
+
 ---
 
 ## ETL (Staging → Analytics)

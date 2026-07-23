@@ -8,6 +8,7 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 
 | Script | Purpose | Recommended Use |
 |--------|---------|-----------------|
+| **reticle-staging.sh** ⭐ | HPC staging loader with parallel I/O | **Data Load** |
 | **submit-etl-job.sh** | Submit unified ETL (CPU or GPU) | Quick testing |
 | **submit-etl-job-split.sh** ⭐ | Submit split pipeline (GPU dedup, then CPU load) | **Production** |
 | **reticle-etl.sh** | SLURM wrapper for CPU-only ETL | Called by submit-etl-job.sh |
@@ -17,6 +18,271 @@ Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL 
 | **monitor-etl-jobs.sh** | Monitor, tail, and manage running jobs | Monitoring |
 | **env-setup.sh** | Environment setup for CPU jobs | Sourced by reticle-etl.sh |
 | **env-setup-gpu.sh** | Environment setup for GPU jobs | Sourced by GPU scripts |
+
+---
+
+## Environment Variables (Configuration)
+
+All SLURM scripts support consistent partition and staging configuration via environment variables:
+
+### Partition Configuration
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `RETICLE_PARTITION_CPU` | reticle-staging.sh, submit-etl-job.sh, submit-etl-job-split.sh | `"cpu"` | Default partition for CPU jobs |
+| `RETICLE_PARTITION_GPU` | submit-etl-job.sh, submit-etl-job-split.sh | `"gpu"` | Default partition for GPU jobs |
+
+**Setup:**
+```bash
+# Set in ~/.bashrc or ~/reticle.sh for permanent configuration
+export RETICLE_PARTITION_CPU=general-cpu      # Your cluster's CPU partition
+export RETICLE_PARTITION_GPU=general-gpu      # Your cluster's GPU partition
+
+# Or set temporarily for a single session
+export RETICLE_PARTITION_CPU=fast
+sbatch slurm/submit-etl-job.sh 1
+```
+
+**Override via command-line:**
+```bash
+# All these scripts support --partition flag
+sbatch slurm/reticle-staging.sh homo_sapiens --partition fast
+sbatch slurm/submit-etl-job.sh 1 --partition fast
+sbatch slurm/submit-etl-job-split.sh 1 --partition fast --both
+```
+
+**Or via sbatch directly:**
+```bash
+sbatch --partition=general-cpu slurm/submit-etl-job.sh 1
+sbatch --partition=gpu-v100 slurm/submit-etl-job.sh 1 --gpu
+```
+
+### Staging Directory (Multi-Node HPC)
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `STAGING_DIR` | gpu_etl_dedup_only.py, cpu_etl_load_only.py | `/tmp/reticle_staging` | Staging directory for CSV files (GPU/CPU split pipeline) |
+
+**Why?**
+- **Single-node:** Default `/tmp/reticle_staging` works (both phases on same node)
+- **Multi-node split pipeline:** GPU phase on GPU node, CPU phase on CPU node → different /tmp directories → Phase 2 can't find CSV files
+- **Solution:** Point to **shared filesystem** (NFS/GPFS) that all nodes can access
+
+**Setup:**
+```bash
+# Identify shared filesystem on your cluster (e.g., /storage, /gpfs, /work)
+# Create a directory for this run
+export STAGING_DIR=/storage3/fs1/aorvedahl-RETICLE/Active/staging
+mkdir -p $STAGING_DIR
+
+# Both phases will now read/write CSV files to the same shared location
+./slurm/submit-etl-job-split.sh 2 --both
+```
+
+**Example Error Without Shared Directory:**
+```
+[ERROR] CSV file not found: /tmp/reticle_staging/staging_screen_v2.csv
+Phase 1 (GPU) ran on node-001, Phase 2 (CPU) on node-002
+Node-002's /tmp doesn't contain Phase 1's output
+```
+
+**Fix:**
+```bash
+# Before submitting split pipeline:
+export STAGING_DIR=/shared/storage/path    # On shared filesystem
+./slurm/submit-etl-job-split.sh 2 --both           # Now phases find CSV files
+```
+
+### HPC Billing Account
+
+| Variable | Scripts Using | Default | Purpose |
+|----------|---------------|---------|---------|
+| `RETICLE_ACCOUNT` | submit-etl-job.sh, submit-etl-job-split.sh | (unset) | HPC billing/project account code |
+
+**Why?**
+- HPC clusters often require `--account` flag for proper billing and resource allocation
+- Different projects/accounts may have different quotas and priorities
+- Optional: if your cluster doesn't require it, leave it unset (scripts work with or without it)
+
+**Setup:**
+```bash
+# Set your HPC account code (ask your cluster admin)
+export RETICLE_ACCOUNT=myproject-001
+
+# All wrapper scripts now include --account automatically
+./slurm/submit-etl-job-split.sh 2 --both
+```
+
+**How it works:**
+- If `RETICLE_ACCOUNT` is set, jobs are submitted with `--account=$RETICLE_ACCOUNT`
+- If unset, jobs submit without the flag (cluster default account applies)
+- Visible in job configuration output and `squeue` listing
+
+---
+
+## Data Staging (Load Phase)
+
+### `reticle-staging.sh` ⭐ **RECOMMENDED**
+
+**HPC-optimized parallel staging loader** — Loads JSON and TSV data into versioned staging tables with multi-threaded I/O.
+
+**Key Benefits:**
+- **4-5x faster** than sequential loading (35-45 sec vs 2-3 min for 1M genes)
+- **Separate from ETL** — stage once, run dedup multiple times without re-staging
+- **Parallel I/O** — efficiently uses cluster bandwidth
+- **Configurable threads** — scale with available cores
+
+**Usage:**
+```bash
+sbatch slurm/reticle-staging.sh <organism> [threads]
+# OR
+sbatch slurm/reticle-staging.sh --organism <organism> --threads <threads>
+```
+
+⚠️ **IMPORTANT:** Must be submitted with `sbatch`, not run directly
+
+This is a **SLURM job script**. You must submit it to the job queue:
+
+```bash
+# ✅ CORRECT: Submit to SLURM
+sbatch slurm/reticle-staging.sh mus_musculus 16
+
+# ❌ WRONG: Running directly on login node
+./slurm/reticle-staging.sh mus_musculus 16
+```
+
+**Why?**
+- Direct execution runs on login node (not intended for heavy workloads)
+- SLURM variables (`$SLURM_JOB_ID`, `$SLURM_CPUS_PER_TASK`, etc.) are empty
+- No resource isolation or scheduling
+- Risks overloading shared login node
+
+**Arguments (positional or flags):**
+```
+organism               homo_sapiens or mus_musculus (required)
+                       --organism homo_sapiens (flag format)
+threads                Number of parallel threads (default: 8)
+                       --threads 16 (flag format)
+                       Should match --cpus-per-task for efficiency
+--description TEXT     Custom description (optional, flag format only)
+```
+
+**Examples:**
+```bash
+# Positional: Default (8 threads)
+sbatch slurm/reticle-staging.sh homo_sapiens
+
+# Positional: Mouse data with 16 threads
+sbatch slurm/reticle-staging.sh mus_musculus 16
+
+# Flags: Same, using flag format
+sbatch slurm/reticle-staging.sh --organism mus_musculus --threads 16
+
+# Mixed: positional organism, flag threads
+sbatch slurm/reticle-staging.sh mus_musculus --threads 16
+
+# Override SLURM cores (positional)
+sbatch --cpus-per-task=16 slurm/reticle-staging.sh homo_sapiens 16
+
+# Override SLURM cores (flags)
+sbatch --cpus-per-task=16 slurm/reticle-staging.sh --organism homo_sapiens --threads 16
+
+# Custom description
+sbatch slurm/reticle-staging.sh --organism homo_sapiens --threads 8 --description "Q2 2026 run"
+```
+
+**What it does:**
+1. Validate database connection
+2. Verify data directory (`$DATA_DIR`) exists
+3. Spawn `hpc_staging_loader.py` with parallel threads
+4. Read JSON files (screen metadata) in parallel
+5. Read TSV files (gene/screen records) in parallel
+6. Single atomic PostgreSQL COPY operation
+7. Create versioned `staging_*` tables
+8. Return version ID and staging statistics
+
+**Output:**
+```
+========================================
+RETICLE Staging Loader - SLURM Job
+========================================
+
+SLURM Job ID:     12345
+Job Name:         reticle-staging
+Nodes:            1
+CPUs per task:    8
+Memory:           16G
+Partition:        general-cpu
+
+Staging Configuration:
+Organism:         homo_sapiens
+Threads:          8
+Description:      Auto-loaded homo_sapiens data (SLURM Job 12345)
+
+[SETUP] Loading environment...
+[SETUP] Validating database connection...
+✓ Database connected (2 versions found)
+[SETUP] Validating data directory...
+✓ Data directory found (1,234 files)
+
+[RUN] Starting HPC staging loader...
+Loading homo_sapiens data...
+✓ Staging completed successfully
+
+========================================
+✓ STAGING COMPLETED SUCCESSFULLY
+
+Next steps:
+1. Check staging results: python3 maintenance.py --show-storage
+2. Run ETL pipeline:
+   sbatch /path/to/slurm/reticle-etl.sh <version_id>          # CPU
+   sbatch /path/to/slurm/reticle-etl-dedup-gpu.sh <version_id> # GPU
+========================================
+Total Duration: 0m 42s
+Job ID:         12345
+```
+
+**Workflow:**
+
+Always use `sbatch` to submit the job:
+
+```bash
+# Step 1: Submit staging (wait for completion)
+JOB_ID=$(sbatch slurm/reticle-staging.sh homo_sapiens | awk '{print $NF}')
+echo "Submitted staging job: $JOB_ID"
+
+# Step 2: Monitor completion
+squeue -j $JOB_ID
+
+# Step 3: Check results (once complete)
+tail -20 logs/reticle-staging-${JOB_ID}.out
+
+# Step 4: Check version created
+python3 scripts/maintenance.py --show-storage
+
+# Step 5: Submit desired dedup variant
+# Option A: CPU dedup (cheaper, slower)
+sbatch slurm/reticle-etl.sh 3
+
+# Option B: GPU dedup (expensive, faster) + CPU load (chained)
+sbatch slurm/reticle-etl-dedup-gpu.sh 3
+```
+
+**Resource Requirements:**
+- **CPU cores:** 8-16 (scales linearly with cores)
+- **Memory:** 16GB (constant, regardless of data size)
+- **Time:** 1-10 minutes (depends on dataset size and thread count)
+- **I/O:** High bandwidth needed (fast parallel filesystem recommended)
+
+**Performance:** (approximate)
+- Mouse (1.9M genes): 35-45 seconds (8 threads)
+- Human (31M genes): 3-5 minutes (8 threads), 2-3 minutes (16 threads)
+
+**Optional Environment Variables:**
+```bash
+export STAGING_DESCRIPTION="Q2 2026 human screens"  # Custom description
+export RETICLE_DIR=/path/to/RETICLE                 # Override repo path
+```
 
 ---
 

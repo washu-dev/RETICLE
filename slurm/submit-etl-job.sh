@@ -84,6 +84,7 @@ GPUS=0
 TIME_LIMIT="00:30:00"
 PARTITION=${RETICLE_PARTITION_CPU:-cpu}      # Set via: export RETICLE_PARTITION_CPU=general-cpu
 PARTITION_GPU=${RETICLE_PARTITION_GPU:-gpu}   # Set via: export RETICLE_PARTITION_GPU=gpu-v100
+ACCOUNT="${RETICLE_ACCOUNT:-}"                # Set via: export RETICLE_ACCOUNT=myaccount
 MEM_AUTO=true
 MEM=""
 
@@ -170,6 +171,13 @@ SBATCH_ARGS+=("--cpus-per-task=$CORES")
 SBATCH_ARGS+=("--mem=${MEM}G")
 SBATCH_ARGS+=("--time=$TIME_LIMIT")
 SBATCH_ARGS+=("--partition=$PARTITION")
+SBATCH_ARGS+=("--output=$LOG_DIR/reticle-etl-%j.out")
+SBATCH_ARGS+=("--error=$LOG_DIR/reticle-etl-%j.err")
+
+# Add account for HPC billing if specified
+if [ -n "$ACCOUNT" ]; then
+    SBATCH_ARGS+=("--account=$ACCOUNT")
+fi
 
 if [ "$MODE" = "gpu" ]; then
     SBATCH_ARGS+=("--gres=gpu:$GPUS")
@@ -178,8 +186,9 @@ else
     JOB_SCRIPT="reticle-etl.sh"
 fi
 
-# Create logs directory
-mkdir -p "$RETICLE_DIR/logs"
+# Setup log directory
+LOG_DIR="${LOG_DIR:-$RETICLE_DIR/logs}"
+mkdir -p "$LOG_DIR"
 
 # Show configuration
 echo ""
@@ -196,6 +205,9 @@ if [ "$MODE" = "gpu" ]; then
 fi
 echo "Time Limit:       $TIME_LIMIT"
 echo "Partition:        $PARTITION"
+if [ -n "$ACCOUNT" ]; then
+    echo "Account:          $ACCOUNT"
+fi
 echo "Job Script:       $JOB_SCRIPT"
 echo ""
 
@@ -204,7 +216,7 @@ log_step "Submitting SLURM job..."
 echo ""
 
 JOB_ID=$(sbatch "${SBATCH_ARGS[@]}" \
-    --export=VERSION_ID="$VERSION_ID",NUM_THREADS="$CORES",RETICLE_DIR="$RETICLE_DIR" \
+    --export=VERSION_ID="$VERSION_ID",NUM_THREADS="$CORES",RETICLE_DIR="$RETICLE_DIR",LOG_DIR="$LOG_DIR" \
     "$SCRIPT_DIR/$JOB_SCRIPT" | awk '{print $NF}')
 
 echo ""
@@ -212,10 +224,10 @@ log_info "Job submitted successfully!"
 echo ""
 echo "Job ID:           $JOB_ID"
 echo "Status:           Check with: squeue -j $JOB_ID"
-echo "Output:           $RETICLE_DIR/logs/reticle-etl-$JOB_ID.out"
-echo "Error:            $RETICLE_DIR/logs/reticle-etl-$JOB_ID.err"
+echo "Output:           $LOG_DIR/reticle-etl-$JOB_ID.out"
+echo "Error:            $LOG_DIR/reticle-etl-$JOB_ID.err"
 echo ""
-echo -e "${GREEN}Watch output:     tail -f $RETICLE_DIR/logs/reticle-etl-$JOB_ID.out${NC}"
+echo -e "${GREEN}Watch output:     tail -f $LOG_DIR/reticle-etl-$JOB_ID.out${NC}"
 echo -e "${GREEN}Cancel job:       scancel $JOB_ID${NC}"
 echo ""
 

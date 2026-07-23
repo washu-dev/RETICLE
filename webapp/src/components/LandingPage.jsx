@@ -31,7 +31,7 @@ const FEATURES = [
   },
 ];
 
-export default function LandingPage({ onStart }) {
+export default function LandingPage({ onStart, onExplore }) {
   const [hovered, setHovered] = useState(null);
 
   return (
@@ -55,6 +55,14 @@ export default function LandingPage({ onStart }) {
           <span style={{ color: 'var(--text-3)', fontSize: '0.8rem', marginLeft: 2 }}>beta</span>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={onExplore}
+            style={{
+              padding: '8px 20px', borderRadius: 8,
+              background: 'var(--bg-3)', color: 'var(--text-2)',
+              fontSize: '0.875rem', fontWeight: 500,
+            }}
+          >Gene Explorer</button>
           <button style={{
             padding: '8px 20px', borderRadius: 8,
             background: 'var(--bg-3)', color: 'var(--text-2)',

@@ -4,11 +4,12 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=00:05:00
+#SBATCH --time=00:30:00
 #SBATCH --gres=gpu:1
-#SBATCH --output=logs/reticle-etl-dedup-gpu-%j.out
-#SBATCH --error=logs/reticle-etl-dedup-gpu-%j.err
-# Note: --partition is set by submit-etl-job-split.sh wrapper (do not set here)
+#SBATCH --partition=general-gpu
+# Note: --partition can be overridden via sbatch --partition= or wrapper sets it
+# Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
+# Note: Log files will be created in LOG_DIR (set below via environment variable)
 
 # RETICLE ETL Pipeline - Phase 1: GPU Deduplication Only
 #
@@ -40,6 +41,14 @@ if [ -z "$RETICLE_DIR" ]; then
 fi
 
 SCRIPTS_DIR="$RETICLE_DIR/scripts"
+LOG_DIR="${LOG_DIR:-$RETICLE_DIR/logs}"
+
+# Create log directory if it doesn't exist
+mkdir -p "$LOG_DIR"
+
+# Redirect SLURM output to LOG_DIR
+exec 1>"$LOG_DIR/reticle-etl-dedup-gpu-${SLURM_JOB_ID}.out"
+exec 2>"$LOG_DIR/reticle-etl-dedup-gpu-${SLURM_JOB_ID}.err"
 
 # Colors
 RED='\033[0;31m'

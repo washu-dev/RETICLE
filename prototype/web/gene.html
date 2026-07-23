@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RETICLE · Gene Wiki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
+<style>
+:root{
+  --paper:#FCFCFB; --ink:#14161A; --ink2:#3A3D44; --muted:#6B7280; --faint:#9AA0A6;
+  --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;
+  --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;
+  --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(#00000004 1px,transparent 1px);background-size:22px 22px;background-attachment:fixed}
+a{color:inherit}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:50;background:rgba(252,252,251,.9);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+.bar .in{max-width:1340px;margin:0 auto;padding:12px clamp(20px,4vw,48px);display:flex;align-items:center;gap:18px}
+.mark{font-family:var(--serif);font-weight:500;font-size:19px;white-space:nowrap}
+.mark b{color:var(--know);font-weight:600}
+.mark s{font-family:var(--mono);font-size:10px;text-decoration:none;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px}
+.srch{display:flex;align-items:center;flex:1;max-width:440px;margin-left:auto;border:1px solid var(--line);border-radius:11px;background:var(--card);transition:border-color .2s,box-shadow .2s;padding:3px}
+.srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft)}
+.srch input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--ink);padding:8px 12px;letter-spacing:.02em}
+.srch input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}
+.srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer}
+.srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:background .2s}
+.srch button:hover{background:var(--know)}
+
+/* landing (empty state) — centred mark + search, wave dots pinned to the bottom */
+body.landing .bar,body.landing #gw,body.landing #foot{display:none}
+.land{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:0 20px;overflow:hidden}
+.land-inner{text-align:center;margin-top:-8vh;z-index:2}
+.land-mark{font-family:var(--serif);font-weight:500;font-size:clamp(46px,7.5vw,80px);letter-spacing:-.02em;color:var(--ink);line-height:1}
+.land-mark span{font-family:var(--mono);font-size:.26em;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);vertical-align:middle;margin-left:.55em;font-weight:400}
+.land-srch{display:flex;align-items:center;width:min(560px,92vw);margin:36px auto 0;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 12px 34px -14px rgba(0,0,0,.10);padding:5px;transition:box-shadow .2s,border-color .2s}
+.land-srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft),0 12px 34px -14px rgba(0,0,0,.12)}
+.land-srch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-family:var(--sans);font-size:17px;color:var(--ink);padding:13px 18px}
+.land-srch input::placeholder{color:var(--faint)}
+.land-srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:13px;color:var(--muted);cursor:pointer}
+.land-srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer;transition:background .2s;white-space:nowrap}
+.land-srch button:hover{background:var(--know)}
+.land .ex{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:20px}
+.land .ex b{color:var(--know);cursor:pointer;font-weight:500}.land .ex b:hover{text-decoration:underline}
+#wave-canvas{position:absolute;left:0;bottom:0;width:100%;height:150px;display:block;z-index:1}
+.status{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center;padding:50px 0;min-height:20px;display:none}
+.status.err{color:#b4541f}
+
+/* three-zone page */
+#gw{opacity:0}#gw.show{opacity:1;transition:opacity .4s}
+.page{max-width:1340px;margin:0 auto;padding:8px clamp(20px,4vw,48px) 60px;
+  display:grid;gap:0 44px;grid-template-columns:196px minmax(0,1fr) 336px;align-items:start}
+@media(max-width:1180px){.page{grid-template-columns:minmax(0,1fr) 320px;gap:0 32px}.toc{display:none}}
+@media(max-width:860px){.page{grid-template-columns:1fr}.rail{order:-1}.toc{display:none}}
+
+/* left TOC */
+.toc{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;padding-top:34px}
+.toc .grp{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}
+.toc .grp.k{color:var(--know)}.toc .grp.e{color:var(--eviq)}
+.toc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line);transition:color .15s,border-color .15s}
+.toc a:hover{color:var(--ink)}
+.toc a.on{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+.toc a.on.k{color:var(--know);border-left-color:var(--know)}
+.toc a.on.e{color:var(--eviq);border-left-color:var(--eviq)}
+.toc a.on.p{color:var(--pred);border-left-color:var(--pred)}
+.toc .grp.p{color:var(--pred)}
+.toc-m{display:none}
+
+/* main column */
+.col{min-width:0;padding-top:30px}
+section{scroll-margin-top:86px;margin-bottom:44px}
+.h2{display:flex;align-items:baseline;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:7px;margin:0 0 16px}
+.h2 h2{font-family:var(--serif);font-weight:400;font-size:clamp(23px,3vw,30px);letter-spacing:-.01em;margin:0}
+.h2 s{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;text-decoration:none;color:var(--faint);margin-left:auto}
+.know .h2{border-color:var(--know)}.know .h2 s{color:var(--know)}
+.eviq .h2{border-color:var(--eviq)}.eviq .h2 s{color:var(--eviq)}
+.pred .h2{border-color:var(--pred)}.pred .h2 s{color:var(--pred)}
+.pred-intro{font-size:14.5px;color:var(--ink2);max-width:72ch;margin:14px 0 16px}
+.pred-list{list-style:none;margin:0;padding:0;max-width:74ch}
+.pred-item{padding:14px 0;border-top:1px solid var(--line2)}.pred-item:first-child{border-top:0}
+.pred-h{display:flex;align-items:center;gap:9px}
+.pred-h b{font-size:15.5px;color:var(--ink);font-weight:600}
+.pred-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pred-dot.high{background:#3a9c6e}.pred-dot.moderate{background:var(--pred)}.pred-dot.tentative{background:var(--faint)}
+.pred-conf{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px}
+.pred-conf.high{background:#3a9c6e18;color:#2f7d58}.pred-conf.moderate{background:var(--pred-soft);color:var(--pred)}.pred-conf.tentative{background:#00000006;color:var(--faint)}
+.pred-ex{font-size:14px;line-height:1.55;color:var(--ink2);margin:6px 0 8px}
+.pred-ev{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.pred-ev i{font-style:normal;font-family:var(--mono);font-size:11px;background:var(--pred-soft);border:1px solid var(--line);border-radius:7px;padding:2px 7px;color:#5a44a0}
+.pred-lay{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:4px}
+.pred-lay u{text-decoration:none;color:var(--pred)}
+.note-line{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px;line-height:1.5;max-width:74ch}
+.src{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:8px;margin:18px 0 9px}
+.src b{color:var(--ink2);font-weight:500}.src u{text-decoration:none;color:var(--faint);margin-left:auto;font-size:10px}
+.prose{font-size:15.5px;line-height:1.62;color:var(--ink2);max-width:72ch}
+.kv{display:flex;gap:8px;font-size:14px;color:var(--ink2);margin-top:12px;max-width:72ch}
+.kv b{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);min-width:74px;flex-shrink:0;padding-top:2px}
+
+/* verbatim statement bullets + reveal */
+.stmts{list-style:none;margin:0;padding:0;max-width:72ch}
+.stmts li{position:relative;padding:6px 0 6px 20px;font-size:15px;line-height:1.55;color:var(--ink2);border-bottom:1px solid var(--line2)}
+.stmts li:last-child{border-bottom:0}
+.stmts li::before{content:"";position:absolute;left:2px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--know)}
+.extra{display:contents}
+.reveal[data-collapsed="true"] .extra{display:none}
+.pws{display:flex;flex-wrap:wrap;gap:7px;max-width:72ch}
+.pw{display:inline-block;font-size:12.5px;color:#14536a;background:var(--know-soft);border:1px solid var(--line);border-radius:8px;padding:5px 10px;text-decoration:none;line-height:1.3;transition:border-color .15s}
+.pw:hover{border-color:var(--know)}
+.ghead{padding:30px 0 6px;border-bottom:1.5px solid var(--ink);margin-bottom:6px}
+.ghead .ey{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.ghead .ey b{color:var(--know);font-weight:500}
+.ghead h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,76px);line-height:.95;letter-spacing:-.02em;margin:8px 0 2px}
+.ghead .fn{font-family:var(--serif);font-weight:300;font-style:italic;font-size:clamp(18px,2.4vw,22px);color:var(--ink2)}
+.net{width:100%;max-width:560px;height:auto;display:block;margin:6px auto 0}
+.net a{cursor:pointer}.net a:hover text{fill:var(--know)}
+.netcap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5;max-width:72ch}
+.lead.scr{margin:16px 0}
+.scr-over{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;color:var(--ink);margin:0 0 14px;max-width:70ch}
+.scr-list{display:flex;flex-direction:column}
+.scr-row{display:grid;grid-template-columns:176px 1fr;gap:16px;padding:9px 0;border-top:1px solid var(--line2);align-items:start}
+.scr-ph{font-family:var(--mono);font-size:12px;color:var(--ink);display:flex;align-items:flex-start;gap:7px;line-height:1.35}
+.scr-ph i{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:4px}
+.scr-ins{font-size:14px;line-height:1.55;color:var(--ink2)}
+.phs-h{margin-top:18px}
+@media(max-width:860px){.scr-row{grid-template-columns:1fr;gap:2px}}
+.more{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--know);background:none;border:0;cursor:pointer;padding:0;letter-spacing:.02em}
+.more:hover{text-decoration:underline}
+.inl{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer}.inl:hover{text-decoration:underline}
+
+/* summary / lead */
+.lead{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);position:relative;overflow:hidden;padding:22px 26px;margin-bottom:22px}
+.lead::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--eviq)}
+.lead .ey{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq);display:flex;gap:8px;margin-bottom:12px}
+.lead .ey i{font-style:normal;color:var(--faint);text-transform:none;letter-spacing:.02em}
+.lead p{font-family:var(--serif);font-weight:300;font-size:18.5px;line-height:1.56;color:var(--ink);margin:0;max-width:68ch}
+.lead .load{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.lead .load::after{content:"▸";margin-left:4px;animation:blink 1.1s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.lead .mdl{margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+
+/* fingerprint */
+.fp{margin:2px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.fp-num{text-align:center;border-right:1px solid var(--line2);padding-right:24px}
+.fp-num b{font-family:var(--serif);font-weight:400;font-size:50px;line-height:1;color:var(--eviq);display:block}
+.fp-num s{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:3px}
+.fp-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
+.fp-lane{display:flex;gap:2px;height:46px;width:100%}
+.fp-seg{min-width:3px;border-radius:2px;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.30) 0 1px,transparent 1px 5px)}
+.fp-leg{display:flex;flex-wrap:wrap;margin-top:12px;gap:7px 15px}
+.fp-leg span{font-family:var(--mono);font-size:11px;color:var(--ink2);display:inline-flex;align-items:center;gap:6px}
+.fp-leg i{width:9px;height:9px;border-radius:2px}.fp-leg b{color:var(--faint);font-weight:400}
+
+/* GO / STRING / DepMap / screens */
+.go{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.go-col s{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--know);text-decoration:none;display:block;margin-bottom:8px}
+.chip{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px dotted var(--line);line-height:1.35}.chip:last-child{border-bottom:0}
+.parts{display:flex;flex-wrap:wrap;gap:8px}
+.part{display:inline-flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 11px;transition:border-color .15s}
+.part:hover{border-color:var(--know)}.part b{font-family:var(--mono);font-size:13px;font-weight:500}.part s{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-decoration:none}
+.dep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.dep-badge{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.dep-badge b{display:block;font-family:var(--serif);font-size:21px;font-weight:500;line-height:1.1}
+.dep-badge.common b{color:var(--eviq)}.dep-badge.selective b{color:var(--know)}.dep-badge.non b{color:var(--muted)}
+.dep-badge s{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:5px}
+.dep-txt{font-size:14.5px;color:var(--ink2);line-height:1.55}.dep-txt code{font-family:var(--mono);font-size:13px;background:#00000006;padding:1px 5px;border-radius:4px}
+.ph{display:grid;grid-template-columns:150px 1fr auto;gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}.ph:last-child{border-bottom:0}
+.ph-n{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px}.ph-n i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ph-bar{height:9px;border-radius:3px;opacity:.85}.ph-c{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.ph-cond{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--faint);padding:0 0 4px 164px;margin-top:-2px}
+.note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px;line-height:1.5;max-width:72ch}
+.lit{display:flex;align-items:baseline;gap:16px;padding:18px 22px;border:1px dashed var(--line);border-radius:13px}
+.lit b{font-family:var(--serif);font-size:32px;font-weight:400}.lit s{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-decoration:none}.lit p{font-size:13.5px;color:var(--muted);margin:0}
+
+/* right rail */
+.rail{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;padding-top:30px}
+.ibox{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.struct{position:relative;height:300px;background:#FCFCFB;border-bottom:1px solid var(--line)}
+.struct canvas{border-radius:0}
+.struct-none{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;padding:20px}
+.struct-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(0deg,rgba(255,255,255,.94),rgba(255,255,255,.6));font-family:var(--mono);font-size:10.5px;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.struct-cap .badge{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px}
+.struct-cap .badge.pred{background:var(--eviq-soft);color:#8a5410}
+.struct-cap .badge.exp{background:var(--know-soft);color:#14536a}
+.struct-sel{margin-left:auto;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink2);padding:2px 4px;cursor:pointer;max-width:120px}
+.ibox-h{padding:16px 18px 4px}
+.ibox-h b{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1;letter-spacing:-.01em;display:block}
+.ibox-h span{font-size:13px;color:var(--muted);font-style:italic;font-family:var(--serif)}
+.ibox-s{padding:12px 18px;border-top:1px solid var(--line2)}
+.ibox-s .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.irow{display:flex;gap:10px;font-size:13px;padding:3px 0;align-items:baseline}
+.irow .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--faint);min-width:66px;flex-shrink:0}
+.irow .v{color:var(--ink2);min-width:0;word-break:break-word}
+.irow .v a{font-family:var(--mono);color:var(--know);text-decoration:none}.irow .v a:hover{text-decoration:underline}
+.ial{display:flex;flex-wrap:wrap;gap:5px}
+.ial i{font-style:normal;font-family:var(--mono);font-size:11px;background:#00000005;border:1px solid var(--line);border-radius:12px;padding:1px 8px;color:var(--ink2)}
+.orth{width:100%;border-collapse:collapse;font-size:12.5px}
+.orth td{padding:4px 0;border-bottom:1px solid var(--line2)}.orth tr:last-child td{border-bottom:0}
+.orth .sp{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:52px}
+.orth .cur{color:var(--ink);font-weight:500}
+.orth a{font-family:var(--mono);color:var(--know);text-decoration:none}.orth a:hover{text-decoration:underline}
+
+.foot{max-width:1340px;margin:0 auto;padding:0 clamp(20px,4vw,48px) 50px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em;line-height:1.6}
+
+@media(max-width:860px){
+  .rail{position:static;max-height:none;padding-top:8px;margin-bottom:20px}
+  .toc-m{display:block;margin:6px 0 4px}
+  .toc-m summary{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer;padding:8px 0}
+  .toc-m ol{margin:4px 0 0;padding-left:20px;font-size:14px}.toc-m a{color:var(--ink2);text-decoration:none;line-height:2}
+  .go{grid-template-columns:1fr}.dep{grid-template-columns:1fr}.ph{grid-template-columns:120px 1fr auto}.ph-cond{padding-left:0}
+  .fp{grid-template-columns:1fr}.fp-num{border-right:0;border-bottom:1px solid var(--line2);padding:0 0 12px}
+}
+</style>
+</head>
+<body class="landing">
+<div class="bar"><div class="in">
+  <div class="mark">RETICLE<b>·</b>gene<s>wiki</s></div>
+  <div class="srch">
+    <input id="q" type="text" placeholder="Gene symbol — TP53, BRCA1, KRAS…" autocomplete="off" spellcheck="false">
+    <select id="tax"><option value="9606">human</option><option value="10090">mouse</option></select>
+    <button id="go">Look up</button>
+  </div>
+</div></div>
+
+<div id="empty" class="land">
+  <div class="land-inner">
+    <div class="land-mark">RETICLE<span>wiki</span></div>
+    <div class="land-srch">
+      <input id="q2" type="text" placeholder="Gene symbol — TP53, BRCA1, KRAS…" autocomplete="off" spellcheck="false">
+      <select id="tax2"><option value="9606">human</option><option value="10090">mouse</option></select>
+      <button id="go2">Look up</button>
+    </div>
+    <div class="ex">try <b data-g="TP53">TP53</b> · <b data-g="BRCA1">BRCA1</b> · <b data-g="RAN">RAN</b> · <b data-g="CGAS">CGAS</b></div>
+  </div>
+  <canvas id="wave-canvas"></canvas>
+</div>
+<div id="status" class="status"></div>
+<div id="gw"></div>
+<div id="foot" class="foot"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=n=>Number(n).toLocaleString();
+const PHEN_COL={'cell proliferation':'#2E7D8F','response to chemicals':'#C77D31','response to virus':'#7E5A86','protein/peptide accumulation':'#6E8B5A','tumorigenicity':'#B5677A','response to toxin':'#B0603A','viability':'#4E6E8E','cell viability':'#4E6E8E','response to bacteria':'#8A7B3C','regulation of signal transduction phenotype':'#5B7A99','phagocytosis':'#A0693F','protein/peptide distribution':'#7E9A6A','autophagy':'#87706E','senescence':'#9C6B84'};
+const pcol=p=>PHEN_COL[p]||'#AAB0B6';
+
+// split verbatim prose into sentence statements (each <li> is an exact substring)
+function splitSentences(t){
+  if(!t) return [];
+  const parts=t.split(/(?<=[.;])\s+(?=[A-Z0-9(])/).map(s=>s.trim()).filter(Boolean);
+  return parts.length?parts:[t.trim()];
+}
+// clamp long verbatim prose to `shown` sentences + inline "show more" (text untouched)
+function clampProse(text, shown){
+  shown=shown||3;
+  const s=splitSentences(text), head=s.slice(0,shown).join(' '), tail=s.slice(shown).join(' ');
+  return `<div class="reveal" data-collapsed="true"><p class="prose">${esc(head)}`+
+    (tail?` <span class="extra">${esc(tail)}</span>`:'')+`</p>`+
+    (tail?`<button class="more">show more</button>`:'')+`</div>`;
+}
+
+/* ---------- sections ---------- */
+const SECTIONS=[
+  {id:'function',label:'Function',mv:'k'},
+  {id:'ontology',label:'Gene ontology',mv:'k'},
+  {id:'pathways',label:'Pathways',mv:'k',cond:w=>w.pathways&&w.pathways.length},
+  {id:'interactions',label:'Interactions',mv:'k'},
+  {id:'clinical',label:'Clinical significance',mv:'k',cond:w=>w.uniprot.disease},
+  {id:'predictions',label:'Predicted functions',mv:'p'},
+  {id:'dependency',label:'Dependency',mv:'e'},
+  {id:'screens',label:'CRISPR Screening',mv:'e',cond:w=>w.screens.n_total},
+  {id:'literature',label:'Literature',mv:'e'},
+];
+
+function buildTOC(w){
+  const on=s=>!s.cond||s.cond(w);
+  const link=s=>`<a href="#${s.id}" data-sec="${s.id}" class="${s.mv}">${s.label}</a>`;
+  const lead=SECTIONS.filter(s=>s.mv===''&&on(s)).map(link).join('');
+  const know=SECTIONS.filter(s=>s.mv==='k'&&on(s)).map(link).join('');
+  const pred=SECTIONS.filter(s=>s.mv==='p'&&on(s)).map(link).join('');
+  const evi =SECTIONS.filter(s=>s.mv==='e'&&on(s)).map(link).join('');
+  $('#toc').innerHTML=lead+`<div class="grp k">Curated knowledge</div>`+know
+    +(pred?`<div class="grp p">Inferred</div>`+pred:'')
+    +`<div class="grp e">Perturbation evidence</div>`+evi;
+  $('#tocm').innerHTML=`<summary>Contents</summary><ol>`+
+    SECTIONS.filter(on).map(s=>`<li><a href="#${s.id}">${s.label}</a></li>`).join('')+`</ol>`;
+}
+function scrollSpy(){
+  const links={}; document.querySelectorAll('#toc a').forEach(a=>links[a.dataset.sec]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){
+      Object.values(links).forEach(a=>a.classList.remove('on'));
+      const a=links[e.target.id]; if(a) a.classList.add('on');
+    }});
+  },{rootMargin:'-45% 0px -50% 0px'});
+  SECTIONS.forEach(s=>{const el=document.getElementById(s.id); if(el) obs.observe(el);});
+}
+
+/* ---------- fingerprint ---------- */
+function fingerprint(sc){
+  if(!sc.n_total) return '';
+  const segs=sc.by_phenotype.map(p=>`<div class="fp-seg" title="${esc(p.phenotype)} — ${p.count}" style="flex:${p.count} 0 0;background-color:${pcol(p.phenotype)}"></div>`).join('');
+  const leg=sc.by_phenotype.slice(0,8).map(p=>`<span><i style="background:${pcol(p.phenotype)}"></i>${esc(p.phenotype)} <b>${p.count}</b></span>`).join('');
+  return `<div class="fp"><div class="fp-num"><b>${sc.n_total}</b><s>screens</s></div><div>
+    <div class="fp-cap">Perturbation footprint · ${sc.by_phenotype.length} phenotype${sc.by_phenotype.length>1?'s':''}</div>
+    <div class="fp-lane">${segs}</div>
+    <div class="fp-leg">${leg}${sc.by_phenotype.length>8?`<span><b>+${sc.by_phenotype.length-8} more</b></span>`:''}</div></div></div>`;
+}
+
+/* ---------- infobox ---------- */
+function infobox(w){
+  const id=w.identity;
+  const rows=[];
+  rows.push(`<div class="irow"><span class="k">Type</span><span class="v">${esc(id.type_of_gene||'—')}</span></div>`);
+  if(id.aliases&&id.aliases.length) rows.push(`<div class="irow"><span class="k">Aliases</span><span class="v ial">${id.aliases.slice(0,10).map(a=>`<i>${esc(a)}</i>`).join('')}</span></div>`);
+  if(id.map_location) rows.push(`<div class="irow"><span class="k">Locus</span><span class="v">chr${esc(id.chromosome||'')} ${esc(id.map_location)}</span></div>`);
+  const ext=[];
+  ext.push(`<div class="irow"><span class="k">Entrez</span><span class="v"><a href="https://www.ncbi.nlm.nih.gov/gene/${id.gene_id}" target="_blank" rel="noopener">${id.gene_id}</a></span></div>`);
+  if(id.ensembl_gene_id) ext.push(`<div class="irow"><span class="k">Ensembl</span><span class="v"><a href="https://www.ensembl.org/id/${esc(id.ensembl_gene_id)}" target="_blank" rel="noopener">${esc(id.ensembl_gene_id)}</a></span></div>`);
+  if(id.uniprot_acc) ext.push(`<div class="irow"><span class="k">UniProt</span><span class="v"><a href="https://www.uniprot.org/uniprotkb/${esc(id.uniprot_acc)}" target="_blank" rel="noopener">${esc(id.uniprot_acc)}</a></span></div>`);
+  if(id.omim_id) ext.push(`<div class="irow"><span class="k">OMIM</span><span class="v"><a href="https://www.omim.org/entry/${esc(id.omim_id)}" target="_blank" rel="noopener">${esc(id.omim_id)}</a></span></div>`);
+  if(id.genecards_symbol) ext.push(`<div class="irow"><span class="k">GeneCards</span><span class="v"><a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene=${esc(id.genecards_symbol)}" target="_blank" rel="noopener">${esc(id.genecards_symbol)}</a></span></div>`);
+  // orthologs (this gene + its orthologs), current species marked
+  let orthBlock='';
+  if(id.orthologs&&id.orthologs.length){
+    const self={species:id.organism,symbol:id.symbol,gene_id:id.gene_id};
+    const all=[self,...id.orthologs].sort((a,b)=>a.species<b.species?-1:1);
+    orthBlock=`<div class="ibox-s"><div class="lbl">Orthologs</div><table class="orth">`+
+      all.map(o=>{const cur=o.gene_id===id.gene_id;
+        return `<tr><td class="sp">${o.species==='Homo sapiens'?'Human':'Mouse'}</td>
+          <td><a href="https://www.ncbi.nlm.nih.gov/gene/${o.gene_id}" target="_blank" rel="noopener" class="${cur?'cur':''}">${esc(o.symbol||o.gene_id)}</a></td></tr>`;
+      }).join('')+`</table></div>`;
+  }
+  return `<aside class="ibox">
+    <div class="struct" id="struct"><div class="struct-none">Loading structure…</div></div>
+    <div class="ibox-h"><b>${esc(id.symbol)}</b>${id.full_name?`<span>${esc(id.full_name)}</span>`:''}</div>
+    <div class="ibox-s"><div class="lbl">Identifiers</div>${rows.join('')}</div>
+    <div class="ibox-s"><div class="lbl">External IDs</div>${ext.join('')}</div>
+    ${orthBlock}
+  </aside>`;
+}
+
+/* ---------- main sections ---------- */
+function functionSection(w){
+  let h='';
+  if(w.ncbi_summary){
+    h+=`<div class="src"><b>NCBI</b> · RefSeq summary</div>`+clampProse(w.ncbi_summary,3);
+  }
+  if(w.uniprot.function){
+    const st=splitSentences(w.uniprot.function);
+    const head=st.slice(0,3).map(x=>`<li>${esc(x)}</li>`).join('');
+    const tail=st.slice(3).map(x=>`<li>${esc(x)}</li>`).join('');
+    h+=`<div class="src"><b>UniProt</b> · reviewed <u>${esc(w.uniprot.acc||'')}${w.uniprot.n_citations?` · ${w.uniprot.n_citations} citations`:''}</u></div>`+
+       `<div class="reveal" data-collapsed="true"><ul class="stmts">${head}${tail?`<span class="extra">${tail}</span>`:''}</ul>`+
+       (tail?`<button class="more">Show ${st.length-3} more statements</button>`:'')+`</div>`;
+    if(w.uniprot.location) h+=`<div class="kv"><b>location</b><span>${esc(w.uniprot.location)}</span></div>`;
+  }
+  return h||'<div class="prose" style="color:var(--faint)">No curated functional annotation on record.</div>';
+}
+// ---- relational graphs (gene↔gene) ----
+const MONO='IBM Plex Mono, ui-monospace, monospace';
+function ringPos(i,n,cx,cy,R){const a=-Math.PI/2+2*Math.PI*i/n;return{x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),a};}
+
+// STRING: a real network — this gene + its partners, with all edges among them
+function stringNetwork(net){
+  if(!net||!net.nodes||net.nodes.length<2) return '';
+  const N=net.nodes.length,W=560,H=380,cx=W/2,cy=H/2,R=Math.min(cx,cy)-72;
+  const pos=net.nodes.map((s,i)=> i===0?{x:cx,y:cy,a:0}:ringPos(i-1,N-1,cx,cy,R));
+  const edges=net.edges.map(e=>{const p=pos[e.s],q=pos[e.t];const t=e.score/1000;
+    return `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}" stroke="#1F6F8B" stroke-opacity="${(0.1+0.5*t).toFixed(2)}" stroke-width="${(0.5+2.5*t).toFixed(1)}"/>`;}).join('');
+  const nodes=net.nodes.map((s,i)=>{const p=pos[i];
+    if(i===0) return `<circle cx="${p.x}" cy="${p.y}" r="9" fill="#1F6F8B"/><text x="${p.x}" y="${(p.y+24).toFixed(1)}" text-anchor="middle" font-family="${MONO}" font-size="12.5" font-weight="600" fill="#14161A">${esc(s)}</text>`;
+    const lx=p.x+9*Math.cos(p.a),ly=p.y+9*Math.sin(p.a),anc=Math.cos(p.a)>0.35?'start':Math.cos(p.a)<-0.35?'end':'middle';
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5.5" fill="#fff" stroke="#1F6F8B" stroke-width="1.4"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anc}" dominant-baseline="central" font-family="${MONO}" font-size="11" fill="#3A3D44">${esc(s)}</text>`;}).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="net" role="img" aria-label="STRING interaction network">${edges}${nodes}</svg>`;
+}
+function interactionsSection(w){
+  const net=w.string_network;
+  if(!net||net.nodes.length<2) return '<div class="prose" style="color:var(--faint)">No STRING functional-interaction partners at confidence ≥400.</div>';
+  const scores=(w.string||[]).slice(0,8).map(p=>`<span class="part"><b>${esc(p.partner)}</b><s>${p.score}</s></span>`).join('');
+  return `<div class="src"><b>STRING</b> · functional-interaction network <u>v12 · ≥400 · ${net.nodes.length-1} partners</u></div>`+
+    stringNetwork(net)+
+    `<div class="netcap">Nodes = genes · edge thickness ∝ STRING combined confidence · centre = ${esc(net.nodes[0])}. Also showing partner-partner interactions.</div>`+
+    `<div class="parts" style="margin-top:12px">${scores}</div>`;
+}
+
+// Pathways: gene at the hub linked to the pathways it participates in (click → Reactome)
+function pathwayGraph(sym,pw){
+  const top=pw.slice(0,10),N=top.length,W=560,H=Math.max(300,60+N*24),cx=150,cy=H/2;
+  const step=(H-60)/Math.max(1,N-1),y0=30;
+  const rows=top.map((p,i)=>{const y=N>1?y0+i*step:cy;
+    return `<line x1="${cx}" y1="${cy}" x2="300" y2="${y.toFixed(1)}" stroke="#1F6F8B" stroke-opacity="0.28" stroke-width="1.3"/>`+
+      `<a href="${esc(p.url)}" target="_blank" rel="noopener"><circle cx="300" cy="${y.toFixed(1)}" r="4.5" fill="#fff" stroke="#1F6F8B" stroke-width="1.4"/>`+
+      `<text x="312" y="${y.toFixed(1)}" dominant-baseline="central" font-family="${MONO}" font-size="11" fill="#14536a">${esc(p.name.length>44?p.name.slice(0,42)+'…':p.name)}</text></a>`;}).join('');
+  const svg=`<svg viewBox="0 0 ${W} ${H}" class="net pwnet" role="img" aria-label="Reactome pathway participation">${rows}`+
+    `<circle cx="${cx}" cy="${cy}" r="9" fill="#1F6F8B"/><text x="${cx}" y="${(cy+24).toFixed(1)}" text-anchor="middle" font-family="${MONO}" font-size="12.5" font-weight="600" fill="#14161A">${esc(sym)}</text></svg>`;
+  const rest=pw.slice(10);
+  const restList=rest.length?`<div class="reveal" data-collapsed="true"><div class="pws" style="margin-top:8px"><span class="extra">${rest.map(p=>`<a class="pw" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>`).join('')}</span></div><button class="more">Show ${rest.length} more pathways</button></div>`:'';
+  return svg+restList;
+}
+function pathwaysSection(sym,pw){
+  return `<div class="src"><b>Reactome</b> · pathways this gene participates in <u>${pw.length}</u></div>`+
+    pathwayGraph(sym,pw)+
+    `<div class="netcap">Hub = ${esc(sym)} · each node is a Reactome pathway it participates in (click → pathway diagram).</div>`;
+}
+function goSection(go){
+  const NS=[['molecular_function','molecular function'],['biological_process','biological process'],['cellular_component','cellular component']];
+  return `<div class="go">`+NS.map(([k,l])=>{const it=go[k]||[];
+    return `<div class="go-col"><s>${l}</s>${it.length?it.slice(0,6).map(t=>`<div class="chip">${esc(t)}</div>`).join(''):'<div class="chip" style="color:var(--faint)">—</div>'}</div>`;
+  }).join('')+`</div>`;
+}
+function depSection(d){
+  if(!d) return '<div class="prose" style="color:var(--faint)">Not present in the DepMap CRISPR matrix.</div>';
+  const key=d.essential_class==='common_essential'?'common':d.essential_class==='selective'?'selective':'non';
+  const label={common:'common essential',selective:'selective',non:'non-essential'}[key];
+  const pct=d.n_lines?100*d.n_dependent/d.n_lines:0, frac=pct>=1?Math.round(pct)+'%':(d.n_dependent>0?'<1%':'0%');
+  return `<div class="dep"><div class="dep-badge ${key}"><b>${label}</b><s>essentiality</s></div>
+    <div class="dep-txt">Depended on in <code>${d.n_dependent}/${d.n_lines}</code> cancer cell lines (${frac}), mean gene-effect <code>${d.mean_score}</code>.
+    ${d.most_dependent_cell?`Strongest dependency in <b>${esc(d.most_dependent_cell)}</b>${d.lineage?` <span style="color:var(--faint)">(${esc(d.lineage)})</span>`:''} at <code>${d.min_score}</code>.`:''}</div></div>`;
+}
+function screensSection(sc){
+  const cap=Math.max(...sc.by_phenotype.map(p=>p.count));
+  const rows=sc.by_phenotype.map(p=>{
+    const w=Math.max(4,Math.round(100*p.count/cap));
+    const cond=p.conditions&&p.conditions.length?`<div class="ph-cond">${p.conditions.slice(0,6).map(esc).join(' · ')}${p.conditions.length>6?` +${p.conditions.length-6}`:''}</div>`:'';
+    return `<div class="ph"><div class="ph-n"><i style="background:${pcol(p.phenotype)}"></i>${esc(p.phenotype)}</div><div class="ph-bar" style="width:${w}%;background:${pcol(p.phenotype)}"></div><div class="ph-c">${p.count} screen${p.count>1?'s':''}</div></div>${cond}`;
+  }).join('');
+  return `<div class="phs-h src"><b>BioGRID ORCS</b> · hits by phenotype · raw facts, no direction</div>`+rows+
+    `<div class="note">Each row: knockout of this gene was an author-called hit in that many BioGRID pooled CRISPR screens of the given phenotype. Direction &amp; meaning are left to the AI analysis above — never asserted here.</div>`;
+}
+
+/* ---------- render ---------- */
+function sec(id,mv,title,eyebrow,body){
+  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2><s>${eyebrow}</s></div>${body}</section>`;
+}
+function render(w){
+  const html=`<div class="page">
+    <nav class="toc" id="toc"></nav>
+    <main class="col">
+      <details class="toc-m" id="tocm"></details>
+      <header class="ghead">
+        <div class="ey">${[w.identity.organism,`GeneID ${w.identity.gene_id}`,w.identity.type_of_gene,w.identity.map_location?`chr${w.identity.chromosome} ${w.identity.map_location}`:null].filter(Boolean).map((m,i)=>i===0?`<b>${esc(m)}</b>`:esc(m)).join(' · ')}</div>
+        <h1>${esc(w.identity.symbol)}</h1>
+        ${w.identity.full_name?`<div class="fn">${esc(w.identity.full_name)}</div>`:''}
+      </header>
+      ${sec('function','know','Function','curated','')}
+      ${sec('ontology','know','Gene ontology','GO','')}
+      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','Reactome',''):''}
+      ${sec('interactions','know','Interactions','STRING v12','')}
+      ${w.uniprot.disease?sec('clinical','know','Clinical significance','UniProt','<div class="src"><b>UniProt</b> · involvement in disease</div>'+clampProse(w.uniprot.disease,3)):''}
+      ${sec('predictions','pred','Predicted functions','inferred','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
+      ${sec('dependency','eviq','Dependency','DepMap 24Q4','')}
+      ${w.screens.n_total?sec('screens','eviq','CRISPR Screening','BioGRID ORCS',''):''}
+      ${sec('literature','eviq','Literature','PubMed','')}
+    </main>
+    <aside class="rail">${infobox(w)}</aside>
+  </div>`;
+  const gw=$('#gw'); gw.innerHTML=html;
+  buildTOC(w);
+  // fill section bodies (built after DOM so helper funcs can return complex HTML)
+  $('#function').insertAdjacentHTML('beforeend',functionSection(w));
+  $('#ontology').insertAdjacentHTML('beforeend',goSection(w.go));
+  if(w.pathways&&w.pathways.length) $('#pathways').insertAdjacentHTML('beforeend',pathwaysSection(w.identity.symbol,w.pathways));
+  $('#interactions').insertAdjacentHTML('beforeend',interactionsSection(w));
+  $('#dependency').insertAdjacentHTML('beforeend',depSection(w.depmap));
+  if(w.screens.n_total){
+    $('#screens').insertAdjacentHTML('beforeend',
+      fingerprint(w.screens)+
+      `<div class="lead scr"><div class="ey">AI screen-hit analysis <i>· per-phenotype inference from the CRISPR hits below — the only AI text, uses no other RETICLE source</i></div>`+
+      `<div class="load" id="scr-body">Reading the ${w.screens.n_total} screens, phenotype by phenotype…</div></div>`+
+      screensSection(w.screens));
+  }
+  $('#literature').insertAdjacentHTML('beforeend',`<div class="lit"><b>${num(w.literature.n_pmid)}</b><div><s>linked publications</s><p>PubMed papers curated to this gene — the anchor for literature retrieval.</p></div></div>`);
+  $('#foot').innerHTML='Every section is retrieved verbatim from NCBI · UniProt · GO · Reactome · STRING · DepMap · BioGRID ORCS; the 3D model is from AlphaFold / RCSB PDB. The ONLY AI-generated text is the screen-hit analysis in CRISPR Screening, which reads only the screen hits.';
+  gw.classList.add('show');
+  scrollSpy();
+  loadStructure(w.identity.symbol,w.identity.taxid);
+  loadPredictions(w.identity.symbol,w.identity.taxid);
+  if(w.screens.n_total) loadScreenAnalysis(w.identity.symbol,w.identity.taxid);
+}
+
+/* ---------- 3D structure ---------- */
+function whenReady(cb,tries){tries=tries||0; if(window.$3Dmol) return cb(); if(tries>40) return cb(true); setTimeout(()=>whenReady(cb,tries+1),150);}
+let _struct=null;
+async function loadStructure(sym,taxid){
+  const host=$('#struct'); if(!host) return;
+  let s; try{ s=await (await fetch(`/api/gene_structure?gene=${encodeURIComponent(sym)}&taxid=${taxid}`)).json(); }
+  catch(e){ host.innerHTML='<div class="struct-none">Structure viewer unavailable</div>'; return; }
+  if(!s.available){ host.innerHTML='<div class="struct-none">No 3D structure on record for this gene</div>'; return; }
+  _struct=s;
+  const opts=[];
+  if(s.alphafold_pdb_url) opts.push({v:'af',label:`AlphaFold model v${s.alphafold_version||''}`});
+  (s.experimental||[]).forEach((e,i)=>opts.push({v:'x'+i,label:`PDB ${e.pdb_id} · ${e.resolution?e.resolution+'Å':''}`}));
+  const sel=opts.length>1?`<select class="struct-sel" id="struct-sel">${opts.map(o=>`<option value="${o.v}">${esc(o.label)}</option>`).join('')}</select>`:'';
+  host.innerHTML=`<div id="viewer" style="width:100%;height:100%"></div><div class="struct-cap" id="struct-cap"></div>`;
+  if(sel){ $('#struct-cap').insertAdjacentHTML('beforeend',sel); $('#struct-sel').addEventListener('change',e=>drawStruct(e.target.value)); }
+  whenReady(fail=>{ if(fail){host.innerHTML='<div class="struct-none">3D viewer failed to load</div>';return;} drawStruct('af'); });
+}
+async function drawStruct(which){
+  const s=_struct, host=$('#viewer'); if(!host||!s) return;
+  let url,isAF,cap;
+  if(which==='af'&&s.alphafold_pdb_url){ url=s.alphafold_pdb_url; isAF=true; cap=`<span class="badge pred">AlphaFold predicted</span> confidence-coloured (pLDDT)`; }
+  else{ const e=s.experimental[parseInt(which.slice(1))]||s.experimental[0]; if(!e){return;} url=e.url; isAF=false; cap=`<span class="badge exp">Experimental</span> PDB ${e.pdb_id} · ${esc(e.method||'')}${e.resolution?' · '+e.resolution+'Å':''}`; }
+  try{
+    const data=await (await fetch(url)).text();
+    host.innerHTML='';
+    const v=$3Dmol.createViewer(host,{backgroundColor:'#FCFCFB'});
+    v.addModel(data,'pdb');
+    if(isAF) v.setStyle({},{cartoon:{colorscheme:{prop:'b',gradient:'roygb',min:50,max:90}}});
+    else v.setStyle({},{cartoon:{color:'spectrum'}});
+    v.zoomTo(); v.render();
+    try{ v.spin('y',0.4); }catch(e){ try{ v.spin('y'); }catch(_){} }   // slow auto-rotate
+    const c=$('#struct-cap'); const selEl=$('#struct-sel');
+    c.innerHTML=cap; if(selEl) c.appendChild(selEl);
+  }catch(e){ const c=$('#struct-cap'); if(c) c.innerHTML='<span class="badge exp">unavailable</span> could not fetch structure file'; }
+}
+
+/* ---------- Predicted functions (deterministic, guilt-by-association, no LLM) ---------- */
+async function loadPredictions(sym,taxid){
+  const body=$('#pred-body'); if(!body) return;
+  let d; try{ d=await (await fetch(`/api/gene_predictions?gene=${encodeURIComponent(sym)}&taxid=${taxid}`)).json(); }
+  catch(e){ body.className='';body.style.color='var(--faint)';body.textContent='Prediction engine unreachable.';return; }
+  if(!d.predictions||!d.predictions.length){
+    body.className='';body.style.color='var(--faint)';
+    body.textContent=`No confident novel-function predictions — ${sym}'s associations mostly recover functions it is already annotated with.`;return;
+  }
+  const items=d.predictions.map(p=>{
+    const chips=p.supporters.map(s=>`<i>${esc(s)}</i>`).join('');
+    const lay=p.layers.map(l=>`<u>${l==='coess'?'co-essentiality':'STRING'}</u>`).join(' + ');
+    return `<li class="pred-item">
+      <div class="pred-h"><span class="pred-dot ${p.confidence}"></span><b>${esc(p.function)}</b><span class="pred-conf ${p.confidence}">${p.confidence}</span></div>
+      <div class="pred-ex">${esc(p.explanation)}</div>
+      <div class="pred-ev">${chips} <span class="pred-lay">${lay}</span></div>
+    </li>`;
+  }).join('');
+  body.className='pred-out';
+  body.innerHTML=`<div class="src"><b>Inferred</b> · guilt-by-association from STRING + co-essentiality — HYPOTHESES for follow-up, not curated facts</div>`+
+    `<p class="pred-intro">Beyond the ${d.n_known_bp} biological processes ${esc(sym)} is already annotated with, its functional associations point to candidate roles it is <em>not</em> yet annotated with:</p>`+
+    `<ul class="pred-list">${items}</ul>`+
+    `<div class="note-line">Ranked by evidence strength. Each is a testable hypothesis; the supporting genes and layers are the evidence. <b>high</b> = both independent layers agree.</div>`;
+}
+
+/* ---------- CRISPR screen-hit analysis (the only LLM call) — per phenotype ---------- */
+async function loadScreenAnalysis(sym,taxid){
+  const body=$('#scr-body'); if(!body) return;
+  try{
+    const r=await fetch(`/api/screen_analysis?gene=${encodeURIComponent(sym)}&taxid=${taxid}`);
+    const d=await r.json();
+    if(!r.ok||!(d.by_phenotype&&d.by_phenotype.length)){
+      body.className='';body.style.color='var(--faint)';
+      body.textContent=(d.error||'Screen analysis needs the WashU LLM gateway — connect the network and reload. The screen facts below are shown regardless.');return;
+    }
+    const rows=d.by_phenotype.map(x=>
+      `<div class="scr-row"><div class="scr-ph"><i style="background:${pcol(x.phenotype)}"></i>${esc(x.phenotype)}</div><div class="scr-ins">${esc(x.insight)}</div></div>`).join('');
+    body.className='scr-out';
+    body.innerHTML=(d.overall?`<p class="scr-over">${esc(d.overall)}</p>`:'')+
+      `<div class="scr-list">${rows}</div>`+
+      (d.model?`<div class="mdl">— ${esc(d.model)}, per phenotype over ${d.n_screens} screen hits only</div>`:'');
+  }catch(e){ body.className='';body.style.color='var(--faint)';body.textContent='Screen analysis unavailable — server unreachable.'; }
+}
+
+/* ---------- disclosure (delegated) ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.more'); if(!b) return;
+  const box=b.closest('.reveal'); if(!box) return;
+  if(!b.dataset.more) b.dataset.more=b.textContent;      // remember the original "show more" label
+  const collapsed=box.getAttribute('data-collapsed')==='true';
+  box.setAttribute('data-collapsed',collapsed?'false':'true');
+  b.textContent=collapsed?'show less':b.dataset.more;
+});
+
+/* ---------- lookup ---------- */
+async function lookup(g){
+  g=(g||'').trim(); if(!g) return;
+  const taxid=$('#tax').value;
+  document.body.classList.remove('landing');
+  $('#empty').style.display='none'; $('#gw').classList.remove('show'); $('#gw').innerHTML=''; $('#foot').innerHTML='';
+  const st=$('#status'); st.style.display='block'; st.className='status'; st.textContent='Assembling '+g+'…';
+  try{
+    const r=await fetch(`/api/gene_wiki?gene=${encodeURIComponent(g)}&taxid=${taxid}`);
+    const d=await r.json();
+    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    st.style.display='none';
+    history.replaceState(null,'',`/gene?gene=${encodeURIComponent(d.identity.symbol)}&taxid=${taxid}`);
+    document.title=`${d.identity.symbol} · RETICLE gene wiki`;
+    window.scrollTo(0,0);
+    render(d);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+}
+// top-bar search (results view)
+$('#go').addEventListener('click',()=>lookup($('#q').value));
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter')lookup($('#q').value);});
+// centred landing search
+function goLanding(){ $('#tax').value=$('#tax2').value; $('#q').value=$('#q2').value; lookup($('#q2').value); }
+$('#go2').addEventListener('click',goLanding);
+$('#q2').addEventListener('keydown',e=>{if(e.key==='Enter')goLanding();});
+document.querySelectorAll('.land .ex b').forEach(b=>b.addEventListener('click',()=>{$('#q').value=$('#q2').value=b.dataset.g;lookup(b.dataset.g);}));
+
+// dot-wave field pinned to the bottom of the landing screen (ported from the harmonization prototype)
+function initWave(){
+  const canvas=document.getElementById('wave-canvas'); if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const mouse={x:-1000,y:-1000,active:false};
+  function resize(){const r=canvas.getBoundingClientRect();const dpr=window.devicePixelRatio||1;canvas.width=r.width*dpr;canvas.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  window.addEventListener('resize',resize); resize();
+  canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;mouse.active=true;});
+  canvas.addEventListener('mouseleave',()=>{mouse.active=false;mouse.x=mouse.y=-1000;});
+  const cols=50,rows=8,rowSpacing=8; let time=0;
+  function animate(){
+    if(!document.body.classList.contains('landing')) return;   // stop once a gene is shown
+    const dpr=window.devicePixelRatio||1, W=canvas.width/dpr, H=canvas.height/dpr;
+    ctx.clearRect(0,0,W,H); time+=0.015;
+    const spacingX=W/(cols-1), midY=H/2;
+    for(let r=0;r<rows;r++){
+      const depth=r/(rows-1), alpha=0.12+depth*0.4, size=1.0+depth*2.0;
+      for(let c=0;c<cols;c++){
+        const baseX=c*spacingX, baseY=midY+(r-(rows-1)/2)*rowSpacing;
+        const angle=c*0.15+time+r*0.4, waveOffset=Math.sin(angle)*12*(0.6+depth*0.8);
+        let x=baseX, y=baseY+waveOffset;
+        if(mouse.active){const dx=x-mouse.x,dy=y-mouse.y,dist=Math.sqrt(dx*dx+dy*dy);
+          if(dist<80){const f=(80-dist)/80,a=Math.atan2(dy,dx);x+=Math.cos(a)*f*15;y+=Math.sin(a)*f*10;}}
+        const p=c/(cols-1);
+        const red=Math.round(31+p*(224-31)), green=Math.round(111+p*(138-111)), blue=Math.round(139+p*(60-139));
+        ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2); ctx.fillStyle=`rgba(${red},${green},${blue},${alpha})`; ctx.fill();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+initWave();
+
+const params=new URLSearchParams(location.search);
+if(params.get('gene')){ $('#q').value=params.get('gene'); if(params.get('taxid')){$('#tax').value=$('#tax2').value=params.get('taxid');} lookup(params.get('gene')); }
+</script>
+</body>
+</html>

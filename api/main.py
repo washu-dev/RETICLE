@@ -4,16 +4,19 @@ import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+# Import config FIRST: importing it pulls the RETICLE/* secrets from AWS Secrets
+# Manager into the environment (AWS_DB_*, SSO_*, ...). This must run before any
+# module that reads those env vars at import time (e.g. services.db_service,
+# imported transitively by the routers below).
+from config import settings
+from routers.auth import router as auth_router
+from routers.explorer import router as explorer_router
 from routers.genes import router as genes_router
 from routers.query import router as query_router
-
-# Load environment variables from .env file early
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -77,16 +80,24 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
+# CORS. SSO is handled client-side (MSAL.js in the SPA); the webapp talks to the
+# API cross-origin with no cookies — so credentials are disabled. We still scope
+# the allowed origins to the frontend URL (+ any CORS_ALLOW_ORIGINS) rather than
+# "*", which also keeps us clear of the OWASP wildcard-with-credentials misconfig.
+_cors_origins = settings.cors_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(query_router)
 app.include_router(genes_router)
+app.include_router(explorer_router)
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -107,6 +118,9 @@ async def get_greetings() -> GreetingsResponse:
 
 @app.post("/api/login", response_model=LoginResponse)
 async def login(request: LoginRequest) -> LoginResponse:
+    # DEPRECATED placeholder — real auth is Microsoft Entra SSO under
+    # /api/auth/* (see routers/auth.py). Kept only for legacy tests; not wired
+    # to the frontend. Do not build on this.
     logger.info(f"POST /api/login called by user: {request.username}")
 
     if not request.username or not request.password:

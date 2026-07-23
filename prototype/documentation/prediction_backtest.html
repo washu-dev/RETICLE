@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETICLE — Function-Prediction Backtest</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f8fafc; --panel2:#eef2f7; --line:#e2e8f0; --line2:#cbd5e1;
+    --ink:#1a2433; --muted:#52617a; --faint:#94a3b8;
+    --accent:#0284c7; --accent2:#059669; --warn:#d97706; --pink:#db2777; --violet:#7c3aed; --red:#dc2626;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:15.5px}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:1px 6px;border-radius:5px;color:#0b4f6c;border:1px solid var(--line)}
+  .wrap{display:flex;min-height:100vh}
+  nav.side{width:262px;flex:0 0 262px;background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 16px}
+  main{flex:1;max-width:1000px;margin:0 auto;padding:42px 52px 120px;min-width:0}
+  @media(max-width:880px){nav.side{display:none}main{padding:24px}}
+  .brand{font-weight:800;font-size:21px;letter-spacing:.5px;color:#0f172a}
+  .brand .dot{color:var(--accent)}
+  .tag{color:var(--muted);font-size:12px;margin-bottom:20px}
+  nav.side h4{color:var(--faint);text-transform:uppercase;font-size:10.5px;letter-spacing:1.4px;margin:18px 8px 6px}
+  nav.side a{display:block;color:var(--muted);padding:6px 10px;border-radius:7px;font-size:13.5px;border-left:2px solid transparent}
+  nav.side a:hover{background:#fff;color:var(--ink);text-decoration:none}
+  nav.side a.active{color:#0f172a;background:#fff;border-left:2px solid var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  h1{font-size:34px;margin:0 0 8px;letter-spacing:-.6px;color:#0f172a}
+  h2{font-size:25px;margin:0 0 16px;padding-bottom:9px;border-bottom:2px solid var(--line);scroll-margin-top:20px;color:#0f172a}
+  h3{font-size:18px;margin:26px 0 8px;color:#0f172a}
+  section{margin-bottom:60px;scroll-margin-top:20px}
+  p{color:#33415a} .lead{font-size:17px;color:var(--muted);max-width:70ch}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;vertical-align:middle;letter-spacing:.4px}
+  .pill.done{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:720px){.grid4{grid-template-columns:1fr 1fr}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-align:center}
+  .stat .n{font-size:26px;font-weight:800;color:#0f172a;font-family:var(--mono)}
+  .stat .n.g{color:var(--accent2)} .stat .n.b{color:var(--accent)} .stat .n.a{color:var(--warn)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .note{border-left:3px solid var(--accent);background:#f0f9ff;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0}
+  .note.warn{border-color:var(--warn);background:#fffbeb} .note.good{border-color:var(--accent2);background:#f0fdf4}
+  .note b{color:#0f172a}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--faint);text-transform:uppercase;font-size:10.5px;letter-spacing:.8px;background:var(--panel)}
+  tbody tr:hover{background:var(--panel2)}
+  td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .win td{background:#f0fdf4} .flr td{color:var(--faint)}
+  .steps{counter-reset:s;margin:14px 0;padding:0;list-style:none}
+  .steps li{position:relative;padding:10px 0 10px 44px;border-bottom:1px solid var(--line)}
+  .steps li:last-child{border-bottom:0}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  .steps b{color:#0f172a}
+  figure{margin:20px 0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center}
+  pre{background:#0f172a;color:#e2e8f0;border-radius:10px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6}
+  .mark{font-family:var(--mono);font-weight:700} .ok{color:var(--accent2)} .no{color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="side">
+  <div class="brand">RETICLE<span class="dot">.</span></div>
+  <div class="tag">Function-prediction backtest</div>
+  <h4>Contents</h4>
+  <a href="#why">1 · Why backtest</a>
+  <a href="#idea">2 · The idea</a>
+  <a href="#method">3 · The method</a>
+  <a href="#example">4 · Worked example</a>
+  <a href="#metrics">5 · The metrics</a>
+  <a href="#results">6 · Results</a>
+  <a href="#circularity">7 · The circularity test</a>
+  <a href="#meaning">8 · What it means</a>
+  <a href="#reproduce">9 · Reproduce</a>
+</nav>
+
+<main>
+  <p style="font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.5px;margin:0 0 6px">RETICLE · PREDICTION FEATURE · v0 VALIDATION</p>
+  <h1>Can we predict a gene's undiscovered functions?</h1>
+  <p class="lead">Before building a feature that <em>predicts</em> gene function, we had to prove the signal is real and not a circular artefact. This is how the leave-one-out backtest works, what the numbers mean, and what it tells us.</p>
+  <div class="grid4" style="margin-top:22px">
+    <div class="stat"><div class="n b">0.61</div><div class="l">clean-STRING hit@10</div></div>
+    <div class="stat"><div class="n g">0.24</div><div class="l">co-essentiality hit@10<br>(orthogonal)</div></div>
+    <div class="stat"><div class="n a">0.02</div><div class="l">random baseline</div></div>
+    <div class="stat"><div class="n">30×</div><div class="l">lift over chance</div></div>
+  </div>
+
+  <section id="why">
+    <h2>1 · Why backtest at all</h2>
+    <p>The prediction idea is <b>guilt by association</b>: a gene's function can be inferred from the company it keeps — the genes it co-behaves with. But two worries could make that worthless:</p>
+    <ul>
+      <li><b>Is there any signal?</b> Maybe co-behaving genes don't actually share function, and we'd just be generating noise dressed as insight.</li>
+      <li><b>Is it circular?</b> If we predict a gene's function from data that was itself <em>built from</em> function annotations, we'd just be laundering known annotations back out and calling it a "prediction".</li>
+    </ul>
+    <p>A backtest answers both with numbers, on genes whose functions we already know.</p>
+  </section>
+
+  <section id="idea">
+    <h2>2 · The idea: an open-book exam we already have the answers to</h2>
+    <p>Take a batch of genes whose functions are already well documented. <b>Hide the answers</b>, let the method guess each gene's functions using only its neighbours, then <b>grade against the hidden answer key</b>. If it scores far above random on genes we know, we can trust it on genes we <em>don't</em> know — which is the actual product.</p>
+    <div class="note good"><b>Key property — no cheating.</b> When predicting a gene's functions, the engine is <b>never allowed to look at that gene's own annotations</b>. It uses only the neighbours' annotations. The gene's real functions are used <em>only</em> to grade the result afterwards.</div>
+  </section>
+
+  <section id="method">
+    <h2>3 · The method, step by step</h2>
+    <ol class="steps">
+      <li><b>Pick a target gene &amp; seal its answer key.</b> Its true GO Biological-Process functions are set aside — the predictor cannot see them.</li>
+      <li><b>Gather neighbours.</b> From one association layer (e.g. STRING), take the target's top-25 partners — <em>other</em> genes it associates with — each with a confidence weight.</li>
+      <li><b>Let neighbours vote.</b> For every function, add up the weights of the neighbours annotated with it. A function backed by many high-confidence neighbours scores high.</li>
+      <li><b>Rank → predictions.</b> Sort functions by score. This ranked list is the prediction — assembled entirely from neighbours.</li>
+      <li><b>Unseal &amp; grade.</b> Reveal the target's real functions and check where they land in the ranking.</li>
+    </ol>
+    <figure>
+      <svg viewBox="0 0 780 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Five-step backtest process">
+        <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/></marker></defs>
+        <rect x="8" y="40" width="150" height="92" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="20" y="64" font-family="var(--sans)" font-size="13" font-weight="700" fill="#0f172a">① Target</text>
+        <text x="20" y="86" font-family="var(--mono)" font-size="13" fill="#0284c7">GABRA5</text>
+        <text x="20" y="106" font-family="var(--sans)" font-size="11" fill="#52617a">real functions</text>
+        <text x="20" y="121" font-family="var(--sans)" font-size="11" fill="#d97706" font-weight="700">🔒 SEALED</text>
+        <line x1="158" y1="86" x2="196" y2="86" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a)"/>
+        <rect x="196" y="30" width="170" height="112" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+        <text x="208" y="54" font-family="var(--sans)" font-size="13" font-weight="700" fill="#0f172a">② Neighbours</text>
+        <text x="208" y="76" font-family="var(--mono)" font-size="12" fill="#0369a1">GABRB2 · GABRG2</text>
+        <text x="208" y="93" font-family="var(--mono)" font-size="12" fill="#0369a1">GABRA1 · GPHN…</text>
+        <text x="208" y="116" font-family="var(--sans)" font-size="11" fill="#52617a">③ each votes with</text>
+        <text x="208" y="131" font-family="var(--sans)" font-size="11" fill="#52617a">its own functions</text>
+        <line x1="366" y1="86" x2="404" y2="86" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a)"/>
+        <rect x="404" y="30" width="184" height="112" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+        <text x="416" y="54" font-family="var(--sans)" font-size="13" font-weight="700" fill="#0f172a">④ Ranked predictions</text>
+        <text x="416" y="77" font-family="var(--mono)" font-size="12" fill="#b45309">1. GABA signaling</text>
+        <text x="416" y="95" font-family="var(--mono)" font-size="12" fill="#b45309">2. chloride transport</text>
+        <text x="416" y="113" font-family="var(--mono)" font-size="12" fill="#b45309">3. synapse assembly…</text>
+        <text x="416" y="132" font-family="var(--sans)" font-size="10.5" fill="#94a3b8">(from neighbours only)</text>
+        <line x1="588" y1="86" x2="626" y2="86" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a)"/>
+        <rect x="626" y="40" width="148" height="92" rx="10" fill="#f5f3ff" stroke="#ddd6fe"/>
+        <text x="638" y="64" font-family="var(--sans)" font-size="13" font-weight="700" fill="#0f172a">⑤ Grade</text>
+        <text x="638" y="86" font-family="var(--sans)" font-size="11" fill="#52617a">unseal answer key,</text>
+        <text x="638" y="101" font-family="var(--sans)" font-size="11" fill="#52617a">check the ranking</text>
+        <text x="638" y="122" font-family="var(--sans)" font-size="12" fill="#059669" font-weight="700">✓ recovered</text>
+        <path d="M700 132 C700 185, 90 178, 84 138" fill="none" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#a)"/>
+        <text x="300" y="182" font-family="var(--sans)" font-size="11.5" fill="#7c3aed" font-style="italic">the sealed answer key is only opened here — never used to make the prediction</text>
+      </svg>
+      <figcaption>The leave-one-out loop. Predictions are built entirely from a gene's neighbours; the gene's own known functions are revealed only to grade the result.</figcaption>
+    </figure>
+  </section>
+
+  <section id="example">
+    <h2>4 · A worked example — GABRA5</h2>
+    <p><code>GABRA5</code> is a GABA-A receptor subunit. Its documented functions include GABA signalling, GABAergic synaptic transmission, and chloride transport. We seal all of that, then let its STRING neighbours vote:</p>
+    <table>
+      <thead><tr><th>Candidate function (from neighbours)</th><th>Backed by neighbours</th><th>Votes</th></tr></thead>
+      <tbody>
+        <tr><td>gamma-aminobutyric acid signaling pathway</td><td class="mark">GABRB2, GABRG2, GABRA1…</td><td class="n">high</td></tr>
+        <tr><td>chloride transmembrane transport</td><td class="mark">GABRB2, GABRA1…</td><td class="n">high</td></tr>
+        <tr><td>inhibitory synapse assembly</td><td class="mark">GPHN, GABRG2…</td><td class="n">med</td></tr>
+        <tr class="flr"><td>(an unrelated function)</td><td class="mark">almost none</td><td class="n">~0</td></tr>
+      </tbody>
+    </table>
+    <p>The top-6 predictions for GABRA5 came out as:</p>
+    <div class="card" style="font-family:var(--mono);font-size:13px;line-height:1.9">
+      <span class="ok">✓ recovered</span> &nbsp;gamma-aminobutyric acid signaling pathway<br>
+      <span class="ok">✓ recovered</span> &nbsp;synaptic transmission, GABAergic<br>
+      <span class="ok">✓ recovered</span> &nbsp;chloride transmembrane transport<br>
+      <span class="ok">✓ recovered</span> &nbsp;monoatomic ion transmembrane transport<br>
+      <span class="ok">✓ recovered</span> &nbsp;regulation of postsynaptic membrane potential<br>
+      <span class="ok">✓ recovered</span> &nbsp;inhibitory synapse assembly<br>
+      <span style="color:#0f172a;font-weight:700">→ 6 / 6 recovered</span>
+    </div>
+    <div class="note"><b>What "6/6 recovered" means:</b> of the six top-ranked predictions, all six were functions GABRA5 <em>actually has</em> (<span class="ok mark">✓</span>) — surfaced without ever looking at GABRA5's own annotations. A prediction not already on the gene's record would be marked <span class="no mark">·</span> novel, i.e. a candidate new-function hypothesis.</div>
+  </section>
+
+  <section id="metrics">
+    <h2>5 · The two metrics</h2>
+    <h3>hit@k — does a real function make the top-k?</h3>
+    <p>For each gene, ask: <b>is at least one of its sealed real functions among the top-k predictions?</b> (yes = 1, no = 0). Averaged over all test genes. <code>hit@10 = 0.61</code> means for 61% of genes, a real function landed in the top-10 — the metric that maps directly to the product ("here are the top predictions; how often is a real one in there?").</p>
+    <h3>AUROC — is the whole ranking right?</h3>
+    <p>Across <em>all</em> 7,522 candidate functions, rank by score and ask whether the gene's true functions outrank its non-functions (the probability a true function beats a random non-function). It rewards partial hits ranked 11th, 12th… too, so it measures overall ranking quality. <code>0.5</code> = no signal; <code>1.0</code> = perfect.</p>
+    <div class="note warn"><b>The null baseline is the whole point.</b> The same test is run with <b>25 random genes</b> as "neighbours". Random neighbours only surface common, high-frequency functions, so a true function reaches the top-10 just <b>2%</b> of the time. Any layer that beats this floor carries real signal — and it also proves the score isn't just "common terms win".</div>
+  </section>
+
+  <section id="results">
+    <h2>6 · Results</h2>
+    <p>400 randomly sampled genes, 25 neighbours each, GO Biological-Process terms of size 5–300 genes as the candidate universe.</p>
+    <figure>
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="hit@10 by association layer">
+        <!-- axis -->
+        <text x="16" y="20" font-family="var(--sans)" font-size="12.5" font-weight="700" fill="#0f172a">hit@10 — a real function in the top-10 predictions</text>
+        <g font-family="var(--mono)" font-size="10" fill="#94a3b8">
+          <line x1="210" y1="40" x2="210" y2="258" stroke="#e2e8f0"/><text x="210" y="274" text-anchor="middle">0</text>
+          <line x1="360" y1="40" x2="360" y2="258" stroke="#eef2f7"/><text x="360" y="274" text-anchor="middle">0.25</text>
+          <line x1="510" y1="40" x2="510" y2="258" stroke="#eef2f7"/><text x="510" y="274" text-anchor="middle">0.50</text>
+          <line x1="660" y1="40" x2="660" y2="258" stroke="#eef2f7"/><text x="660" y="274" text-anchor="middle">0.75</text>
+        </g>
+        <!-- bars: scale 0.75 -> 450px (210..660) -->
+        <g font-family="var(--sans)" font-size="12.5">
+          <!-- string full 0.68 -->
+          <text x="200" y="60" text-anchor="end" fill="#0f172a" font-weight="600">STRING (full)</text>
+          <rect x="210" y="48" width="408" height="20" rx="3" fill="#0284c7"/><text x="626" y="62" font-family="var(--mono)" font-size="12" fill="#0369a1">0.68</text>
+          <!-- string clean 0.61 -->
+          <text x="200" y="94" text-anchor="end" fill="#0f172a" font-weight="600">STRING-clean</text>
+          <rect x="210" y="82" width="366" height="20" rx="3" fill="#0ea5e9"/><text x="584" y="96" font-family="var(--mono)" font-size="12" fill="#0369a1">0.61</text>
+          <!-- coess 0.24 -->
+          <text x="200" y="128" text-anchor="end" fill="#0f172a" font-weight="600">co-essentiality</text>
+          <rect x="210" y="116" width="144" height="20" rx="3" fill="#059669"/><text x="362" y="130" font-family="var(--mono)" font-size="12" fill="#047857">0.24</text>
+          <!-- screencorr 0.11 -->
+          <text x="200" y="162" text-anchor="end" fill="#0f172a" font-weight="600">screen-corr (RETICLE)</text>
+          <rect x="210" y="150" width="66" height="20" rx="3" fill="#d97706"/><text x="284" y="164" font-family="var(--mono)" font-size="12" fill="#b45309">0.11</text>
+          <!-- coscreen 0.09 -->
+          <text x="200" y="196" text-anchor="end" fill="#0f172a" font-weight="600">co-screen (BioGRID)</text>
+          <rect x="210" y="184" width="54" height="20" rx="3" fill="#f59e0b"/><text x="272" y="198" font-family="var(--mono)" font-size="12" fill="#b45309">0.09</text>
+          <!-- null 0.02 -->
+          <text x="200" y="230" text-anchor="end" fill="#94a3b8" font-weight="600">random baseline</text>
+          <rect x="210" y="218" width="12" height="20" rx="3" fill="#cbd5e1"/><text x="230" y="232" font-family="var(--mono)" font-size="12" fill="#94a3b8">0.02</text>
+        </g>
+      </svg>
+      <figcaption>Every association layer beats the 2% random floor. STRING is strongest; co-essentiality is the strongest <em>annotation-independent</em> layer; RETICLE's own screen layers carry modest but real signal.</figcaption>
+    </figure>
+    <table>
+      <thead><tr><th>Association layer</th><th style="text-align:right">AUROC</th><th style="text-align:right">hit@5</th><th style="text-align:right">hit@10</th><th style="text-align:right">hit@20</th></tr></thead>
+      <tbody>
+        <tr class="win"><td><b>STRING (full)</b></td><td class="n">0.815</td><td class="n">0.61</td><td class="n">0.68</td><td class="n">0.74</td></tr>
+        <tr class="win"><td><b>STRING-clean</b> <span style="color:#52617a">— no database/text-mining</span></td><td class="n">0.791</td><td class="n">0.54</td><td class="n">0.61</td><td class="n">0.67</td></tr>
+        <tr><td>co-essentiality <span style="color:#52617a">— DepMap, orthogonal</span></td><td class="n">0.600</td><td class="n">0.21</td><td class="n">0.24</td><td class="n">0.26</td></tr>
+        <tr><td>screen-corr <span style="color:#52617a">— RETICLE fitness matrix</span></td><td class="n">0.564</td><td class="n">0.09</td><td class="n">0.11</td><td class="n">0.15</td></tr>
+        <tr><td>co-screen <span style="color:#52617a">— BioGRID co-hit</span></td><td class="n">0.551</td><td class="n">0.07</td><td class="n">0.09</td><td class="n">0.12</td></tr>
+        <tr class="flr"><td>random baseline (null)</td><td class="n">0.520</td><td class="n">0.01</td><td class="n">0.02</td><td class="n">0.04</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="circularity">
+    <h2>7 · The circularity test</h2>
+    <p>STRING scores best — but part of a STRING edge comes from a <code>database</code> channel (curated pathways) and a <code>textmining</code> channel (literature co-mention), both derived from the same knowledge GO annotations come from. Predicting GO from those channels would be partly circular. So we re-ran STRING using <b>only the annotation-independent channels</b> — experimental, co-expression, and genomic context — recombined the way STRING does.</p>
+    <div class="grid4">
+      <div class="stat"><div class="n b">0.68</div><div class="l">STRING full · hit@10</div></div>
+      <div class="stat"><div class="n b">0.61</div><div class="l">STRING-clean · hit@10</div></div>
+      <div class="stat"><div class="n">−0.07</div><div class="l">the whole circular effect</div></div>
+      <div class="stat"><div class="n g">0.24</div><div class="l">co-essentiality<br>(zero circularity)</div></div>
+    </div>
+    <div class="note good"><b>Circularity is not the driver.</b> Removing both annotation-derived channels barely moved the result (hit@10 0.68 → 0.61; AUROC 0.815 → 0.791). About <b>90% of STRING's predictive power survives</b> using only independent experimental evidence. And co-essentiality — pure dependency correlation, completely independent of any annotation — still recovers hidden function at <b>12× the random rate</b>. Two independent evidence chains both confirm: the signal is real biology, not laundered annotation.</div>
+  </section>
+
+  <section id="meaning">
+    <h2>8 · What it means for the feature</h2>
+    <p>One engine, two uses:</p>
+    <table>
+      <thead><tr><th>Applied to…</th><th>Top predictions are…</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>a well-studied gene (GABRA5)</td><td>functions it already has → grades the method</td><td><span class="ok mark">✓ recovered</span></td></tr>
+        <tr><td>a <b>dark / under-annotated</b> gene</td><td>functions it does <em>not</em> yet have → new hypotheses</td><td><span class="no mark">· novel</span></td></tr>
+      </tbody>
+    </table>
+    <p>Because the method recovers hidden truth 30× above chance on genes we know, its novel predictions on genes we don't know are trustworthy <b>hypotheses for experimental follow-up</b> — not asserted facts. Every prediction ships with its evidence trail: which neighbours support it, from which layers, at what confidence.</p>
+    <h3>Honest caveats</h3>
+    <ul>
+      <li><b>No direct leakage:</b> a gene's own annotations are never used to predict itself; a small second-order effect (a neighbour annotated <em>by transfer</em> from the target) remains, and is why we lean on the orthogonal co-essentiality layer.</li>
+      <li><b>RETICLE's own layers are still modest</b> because the current screen matrix is almost all fitness (growth) screens — one axis. Using the full phenotype-diverse screen set is expected to strengthen this differentiated signal.</li>
+      <li><b>A high score is not truth.</b> Predictions are framed as ranked hypotheses, always with the supporting evidence exposed.</li>
+    </ul>
+  </section>
+
+  <section id="reproduce">
+    <h2>9 · Reproduce</h2>
+    <pre>/opt/anaconda3/bin/python3 script/predict_backtest.py \
+    --db processed_data/kb.db \
+    --depmap /Volumes/aorvedahl-RETICLE/Active/data/depmap/CRISPRGeneEffect.csv \
+    --screenmat processed_data/coess_9606.npz \
+    --k 25 --sample 400</pre>
+    <p style="color:var(--muted);font-size:13.5px">Needs the anaconda Python (numpy / pandas / scikit-learn). GO Biological-Process annotations come from the local <code>kb.db</code>; DepMap and the harmonised screen matrix supply the co-behaviour layers.</p>
+  </section>
+
+  <p style="color:var(--faint);font-size:12px;border-top:1px solid var(--line);padding-top:16px;margin-top:40px">RETICLE — function-prediction backtest · v0 proof-of-signal · all numbers from <code>script/predict_backtest.py</code>.</p>
+</main>
+</div>
+<script>
+  const secs=[...document.querySelectorAll('main section')], links={};
+  document.querySelectorAll('nav.side a').forEach(a=>links[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
+    Object.values(links).forEach(a=>a.classList.remove('active'));
+    (links[e.target.id]||{}).classList?.add('active');}});},{rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

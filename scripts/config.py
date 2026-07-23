@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 RETICLE Versioned Data Warehouse Configuration Management
 
@@ -36,6 +38,12 @@ class Config:
     BACKUP_DIR = DATA_DIR / 'backups'
     LOG_DIR = Path(os.getenv('LOG_DIR', '../logs'))
 
+    # Staging output directory (for GPU/CPU split pipeline)
+    # Must be on shared filesystem if running across multiple HPC nodes
+    # Default: /tmp/reticle_staging (works for single-node, fails for multi-node)
+    # Set STAGING_DIR to a shared filesystem path for multi-node HPC
+    STAGING_OUTPUT_DIR = Path(os.getenv('STAGING_DIR', '/tmp/reticle_staging'))
+
     # Organisms to process
     ORGANISMS = {
         'homo_sapiens': {
@@ -56,7 +64,10 @@ class Config:
     PIPELINE_VERSION = os.getenv('PIPELINE_VERSION', '1.0.0')
 
     # Logging
-    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    # Normalize to upper-case: logging.basicConfig(level=...) only accepts the
+    # canonical upper-case level names (e.g. 'DEBUG'), so a lower-case LOG_LEVEL
+    # like 'debug' would raise "ValueError: Unknown level: 'debug'".
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     # Validation

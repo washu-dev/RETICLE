@@ -37,6 +37,10 @@ _PG_PARAMS = (
         "user": os.getenv("AWS_DB_USER"),
         "password": os.getenv("AWS_DB_PASSWORD"),
         "dbname": os.getenv("AWS_DB_NAME"),
+        # Force UTF-8 decoding of text; otherwise psycopg2 falls back to the
+        # client's locale encoding (Latin-1/CP1252 on Windows), which turns
+        # UTF-8 data like "17β-estradiol" into mojibake ("17Î²-estradiol").
+        "client_encoding": "utf-8",
         "connect_timeout": 15,
         "keepalives": 1,
         "keepalives_idle": 20,
@@ -95,6 +99,34 @@ def db_fetchall(sql: str, params: tuple = ()) -> list[_Row]:
     try:
         rows = con.execute(sql, params).fetchall()
         return [_Row(dict(r)) for r in rows]
+    finally:
+        con.close()
+
+
+def db_execute(sql: str, params: tuple = ()) -> None:
+    """Run a write (INSERT/UPDATE/DDL) against the configured backend and commit.
+
+    Same `?`-placeholder convention as db_fetchall. Callers that must not fail on
+    a write (e.g. best-effort caching) should wrap this in try/except.
+    """
+    if USE_PG:
+        import psycopg2
+
+        assert _PG_PARAMS is not None
+        con = psycopg2.connect(**_PG_PARAMS)
+        try:
+            cur = con.cursor()
+            cur.execute("SET search_path TO reticle, public")
+            cur.execute(sql.replace("?", "%s"), params)
+            con.commit()
+        finally:
+            con.close()
+        return
+
+    con = sqlite3.connect(str(_SQLITE_PATH))
+    try:
+        con.execute(sql, params)
+        con.commit()
     finally:
         con.close()
 

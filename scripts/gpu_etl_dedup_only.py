@@ -13,7 +13,7 @@ Performance:
 Usage:
   python gpu_etl_dedup_only.py --version 2
 
-Output files (in /tmp/reticle_staging/):
+Output files (in ${STAGING_DIR} or /tmp/reticle_staging/):
   - staging_screen_v2.csv         (screens for loading)
   - staging_screen_gene_v2.csv    (deduplicated pairs for loading)
   - dedup_metadata_v2.json        (statistics)
@@ -24,7 +24,6 @@ import csv
 import json
 import logging
 import sys
-import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -45,7 +44,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 PIPE_DELIMITER = '|'
-TEMP_DIR = Path(tempfile.gettempdir()) / 'reticle_staging'
+TEMP_DIR = Config.STAGING_OUTPUT_DIR
 
 
 class GPUDedupPhase:
@@ -141,10 +140,10 @@ class GPUDedupPhase:
             screens = cursor.fetchall()
             self.stats['screens_loaded'] = len(screens)
 
-            # Write screens to CSV
+            # Write screens to CSV (quote only non-numeric fields for safety)
             csv_file = TEMP_DIR / f'staging_screen_v{self.version_id}.csv'
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, delimiter=PIPE_DELIMITER)
+                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_NONNUMERIC)
                 for screen in screens:
                     writer.writerow(screen)
 
@@ -248,10 +247,10 @@ class GPUDedupPhase:
 
             logger.info(f"  After dedup: {len(dedup_pairs):,} unique pairs")
 
-            # Write to CSV for CPU phase
+            # Write to CSV for CPU phase (quote only non-numeric fields for safety)
             csv_file = TEMP_DIR / f'staging_screen_gene_v{self.version_id}.csv'
             with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, delimiter=PIPE_DELIMITER)
+                writer = csv.writer(f, delimiter=PIPE_DELIMITER, quoting=csv.QUOTE_NONNUMERIC)
                 for pair in dedup_pairs:
                     writer.writerow(pair)
 
@@ -290,7 +289,7 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(
-        level=getattr(logging, args.log_level),
+        level=getattr(logging, args.log_level.upper(), logging.INFO),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
