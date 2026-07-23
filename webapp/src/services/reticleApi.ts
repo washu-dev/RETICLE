@@ -138,3 +138,185 @@ export async function fetchGeneDetail(
 ): Promise<GeneDetail> {
   return apiGet<GeneDetail>(`/api/genes/${symbol}`, { signal });
 }
+
+// ---------------------------------------------------------------------------
+// Explorer endpoints (/api/gene, /api/context, /api/network).
+// These return the ported prototype's payload shape VERBATIM — snake_case, no
+// camelCase aliasing (unlike the query/gene-detail endpoints above). The types
+// below mirror api/services/explorer_*.py exactly.
+// ---------------------------------------------------------------------------
+
+export type Lean = 'essential' | 'advantageous' | 'mixed';
+
+export interface PackedScreen {
+  screen_id: number;
+  cell_line: string;
+  screen_type: string;
+  analysis: string;
+  phenotype: string;
+  rationale: string;
+  percentile: number;
+  is_hit: number;
+}
+
+export interface DomainBlock {
+  n: number;
+  n_hits: number;
+  hit_rate: number;
+  median: number;
+  mean: number;
+  p25: number;
+  p75: number;
+  min: number;
+  max: number;
+  lean: Lean;
+  // Present only on a "full" block (fitness); omitted on the stress summary.
+  hist?: { edges: number[]; counts: number[] };
+  rug?: number[];
+  most_essential?: PackedScreen[];
+  most_advantageous?: PackedScreen[];
+  screens?: { p: number; cc: string; cn: string; h: number }[];
+}
+
+export interface StressFact {
+  screen_id: number;
+  author: string;
+  pmid: string;
+  cell_line: string;
+  sign: 'pos' | 'neg';
+}
+
+export interface StressLedgerEntry {
+  condition: string;
+  class: string;
+  direction: 'resist' | 'sensitise' | 'mixed';
+  net: number;
+  n_papers: number;
+  n_screens: number;
+  n_agree: number;
+  facts: StressFact[];
+}
+
+export interface ReporterFact {
+  screen_id: number;
+  author: string;
+  pmid: string;
+  cell_line: string;
+  phenotype: string;
+}
+
+export interface ReporterLedgerEntry {
+  process: string;
+  n_papers: number;
+  n_screens: number;
+  facts: ReporterFact[];
+  screens: number[];
+}
+
+export interface StressBlock extends DomainBlock {
+  ledger: StressLedgerEntry[];
+}
+
+export interface ReporterBlock {
+  n: number;
+  n_hits: number;
+  ledger: ReporterLedgerEntry[];
+}
+
+export interface GeneExplorer {
+  symbol: string;
+  query: string;
+  organism: string;
+  n_total: number;
+  primary: 'fitness' | 'stress' | 'reporter';
+  fitness: DomainBlock | null;
+  stress: StressBlock | null;
+  reporter: ReporterBlock;
+}
+
+export interface GeneAnnotation {
+  entrez: number | string | null;
+  name: string;
+  summary: string;
+  go_bp: number;
+  go_mf: number;
+  go_cc: number;
+  go_total: number;
+}
+
+export interface Darkness {
+  score: number;
+  pubmed_count: number;
+  go_total: number;
+  dark_pub: number;
+  dark_go: number;
+  band: 'dark' | 'grey' | 'bright';
+}
+
+export interface StringPartner {
+  partner: string;
+  score: number;
+}
+
+export interface GeneContext {
+  symbol: string;
+  annotation: GeneAnnotation | null;
+  darkness: Darkness | null;
+  string_partners: StringPartner[];
+}
+
+export interface NetworkNode {
+  name: string;
+  median: number | null;
+  lean: Lean | null;
+  focus: boolean;
+}
+
+export interface NetworkEdge {
+  a: string;
+  b: string;
+  score: number;
+  channels: Record<string, number>;
+}
+
+export interface GeneNetwork {
+  focus: string;
+  nodes: NetworkNode[];
+  edges: NetworkEdge[];
+}
+
+/** Map the UI's organism option to the NCBI organism string the API expects. */
+export function toApiOrganism(organism?: string): string {
+  return organism === 'Mouse' || organism === 'Mus musculus' ? 'Mus musculus' : 'Homo sapiens';
+}
+
+/** Per-gene behavior across screens, split by assay domain. 404s for unknown genes. */
+export async function fetchGeneExplorer(symbol: string, signal?: AbortSignal): Promise<GeneExplorer> {
+  return apiGet<GeneExplorer>(`/api/gene?symbol=${encodeURIComponent(symbol)}`, { signal });
+}
+
+/** External context: NCBI annotation, darkness rating, STRING partners. */
+export async function fetchGeneContext(
+  symbol: string,
+  organism = 'Homo sapiens',
+  signal?: AbortSignal
+): Promise<GeneContext> {
+  const org = toApiOrganism(organism);
+  return apiGet<GeneContext>(
+    `/api/context?symbol=${encodeURIComponent(symbol)}&org=${encodeURIComponent(org)}`,
+    { signal }
+  );
+}
+
+/** STRING subnetwork colored by CRISPR fitness. */
+export async function fetchGeneNetwork(
+  symbol: string,
+  organism = 'Homo sapiens',
+  signal?: AbortSignal
+): Promise<GeneNetwork> {
+  const org = toApiOrganism(organism);
+  return apiGet<GeneNetwork>(
+    `/api/network?symbol=${encodeURIComponent(symbol)}&org=${encodeURIComponent(org)}`,
+    { signal }
+  );
+}

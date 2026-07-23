@@ -170,7 +170,7 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
         </section>
       </DashboardShell>
 
-      <GeneDrawer symbol={drawerGene} onClose={() => setDrawerGene(null)} />
+      <GeneDrawer symbol={drawerGene} organism={options?.organism} onClose={() => setDrawerGene(null)} />
     </>
   );
 }
