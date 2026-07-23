@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RETICLE — Unified Shell (design prototype)</title>
+<meta name="description" content="Design prototype for GitHub issue #50 — unifying RETICLE's UI surfaces into one cohesive instrument. Dark mode, WashU-led." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   RETICLE unified shell — design prototype for issue #50
+   Tokens: WashU-led, dark mode. Red = identity only.
+   Data encodings use a colorblind-safe ramp (teal/orange/gold),
+   deliberately NOT red/green (WashU brand guidance + a11y).
+   ============================================================ */
+:root{
+  /* ground — warm near-black so WashU red reads true (not cold navy) */
+  --ground:#141210;
+  --panel:#1b1815;
+  --raised:#231f1b;
+  --raised-2:#2b261f;
+  --hair:#37312b;
+  --hair-bright:#4d443b;
+
+  /* ink — warm off-white, per WashU warm-gray neutral family */
+  --ink:#f4efe7;
+  --ink-2:#b7ab9c;
+  --ink-3:#7d7267;
+
+  /* WashU identity — red leads, green secondary. Reserved for brand. */
+  --red:#ba0c2f;            /* WashU Red */
+  --red-hi:#f0475f;         /* interactive red on dark */
+  --green:#215732;          /* WashU Green */
+  --green-hi:#5cbd83;       /* brightened green on dark */
+
+  /* data ramp — colorblind-safe, never red/green for meaning */
+  --teal:#41b8c6;           /* agree */
+  --orange:#f0894c;         /* inverted */
+  --gold:#f1b434;           /* dark-matter / darkness */
+  --violet:#a992f0;         /* gene series */
+  --slate:#8a8078;          /* unknown */
+
+  --radius:4px;             /* tight, instrument-like */
+  --radius-lg:8px;
+  --rail:64px;
+  --assistant:340px;
+  --tick:#5a4f45;
+
+  --shadow:0 10px 40px rgba(0,0,0,.5);
+  --disp:"Fraunces",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  /* faint graticule wash over the whole ground */
+  background-image:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+::selection{background:var(--red);color:#fff}
+a{color:inherit}
+
+/* focus visibility — quality floor */
+:focus-visible{outline:2px solid var(--red-hi);outline-offset:2px;border-radius:2px}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+
+.mono{font-family:var(--mono)}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+
+/* ============ APP SHELL GRID ============ */
+.app{
+  display:grid;
+  grid-template-columns:var(--rail) 1fr var(--assistant);
+  grid-template-rows:100vh;
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.app.assistant-collapsed{grid-template-columns:var(--rail) 1fr 0px}
+
+/* ============ LEFT RAIL (persistent nav) ============ */
+.rail{
+  background:var(--panel);
+  border-right:1px solid var(--hair);
+  display:flex;flex-direction:column;align-items:center;
+  padding:14px 0;gap:4px;
+  z-index:30;
+}
+.brand{
+  width:40px;height:40px;display:grid;place-items:center;
+  margin-bottom:18px;color:var(--red-hi);
+}
+.brand svg{display:block}
+.navbtn{
+  position:relative;width:44px;height:44px;border-radius:var(--radius);
+  display:grid;place-items:center;color:var(--ink-3);
+  transition:color .16s,background .16s;
+}
+.navbtn svg{width:20px;height:20px}
+.navbtn:hover{color:var(--ink);background:var(--raised)}
+.navbtn[aria-current="page"]{color:var(--ink)}
+.navbtn[aria-current="page"]::before{
+  content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:3px;
+  background:var(--red);border-radius:0 2px 2px 0;
+}
+.navbtn .lbl{
+  position:absolute;left:56px;white-space:nowrap;
+  background:var(--raised-2);color:var(--ink);
+  font-size:12px;padding:5px 9px;border-radius:var(--radius);
+  border:1px solid var(--hair);
+  opacity:0;pointer-events:none;transform:translateX(-4px);
+  transition:opacity .14s,transform .14s;z-index:40;
+}
+.navbtn:hover .lbl{opacity:1;transform:translateX(0)}
+.rail .spacer{flex:1}
+
+/* ============ MAIN COLUMN ============ */
+.main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* top context bar */
+.topbar{
+  height:52px;flex:0 0 auto;
+  border-bottom:1px solid var(--hair);
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px;background:var(--panel);
+}
+.topbar .wordmark{
+  font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:.01em;
+}
+.topbar .wordmark b{color:var(--red-hi);font-weight:600}
+.ctx{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.chip{
+  font-family:var(--mono);font-size:11px;color:var(--ink-2);
+  border:1px solid var(--hair);border-radius:var(--radius);
+  padding:3px 8px;background:var(--ground);white-space:nowrap;
+}
+.chip b{color:var(--ink);font-weight:500}
+.topbar .spacer{flex:1}
+.refset{
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  display:flex;align-items:center;gap:6px;
+}
+.refset .dot{width:6px;height:6px;border-radius:50%;background:var(--green-hi)}
+.sso{
+  display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  border:1px solid var(--hair);border-radius:var(--radius);padding:4px 8px 4px 4px;
+}
+.avatar{
+  width:24px;height:24px;border-radius:50%;background:var(--red);
+  display:grid;place-items:center;font-size:11px;color:#fff;font-weight:600;
+}
+
+/* view viewport */
+.viewport{position:relative;flex:1;overflow-y:auto;overflow-x:hidden}
+.view{display:none;padding:34px 44px 80px}
+.view:focus,.view:focus-visible{outline:none}
+.view.is-active{display:block;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.view-head{margin-bottom:26px;max-width:900px}
+.view-head h1{
+  font-family:var(--disp);font-weight:500;font-size:clamp(30px,4vw,46px);
+  line-height:1.02;margin:8px 0 10px;letter-spacing:-.01em;
+}
+.view-head p{color:var(--ink-2);margin:0;max-width:64ch;font-size:15px}
+
+/* ============ RETICLE SIGNATURE — target frame ============ */
+.scope{position:relative;border:1px solid var(--hair);border-radius:var(--radius-lg);
+  background:var(--panel);padding:22px 24px;}
+.scope::before,.scope::after,
+.scope > .tick-tr,.scope > .tick-bl{
+  content:"";position:absolute;width:14px;height:14px;pointer-events:none;
+  border-color:var(--tick);border-style:solid;border-width:0;
+}
+.scope::before{top:8px;left:8px;border-top-width:1.5px;border-left-width:1.5px}
+.scope::after{bottom:8px;right:8px;border-bottom-width:1.5px;border-right-width:1.5px}
+.scope > .tick-tr{top:8px;right:8px;border-top-width:1.5px;border-right-width:1.5px}
+.scope > .tick-bl{bottom:8px;left:8px;border-bottom-width:1.5px;border-left-width:1.5px}
+
+/* ============ HERO / target-acquire ============ */
+.hero{position:relative;overflow:hidden;padding:40px 40px 44px;margin-bottom:30px;
+  border:1px solid var(--hair);border-radius:var(--radius-lg);
+  background:
+    radial-gradient(120% 120% at 82% 20%, rgba(186,12,47,.10), transparent 55%),
+    var(--panel);
+}
+.hero .eyebrow{margin-bottom:16px}
+.hero h1{
+  font-family:var(--disp);font-weight:500;font-size:clamp(38px,6.4vw,80px);
+  line-height:.96;letter-spacing:-.02em;margin:0 0 18px;max-width:16ch;
+}
+.hero h1 em{font-style:italic;color:var(--red-hi)}
+.hero p{color:var(--ink-2);max-width:56ch;font-size:16.5px;margin:0 0 26px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+/* the crosshair that "acquires" the target gene */
+.crosshair{
+  position:absolute;right:6%;top:50%;transform:translateY(-50%);
+  width:260px;height:260px;pointer-events:none;
+}
+@media (max-width:1180px){.crosshair{display:none}}
+.crosshair .ring{
+  position:absolute;inset:0;border:1px solid var(--hair-bright);border-radius:50%;
+  animation:acquire 1.1s cubic-bezier(.2,.7,.2,1) both;
+}
+.crosshair .ring.r2{inset:40px;border-color:var(--hair);animation-delay:.08s}
+.crosshair .ring.r3{inset:96px;border-color:rgba(240,71,95,.5);animation-delay:.16s}
+.crosshair .h,.crosshair .v{position:absolute;background:var(--tick)}
+.crosshair .h{left:0;right:0;top:50%;height:1px}
+.crosshair .v{top:0;bottom:0;left:50%;width:1px}
+.crosshair .core{
+  position:absolute;left:50%;top:50%;width:11px;height:11px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:var(--red-hi);box-shadow:0 0 0 4px rgba(240,71,95,.18);
+  animation:lock 1.1s .34s both;
+}
+.crosshair .read{
+  position:absolute;left:calc(50% + 16px);top:calc(50% - 30px);
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  animation:lockread 1.1s .5s both;
+}
+@keyframes acquire{from{opacity:0;transform:scale(1.5) translateY(0)}to{opacity:1;transform:scale(1)}}
+.crosshair .ring.r3{animation-name:acquire}
+@keyframes lock{from{opacity:0;transform:translate(-50%,-50%) scale(.2)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes lockread{from{opacity:0}to{opacity:1}}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13.5px;font-weight:500;padding:10px 16px;border-radius:var(--radius);
+  border:1px solid var(--hair-bright);color:var(--ink);background:var(--raised);
+  transition:background .16s,border-color .16s,transform .06s;
+}
+.btn:hover{background:var(--raised-2);border-color:var(--tick)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.primary:hover{background:#a60a29;border-color:#a60a29}
+.btn svg{width:15px;height:15px}
+
+/* ============ BADGES (data encoding, NOT red/green) ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  padding:2px 8px;border-radius:100px;border:1px solid transparent;
+  white-space:nowrap;
+}
+.badge .d{width:6px;height:6px;border-radius:50%}
+.badge.agree{color:var(--teal);border-color:rgba(65,184,198,.35);background:rgba(65,184,198,.08)}
+.badge.agree .d{background:var(--teal)}
+.badge.inverted{color:var(--orange);border-color:rgba(240,137,76,.35);background:rgba(240,137,76,.08)}
+.badge.inverted .d{background:var(--orange)}
+.badge.unknown{color:var(--slate);border-color:rgba(138,128,120,.35);background:rgba(138,128,120,.08)}
+.badge.unknown .d{background:var(--slate)}
+.badge.dark{color:var(--gold);border-color:rgba(241,180,52,.35);background:rgba(241,180,52,.08)}
+.badge.dark .d{background:var(--gold)}
+.badge.ko{color:var(--violet);border-color:rgba(169,146,240,.3);background:rgba(169,146,240,.07)}
+.badge.crispra{color:var(--green-hi);border-color:rgba(92,189,131,.3);background:rgba(92,189,131,.07)}
+
+/* epistemic status — the tool states candidates vs findings */
+.beta-tag{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  color:var(--gold);border:1px solid rgba(241,180,52,.4);background:rgba(241,180,52,.08);
+  border-radius:100px;padding:3px 9px;white-space:nowrap;
+}
+/* confidence tier — effect ≠ support ≠ significance */
+.tier{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:2px 7px;border-radius:3px;border:1px solid}
+.tier.strong{color:var(--teal);border-color:rgba(65,184,198,.4)}
+.tier.moderate{color:var(--ink-2);border-color:var(--hair-bright)}
+.tier.weak{color:var(--ink-3);border-color:var(--hair)}
+.support{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.support b{color:var(--ink);font-weight:500}
+.support .n2{color:var(--ink-3)}
+
+/* banner — honesty about epistemic status */
+.banner{display:flex;align-items:flex-start;gap:11px;margin:2px 0 22px;
+  border:1px solid rgba(241,180,52,.3);background:rgba(241,180,52,.05);
+  border-radius:var(--radius-lg);padding:13px 16px;max-width:760px}
+.banner .ic{color:var(--gold);flex:0 0 auto;margin-top:1px}
+.banner .tx{font-size:13px;color:var(--ink-2);line-height:1.5}
+.banner .tx b{color:var(--ink);font-weight:500}
+
+/* four-quadrant surprise map */
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);
+  border:1px solid var(--hair);border-radius:var(--radius-lg);overflow:hidden;margin-top:6px;max-width:760px}
+.quad .cell{background:var(--panel);padding:16px 18px}
+.quad .cell .qk{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.quad .cell .qt{font-family:var(--disp);font-size:18px;margin:4px 0 3px}
+.quad .cell .qn{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.quad .cell .qd{font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45}
+.quad .cell.finding{background:rgba(240,137,76,.06)}
+.quad .cell.finding .qt{color:var(--orange)}
+.quad .cell.finding .qk::after{content:" · finding";color:var(--orange)}
+
+/* beta/R readout on a gene card */
+.br{display:flex;gap:22px;margin:12px 0 4px}
+.br .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.br .val{font-family:var(--disp);font-size:26px;line-height:1;margin-top:3px}
+.br .val.r{color:var(--orange)}
+.br .val.b{color:var(--ink)}
+.field-tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:3px;border:1px solid}
+.field-tag.valley{color:var(--slate);border-color:var(--hair-bright)}
+.field-tag.uncharted{color:var(--gold);border-color:rgba(241,180,52,.4)}
+
+/* inline AI narrative — the two-minute win, shown with the results */
+.ai-summary{margin-top:6px;background:
+  radial-gradient(120% 140% at 90% 0%,rgba(92,189,131,.06),transparent 55%),var(--panel)}
+.ai-head{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.ai-head .dot{width:7px;height:7px;border-radius:50%;background:var(--green-hi);box-shadow:0 0 8px var(--green-hi)}
+.ai-body{margin:0;font-size:14px;line-height:1.62;color:var(--ink-2);max-width:82ch}
+.ai-body b{color:var(--ink);font-weight:500}
+.ai-body .gene-ref{font-family:var(--mono);color:var(--ink);background:var(--raised-2);padding:1px 6px;border-radius:3px;font-size:12.5px}
+.ai-body .src{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+/* link-outs — RETICLE hands off to other tools */
+.linkouts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:28px;padding-top:20px;border-top:1px solid var(--hair)}
+.lo-label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-right:2px}
+
+/* gene-entity view */
+.entity-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;margin-top:6px}
+@media (max-width:900px){.entity-hero{grid-template-columns:1fr}}
+.entity-card{border:1px solid var(--hair);border-radius:var(--radius-lg);background:var(--panel);padding:20px 22px}
+.entity-card .g{font-family:var(--disp);font-size:32px;font-weight:500;line-height:1}
+.entity-card .sub{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin:5px 0 0}
+.anno{font-size:14px;line-height:1.6;color:var(--ink-2);margin:14px 0 0}
+.anno .flag{color:var(--gold)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:46px;margin:10px 0 4px}
+.spark i{flex:1;background:var(--teal);border-radius:1px;min-height:2px;opacity:.85}
+.spark i.hi{background:var(--gold)}
+.chips-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+
+/* ============ STATS ROW ============ */
+.stats{display:flex;gap:34px;flex-wrap:wrap;margin-top:30px;padding-top:26px;border-top:1px solid var(--hair)}
+.stat .n{font-family:var(--disp);font-size:34px;font-weight:500;line-height:1}
+.stat .l{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:7px}
+
+/* ============ TABLES ============ */
+.tablewrap{margin-top:20px;border:1px solid var(--hair);border-radius:var(--radius-lg);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{
+  text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--hair);
+}
+tbody td{padding:13px 16px;border-bottom:1px solid var(--hair)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{position:relative;transition:background .12s}
+tbody tr:hover{background:var(--raised)}
+/* reticle row-focus: crosshair ticks bracket the row on hover */
+tbody tr:hover td:first-child::before{
+  content:"›";position:absolute;left:5px;color:var(--red-hi);font-family:var(--mono);
+}
+.gene{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.rho{font-family:var(--mono);color:var(--ink-2)}
+.rho b{color:var(--ink);font-weight:500}
+td .sub{color:var(--ink-3);font-size:12px}
+.linkish{color:var(--teal);text-decoration:none;border-bottom:1px solid transparent}
+.linkish:hover{border-bottom-color:var(--teal)}
+
+/* mini correlation bar */
+.rbar{height:5px;width:70px;background:var(--raised-2);border-radius:100px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+.rbar > i{display:block;height:100%;border-radius:100px}
+
+/* ============ CARDS (dark-matter) ============ */
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:20px}
+.card{
+  border:1px solid var(--hair);border-radius:var(--radius-lg);
+  background:var(--panel);padding:18px;transition:border-color .16s,transform .16s;
+}
+.card:hover{border-color:var(--hair-bright);transform:translateY(-2px)}
+.card .g{font-family:var(--mono);font-size:16px;font-weight:500}
+.card .m{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:3px 0 14px}
+.meter{margin:10px 0}
+.meter .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-bottom:5px}
+.meter .track{height:6px;background:var(--raised-2);border-radius:100px;overflow:hidden}
+.meter .track > i{display:block;height:100%;border-radius:100px}
+
+/* ============ EXPLORER GRAPH ============ */
+.explorer{display:grid;grid-template-columns:1fr 260px;gap:0;margin-top:16px;
+  border:1px solid var(--hair);border-radius:var(--radius-lg);overflow:hidden;min-height:460px}
+.canvas{
+  position:relative;background:
+    radial-gradient(60% 60% at 50% 45%,rgba(65,184,198,.05),transparent),
+    var(--ground);
+  overflow:hidden;
+}
+.canvas .grat{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.canvas .cross-h,.canvas .cross-v{position:absolute;background:rgba(240,71,95,.25);pointer-events:none}
+.canvas .cross-h{left:0;right:0;height:1px}
+.canvas .cross-v{top:0;bottom:0;width:1px}
+.node{
+  position:absolute;transform:translate(-50%,-50%);
+  display:grid;place-items:center;border-radius:50%;
+  font-family:var(--mono);font-size:9px;color:#fff;cursor:pointer;white-space:nowrap;
+  border:1.5px solid;transition:transform .16s,box-shadow .16s;
+}
+.node:hover{transform:translate(-50%,-50%) scale(1.08);z-index:5}
+.node.screen{width:58px;height:58px;background:rgba(65,184,198,.16);border-color:var(--teal);color:var(--teal)}
+.node.gene{width:46px;height:46px;background:rgba(169,146,240,.16);border-color:var(--violet);color:var(--violet)}
+.node.dark{width:50px;height:50px;background:rgba(241,180,52,.16);border-color:var(--gold);color:var(--gold);
+  box-shadow:0 0 0 4px rgba(241,180,52,.08)}
+.node.focus{box-shadow:0 0 0 5px rgba(240,71,95,.25);border-color:var(--red-hi)}
+.explorer svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.explorer .edges line{stroke:var(--hair-bright);stroke-width:1}
+.canvas-toolbar{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:6}
+.tbtn{font-family:var(--mono);font-size:11px;color:var(--ink-2);background:var(--panel);
+  border:1px solid var(--hair);border-radius:var(--radius);padding:4px 9px}
+.tbtn:hover{border-color:var(--hair-bright);color:var(--ink)}
+.tbtn[aria-pressed="true"]{color:var(--ink);border-color:var(--red);background:rgba(186,12,47,.12)}
+.readout{position:absolute;bottom:12px;left:12px;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);z-index:6}
+.gpanel{border-left:1px solid var(--hair);background:var(--panel);padding:18px}
+.gpanel .eyebrow{margin-bottom:10px}
+.gpanel h3{font-family:var(--mono);font-size:15px;margin:0 0 2px}
+.gpanel .krow{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--hair)}
+.gpanel .krow span:first-child{color:var(--ink-3)}
+.legend{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.legend .li{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-2)}
+.legend .sw{width:11px;height:11px;border-radius:50%;border:1.5px solid}
+
+/* ============ ASSISTANT (docked di2chat) ============ */
+.assistant{
+  background:var(--panel);border-left:1px solid var(--hair);
+  display:flex;flex-direction:column;overflow:hidden;min-width:0;
+}
+.assistant-head{
+  padding:14px 16px;border-bottom:1px solid var(--hair);
+  display:flex;align-items:center;gap:9px;
+}
+.assistant-head .dot{width:7px;height:7px;border-radius:50%;background:var(--green-hi);box-shadow:0 0 8px var(--green-hi)}
+.assistant-head .t{font-family:var(--disp);font-weight:600;font-size:15px}
+.assistant-head .t b{color:var(--red-hi)}
+.assistant-head .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+.assistant-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:92%;font-size:13.5px;line-height:1.55}
+.msg.user{align-self:flex-end;background:var(--raised-2);border:1px solid var(--hair);
+  padding:9px 12px;border-radius:10px 10px 2px 10px;color:var(--ink)}
+.msg.bot{align-self:flex-start;color:var(--ink-2)}
+.msg.bot .src{font-family:var(--mono);font-size:11px;color:var(--teal);text-decoration:none}
+.msg.bot .gene-ref{font-family:var(--mono);color:var(--ink);background:var(--raised-2);padding:1px 5px;border-radius:3px}
+.ctxpill{align-self:flex-start;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  border:1px dashed var(--hair-bright);border-radius:100px;padding:3px 10px}
+.assistant-foot{padding:12px 14px;border-top:1px solid var(--hair)}
+.composer{display:flex;align-items:center;gap:8px;background:var(--ground);
+  border:1px solid var(--hair-bright);border-radius:var(--radius);padding:8px 10px}
+.composer input{flex:1;background:none;border:none;color:var(--ink);font-family:var(--sans);font-size:13.5px;outline:none}
+.composer input::placeholder{color:var(--ink-3)}
+.composer .send{color:var(--red-hi)}
+
+/* upload zone (query view) */
+.dropzone{margin-top:22px;border:1.5px dashed var(--hair-bright);border-radius:var(--radius-lg);
+  padding:30px;text-align:center;background:var(--panel);transition:border-color .16s}
+.dropzone:hover{border-color:var(--red-hi)}
+.dropzone .ic{color:var(--ink-3);margin-bottom:10px}
+.dropzone .fmt{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:8px}
+
+/* section label */
+.sec-label{display:flex;align-items:center;gap:12px;margin:34px 0 4px}
+.sec-label .n{font-family:var(--mono);font-size:11px;color:var(--red-hi);letter-spacing:.1em}
+.sec-label h2{font-family:var(--disp);font-weight:500;font-size:24px;margin:0}
+.sec-label .rule{flex:1;height:1px;background:var(--hair)}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1100px){
+  :root{--assistant:0px}
+  .app{grid-template-columns:var(--rail) 1fr}
+  .assistant{display:none}
+  .explorer{grid-template-columns:1fr}
+  .gpanel{border-left:none;border-top:1px solid var(--hair)}
+}
+@media (max-width:680px){
+  .view{padding:22px 18px 70px}
+  .topbar .ctx{display:none}
+  .stats{gap:20px}
+}
+
+/* reduced motion — lock the reticle, no sweep */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ======= LEFT RAIL ======= -->
+  <nav class="rail" aria-label="Primary">
+    <div class="brand" title="RETICLE">
+      <!-- reticle mark: crosshair in a ringed graticule -->
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <circle cx="15" cy="15" r="11" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="15" cy="15" r="3" fill="currentColor"/>
+        <path d="M15 0v7M15 23v7M0 15h7M23 15h7" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <button class="navbtn" data-view="query" aria-current="page">
+      <span class="lbl">Query</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg>
+    </button>
+    <button class="navbtn" data-view="screens">
+      <span class="lbl">Compare screens</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+    </button>
+    <button class="navbtn" data-view="gene">
+      <span class="lbl">Gene entity</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v6a6 6 0 0 0 12 0V2M6 22v-6a6 6 0 0 1 12 0v6M7 6h10M7 18h10"/></svg>
+    </button>
+    <button class="navbtn" data-view="dark">
+      <span class="lbl">Surprises</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18"/></svg>
+    </button>
+    <button class="navbtn" data-view="explorer">
+      <span class="lbl">Explorer</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="17" r="2"/><path d="M6.7 7.2l4 8M17.6 8.5l-4.2 7"/></svg>
+    </button>
+
+    <div class="spacer"></div>
+
+    <button class="navbtn" id="assistantToggle" aria-pressed="true">
+      <span class="lbl">Assistant</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </nav>
+
+  <!-- ======= MAIN ======= -->
+  <div class="main">
+    <header class="topbar">
+      <span class="wordmark">RETI<b>C</b>LE</span>
+      <div class="ctx" aria-label="Query context">
+        <span class="chip">query · <b>KRT_screen_A</b></span>
+        <span class="chip">modality <b>KO</b></span>
+        <span class="chip">organism <b>H. sapiens</b></span>
+        <span class="chip">algorithm <b>Spearman</b></span>
+      </div>
+      <div class="spacer"></div>
+      <span class="beta-tag" title="Beta uses rank-percentiles. Every result is a prediction with a confidence metric — hypothesis-generating, publishable as a segue to experimental validation. Phase 0 (+σ) tightens the confidence.">◆ rank-based · hypothesis-generating</span>
+      <div class="refset" title="Reference-set version — every result is reproducible against a pinned build">
+        <span class="dot"></span> ref-set v2024.3
+      </div>
+      <div class="sso"><span class="avatar">OO</span> WashU SSO</div>
+    </header>
+
+    <div class="viewport">
+
+      <!-- ===== VIEW: QUERY ===== -->
+      <section class="view is-active" id="view-query" tabindex="-1" aria-label="Query">
+        <div class="hero">
+          <div class="crosshair" aria-hidden="true">
+            <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
+            <span class="h"></span><span class="v"></span><span class="core"></span>
+            <span class="read">LOCATED · your screen<br>κ 0.87 → Zhang 2021 ◂ same question</span>
+          </div>
+          <div class="eyebrow">Rationale Engine To Inform CRISPR List Entities</div>
+          <h1>How does your screen<br>compare to <em>every</em> screen?</h1>
+          <p>Look up one gene in BioGRID ORCS, or your whole list in STRING — never both. RETICLE unifies them: correlate your screen against 287 others, surface the pathways they share, and hand back each gene as a <b style="color:var(--ink);font-weight:500">list entity</b> — annotated by what actually scored across the corpus, not just what's been published.</p>
+          <div class="hero-actions">
+            <button class="btn primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Analyze my screen
+            </button>
+            <button class="btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              Enter favorite genes
+            </button>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="n">287</div><div class="l">harmonized screens</div></div>
+            <div class="stat"><div class="n">12,504</div><div class="l">resolved genes</div></div>
+            <div class="stat"><div class="n">3</div><div class="l">source atlases</div></div>
+          </div>
+        </div>
+
+        <div class="sec-label"><span class="n">01</span><h2>Query genes</h2><span class="rule"></span></div>
+        <p style="color:var(--ink-2);margin:8px 0 0;max-width:60ch">28 identifiers resolved from your upload. Unrecognized symbols are flagged for canonical matching before analysis.</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Gene</th><th>Entrez</th><th>Rank / score</th><th>Best match</th><th>Direction</th></tr></thead>
+            <tbody id="queryRows"></tbody>
+          </table>
+        </div>
+
+        <div class="dropzone">
+          <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+          <div>Drop a full screen or a handful of favorite genes, or <span class="linkish">browse</span></div>
+          <div class="fmt">MAGeCK · STARS · DESeq2 · CSV/TSV — <span style="color:var(--ink-2)">gene[,score]</span> auto-detected</div>
+          <div class="fmt" style="margin-top:12px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);border-radius:100px;padding:5px 12px;color:var(--ink-2)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green-hi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Unpublished screens stay private to your WashU session — added to the shared model only if you explicitly opt in
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VIEW: MATCHED SCREENS ===== -->
+      <section class="view" id="view-screens" tabindex="-1" aria-label="Matched screens">
+        <div class="view-head">
+          <div class="eyebrow">02 · Located in semantic space</div>
+          <h1>Which screens are<br>asking your question?</h1>
+          <p>Ranked by semantic proximity <span class="mono" style="color:var(--ink)">κ</span> — screens secretly probing the same biology, whatever their stated aim. <b style="color:var(--ink);font-weight:500">Effect (ρ), support, and significance are three different things</b>: ρ 0.49 over one library is weak; ρ 0.54 over four is not. Support is reported as distinct <b style="color:var(--ink);font-weight:500">libraries</b> — the effective N — not screen count.</p>
+        </div>
+        <div class="scope ai-summary">
+          <span class="tick-tr"></span><span class="tick-bl"></span>
+          <div class="ai-head"><span class="dot"></span><span class="eyebrow" style="margin:0">di2 · what the corpus sees</span></div>
+          <p class="ai-body">Your screen sits closest to <b>Zhang 2021</b> (κ 0.87 — same NF-κB survival pressure, different modality) and <b>Okonkwo 2019</b> (κ 0.81 — different pressure, shared cell system). Both are cytokine-stress survival screens: the shared hits converge on <span class="gene-ref">NF-κB signaling</span> and <span class="gene-ref">TNF response</span>. The link nobody drew — <b>ORCS-1140</b> inverts (κ 0.64, CRISPRa), which is expected, not contradictory: overexpression should oppose knockout under the same pressure. <span class="src">14 screens · 6 libraries · ref-set v2024.3</span></p>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Screen</th><th>Modality</th><th>Semantic κ</th><th>Effect ρ · direction</th><th>Support (eff. N)</th><th>Tier</th></tr></thead>
+            <tbody id="screenRows"></tbody>
+          </table>
+        </div>
+
+        <div class="sec-label"><span class="n">2.1</span><h2>Pathways shared across these screens</h2><span class="rule"></span></div>
+        <p style="color:var(--ink-3);font-size:12.5px;margin:6px 0 14px;font-family:var(--mono)">enriched where screens score alike — includes de-novo annotations from CRISPR results, not just prior GO terms</p>
+        <div class="grid-cards" id="pathwayCards"></div>
+
+        <div class="linkouts">
+          <span class="lo-label">Take it further</span>
+          <button class="btn">Pathway enrichment</button>
+          <button class="btn">Darkness analysis</button>
+          <button class="btn">STRING overlay</button>
+          <button class="btn">GSEA</button>
+          <button class="btn">Conventional readout ▾</button>
+        </div>
+      </section>
+
+      <!-- ===== VIEW: GENE ENTITY (the list entity) ===== -->
+      <section class="view" id="view-gene" tabindex="-1" aria-label="Gene entity">
+        <div class="view-head">
+          <div class="eyebrow">The list entity</div>
+          <h1>Everything the corpus<br>knows about a gene.</h1>
+          <p>A gene, annotated by what actually scored across every screen — CRISPR-informed, extended to the literature. This is the entity RETICLE produces; BioGRID gives you the score, STRING gives you the network, RETICLE gives you the annotated entity that carries both.</p>
+        </div>
+        <div class="entity-hero">
+          <div class="entity-card">
+            <div class="g">C1orf109</div>
+            <div class="sub">entrez 54955 · your rank #57 · low-positive</div>
+            <div class="chips-row">
+              <span class="badge dark"><span class="d"></span>darkness 0.86</span>
+              <span class="tier strong">measured · 22 scr · 5 lib</span>
+            </div>
+            <div class="spark" id="geneSpark" title="signed rank-percentile across contexts"></div>
+            <div class="sub">signed rank-percentile across 22 contexts — consistently, weakly positive</div>
+            <div class="chips-row" style="margin-top:16px">
+              <a class="btn" href="#">NCBI Gene</a><a class="btn" href="#">UniProt</a><a class="btn" href="#">STRING</a><a class="btn" href="#">PubMed · 3</a>
+            </div>
+          </div>
+          <div class="entity-card ai-summary">
+            <div class="ai-head"><span class="dot"></span><span class="eyebrow" style="margin:0">di2 · CRISPR-informed annotation</span></div>
+            <p class="anno">Almost nothing is published on <span class="gene-ref">C1orf109</span> — ordinarily you'd drop rank #57 as noise or a false positive. But it scores <b>weakly positive across 22 unrelated screens</b>, clustering with DNA-damage-response genes under genotoxic pressure. <span class="flag">RETICLE flags it as important, not noise:</span> a consistent weak effect across many contexts is the signature of a buffered, network-distributed gene — exactly the class a hit-cutoff throws away. Hypothesis-generating; a follow-up in your macrophage system would test it.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VIEW: SURPRISES (β̂ / R) ===== -->
+      <section class="view" id="view-dark" tabindex="-1" aria-label="Surprises">
+        <div class="view-head">
+          <div class="eyebrow">03 · The residual</div>
+          <h1>Surprises</h1>
+          <p><span class="mono" style="color:var(--ink)">β̂</span> is what mechanism explains; <span class="mono" style="color:var(--orange)">R</span> is what it doesn't. The genes whose residual <em style="font-style:normal">survives</em> semantic conditioning are where the unrecognized biology lives — not the biggest hits, the ones that break the rule.</p>
+        </div>
+
+        <div class="banner">
+          <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6A2 2 0 0 0 22 18L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+          <span class="tx"><b>Every result is a prediction, shipped with a confidence metric.</b> Hypothesis-generating — publishable on its own, but primarily a segue to experimental validation. Only a bench result is a finding. Rank-based scoring shares one global error term across genes, so trust the pathway before the gene; Phase 0 (+σ) tightens each prediction.</span>
+        </div>
+
+        <div class="sec-label"><span class="n">3.1</span><h2>Where the surprise is</h2><span class="rule"></span></div>
+        <div class="quad" aria-label="Surprise quadrants">
+          <div class="cell finding"><div class="qk">corpus ~0 · you saw effect</div><div class="qt">Novel dependency</div><div class="qn">23 genes</div><div class="qd">The corpus says this gene shouldn't matter here. It does.</div></div>
+          <div class="cell"><div class="qk">corpus effect · you saw effect</div><div class="qt">Confirmed dependency</div><div class="qn">412 genes · QC</div><div class="qd">Your screen agrees where it should. Report first — it's the control.</div></div>
+          <div class="cell"><div class="qk">corpus effect · you saw ~0</div><div class="qt">Unexpected buffering</div><div class="qn">deferred → v2</div><div class="qd">Unique to RETICLE, but false negatives are hard to interpret. Deferred until Phase 0 gives per-gene uncertainty.</div></div>
+          <div class="cell"><div class="qk">corpus ~0 · you saw ~0</div><div class="qt">Confirmed absence</div><div class="qn">supported</div><div class="qd">One more observation on a supported valley.</div></div>
+        </div>
+
+        <div class="sec-label"><span class="n">3.2</span><h2>Candidates by discovery</h2><span class="rule"></span></div>
+        <p style="color:var(--ink-3);font-size:12.5px;margin:6px 0 0;font-family:var(--mono)">one of three rankings · Confirmation (QC) · <span style="color:var(--ink)">Discovery</span> · Information-gain — never a single hit list</p>
+        <div class="grid-cards" id="darkCards"></div>
+      </section>
+
+      <!-- ===== VIEW: EXPLORER ===== -->
+      <section class="view" id="view-explorer" tabindex="-1" aria-label="Explorer">
+        <div class="view-head">
+          <div class="eyebrow">04 · Traversal</div>
+          <h1>Explorer</h1>
+          <p>Edges are <em style="font-style:normal;color:var(--ink)">computed at render time, never stored</em> — every one carries its shared-observation count and library count, because an edge over 2 observations and one over 40 are not the same object. Select a node to lock the crosshair; the assistant follows your focus.</p>
+        </div>
+        <div class="explorer scope">
+          <span class="tick-tr"></span><span class="tick-bl"></span>
+          <div class="canvas" id="canvas">
+            <div class="grat"></div>
+            <div class="canvas-toolbar">
+              <button class="tbtn" aria-pressed="true">cose</button>
+              <button class="tbtn">breadthfirst</button>
+              <button class="tbtn">circle</button>
+            </div>
+            <svg class="edges" id="edges"></svg>
+            <div class="readout" id="readout">x 0.00 · y 0.00 — select a node to acquire</div>
+          </div>
+          <aside class="gpanel" id="gpanel">
+            <div class="eyebrow">Focused node</div>
+            <h3 id="gpTitle">NFKBIA</h3>
+            <div class="mono" style="font-size:11px;color:var(--ink-3);margin-bottom:12px">gene · entrez 4792</div>
+            <div class="krow"><span>β̂ dosage</span><span class="mono">0.02</span></div>
+            <div class="krow"><span>R residual</span><span class="mono" style="color:var(--orange)">3.53</span></div>
+            <div class="krow"><span>Support</span><span class="mono">6 lib · 14 scr</span></div>
+            <div class="krow"><span>Field</span><span><span class="field-tag" style="color:var(--orange);border-color:rgba(240,137,76,.4)">survives</span></span></div>
+
+            <div class="eyebrow" style="margin:18px 0 8px">Selected edge — computed now</div>
+            <div class="mono" style="font-size:12.5px;color:var(--ink)">NFKBIA ── C19orf12</div>
+            <div class="krow"><span>Type</span><span style="color:var(--orange)">residual-similarity</span></div>
+            <div class="krow"><span>Shared measured</span><span class="mono">N = 6</span></div>
+            <div class="krow"><span>Distinct libraries</span><span class="mono">3</span></div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.45">Anomalous in the same way — invisible to any co-occurrence method.</div>
+
+            <div class="legend">
+              <div class="li"><span class="sw" style="border-color:var(--teal);background:rgba(65,184,198,.16)"></span> Screen</div>
+              <div class="li"><span class="sw" style="border-color:var(--violet);background:rgba(169,146,240,.16)"></span> Gene</div>
+              <div class="li"><span class="sw" style="border-color:var(--gold);background:rgba(241,180,52,.16)"></span> Buffered / uncharted</div>
+              <div class="li" style="margin-top:6px;color:var(--ink-3);font-family:var(--mono);font-size:10.5px">edge types · β-sim · residual-sim · anti-β · buffering</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </div><!-- /viewport -->
+  </div><!-- /main -->
+
+  <!-- ======= ASSISTANT (docked di2chat) ======= -->
+  <aside class="assistant" id="assistant" aria-label="di2 assistant">
+    <div class="assistant-head">
+      <span class="dot"></span>
+      <div style="flex:1">
+        <div class="t">di<b>2</b> assistant</div>
+        <div class="sub">grounded · cites sources</div>
+      </div>
+    </div>
+    <div class="assistant-body">
+      <span class="ctxpill">◦ context: your screen · focus C1orf109</span>
+      <div class="msg bot">Your screen is located — closest to <span class="gene-ref">Zhang 2021</span> (κ 0.87). I can annotate any gene as a list entity, compare two screens, or walk the shared pathways. I read the experiment's context; the data speaks for the gene.</div>
+      <div class="msg user">Why does C1orf109 matter? It's only rank #57.</div>
+      <div class="msg bot"><span class="gene-ref">C1orf109</span> scores weakly positive across 22 screens and clusters with DNA-damage-response genes — a consistent weak effect is the buffered-gene signature, not noise. Barely 3 PubMed records, so it reads as high-darkness. Prediction · confidence 0.74. Evidence: <a class="src" href="#">ORCS-2381</a>, <a class="src" href="#">STRING</a>.</div>
+      <span class="ctxpill">◦ published screens only · ref-set v2024.3</span>
+    </div>
+    <div class="assistant-foot">
+      <div class="composer">
+        <input placeholder="Ask about a gene, screen, or result…" aria-label="Message di2 assistant" />
+        <button class="send" aria-label="Send">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* ---------- data (mock, mirrors RETICLE's real model) ---------- */
+const queryGenes = [
+  {g:"TP53",  e:"7157",  r:"1 · 2.41",  m:"BioGRID ORCS 2381", dir:"agree"},
+  {g:"KRAS",  e:"3845",  r:"2 · 2.18",  m:"DepMap 22Q4",       dir:"agree"},
+  {g:"EGFR",  e:"1956",  r:"3 · 1.97",  m:"BioGRID ORCS 1140", dir:"inverted"},
+  {g:"MYC",   e:"4609",  r:"4 · 1.88",  m:"DepMap 22Q4",       dir:"agree"},
+  {g:"PTEN",  e:"5728",  r:"5 · 1.71",  m:"BioGRID ORCS 0994", dir:"inverted"},
+  {g:"C19orf12",e:"83636",r:"6 · 1.65", m:"BioGRID ORCS 2381", dir:"unknown"},
+];
+// screens located in semantic space: κ = "secretly asking the same question".
+// support is reported as distinct LIBRARIES first — effective N is libraries, not screens.
+const screens = [
+  {s:"Zhang 2021 · ORCS-2381",  mod:"ko",     kappa:.87, rho:.82, dir:"agree",    scr:41, lib:6, tier:"strong"},
+  {s:"Okonkwo 2019 · DepMap",   mod:"ko",     kappa:.81, rho:.77, dir:"agree",    scr:38, lib:5, tier:"strong"},
+  {s:"ORCS-1140",               mod:"crispra",kappa:.64, rho:.61, dir:"inverted", scr:29, lib:2, tier:"moderate"},
+  {s:"STR-0471",                mod:"ko",     kappa:.55, rho:.54, dir:"agree",    scr:22, lib:4, tier:"moderate"},
+  {s:"ORCS-0994",               mod:"crispra",kappa:.42, rho:.49, dir:"inverted", scr:18, lib:1, tier:"weak"},
+];
+// discovery candidates: β̂ (dosage sensitivity) + R (residual). field = support-field call.
+const darkGenes = [
+  {g:"NFKBIA",   beta:"0.02", R:"3.53", field:"survives", note:"Dosage-balanced — knock it out or overexpress it, the cell does worse either way. β̂≈0 is an artifact of averaging opposite-signed effects; R says look here."},
+  {g:"PARP1",    beta:"0.90", R:"0.94", field:"survives", note:"Inverted context-dependence — behaves opposite its semantic neighborhood under genotoxic stress. Redundant-paralog candidate."},
+  {g:"C19orf12", beta:"0.11", R:"1.20", field:"uncharted",note:"β̂≈0 with a wide posterior — nobody has really looked. Here be dragons, not established quiet."},
+  {g:"RIPK1",    beta:"2.25", R:"0.01", field:"valley",   note:"Required, all modalities agree. One parameter explains everything — a positive control, reported first."},
+];
+
+/* ---------- render tables ---------- */
+const badge = d => `<span class="badge ${d}"><span class="d"></span>${d}</span>`;
+const rbar = v => {
+  const c = v>=.7?'var(--teal)':v>=.5?'var(--gold)':'var(--orange)';
+  return `<span class="rbar"><i style="width:${Math.round(v*100)}%;background:${c}"></i></span>`;
+};
+
+document.getElementById("queryRows").innerHTML = queryGenes.map(x=>`
+  <tr><td><span class="gene">${x.g}</span></td>
+  <td class="rho">${x.e}</td>
+  <td class="rho">${x.r}</td>
+  <td><a class="linkish" href="#">${x.m}</a></td>
+  <td>${badge(x.dir)}</td></tr>`).join("");
+
+document.getElementById("screenRows").innerHTML = screens.map(x=>`
+  <tr><td><span class="gene">${x.s}</span></td>
+  <td><span class="badge ${x.mod}">${x.mod.toUpperCase()}</span></td>
+  <td class="rho">κ ${x.kappa.toFixed(2)}</td>
+  <td class="rho"><b>${x.rho.toFixed(2)}</b> ${badge(x.dir)}</td>
+  <td class="support"><b>${x.lib} lib</b> <span class="n2">· ${x.scr} scr</span></td>
+  <td><span class="tier ${x.tier}">${x.tier}</span></td></tr>`).join("");
+
+const fieldTag = f =>
+  f==="uncharted" ? '<span class="field-tag uncharted">uncharted · wide posterior</span>'
+  : f==="valley"  ? '<span class="field-tag valley">supported valley · don\'t dig</span>'
+  : '<span class="field-tag" style="color:var(--orange);border-color:rgba(240,137,76,.4)">residual survives conditioning</span>';
+
+document.getElementById("darkCards").innerHTML = darkGenes.map(x=>`
+  <div class="card">
+    <div class="g">${x.g}</div>
+    <div class="br">
+      <div><div class="k">β̂ dosage</div><div class="val b">${x.beta}</div></div>
+      <div><div class="k">R residual</div><div class="val r">${x.R}</div></div>
+    </div>
+    ${fieldTag(x.field)}
+    <div style="font-size:12.5px;color:var(--ink-2);margin-top:12px">${x.note}</div>
+  </div>`).join("");
+
+// shared pathways across similar screens (capability #3) — includes de-novo CRISPR annotations
+const pathways = [
+  {p:"NF-κB signaling",       src:"GO + de-novo",             n:"9 genes · 5 screens", s:.88},
+  {p:"TNF / cytokine response",src:"GO",                       n:"7 genes · 4 screens", s:.79},
+  {p:"DNA-damage response",   src:"de-novo · CRISPR-derived", n:"6 genes · 3 screens", s:.63},
+];
+document.getElementById("pathwayCards").innerHTML = pathways.map(x=>`
+  <div class="card">
+    <div class="g" style="font-size:15px">${x.p}</div>
+    <div class="m">${x.src}</div>
+    <div class="meter"><div class="lab"><span>enrichment</span><span>${x.s.toFixed(2)}</span></div>
+      <div class="track"><i style="width:${x.s*100}%;background:var(--teal)"></i></div></div>
+    <div style="font-size:12px;color:var(--ink-3);margin-top:10px;font-family:var(--mono)">${x.n}</div>
+  </div>`).join("");
+
+// gene-entity sparkline — consistent weak-positive across 22 contexts (the darkness story)
+const sparkVals = [40,55,33,48,62,37,51,44,70,35,57,46,78,42,53,39,66,50,60,37,82,48];
+document.getElementById("geneSpark").innerHTML =
+  sparkVals.map(v=>`<i class="${v>=70?'hi':''}" style="height:${v}%"></i>`).join("");
+
+/* ---------- nav switching ---------- */
+const views = document.querySelectorAll(".view");
+document.querySelectorAll(".navbtn[data-view]").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".navbtn[data-view]").forEach(x=>x.removeAttribute("aria-current"));
+    b.setAttribute("aria-current","page");
+    const id = "view-"+b.dataset.view;
+    views.forEach(v=>v.classList.toggle("is-active", v.id===id));
+    const active = document.getElementById(id);
+    active.focus({preventScroll:true});
+    if(b.dataset.view==="explorer") layoutGraph();
+  });
+});
+
+/* ---------- assistant dock toggle ---------- */
+const toggle = document.getElementById("assistantToggle");
+toggle.addEventListener("click",()=>{
+  const open = document.getElementById("app").classList.toggle("assistant-collapsed");
+  toggle.setAttribute("aria-pressed", String(!open));
+});
+
+/* ---------- explorer graph ---------- */
+const nodes = [
+  {id:"s1", t:"screen", x:.32, y:.30, label:"S1"},
+  {id:"s2", t:"screen", x:.68, y:.26, label:"S2"},
+  {id:"g1", t:"gene",   x:.50, y:.50, label:"NFKBIA"},
+  {id:"g2", t:"gene",   x:.24, y:.62, label:"PARP1"},
+  {id:"g3", t:"gene",   x:.74, y:.58, label:"MYC"},
+  {id:"d1", t:"dark",   x:.50, y:.80, label:"C19orf12"},
+];
+const links = [["s1","g1"],["s1","g2"],["s2","g1"],["s2","g3"],["g1","d1"],["g2","d1"]];
+const canvas = document.getElementById("canvas");
+const edgesSvg = document.getElementById("edges");
+const readout = document.getElementById("readout");
+let placed = false;
+
+function layoutGraph(){
+  if(placed) return; placed = true;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  // draw edges
+  edgesSvg.innerHTML = links.map(([a,b])=>{
+    const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
+    return `<line x1="${na.x*W}" y1="${na.y*H}" x2="${nb.x*W}" y2="${nb.y*H}"></line>`;
+  }).join("");
+  // place nodes
+  nodes.forEach(n=>{
+    const el=document.createElement("button");
+    el.className="node "+n.t; el.textContent=n.label;
+    el.style.left=(n.x*100)+"%"; el.style.top=(n.y*100)+"%";
+    el.setAttribute("aria-label",n.label+" node");
+    el.addEventListener("click",()=>focusNode(n,el));
+    canvas.appendChild(el);
+  });
+}
+function focusNode(n,el){
+  document.querySelectorAll(".node").forEach(x=>x.classList.remove("focus"));
+  el.classList.add("focus");
+  // crosshair guides
+  canvas.querySelectorAll(".cross-h,.cross-v").forEach(x=>x.remove());
+  const h=document.createElement("span"); h.className="cross-h"; h.style.top=(n.y*100)+"%";
+  const v=document.createElement("span"); v.className="cross-v"; v.style.left=(n.x*100)+"%";
+  canvas.append(h,v);
+  readout.textContent = `x ${n.x.toFixed(2)} · y ${n.y.toFixed(2)} — locked on ${n.label} (${n.t})`;
+  // update panel
+  document.getElementById("gpTitle").textContent = n.label;
+}
+
+/* deep-link: #explorer / #screens / #dark / #query opens that view */
+function openHash(){
+  const v = (location.hash||"").replace("#","");
+  const btn = document.querySelector(`.navbtn[data-view="${v}"]`);
+  if(btn) btn.click();
+}
+window.addEventListener("hashchange",openHash);
+openHash();
+
+/* live coordinate readout while hovering the canvas */
+canvas.addEventListener("mousemove",e=>{
+  if(document.querySelector(".node.focus")) return;
+  const r=canvas.getBoundingClientRect();
+  readout.textContent = `x ${((e.clientX-r.left)/r.width).toFixed(2)} · y ${((e.clientY-r.top)/r.height).toFixed(2)} — select a node to acquire`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RETICLE — multi-screen analysis (WashU Medicine)</title>
+<link rel="stylesheet" href="https://use.typekit.net/mav2zlt.css"/>
+<style>
+/* ============================================================
+   RETICLE · multi-screen analysis dashboard
+   Skinned with the WashU Medicine Design System (V1.0, Mar 2025).
+   Red = hero · Warm Gray ground · IvyStyle Sans · no emoji.
+   Provenance system marks each block: AI-generated / Computed / Source.
+   ============================================================ */
+:root{
+  --washu-red:#ba0c2f; --dark-red:#971b2f;
+  --warm-gray:#f5f2ee; --white:#fff; --black:#000;
+  --teal:#007d8a; --teal-wash:#eef6f7; --teal-line:#cfe3e6;
+  --green:#215732; --gold:#f1b434; --coral:#ff6d6a; --cool-gray:#d9d9d9;
+  --fg:#161616; --fg-muted:#4a4a4a; --faint:#7d756c; --border:#e6e1da; --border-2:#d7d0c6;
+  --font-sans:"ivystyle-sans",Calibri,Tahoma,sans-serif;
+  --font-serif:"ivypresto-headline",Georgia,serif;
+  --radius:6px; --shadow-lg:0 12px 30px -8px rgba(0,0,0,.24);
+  --rail:238px; --drawer:452px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font-sans);color:var(--fg);background:var(--warm-gray);font-size:16px;line-height:1.5}
+:focus-visible{outline:2px solid var(--washu-red);outline-offset:2px}
+button,select,input{font:inherit;color:inherit}
+button{background:none;border:none;cursor:pointer}
+a{color:var(--washu-red)}
+.tnum{font-variant-numeric:tabular-nums}
+.eyebrow{font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--washu-red)}
+
+/* ===== TOP BAR ===== */
+.topbar{position:sticky;top:0;z-index:40;background:var(--white);border-top:3px solid var(--washu-red);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:11px 20px}
+.topbar .logo{height:30px;display:block}
+.appname{font-weight:700;letter-spacing:.02em;padding-left:16px;margin-left:2px;border-left:1px solid var(--border-2)}
+.appname .r{color:var(--washu-red)}
+.topbar .spacer{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--warm-gray);border:1px solid var(--border-2);
+  border-radius:var(--radius);padding:8px 12px;min-width:250px;color:var(--faint)}
+.search input{border:none;background:none;outline:none;font-size:14.5px;color:#111;width:100%}
+.search input::placeholder{color:var(--faint)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--washu-red);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.sso{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--fg-muted)}
+
+/* ===== SHELL ===== */
+.shell{display:grid;grid-template-columns:var(--rail) 1fr;min-height:calc(100vh - 64px)}
+.rail{background:var(--white);border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:64px;
+  height:calc(100vh - 64px);display:flex;flex-direction:column}
+.rail-eye{margin:2px 8px 12px}
+.navlink{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:10px 12px;border-radius:var(--radius);
+  color:#222;font-size:14.5px;font-weight:600;text-decoration:none;position:relative;margin-bottom:2px}
+.navlink:hover{background:var(--warm-gray)}
+.navlink.active{color:var(--washu-red);background:var(--warm-gray)}
+.navlink.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--washu-red);border-radius:0 3px 3px 0}
+.navlink .n{font-size:12px;color:var(--faint);width:16px;font-weight:600}
+.navlink.active .n{color:var(--washu-red)}
+.rail .grow{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;font-weight:700;font-size:14px;
+  padding:11px 16px;border-radius:var(--radius);border:2px solid var(--washu-red);color:var(--washu-red);background:#fff;transition:.15s}
+.btn:hover{background:var(--warm-gray)}
+.btn.primary{background:var(--washu-red);color:#fff;border-color:var(--washu-red)}
+.btn.primary:hover{background:var(--dark-red)}
+.btn.block{width:100%}
+.btn.sm{padding:7px 12px;font-size:13px;border-width:1px}
+
+/* ===== MAIN ===== */
+.main{min-width:0}
+.ctxbar{background:var(--white);border-bottom:1px solid var(--border);padding:13px 34px;display:flex;
+  align-items:center;gap:26px;flex-wrap:wrap;position:sticky;top:64px;z-index:20}
+.kv{display:flex;flex-direction:column;gap:2px}
+.kv .k{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.kv .v{font-size:15px;color:#111;font-weight:600}
+.ctxbar .sep{width:1px;align-self:stretch;background:var(--border)}
+
+.content{padding:20px 34px 120px;max-width:1120px}
+
+/* provenance legend */
+.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--fg-muted);
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px}
+.legend .lg{display:inline-flex;align-items:center;gap:7px}
+.legend b{font-weight:700}
+.pmark{display:inline-flex;width:16px;height:16px}
+.pmark svg{width:16px;height:16px;display:block}
+.ai-ink{color:var(--teal)} .cp-ink{color:var(--fg-muted)} .src-ink{color:var(--faint)}
+
+/* provenance label (block header) */
+.prov{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.prov.ai{color:var(--teal)} .prov.cp{color:var(--fg-muted)} .prov.src{color:var(--faint)}
+.prov .sub{font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--faint)}
+.prov > svg{width:14px;height:14px;flex:0 0 auto}
+.pill > svg{width:13px;height:13px;flex:0 0 auto}
+
+.section{padding:26px 0;border-bottom:1px solid var(--border);scroll-margin-top:132px}
+.section:last-child{border-bottom:none}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.sec-head h2{font-weight:700;font-size:25px;line-height:1.15;margin:0}
+.sec-head .spacer{flex:1}
+.toggle-numbers{font-size:12.5px;color:var(--fg-muted);border:1px solid var(--border-2);border-radius:var(--radius);padding:6px 11px;background:#fff}
+.toggle-numbers:hover{border-color:var(--washu-red);color:var(--washu-red)}
+p.sub{color:var(--fg-muted);font-size:16px;max-width:72ch;margin:6px 0 0}
+
+/* overview */
+.hero{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:30px 32px;margin-top:14px}
+.hero h1{font-weight:700;font-size:38px;line-height:1.1;letter-spacing:-.01em;margin:8px 0 4px}
+.hero .lead{color:var(--fg-muted);font-size:18px;margin:0}
+
+/* AI panel (provenance = AI-generated) */
+.ai-panel{background:var(--teal-wash);border:1px solid var(--teal-line);border-left:3px solid var(--teal);
+  border-radius:0 var(--radius) var(--radius) 0;padding:15px 18px;margin-top:22px}
+.ai-panel p{margin:0;font-size:16px;line-height:1.6;color:#152b2d}
+.gref{font-weight:600;color:#0c3d43;background:#e2eff0;border:1px solid var(--teal-line);padding:0 5px;border-radius:3px}
+
+/* computed / source panels */
+.panel{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:14px}
+.panel.pad{padding:18px 20px}
+.method{font-size:12px;color:var(--faint);margin-top:8px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;margin-top:6px}
+.stat{background:#fff;padding:19px 22px}
+.stat .n{font-weight:700;font-size:38px;line-height:1;color:var(--washu-red)}
+.stat .l{font-size:14px;color:var(--fg-muted);margin-top:8px;line-height:1.35}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+thead th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);
+  font-weight:700;padding:12px 16px;background:var(--warm-gray);border-bottom:1px solid var(--border)}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--warm-gray)}
+.gene{font-weight:600;letter-spacing:.01em}
+.lk{color:var(--washu-red);cursor:pointer;text-decoration:none;border-bottom:1px solid transparent}
+.lk:hover{border-bottom-color:var(--washu-red)}
+.support b{color:#111}
+.num{display:none}
+[data-num=on] .num{display:inline}
+[data-num=on] .numrow th,[data-num=on] .numrow td{display:table-cell}
+
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-2);border-radius:100px;padding:4px 13px;
+  font-size:13px;color:var(--fg-muted);margin:0 6px 7px 0;background:#fff}
+.pill.on{border-color:var(--washu-red);color:var(--washu-red)}
+.pill.ai{border-color:var(--teal-line);color:var(--teal);background:var(--teal-wash)}
+.linkouts{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.linkouts .lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.hint{font-size:13px;color:var(--faint);margin-top:10px}
+.meter{margin:9px 0}
+.meter .lab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--fg-muted);margin-bottom:4px}
+.track{height:7px;background:var(--warm-gray);border:1px solid var(--border);border-radius:100px;overflow:hidden}
+.track > i{display:block;height:100%;background:var(--washu-red)}
+
+.spot{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:8px}
+@media(max-width:900px){.spot{grid-template-columns:1fr}}
+.spot .panel{margin:0;padding:22px}
+.fp{font-size:13px;line-height:1.95;margin:8px 0;color:#222}
+.blk{letter-spacing:1px} .blk .on{color:var(--washu-red)} .blk .off{color:var(--cool-gray)}
+.dots .on{color:var(--washu-red)} .dots .off{color:var(--cool-gray)}
+.fpbars{margin:6px 0}
+.fpb{display:grid;grid-template-columns:168px 1fr 96px;gap:12px;align-items:center;margin:7px 0;font-size:12.5px;line-height:1.25}
+.fpb .fl{color:var(--fg-muted)}
+.fpb .ft{height:8px;background:var(--warm-gray);border:1px solid var(--border);border-radius:100px;overflow:hidden}
+.fpb .ft>i{display:block;height:100%;background:var(--washu-red);border-radius:100px}
+.fpb .fp2{color:var(--faint);text-align:right;font-variant-numeric:tabular-nums}
+.fpb.dk .ft>i{background:#8a8078}
+@media(max-width:520px){.fpb{grid-template-columns:120px 1fr 84px}}
+.krow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.krow:last-child{border-bottom:none}
+h4.mini{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--fg-muted);margin:20px 0 8px;font-weight:700}
+
+/* ===== GENE DRAWER ===== */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:.2s;z-index:50}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:var(--drawer);max-width:94vw;background:#fff;
+  border-left:1px solid var(--border);box-shadow:var(--shadow-lg);transform:translateX(100%);
+  transition:transform .24s cubic-bezier(.4,0,.2,1);z-index:60;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{border-top:3px solid var(--washu-red);padding:18px 22px 12px;border-bottom:1px solid var(--border)}
+.drawer-head .row{display:flex;align-items:flex-start;gap:10px}
+.drawer-head h3{font-weight:700;font-size:24px;margin:6px 0 0}
+.drawer-head .meta{font-size:13px;color:var(--faint);margin-top:4px}
+.xclose{margin-left:auto;font-size:24px;line-height:1;color:var(--faint);padding:0 4px}
+.xclose:hover{color:var(--washu-red)}
+.tabs{display:flex;gap:4px;padding:0 22px;border-bottom:1px solid var(--border);background:#fff}
+.tab{padding:12px 12px;font-size:13.5px;font-weight:600;color:var(--fg-muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--washu-red);border-bottom-color:var(--washu-red)}
+.drawer-body{overflow-y:auto;padding:20px 22px 60px;flex:1}
+.tabpane{display:none} .tabpane.on{display:block}
+details{border:1px solid var(--border);border-radius:var(--radius);margin:10px 0;padding:0 12px}
+summary{cursor:pointer;padding:11px 0;font-size:13px;color:var(--fg-muted)}
+.seg{display:inline-flex;border:1px solid var(--border-2);border-radius:var(--radius);overflow:hidden}
+.seg button{padding:6px 12px;font-size:13px;font-weight:600;color:var(--fg-muted);border-right:1px solid var(--border-2)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--warm-gray);color:var(--washu-red)}
+
+/* ===== NEW ANALYSIS VIEW ===== */
+#newView{display:none;padding:26px 34px 120px;max-width:1000px}
+#newView.on{display:block}
+.nrow{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-top:16px}
+.nrow h3{font-size:18px;font-weight:700;margin:0 0 4px}
+.nrow .desc{color:var(--fg-muted);font-size:14.5px;margin:0 0 14px}
+.dropzone{border:1.5px dashed var(--border-2);border-radius:var(--radius);padding:26px;text-align:center;color:var(--faint);background:var(--warm-gray)}
+.maptable td,.maptable th{padding:9px 12px}
+.maptable select{border:1px solid var(--border-2);border-radius:5px;padding:6px 9px;background:#fff;font-size:13.5px}
+.sample{color:var(--faint);font-size:12.5px}
+.fieldgrid{display:grid;grid-template-columns:180px 1fr;gap:14px 18px;align-items:center}
+.fieldgrid label{font-size:13px;font-weight:600;color:var(--fg-muted)}
+.fieldgrid input[type=text]{border:1px solid var(--border-2);border-radius:5px;padding:8px 11px;width:100%;max-width:360px}
+.tog{display:inline-flex;align-items:center;gap:10px;cursor:pointer}
+.tswitch{width:40px;height:22px;border-radius:100px;background:var(--cool-gray);position:relative;transition:.15s;flex:0 0 auto}
+.tswitch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+input[type=checkbox]:checked + .tswitch{background:var(--washu-red)}
+input[type=checkbox]:checked + .tswitch::after{left:20px}
+.vh{position:absolute;opacity:0;width:0;height:0}
+.guard{border:1px solid #e6c9ce;background:#fbeef0;border-radius:var(--radius);padding:12px 14px;font-size:13.5px;color:#5c1420;margin-top:12px;display:flex;gap:9px}
+.depth-note{font-size:13px;color:var(--faint);margin-top:8px}
+.newactions{display:flex;gap:12px;margin-top:22px}
+
+@media(max-width:820px){.shell{grid-template-columns:1fr}.rail{display:none}.stats{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <svg class="logo" viewBox="0 0 469.5 64" role="img" aria-label="WashU Medicine" xmlns="http://www.w3.org/2000/svg">
+    <style>.st0{fill:#ba0c2f}.st1{fill:#ba0c2f}</style>
+    <path class="st0" d="M53.9,32.1c-1,0.2-5.4,1.1-10.9,1.8c-0.1,0-0.2-0.1-0.2-0.2l0-6c0-0.1,0.1-0.2,0.2-0.2c5.6-0.8,10.1-1.6,11-1.8c0.1,0,0.2-0.1,0.2-0.2l0-6c0-0.1-0.1-0.2-0.2-0.2c-1,0.2-5.4,1.1-10.9,1.8c-0.1,0-0.2-0.1-0.2-0.2l0-2c0-0.1-0.1-0.2-0.3-0.2c-5.3,1.4-8.7,0.2-14.4,2.9c-0.1,0-0.1,0-0.2,0c-5.7-2.7-9.1-1.5-14.4-2.9c-0.1,0-0.3,0.1-0.3,0.2l0,2c0,0.1-0.1,0.2-0.2,0.2c-5.4-0.7-9.8-1.6-10.9-1.8c-0.1,0-0.2,0.1-0.2,0.2l0,6c0,0.1,0.1,0.2,0.2,0.2c0.9,0.2,5.4,1.1,11,1.8c0.1,0,0.2,0.1,0.2,0.2l0,6c0,0.1-0.1,0.2-0.2,0.2c-5.4-0.7-9.8-1.6-10.9-1.8c-0.1,0-0.2,0.1-0.2,0.2l0,6c0,0.1,0.1,0.2,0.2,0.2c1.3,0.3,10.1,2,18.9,2.7c2.6,0.3,4,0.6,5.8,1.7l1.2,0.7c0.1,0,0.1,0,0.2,0l1.2-0.7c1.8-1.1,3.1-1.4,5.8-1.7c9-0.7,18-2.5,19-2.7c0.1,0,0.1-0.1,0.1-0.1v-6C54.1,32.1,54,32,53.9,32.1z M40.4,21.7l0,16.2c0,0.1-0.1,0.2-0.2,0.2c-6.5,0.8-8.8,0.6-12.1,2.6c-0.1,0-0.1,0-0.2,0c-3.3-2-5.6-1.7-12.1-2.6c-0.1,0-0.2-0.1-0.2-0.2l0-16.2c0-0.1,0.1-0.2,0.2-0.2c3.5,0.5,7.7,0,12.1,2.6c0.1,0,0.1,0,0.2,0c4.4-2.6,8.6-2.1,12.1-2.6C40.3,21.5,40.4,21.6,40.4,21.7z"/>
+    <path class="st1" d="M56,0.2C56,0.1,55.9,0,55.8,0C53.8,0.4,40.5,3.1,28,3.1C14.7,3.1,2.2,0.4,0.2,0C0.1,0,0,0.1,0,0.2c0,3.4,0,40.2,0,47.1c0,7.3,6.9,9.1,27.9,16.7c0,0,0.1,0,0.1,0C49.1,56.4,56,54.5,56,47.3V0.2z M53.6,46.3c0,6.6-6.3,8.3-25.5,15.3c0,0-0.1,0-0.1,0C8.7,54.7,2.4,52.9,2.4,46.3l0-43.1C2.4,3.1,2.5,3,2.6,3C4.6,3.4,17.8,5.9,28,5.9c9.6,0,23.4-2.5,25.4-2.9c0.1,0,0.2,0.1,0.2,0.2V46.3z"/>
+    <path d="M147.5,48.4c0-3.6,0-13,0-14.8c0-3.9,0.2-11.9-12.5-11.9c-4.3,0-9.2,1.6-11.6,4.9c-2.5,3.3-1.1,7.2,1.5,7.2c2.6,0,4-2,4-3.8c0-1.8,1-5.1,5.2-5.1c2.5,0,5.8,1.8,5.8,4.7c0,0.6,0,3.6,0,3.6s-10.8,2.7-14,4.4c-3.2,1.7-5.7,4.3-5.7,9.3c0,5,3.2,9.1,9.2,9.1c6,0,10.6-3.4,10.6-3.4c0.3,1.2,1.3,2.7,4.4,2.9l5.9,0v-2.5C148.2,52.9,147.5,52.5,147.5,48.4z M139.9,49c0,0-2.6,1.9-6.5,1.9c-3.9,0-5.6-2.2-5.6-4.9c0-3.7,2.8-5.6,4.8-6.7c1.9-0.9,7.3-2.6,7.3-2.6V49z M181.6,45.8c0,6.4-6.5,10.2-12.6,10.2s-9.3-1.4-10.3-1.4s-1.1,0.8-1.1,0.8h-2.5V43.6l2.5,0c0.8,2.6,3.5,9.4,10.8,9.4c3.5,0,6.5-1.4,6.5-4.3c0-3.9-4.3-5.1-8.4-6.9s-11.4-4.1-11.4-10.4c0-6.5,7.1-9.7,13.3-9.7c4.4,0,7.8,1.4,8.1,1.4s0.4-0.2,0.4-0.2h2.3l0,9.2l-2.5,0c-0.3-0.6-2.5-7.5-8.6-7.5c-2.5,0-5.5,1.3-5.5,4.1c0,3.3,4.5,4.9,8.9,6.8S181.6,40.1,181.6,45.8z M128,8c-4.8,0.7-8.7,0.7-13.5,0l0,2.5h1.6c1.4,0,3.8-0.3,2.3,4.3c-1.3,4-8.5,27.3-8.5,27.3s-7.7-24.1-8.8-27.9c-1.2-3.8,2.4-3.7,3.4-3.7c0,0,0-2.5,0-2.5C98.3,9,93.2,8.9,87,8c0,0,0,2.5,0,2.5c1.2,0,3.8-0.6,5.6,5.1c1.9,5.8,3,9.3,3,9.3l-7.3,18.7c0,0-8.5-23.3-10-27.5c-1.3-3.8,0.1-5.6,1.4-5.6c0.4,0,1.6,0,1.6,0l0-2.5C75.3,9,70.2,8.9,64,8l0,2.5c2.4-0.2,3.9,0.4,5.5,4.9C71.2,19.9,84,56,84,56h3.2l10.1-26l8.5,26h3.4c0,0,12.1-39,13-41.6s2.4-3.9,4.5-3.9h1.3V8z M195.3,26c2.6-2.5,6-4.4,10.4-4.4c7.6,0,10.8,4.9,10.8,10.1c0,7.1,0,16.3,0,16.3v0c0,2.2,0.3,3.7,1,4.3s1.1,0.6,2.7,0.6l0,2.5h-14.8l0-2.5c1.1,0,2,0.1,2.7-0.6c0.7-0.7,1-2.1,1-4.3c0,0,0-11.9,0-16.2c0-3.8-2.5-5.8-5.2-5.8c-5.3,0-7.8,3.9-8.5,4.9l0,17.1c0,2.2,0.3,3.6,1,4.3c0.7,0.7,1.4,0.6,2.7,0.6l0,2.5h-14.8l0-2.5c1.1,0,2,0.1,2.7-0.6c0.7-0.7,1-2.1,1-4.3V16c0-5.4-0.7-5.5-3.8-5.5l0-2.5c4,0.6,7.3,0.6,11.3,0L195.3,26z M264,8c-4.7,0.8-8.6,0.7-13.4,0l0,2.5c2,0,5-0.8,5,5.6c0,1.3,0,23.3,0,23.3c0,7.7-4.9,12.9-12.7,12.9c-11.7,0-11.7-10.8-11.7-16.9s0-19,0-19.3c0-6.1,1.7-5.6,4.2-5.6l0-2.5c-5.9,0.9-10.7,0.9-16.6,0v2.5c2.4,0,4.2-0.6,4.2,5.6c0,0.3,0.1,14.6,0.1,19.3c0,14.1,5.4,20.6,19.9,20.6c7.4,0,16.3-4.2,16.3-17.4c0-2.4,0-16.4,0-22.4s2.3-5.6,4.7-5.6L264,8z"/>
+    <path class="st0" d="M278.7,55.4V20.5h5.3L294.6,43l10.7-22.5h5.3v34.9h-4.1V26.3L296.3,48H293l-10.3-21.7v29.1H278.7z M317.4,43.4c0-7.6,4.1-12.6,11.1-12.6c7,0,10.6,5,10.6,13.6h-17.9c0.3,5.2,3,8.4,7.3,8.4c3.2,0,5.2-1.5,6.6-4l3.5,1.2c-1.9,3.6-5.1,6-10.1,6C321.5,56,317.4,51.1,317.4,43.4z M321.4,41.3h13.9c-0.3-4.5-2.8-7.4-6.7-7.4C324.5,33.9,322,36.6,321.4,41.3z M362.9,55.6c-0.5-2.3-0.8-3.7-1-5c-1.6,3.1-4.4,5.3-8.4,5.3c-6.4,0-10-4.8-10-12.6c0-7.8,3.6-12.6,10-12.6c3.6,0,6.3,1.9,8,4.6V20.5h4v26c0,3.3,0.1,4.9,1,8.7L362.9,55.6z M361.6,44.1v-1.3c0-4.6-2.4-8.5-7.2-8.5c-4.3,0-6.8,3.5-6.8,9.2c0,5.7,2.5,9.2,6.8,9.2C358.9,52.6,361.6,48.9,361.6,44.1z M373.2,24.3c0-1.5,1.2-2.7,2.8-2.7s2.8,1.2,2.8,2.7c0,1.5-1.2,2.8-2.8,2.8S373.2,25.9,373.2,24.3z M374,55.4V31.3h3.9v24.1H374z M384.3,43.4c0-7.6,4-12.6,11.1-12.6c4.8,0,8,2.6,9.2,5.7l-3.5,1c-0.9-1.9-2.6-3.3-5.7-3.3c-4.6,0-7.2,3.5-7.2,9.2c0,5.7,2.5,9.2,7.1,9.2c3.2,0,4.9-1.5,6-3.5l3.3,1c-1.2,3.1-4.5,5.9-9.4,5.9C388.2,56,384.3,51.1,384.3,43.4z M409.4,24.3c0-1.5,1.2-2.7,2.8-2.7s2.8,1.2,2.8,2.7c0,1.5-1.2,2.8-2.8,2.8S409.4,25.9,409.4,24.3z M410.2,55.4V31.3h3.9v24.1H410.2z M422.5,55.4V31.3h3.5v4.9c1.6-3,4.3-5.4,8.5-5.4c4.7,0,7.6,2.8,7.6,9.2v15.5h-4V40.7c0-4.6-1.8-6.3-4.6-6.3c-3.6,0-5.9,2.4-6.7,5.1c-0.2,0.6-0.3,1.4-0.4,3v12.9H422.5z M447.7,43.4c0-7.6,4.1-12.6,11.1-12.6c7,0,10.6,5,10.6,13.6h-17.9c0.3,5.2,3,8.4,7.3,8.4c3.2,0,5.2-1.5,6.6-4l3.5,1.2c-1.9,3.6-5.1,6-10.1,6C451.7,56,447.7,51.1,447.7,43.4z M451.6,41.3h13.9c-0.3-4.5-2.8-7.4-6.7-7.4C454.8,33.9,452.2,36.6,451.6,41.3z"/>
+  </svg>
+  <span class="appname">RETI<span class="r">C</span>LE</span>
+  <span class="spacer"></span>
+  <label class="search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input placeholder="Look up a gene (e.g. Jak2)" onkeydown="if(event.key==='Enter')openGene()"/>
+  </label>
+  <div class="sso"><span class="avatar">OO</span> WashU SSO</div>
+</div>
+
+<div class="shell">
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="rail" aria-label="Sections">
+    <div class="rail-eye eyebrow">Analysis</div>
+    <a class="navlink active" href="#overview" data-sec="overview"><span class="n">01</span> Overview</a>
+    <a class="navlink" href="#screens" data-sec="screens"><span class="n">02</span> Matched screens</a>
+    <a class="navlink" href="#pathways" data-sec="pathways"><span class="n">03</span> Shared pathways</a>
+    <a class="navlink" href="#surprises" data-sec="surprises"><span class="n">04</span> Surprises</a>
+    <a class="navlink" href="#genes" data-sec="genes"><span class="n">05</span> Genes worth a look</a>
+    <div class="grow"></div>
+    <button class="btn primary block" style="margin-bottom:10px" onclick="showNew(true)">New analysis</button>
+    <button class="btn block sm" onclick="openGene()">Look up a gene</button>
+  </nav>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+    <div class="ctxbar" id="ctxbar">
+      <div class="kv"><span class="k">Screen</span><span class="v">GammaTNF vs DMSO</span></div>
+      <div class="sep"></div>
+      <div class="kv"><span class="k">Organism</span><span class="v">Mouse</span></div>
+      <div class="sep"></div>
+      <div class="kv"><span class="k">Modality</span><span class="v">Knockout</span></div>
+      <div class="sep"></div>
+      <div class="kv"><span class="k">Genes</span><span class="v tnum">22,628</span></div>
+    </div>
+
+    <!-- ===== DASHBOARD VIEW ===== -->
+    <div class="content" id="dashView">
+
+      <div class="legend" aria-label="How to read results">
+        <span style="font-weight:700;color:#111">How to read:</span>
+        <span class="lg"><span class="pmark ai-ink">{{AI}}</span> <b>AI-generated</b> — di2 narrative</span>
+        <span class="lg"><span class="pmark cp-ink">{{CP}}</span> <b>Computed</b> — deterministic pipeline</span>
+        <span class="lg"><span class="pmark src-ink">{{SRC}}</span> <b>Source</b> — measured data &amp; literature</span>
+      </div>
+
+      <!-- OVERVIEW -->
+      <section class="section" id="overview" data-num="off">
+        <div class="hero">
+          <div class="eyebrow">Screen comparison</div>
+          <h1>GammaTNF vs DMSO</h1>
+          <p class="lead">How your mouse cytokine screen compares against 287 published screens.</p>
+
+          <div class="ai-panel">
+            <div class="prov ai">{{AI}} AI-generated · di2 <span class="sub">— hypothesis-generating; verify against sources</span></div>
+            <p>Your screen behaves like published cytokine-survival screens. The resistance end is IFN-&#947;/TNF
+            receptors and JAK-STAT (<span class="gref">Ifngr1/2</span>, <span class="gref">Jak2</span>,
+            <span class="gref">Tnfrsf1a</span>); the sensitizing end is NF-&#954;B machinery
+            (<span class="gref">Rela</span>, <span class="gref">Adam17</span>, <span class="gref">Otulin</span>).
+            Three published screens ask the same question under different names.</p>
+          </div>
+
+          <div style="margin-top:22px">
+            <div class="prov cp">{{CP}} Computed <span class="sub">— counts from your result &amp; the corpus</span></div>
+            <div class="stats">
+              <div class="stat"><div class="n tnum">287</div><div class="l">screens compared</div></div>
+              <div class="stat"><div class="n tnum">3</div><div class="l">strong matches</div></div>
+              <div class="stat"><div class="n tnum">3</div><div class="l">shared pathways</div></div>
+              <div class="stat"><div class="n tnum">12</div><div class="l">genes worth a look</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MATCHED SCREENS -->
+      <section class="section" id="screens" data-num="off">
+        <div class="sec-head">
+          <h2>Matched screens</h2><span class="spacer"></span>
+          <button class="toggle-numbers" onclick="toggleNum('screens')">show numbers</button>
+        </div>
+        <div class="prov cp" style="margin-top:8px">{{CP}} Computed <span class="sub">— rank correlation · BH-FDR · support = distinct libraries</span></div>
+        <p class="sub">Published screens secretly probing the same biology, ranked by similarity.</p>
+        <div class="panel">
+          <table>
+            <thead><tr><th>Screen</th><th>Shared context</th><th>Direction</th><th>Support</th><th class="num">similarity &middot; N &middot; FDR</th></tr></thead>
+            <tbody>
+              <tr><td><b>Zhang 2021</b></td><td>NF-&#954;B / cytokine survival</td><td>same &rarr;</td><td class="support"><b>strong</b></td><td class="num tnum">0.87 &middot; 41scr/6lib &middot; 1e-9</td></tr>
+              <tr><td><b>Okonkwo 2019</b></td><td>JAK-STAT / IFN response</td><td>same &rarr;</td><td class="support"><b>strong</b></td><td class="num tnum">0.81 &middot; 38scr/5lib &middot; 4e-8</td></tr>
+              <tr><td><b>ORCS-1140</b></td><td>TNF (overexpression)</td><td>opposite &larr;</td><td class="support">moderate</td><td class="num tnum">0.64 &middot; 29scr/2lib &middot; 2e-5</td></tr>
+            </tbody>
+            <tfoot><tr><td colspan="5" class="hint" style="padding:10px 16px">Shared genes (open any): <span class="gene lk" onclick="openGene('Ifngr2')">Ifngr2</span> &middot; <span class="gene lk" onclick="openGene('Jak2')">Jak2</span> &middot; <span class="gene lk" onclick="openGene('Tnfrsf1a')">Tnfrsf1a</span> &middot; <span class="gene lk" onclick="openGene('Rela')">Rela</span></td></tr></tfoot>
+          </table>
+        </div>
+        <p class="hint">&ldquo;Opposite&rdquo; is expected for an overexpression screen &mdash; it should oppose knockout under the same pressure.</p>
+      </section>
+
+      <!-- SHARED PATHWAYS -->
+      <section class="section" id="pathways">
+        <div class="sec-head"><h2>Shared pathways</h2></div>
+        <div class="prov cp" style="margin-top:8px">{{CP}} Computed <span class="sub">— enrichment across matched screens</span></div>
+        <p class="sub">Enriched where the matched screens score alike.</p>
+        <div style="margin-top:14px">
+          <span class="pill on">NF-&#954;B signaling</span>
+          <span class="pill on">TNF / cytokine response</span>
+          <span class="pill on">JAK-STAT</span>
+          <span class="pill ai">{{AI}} DNA-damage response · de-novo</span>
+        </div>
+        <p class="hint">The <span style="color:var(--teal);font-weight:600">de-novo</span> label marks a pathway name proposed by di2 from the CRISPR results, not an existing GO term.</p>
+        <div class="panel pad">
+          <div class="meter"><div class="lab"><span>NF-&#954;B signaling</span><span class="tnum">9 genes &middot; 5 screens</span></div><div class="track"><i style="width:88%"></i></div></div>
+          <div class="meter"><div class="lab"><span>TNF / cytokine response</span><span class="tnum">7 genes &middot; 4 screens</span></div><div class="track"><i style="width:79%"></i></div></div>
+          <div class="meter"><div class="lab"><span>JAK-STAT</span><span class="tnum">6 genes &middot; 4 screens</span></div><div class="track"><i style="width:71%"></i></div></div>
+        </div>
+        <div class="linkouts"><span class="lbl">Take it further</span>
+          <button class="btn sm">Pathway enrichment</button><button class="btn sm">STRING overlay</button><button class="btn sm">GSEA</button>
+        </div>
+      </section>
+
+      <!-- SURPRISES -->
+      <section class="section" id="surprises" data-num="off">
+        <div class="sec-head"><h2>Surprises</h2><span class="spacer"></span>
+          <button class="toggle-numbers" onclick="toggleNum('surprises')">show numbers</button></div>
+        <div class="prov cp" style="margin-top:8px">{{CP}} Computed <span class="sub">— residual vs corpus prediction · plain reasons written by di2</span></div>
+        <p class="sub">Genes that scored strongly here, but the corpus did not predict for a
+        cytokine-survival screen &mdash; novel dependencies worth a look.</p>
+        <div class="panel">
+          <table>
+            <thead><tr><th>Gene</th><th>Why it's surprising</th><th>Confidence</th><th class="num">residual z</th></tr></thead>
+            <tbody>
+              <tr><td class="gene lk" onclick="openGene('Fip1l1')">Fip1l1</td><td>strong here; nearly silent in the corpus under like conditions</td><td>moderate</td><td class="num tnum">+3.1</td></tr>
+              <tr><td class="gene lk" onclick="openGene('Wdr74')">Wdr74</td><td>strong here; mostly a fitness gene elsewhere</td><td>low</td><td class="num tnum">+2.4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">Novel dependencies only. &ldquo;Should have mattered but didn't&rdquo; (buffering) is deferred &mdash; false negatives are hard to interpret.</p>
+      </section>
+
+      <!-- GENES WORTH A LOOK -->
+      <section class="section" id="genes">
+        <div class="sec-head"><h2>Genes worth a look</h2></div>
+        <p class="sub">Low-ranked in your list, but the corpus flags them as important &mdash; not noise.
+        Open any gene to see everything the corpus knows about it.</p>
+        <div class="spot">
+          <div class="panel" style="border-left:3px solid var(--washu-red)">
+            <div class="eyebrow">Novel dependency · worth a look</div>
+            <h3 style="font-size:22px;margin:8px 0 2px">Fip1l1</h3>
+            <div style="color:var(--faint);font-size:13px">mouse &middot; your rank <span class="tnum">#3</span> &middot; strong residual, weak raw LFC</div>
+            <p style="font-size:15px;color:#222;margin:14px 0 0">An mRNA-processing gene, not an obvious cytokine hit &mdash; yet it scores strongly in your screen and the corpus wouldn't predict it here. Ordinarily dropped as off-target; RETICLE flags it as a lead.</p>
+            <div class="linkouts" style="margin-top:16px"><button class="btn sm primary" onclick="openGene('Fip1l1')">Open list entity</button></div>
+          </div>
+          <div class="panel">
+            <h4 class="mini" style="margin-top:0">Also flagged</h4>
+            <div class="krow"><span class="gene lk" onclick="openGene('Wdr74')">Wdr74</span><span class="support tnum">rank #4 &middot; darkness 0.64</span></div>
+            <div class="krow"><span class="gene lk" onclick="openGene('Adra1d')">Adra1d</span><span class="support tnum">rank #7 &middot; darkness 0.58</span></div>
+            <div class="krow" style="border-bottom:none"><span class="gene lk" onclick="openGene('Jak2')">Jak2</span><span class="support tnum">rank #6 &middot; confirmed dependency</span></div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /dashView -->
+
+    <!-- ===== NEW ANALYSIS VIEW ===== -->
+    <div id="newView">
+      <div class="sec-head" style="margin-top:6px"><h2>New analysis</h2><span class="spacer"></span>
+        <button class="btn sm" onclick="showNew(false)">Cancel</button></div>
+      <p class="sub">Tell RETICLE what your screen is, so it can compare it correctly. Nothing leaves your WashU session unless you opt in below.</p>
+
+      <div class="nrow">
+        <h3>1 · Your screen</h3>
+        <p class="desc">Paste a gene list, or drop a screen file (CSV / TSV).</p>
+        <div class="dropzone">Drop <b>zs_GammaTNF_vs_DMSO.csv</b> here, or paste genes &mdash; <span style="color:var(--washu-red)">browse</span></div>
+      </div>
+
+      <div class="nrow">
+        <h3>2 · Columns</h3>
+        <p class="desc">RETICLE recognized these columns. Confirm or correct what each one is.</p>
+        <div class="panel" style="margin-top:0">
+          <table class="maptable">
+            <thead><tr><th>Column in file</th><th>Sample</th><th>RETICLE reads it as</th></tr></thead>
+            <tbody id="mapBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="nrow">
+        <h3>3 · What the screen is doing</h3>
+        <div class="fieldgrid" style="margin-top:6px">
+          <label>Perturbation modality</label>
+          <div class="seg" role="group" aria-label="Modality">
+            <button class="on">Knockout</button><button>CRISPRi</button><button>CRISPRa</button><button>Base editor</button>
+          </div>
+          <label>Selection pressure</label>
+          <input type="text" value="IFN-&#947; + TNF (vs DMSO vehicle)"/>
+          <label>Cell line &amp; organism</label>
+          <input type="text" value="BMDM · Mus musculus"/>
+          <label>A positive score means</label>
+          <div class="seg" role="group" aria-label="Direction">
+            <button class="on">Resistance (KO helps)</button><button>Sensitization (KO hurts)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nrow">
+        <h3>4 · Analysis depth</h3>
+        <div class="seg" role="group" aria-label="Depth">
+          <button class="on">Quick — rank-based</button><button>Grounded — harmonized</button>
+        </div>
+        <p class="depth-note"><b>Quick</b> ranks your genes against the corpus now (candidates, hypothesis-generating).
+        <b>Grounded</b> re-analyzes guide-level counts where available for higher-confidence effect sizes &mdash; slower, and only where counts exist.</p>
+      </div>
+
+      <div class="nrow">
+        <h3>5 · Contribute to the model</h3>
+        <label class="tog"><input type="checkbox" class="vh"/><span class="tswitch"></span>
+          <span style="font-size:14.5px">Add this screen to the shared corpus for everyone's future analyses</span></label>
+        <div class="guard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#971b2f" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto;margin-top:1px"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Off by default. Only <b>published</b> screens can enter the shared model; unpublished screens run locally in your WashU session. You'll confirm again before anything is contributed.</span>
+        </div>
+      </div>
+
+      <div class="newactions">
+        <button class="btn primary" onclick="showNew(false)">Run analysis</button>
+        <button class="btn" onclick="showNew(false)">Cancel</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div>
+
+<!-- ===== GENE DRAWER (W2) ===== -->
+<div class="scrim" id="scrim" onclick="closeGene()"></div>
+<aside class="drawer" id="drawer" data-num="off" aria-label="Gene entity" role="dialog" aria-modal="true">
+  <div class="drawer-head">
+    <div class="row">
+      <div>
+        <div class="eyebrow">The list entity</div>
+        <h3 id="gTitle">Jak2</h3>
+        <div class="meta" id="gMeta">mouse · Entrez 16452 · Janus kinase 2 (JAK-STAT)</div>
+      </div>
+      <button class="xclose" onclick="closeGene()" aria-label="Close">&times;</button>
+    </div>
+    <div style="margin-top:10px"><button class="toggle-numbers" onclick="toggleNum('drawer')">show numbers</button></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="ov" onclick="setTab('ov')">Overview</button>
+    <button class="tab" data-tab="why" onclick="setTab('why')">Why a hit / not</button>
+    <button class="tab" data-tab="rel" onclick="setTab('rel')">Relatives</button>
+  </div>
+  <div class="drawer-body">
+    <!-- OVERVIEW -->
+    <div class="tabpane on" id="pane-ov">
+      <div class="ai-panel" style="margin-top:0">
+        <div class="prov ai">{{AI}} AI-generated · di2 <span class="sub">— verify against sources</span></div>
+        <p id="gAnno"></p>
+      </div>
+      <div class="prov src" style="margin-top:20px">{{SRC}} From your screen</div>
+      <div class="krow"><span>In GammaTNF vs DMSO</span><span id="gInScreen" class="tnum"></span></div>
+      <div class="krow" style="border-bottom:none"><span>Call</span><span id="gStatus"></span></div>
+      <div class="prov src" style="margin-top:18px">{{SRC}} From the corpus <span class="sub">— illustrative in this mockup</span></div>
+      <h4 class="mini" style="margin-top:6px">Behavior across contexts</h4>
+      <div class="fp" id="gFp"></div>
+      <div class="fp" id="gDark"></div>
+      <div class="prov src" style="margin-top:18px">{{SRC}} From publications</div>
+      <div class="linkouts" style="margin-top:6px"><span class="lbl">Links</span>
+        <button class="btn sm">NCBI</button><button class="btn sm">UniProt</button><button class="btn sm">STRING</button><button class="btn sm" id="gPub">PubMed</button>
+      </div>
+    </div>
+    <!-- WHY -->
+    <div class="tabpane" id="pane-why">
+      <div class="prov src">{{SRC}} From the corpus <span class="sub">— screen contexts, illustrative</span></div>
+      <h4 class="mini" style="margin-top:6px">Where it's a hit</h4>
+      <div class="panel" style="margin-top:0"><table>
+        <thead><tr><th>Screen context</th><th>Why</th></tr></thead>
+        <tbody id="gWhyHit"></tbody></table></div>
+      <h4 class="mini">Where it's not</h4>
+      <div class="panel" style="margin-top:0"><table>
+        <thead><tr><th>Screen context</th><th>Why</th></tr></thead>
+        <tbody id="gWhyNot"></tbody></table></div>
+      <p class="hint">&ldquo;Not a hit&rdquo; = measured, but under a different phenotype or pressure &mdash; or just under that screen's own cutoff.</p>
+    </div>
+    <!-- RELATIVES -->
+    <div class="tabpane" id="pane-rel">
+      <div class="prov cp">{{CP}} Computed <span class="sub">— multi-channel relatedness · BH-FDR</span></div>
+      <div style="font-size:12.5px;color:var(--fg-muted);margin:10px 0 12px">Method:
+        <span class="seg" style="vertical-align:middle"><button id="mA" class="on" onclick="setMethod('A')">Hit-based (mouse)</button><button id="mB" onclick="setMethod('B')">Co-essentiality (human)</button></span>
+      </div>
+      <h4 class="mini" style="margin-top:0" id="relH">Strong partners</h4>
+      <div class="panel" style="margin-top:0"><table>
+        <thead><tr><th>Gene</th><th id="colwhy">Why related</th><th>Support</th></tr></thead>
+        <tbody id="relbody"></tbody>
+      </table></div>
+      <details><summary>Common-essential neighborhood &mdash; real co-hits, explained by the partner's own promiscuity</summary>
+        <p class="hint">Kept separate: genes that co-hit with this one yet are hits in a large fraction of all screens, so the link is largely non-specific.</p></details>
+      <p class="hint">Two methods can define &ldquo;related.&rdquo; Hit-based (shown) folds in literature; the pure-CRISPR co-essentiality network does not.</p>
+    </div>
+  </div>
+</aside>
+
+<script>
+/* ---------- provenance marks (SVG, no emoji) ---------- */
+const MARKS={
+  AI:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>',
+  CP:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  SRC:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" stroke-linecap="round"/></svg>'
+};
+document.body.innerHTML=document.body.innerHTML
+  .replace(/\{\{AI\}\}/g,MARKS.AI).replace(/\{\{CP\}\}/g,MARKS.CP).replace(/\{\{SRC\}\}/g,MARKS.SRC);
+
+/* ---------- gene entity data — all genes are IN the GammaTNF screen ----------
+   Real: gene identity + this-screen values. Illustrative in this mockup:
+   corpus fingerprints, darkness, and relatedness stats (would be pipeline-computed). */
+const GENES={
+  Jak2:{title:"Jak2",meta:"mouse · Entrez 16452 · Janus kinase 2 (JAK-STAT)",status:"confirmed",
+    inScreen:"resistance end · rank #6 · z +4.19",darkness:0.1,pub:"PubMed (2,400+)",
+    anno:"A JAK-STAT kinase that transduces IFN-γ/TNF signals. In your screen it sits at the resistance end — knocking it out lets cells escape cytokine-driven death. The corpus expects this, so it's a confirmed dependency, not a surprise.",
+    fp:[["cytokine / IFN survival",5,6],["viral response",3,4],["immune fitness",4,5],["metabolic",0,4],["neuronal",0,3]],
+    whyHit:[["IFN-γ / cytokine survival (like yours)","JAK-STAT is required to transduce the killing signal"],["viral-response screens","the IFN effector arm depends on JAK2"]],
+    whyNot:[["screens with no cytokine pressure","nothing to expose a JAK-STAT dependency"],["purely metabolic phenotypes","a different pathway drives the effect"]],
+    relA:[["Jak1","co-hit · co-ess · cited","strong"],["Stat1","co-hit · co-ess · cited","strong"],["Ifngr1","co-hit · cited · context","strong"],["Tyk2","co-ess · cited","moderate"]],
+    relB:[["JAK1","co-essential (reciprocal)","r 0.68"],["STAT1","co-essential (reciprocal)","r 0.61"],["IFNGR2","co-essential (reciprocal)","r 0.55"]]},
+  Ifngr2:{title:"Ifngr2",meta:"mouse · Entrez 15980 · IFN-γ receptor subunit 2",status:"confirmed",
+    inScreen:"resistance end · rank #1 · z +5.89",darkness:0.2,pub:"PubMed (900+)",
+    anno:"The IFN-γ receptor's signalling subunit — the top resistance hit in your screen. Remove the receptor and the cytokine can't deliver its killing signal, so cells survive. A confirmed dependency.",
+    fp:[["cytokine / IFN survival",6,7],["viral response",3,4],["immune fitness",3,5],["metabolic",0,3],["neuronal",0,2]],
+    whyHit:[["IFN-γ survival screens","the receptor is required to sense the cytokine"]],
+    whyNot:[["non-IFN pressures","the receptor is irrelevant to the phenotype"]],
+    relA:[["Ifngr1","co-hit · co-ess · cited","strong"],["Jak2","co-hit · cited · context","strong"],["Jak1","co-ess · cited","moderate"],["Stat1","co-ess · cited","moderate"]],
+    relB:[["IFNGR1","co-essential (reciprocal)","r 0.72"],["JAK2","co-essential (reciprocal)","r 0.55"]]},
+  Tnfrsf1a:{title:"Tnfrsf1a",meta:"mouse · Entrez 21937 · TNF receptor 1",status:"confirmed",
+    inScreen:"resistance end · rank #5 · z +4.19",darkness:0.2,pub:"PubMed (3,000+)",
+    anno:"TNF receptor 1 — the entry point for the TNF arm of the pressure. Knocking it out blunts TNF-driven death, placing it at the resistance end. Confirmed by the corpus.",
+    fp:[["TNF / cytokine survival",5,6],["apoptosis",3,4],["immune fitness",3,5],["metabolic",1,5]],
+    whyHit:[["TNF / cytokine survival","the receptor initiates the TNF death signal"]],
+    whyNot:[["screens without TNF","no TNF signal to depend on"]],
+    relA:[["Tnf","co-hit · cited · context","strong"],["Ripk1","co-hit · co-ess · cited","strong"],["Tradd","co-ess · cited","moderate"],["Rela","cited · context","moderate"]],
+    relB:[["RIPK1","co-essential (reciprocal)","r 0.6"],["TRADD","co-essential (reciprocal)","r 0.5"]]},
+  Rela:{title:"Rela",meta:"mouse · Entrez 19697 · NF-κB p65",status:"confirmed",
+    inScreen:"sensitizing end · z −7.95 (KO hurts)",darkness:0.1,pub:"PubMed (5,000+)",
+    anno:"The NF-κB p65 subunit. It sits at the sensitizing end — losing it removes the pro-survival NF-κB program, so cells die faster under cytokine stress. The corpus expects it to matter here.",
+    fp:[["NF-κB / inflammatory",6,7],["cytokine survival",4,6],["immune fitness",3,5],["metabolic",0,4]],
+    whyHit:[["cytokine / inflammatory survival","NF-κB drives the survival program cells lean on"]],
+    whyNot:[["non-inflammatory contexts","NF-κB isn't load-bearing there"]],
+    relA:[["Nfkb1","co-hit · co-ess · cited","strong"],["Ripk1","co-hit · cited · context","strong"],["Ikbkb","co-ess · cited","moderate"],["Chuk","co-ess · cited","moderate"]],
+    relB:[["NFKB1","co-essential (reciprocal)","r 0.66"],["IKBKB","co-essential (reciprocal)","r 0.58"]]},
+  Fip1l1:{title:"Fip1l1",meta:"mouse · Entrez 66899 · mRNA cleavage/polyadenylation factor",status:"novel",
+    inScreen:"rank #3 · strong residual (z +4.40), raw LFC −0.49",darkness:0.7,pub:"PubMed (few, none in cytokine context)",
+    anno:"An mRNA 3′-end processing factor — not an obvious cytokine gene. Yet it scores strongly in your screen and the corpus would not predict it here, which is exactly what makes it a novel-dependency lead worth following up. Sparse cytokine literature, so it reads dark in this context.",
+    fp:[["general fitness",6,9],["cytokine survival (corpus)",0,7],["viral",0,3],["neuronal",0,2]],
+    whyHit:[["your GammaTNF screen","strong positive residual — unexpected for an mRNA-processing gene here"]],
+    whyNot:[["most cytokine screens in the corpus","not a recurrent hit under this pressure"],["metabolic / neuronal screens","no effect, or not measured"]],
+    relA:[["Cpsf1","co-ess · cited","moderate"],["Wdr33","co-ess","weak"],["Cstf1","co-ess","weak"]],
+    relB:[["CPSF1","co-essential (reciprocal)","r 0.50"],["WDR33","co-essential (reciprocal)","r 0.46"]]},
+  Wdr74:{title:"Wdr74",meta:"mouse · Entrez 66031 · ribosome-biogenesis factor",status:"novel",
+    inScreen:"rank #4 · z +4.23, LFC −1.51",darkness:0.6,pub:"PubMed (dozens)",
+    anno:"A ribosome-biogenesis factor and broadly a fitness gene, so its strength here is less specific to cytokine stress than Fip1l1's — a lower-confidence lead. Read it alongside the pathway view.",
+    fp:[["general fitness",7,9],["ribosome biogenesis",5,6],["cytokine-specific",0,5]],
+    whyHit:[["your GammaTNF screen","strong, but general-fitness genes score in many screens"]],
+    whyNot:[["low-coverage screens","not measured deeply enough"]],
+    relA:[["Bop1","co-ess · cited","strong"],["Pes1","co-ess · cited","moderate"],["Nol6","co-ess","moderate"]],
+    relB:[["BOP1","co-essential (reciprocal)","r 0.60"],["PES1","co-essential (reciprocal)","r 0.52"]]},
+  Adra1d:{title:"Adra1d",meta:"mouse · Entrez 11550 · adrenergic receptor α-1D",status:"exploratory",
+    inScreen:"rank #7 · z +3.86",darkness:0.8,pub:"PubMed (rare in immune contexts)",
+    anno:"An adrenergic GPCR, rarely measured in immune/cytokine screens — flagged mainly for darkness. Treat as exploratory until more screens support it.",
+    fp:[["cytokine context",0,4],["broad fitness screens",0,6],["GPCR / neuronal",1,3]],
+    whyHit:[["your GammaTNF screen","scored, but rarely assayed elsewhere in this context"]],
+    whyNot:[["most corpus screens","not measured / no effect"]],
+    relA:[["Adra1b","cited","weak"]],
+    relB:[]}
+};
+const STATUS={confirmed:"Confirmed dependency",novel:"Novel dependency",exploratory:"Exploratory (dark)"};
+let CUR=GENES.Jak2;
+function fpBar(l,h,t){const f=t?h/t:0;const phrase=h>0?`hit in ${h} of ${t}`:`not a hit`;
+  return `<div class="fpb"><span class="fl">${l}</span><span class="ft"><i style="width:${Math.round(f*100)}%"></i></span><span class="fp2">${phrase}</span></div>`;}
+function darkBar(d){const w=d>=0.5?"rarely studied":"well characterized";
+  return `<div class="fpb dk"><span class="fl">${w}</span><span class="ft"><i style="width:${Math.round(d*100)}%"></i></span><span class="fp2">darkness ${d.toFixed(2)}</span></div>`;}
+function renderRel(m){const rows=(m==="A"?CUR.relA:CUR.relB)||[];
+  document.getElementById("colwhy").textContent=(m==="A")?"Why related (channels)":"Why related (co-essentiality)";
+  document.getElementById("relH").textContent=(m==="A")?"Strong partners — hit-based":"Strong partners — co-essentiality";
+  document.getElementById("relbody").innerHTML=rows.length?rows.map(r=>`<tr><td class="gene">${r[0]}</td><td>${r[1]}</td><td class="support tnum">${r[2]}</td></tr>`).join(""):'<tr><td colspan="3" class="hint" style="padding:12px 16px">No strong partners under this method yet.</td></tr>';}
+function setMethod(m){document.getElementById("mA").classList.toggle("on",m==="A");document.getElementById("mB").classList.toggle("on",m==="B");renderRel(m);}
+function setTab(t){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  document.querySelectorAll(".tabpane").forEach(p=>p.classList.toggle("on",p.id==="pane-"+t));}
+function toggleNum(id){const el=document.getElementById(id);el.dataset.num=el.dataset.num==="on"?"off":"on";}
+function rows2(arr){return (arr&&arr.length?arr:[["—",""]]).map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");}
+function openGene(name){const g=GENES[name]||GENES.Jak2;CUR=g;
+  document.getElementById("gTitle").textContent=g.title;
+  document.getElementById("gMeta").textContent=g.meta;
+  document.getElementById("gAnno").textContent=g.anno;
+  document.getElementById("gInScreen").textContent=g.inScreen;
+  document.getElementById("gStatus").textContent=STATUS[g.status];
+  document.getElementById("gPub").textContent=g.pub;
+  document.getElementById("gFp").innerHTML='<div class="fpbars">'+g.fp.map(f=>fpBar(f[0],f[1],f[2])).join("")+'</div>';
+  document.getElementById("gDark").innerHTML='<div class="fpbars">'+darkBar(g.darkness)+'</div>';
+  document.getElementById("gWhyHit").innerHTML=rows2(g.whyHit);
+  document.getElementById("gWhyNot").innerHTML=rows2(g.whyNot);
+  setTab("ov");setMethod("A");
+  document.getElementById("drawer").classList.add("open");document.getElementById("scrim").classList.add("open");}
+function closeGene(){document.getElementById("drawer").classList.remove("open");document.getElementById("scrim").classList.remove("open");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeGene();});
+
+/* ---------- new analysis view ---------- */
+function showNew(on){
+  document.getElementById("dashView").style.display=on?"none":"";
+  document.getElementById("ctxbar").style.display=on?"none":"";
+  document.getElementById("newView").classList.toggle("on",on);
+  window.scrollTo({top:0,behavior:"instant"});
+}
+const COLS=[
+  ["Gene","Ifngr2, Jak2, Rela …","gene"],["condition","GammaTNF","condition"],["n","4","reps"],
+  ["mean_lfc","0.947","lfc"],["mean_residual","0.707","residual"],["z_score","5.886","z"],
+  ["p_value","3.97e-9","p"],["fdr","5.98e-6","fdr"],
+  ["ascending_rank","1 = most negative","rank_sens"],["descending_rank","1 = most positive","rank_res"]
+];
+const ROLES=[["gene","Gene ID"],["lfc","Effect size (LFC)"],["residual","Residual"],["z","Statistic (z)"],
+  ["p","p-value"],["fdr","FDR"],["rank_res","Rank — resistance"],["rank_sens","Rank — sensitization"],
+  ["condition","Condition"],["reps","Replicates (n)"],["ignore","Ignore"]];
+document.getElementById("mapBody").innerHTML=COLS.map(c=>{
+  const opts=ROLES.map(r=>`<option value="${r[0]}"${r[0]===c[2]?" selected":""}>${r[1]}</option>`).join("");
+  return `<tr><td class="gene">${c[0]}</td><td class="sample tnum">${c[1]}</td><td><select>${opts}</select></td></tr>`;
+}).join("");
+
+/* segmented single-select behavior */
+document.querySelectorAll(".seg").forEach(seg=>seg.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b||!seg.contains(b))return;
+  seg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+}));
+
+/* sidebar scroll-spy */
+const links=[...document.querySelectorAll(".navlink[data-sec]")];
+const obs=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)
+  links.forEach(l=>l.classList.toggle("active",l.dataset.sec===en.target.id));}),{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll(".section").forEach(s=>obs.observe(s));
+renderRel("A");
+(function(){const p=new URLSearchParams(location.search).get("gene");if(p)openGene(p);
+  if(new URLSearchParams(location.search).get("view")==="new")showNew(true);})();
+</script>
+</body>
+</html>
