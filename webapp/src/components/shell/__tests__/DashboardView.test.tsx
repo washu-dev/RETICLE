@@ -5,6 +5,9 @@ import DashboardView from '../DashboardView';
 jest.mock('../../../services/reticleApi', () => ({
   fetchGeneExplorer: jest.fn(() => new Promise(() => {})),
   fetchGeneContext: jest.fn(() => new Promise(() => {})),
+  fetchCoessential: jest.fn(() => new Promise(() => {})),
+  fetchInterpret: jest.fn(() => new Promise(() => {})),
+  fetchPathways: jest.fn(() => new Promise(() => {})),
   toApiOrganism: (o: string) => o,
 }));
 

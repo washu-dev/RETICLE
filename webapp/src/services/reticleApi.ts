@@ -320,3 +320,79 @@ export async function fetchGeneNetwork(
     { signal }
   );
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 endpoints — co-essentiality, AI narrative, pathway enrichment.
+// Snake_case, matching api/routers/*.py contracts.
+// ---------------------------------------------------------------------------
+
+export interface CoessNode {
+  name: string;
+  lean: Lean | null;
+  focus: boolean;
+}
+export interface CoessEdge {
+  a: string;
+  b: string;
+  r: number;
+  score: number;
+}
+export interface CoessNetwork {
+  symbol: string;
+  nodes: CoessNode[];
+  edges: CoessEdge[];
+  n_screens: number;
+}
+
+/** Co-essentiality neighbours (pure-CRISPR relatedness) for a gene. */
+export async function fetchCoessential(
+  symbol: string,
+  organism = 'Homo sapiens',
+  signal?: AbortSignal
+): Promise<CoessNetwork> {
+  const org = toApiOrganism(organism);
+  return apiGet<CoessNetwork>(
+    `/api/coessential?symbol=${encodeURIComponent(symbol)}&org=${encodeURIComponent(org)}`,
+    { signal }
+  );
+}
+
+export interface InterpretSource {
+  pmid: string;
+  title: string;
+}
+export interface Interpretation {
+  model: string;
+  text: string;
+  sources: InterpretSource[];
+}
+
+/** AI narrative for a gene footprint (the /api/gene payload). Throws ApiError
+ *  503 when the LLM gateway is unconfigured — callers should degrade gracefully. */
+export async function fetchInterpret(
+  footprint: unknown,
+  signal?: AbortSignal
+): Promise<Interpretation> {
+  return apiPost<Interpretation>('/api/interpret', footprint, { signal });
+}
+
+export interface PathwayTerm {
+  term: string;
+  p_value: number;
+  adj_p_value: number;
+  combined_score: number;
+  overlap_genes: string[];
+}
+export interface PathwayResult {
+  library: string;
+  terms: PathwayTerm[];
+}
+
+/** Pathway enrichment (Enrichr) for a gene list. Returns empty terms on failure. */
+export async function fetchPathways(
+  genes: string[],
+  library?: string,
+  signal?: AbortSignal
+): Promise<PathwayResult> {
+  return apiPost<PathwayResult>('/api/pathways', { genes, library }, { signal });
+}

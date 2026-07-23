@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardShell, { type ShellSection, type ContextItem } from './DashboardShell';
 import GeneDrawer from './GeneDrawer';
 import Provenance, { ProvenanceLegend } from '../washu/Provenance';
-import type { QueryResponse } from '../../services/reticleApi';
+import { fetchPathways, type QueryResponse, type PathwayResult } from '../../services/reticleApi';
 
 /**
  * The unified analysis view (W1) — one scrolling dashboard skinned in the WashU
@@ -30,7 +30,20 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
   const [drawerGene, setDrawerGene] = useState<string | null>(null);
   const [numScreens, setNumScreens] = useState(false);
   const [numGenes, setNumGenes] = useState(false);
+  const [pathways, setPathways] = useState<PathwayResult | null>(null);
   const openGene = (symbol: string) => setDrawerGene(symbol);
+
+  // Pathway enrichment over the query genes (Enrichr). Fails soft — the section
+  // keeps its "coming" state if the endpoint is unavailable or returns nothing.
+  useEffect(() => {
+    const symbols = (genes ?? []).map((g) => g.symbol).filter(Boolean).slice(0, 300);
+    if (symbols.length === 0) return;
+    const ctrl = new AbortController();
+    fetchPathways(symbols, undefined, ctrl.signal)
+      .then(setPathways)
+      .catch(() => setPathways(null));
+    return () => ctrl.abort();
+  }, [genes]);
 
   const geneCount = genes?.length ?? 0;
   const context: ContextItem[] = [
@@ -143,14 +156,40 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
           </p>
         </section>
 
-        {/* ── SHARED PATHWAYS (unbacked) ── */}
+        {/* ── SHARED PATHWAYS ── */}
         <section id="pathways" style={section}>
           <SecHead title="Shared pathways" />
-          <Provenance kind="computed" sub="coming with pathway enrichment" style={{ marginTop: 8 }} />
-          <ComingNote>
-            Pathways enriched across the matched screens — including de-novo annotations proposed from
-            the CRISPR results — arrive when the enrichment endpoint is built.
-          </ComingNote>
+          {pathways && pathways.terms.length > 0 ? (
+            <>
+              <Provenance kind="computed" sub={`enrichment · ${pathways.library.replace(/_/g, ' ')}`} style={{ marginTop: 8 }} />
+              <p style={sub}>Pathways over-represented among your genes, ranked by combined score.</p>
+              <div style={{ marginTop: 14 }}>
+                {pathways.terms.map((t) => (
+                  <div key={t.term} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{t.term}</span>
+                      <span className="tnum" style={{ color: 'var(--faint)', fontSize: '0.8rem', flex: '0 0 auto' }}>
+                        q {t.adj_p_value.toExponential(1)}
+                      </span>
+                    </div>
+                    {t.overlap_genes.length > 0 && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--fg-muted)', marginTop: 3 }}>
+                        {t.overlap_genes.slice(0, 8).join(' · ')}{t.overlap_genes.length > 8 ? ' …' : ''}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <Provenance kind="computed" sub="pathway enrichment" style={{ marginTop: 8 }} />
+              <ComingNote>
+                No enriched pathways to show yet — this populates from Enrichr once an analysis with
+                genes is loaded and the enrichment service is reachable.
+              </ComingNote>
+            </>
+          )}
         </section>
 
         {/* ── SURPRISES (unbacked) ── */}

@@ -20,6 +20,19 @@ const context = {
 jest.mock('../../../services/reticleApi', () => ({
   fetchGeneExplorer: jest.fn(() => Promise.resolve(gene)),
   fetchGeneContext: jest.fn(() => Promise.resolve(context)),
+  fetchCoessential: jest.fn(() =>
+    Promise.resolve({
+      symbol: 'Jak2',
+      nodes: [
+        { name: 'STAT1', lean: 'essential', focus: false },
+        { name: 'JAK1', lean: 'essential', focus: false },
+        { name: 'Jak2', lean: 'essential', focus: true },
+      ],
+      edges: [],
+      n_screens: 40,
+    })
+  ),
+  fetchInterpret: jest.fn(() => Promise.reject(new Error('503 unavailable'))),
   toApiOrganism: (o: string) => o,
 }));
 
@@ -45,7 +58,7 @@ describe('GeneDrawer', () => {
     expect(screen.getByText(/Proliferation \/ fitness/)).toBeInTheDocument();
   });
 
-  test('Relatives tab shows STRING partners under co-essentiality', async () => {
+  test('Relatives tab shows real co-essential partners', async () => {
     render(<GeneDrawer symbol="Jak2" onClose={jest.fn()} />);
     await screen.findByText('A signalling kinase.');
     fireEvent.click(screen.getByRole('tab', { name: 'Relatives' }));

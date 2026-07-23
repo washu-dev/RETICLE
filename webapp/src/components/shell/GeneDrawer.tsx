@@ -4,8 +4,12 @@ import Provenance from '../washu/Provenance';
 import {
   fetchGeneExplorer,
   fetchGeneContext,
+  fetchCoessential,
+  fetchInterpret,
   type GeneExplorer,
   type GeneContext,
+  type CoessNetwork,
+  type Interpretation,
 } from '../../services/reticleApi';
 import { ApiError } from '../../services/api';
 
@@ -54,6 +58,8 @@ export default function GeneDrawer({
   const [method, setMethod] = useState<RelMethod>('B');
   const [gene, setGene] = useState<Load<GeneExplorer>>({ state: 'loading', data: null });
   const [ctx, setCtx] = useState<Load<GeneContext>>({ state: 'loading', data: null });
+  const [coess, setCoess] = useState<Load<CoessNetwork>>({ state: 'loading', data: null });
+  const [interp, setInterp] = useState<Interpretation | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -68,6 +74,8 @@ export default function GeneDrawer({
     setMethod('B');
     setGene({ state: 'loading', data: null });
     setCtx({ state: 'loading', data: null });
+    setCoess({ state: 'loading', data: null });
+    setInterp(null);
     const ctrl = new AbortController();
 
     fetchGeneExplorer(symbol, ctrl.signal)
@@ -81,8 +89,23 @@ export default function GeneDrawer({
       .then((d) => setCtx({ state: 'ok', data: d }))
       .catch((e) => { if (e?.name !== 'AbortError') setCtx({ state: 'error', data: null }); });
 
+    fetchCoessential(symbol, organism, ctrl.signal)
+      .then((d) => setCoess({ state: 'ok', data: d }))
+      .catch((e) => { if (e?.name !== 'AbortError') setCoess({ state: 'error', data: null }); });
+
     return () => ctrl.abort();
   }, [symbol, organism]);
+
+  // AI narrative needs the loaded footprint. Fails soft (e.g. 503 when the LLM
+  // gateway is unconfigured) — the Overview keeps its Source summary either way.
+  useEffect(() => {
+    if (gene.state !== 'ok' || !gene.data) return;
+    const ctrl = new AbortController();
+    fetchInterpret(gene.data, ctrl.signal)
+      .then((d) => setInterp(d))
+      .catch(() => setInterp(null));
+    return () => ctrl.abort();
+  }, [gene]);
 
   const g = gene.data;
   const c = ctx.data;
@@ -142,9 +165,9 @@ export default function GeneDrawer({
             <p style={muted}>Couldn't reach the corpus for {symbol}. The API may be offline — try again.</p>
           )}
 
-          {tab === 'ov' && <OverviewPane symbol={symbol!} gene={gene} ctx={ctx} />}
+          {tab === 'ov' && <OverviewPane symbol={symbol!} gene={gene} ctx={ctx} interp={interp} />}
           {tab === 'why' && <WhyPane gene={gene} />}
-          {tab === 'rel' && <RelativesPane ctx={ctx} method={method} setMethod={setMethod} />}
+          {tab === 'rel' && <RelativesPane ctx={ctx} coess={coess} method={method} setMethod={setMethod} />}
         </div>
       </aside>
     </>
@@ -152,7 +175,7 @@ export default function GeneDrawer({
 }
 
 /* ─────────────────────────── Overview ─────────────────────────── */
-function OverviewPane({ symbol, gene, ctx }: { symbol: string; gene: Load<GeneExplorer>; ctx: Load<GeneContext> }) {
+function OverviewPane({ symbol, gene, ctx, interp }: { symbol: string; gene: Load<GeneExplorer>; ctx: Load<GeneContext>; interp: Interpretation | null }) {
   const g = gene.data;
   const c = ctx.data;
   const hits =
@@ -161,6 +184,27 @@ function OverviewPane({ symbol, gene, ctx }: { symbol: string; gene: Load<GeneEx
 
   return (
     <>
+      {/* di2 AI narrative — shown only when the LLM gateway returned one */}
+      {interp?.text && (
+        <div className="ai-panel" style={{ marginBottom: 4 }}>
+          <Provenance kind="ai" sub="hypothesis-generating; verify against sources" />
+          <p style={{ marginTop: 8 }}>{interp.text}</p>
+          {interp.sources.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--faint)' }}>
+              Grounded in:{' '}
+              {interp.sources.map((s, i) => (
+                <span key={s.pmid}>
+                  {i > 0 && ' · '}
+                  <a href={`https://pubmed.ncbi.nlm.nih.gov/${s.pmid}`} target="_blank" rel="noreferrer" title={s.title}>
+                    PMID {s.pmid}
+                  </a>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* NCBI summary — Source, not AI */}
       {ctx.state === 'ok' && c?.annotation?.summary ? (
         <div>
@@ -264,8 +308,9 @@ function WhyPane({ gene }: { gene: Load<GeneExplorer> }) {
 }
 
 /* ─────────────────────────── Relatives ─────────────────────────── */
-function RelativesPane({ ctx, method, setMethod }: { ctx: Load<GeneContext>; method: RelMethod; setMethod: (m: RelMethod) => void }) {
+function RelativesPane({ ctx, coess, method, setMethod }: { ctx: Load<GeneContext>; coess: Load<CoessNetwork>; method: RelMethod; setMethod: (m: RelMethod) => void }) {
   const partners = ctx.data?.string_partners ?? [];
+  const coessNodes = (coess.data?.nodes ?? []).filter((n) => !n.focus);
   return (
     <>
       <div style={{ fontSize: '0.78rem', color: 'var(--fg-muted)', marginBottom: 12 }}>
@@ -278,13 +323,26 @@ function RelativesPane({ ctx, method, setMethod }: { ctx: Load<GeneContext>; met
 
       {method === 'B' ? (
         <>
-          <Provenance kind="computed" sub="STRING functional partners" />
-          {ctx.state === 'loading' && <p style={{ ...muted, marginTop: 10 }}>Loading partners…</p>}
-          {ctx.state === 'ok' && partners.length === 0 && (
-            <p style={{ ...muted, marginTop: 10 }}>No STRING functional partners returned.</p>
-          )}
-          {partners.length > 0 && (
+          <Provenance kind="computed" sub="co-essentiality network · pure CRISPR" />
+          {coess.state === 'loading' && <p style={{ ...muted, marginTop: 10 }}>Loading co-essential partners…</p>}
+          {coess.state === 'ok' && coessNodes.length > 0 ? (
             <div style={{ marginTop: 10 }}>
+              {coessNodes.map((n) => (
+                <div key={n.name} style={partnerRow}>
+                  <span style={{ fontWeight: 600 }}>{n.name}</span>
+                  {n.lean && <span style={{ color: 'var(--faint)', fontSize: '0.78rem' }}>{leanWord(n.lean)}</span>}
+                </div>
+              ))}
+              <p style={{ ...faintHint, marginTop: 12 }}>
+                Genes whose fitness profile correlates with this one across CRISPR screens
+                (Pearson r ≥ 0.25{coess.data ? ` over ${coess.data.n_screens} screens` : ''}). No literature used.
+              </p>
+            </div>
+          ) : partners.length > 0 ? (
+            <div style={{ marginTop: 10 }}>
+              <p style={{ ...faintHint, marginBottom: 8 }}>
+                No co-essential partners passed threshold — showing STRING functional partners instead.
+              </p>
               {partners.map((p) => (
                 <div key={p.partner} style={partnerRow}>
                   <span style={{ fontWeight: 600 }}>{p.partner}</span>
@@ -292,11 +350,9 @@ function RelativesPane({ ctx, method, setMethod }: { ctx: Load<GeneContext>; met
                 </div>
               ))}
             </div>
+          ) : (
+            <p style={{ ...muted, marginTop: 10 }}>No partners found for this gene.</p>
           )}
-          <p style={{ ...faintHint, marginTop: 12 }}>
-            Functional partners from STRING stand in for co-essentiality until the pure-CRISPR
-            co-essentiality network is served from the pipeline.
-          </p>
         </>
       ) : (
         <>
