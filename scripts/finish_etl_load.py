@@ -43,9 +43,13 @@ from config import Config
 
 logger = logging.getLogger("finish_etl_load")
 
-# Aggregate builders, in dependency order. screen_gene_raw is already populated
-# by the load phase, so build_screen_gene_raw is intentionally NOT called here.
-BUILD_STEPS = ['build_fact_screen_gene', 'build_dim_screen', 'build_dim_gene']
+# fact_screen_gene is built in screen_id batches (build_fact_batched) because the
+# monolithic build_fact_screen_gene over tens of millions of screen_gene_raw rows
+# exceeds the job wall-clock (observed: 4h SLURM TIMEOUT on version 7 / 26.2M rows).
+# The dimension builds emit few rows (one per screen / per gene) and stay whole.
+# screen_gene_raw is already populated by the load phase, so build_screen_gene_raw
+# is intentionally NOT called here.
+DIM_STEPS = ['build_dim_screen', 'build_dim_gene']
 VERSION_TABLES = ['screen', 'gene', 'screen_gene_raw',
                   'fact_screen_gene', 'dim_screen', 'dim_gene']
 
@@ -64,10 +68,12 @@ def setup_logging(version_id: int, run_id) -> Path:
 
 
 class ETLFinisher:
-    def __init__(self, version_id: int, run_id=None, dry_run: bool = False):
+    def __init__(self, version_id: int, run_id=None, dry_run: bool = False,
+                 fact_batch_size: int = 50):
         self.version_id = version_id
         self.run_id = run_id
         self.dry_run = dry_run
+        self.fact_batch_size = fact_batch_size
         self.conn = None
         self.organism = None
 
@@ -105,9 +111,11 @@ class ETLFinisher:
         # Disable the per-statement timeout: build_fact_screen_gene GROUP BYs over
         # tens of millions of screen_gene_raw rows and must not be cut off.
         cur = self.conn.cursor()
-        cur.execute("SET statement_timeout = 0")
+        cur.execute("SET statement_timeout = 0")     # aggregate builds run long; don't cap
+        cur.execute("SET work_mem = '256MB'")        # speed up the GROUP BY sorts/hashes
+        cur.execute("SET maintenance_work_mem = '512MB'")
         self.conn.commit()
-        logger.info("Connected (statement_timeout disabled for aggregate builds)")
+        logger.info("Connected (statement_timeout=0, work_mem=256MB, maintenance_work_mem=512MB)")
 
     def resolve(self):
         cur = self.conn.cursor()
@@ -146,9 +154,73 @@ class ETLFinisher:
                 (self.organism, self.version_id, self.organism),
             )
 
+    # SELECT body of build_fact_screen_gene, but filtered to a batch of screen_ids
+    # and committed per batch so the build makes incremental, resumable progress.
+    FACT_BATCH_SQL = """
+        INSERT INTO fact_screen_gene
+            (version_id, run_id, screen_id, gene_id, hit_count, hit_percentage,
+             avg_raw_score, total_publications, condition_count, is_current)
+        SELECT %s, %s, sgr.screen_id, sgr.gene_id,
+               COUNT(CASE WHEN sgr.hit_flag THEN 1 END)::INT AS hit_count,
+               ROUND(100.0 * COUNT(CASE WHEN sgr.hit_flag THEN 1 END)
+                     / NULLIF(COUNT(*), 0), 2)::NUMERIC AS hit_percentage,
+               AVG(sgr.raw_score)::NUMERIC AS avg_raw_score,
+               0, 1, TRUE
+        FROM screen_gene_raw sgr
+        WHERE sgr.version_id = %s AND sgr.screen_id = ANY(%s)
+        GROUP BY sgr.screen_id, sgr.gene_id
+        ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
+            hit_count = EXCLUDED.hit_count,
+            hit_percentage = EXCLUDED.hit_percentage,
+            avg_raw_score = EXCLUDED.avg_raw_score,
+            is_current = TRUE
+    """
+
+    def build_fact_batched(self):
+        """Build fact_screen_gene in screen_id batches.
+
+        The monolithic build_fact_screen_gene aggregates + inserts ~26M rows in one
+        statement and exceeded the job wall-clock. Here each batch of screens is a
+        small INSERT that commits on its own, so progress survives a restart. Screens
+        already present in fact_screen_gene for this version are skipped (resume).
+        """
+        cur = self.conn.cursor()
+        cur.execute("SELECT screen_id FROM screen WHERE version_id = %s ORDER BY screen_id",
+                    (self.version_id,))
+        all_ids = [r[0] for r in cur.fetchall()]
+        cur.execute("SELECT DISTINCT screen_id FROM fact_screen_gene WHERE version_id = %s",
+                    (self.version_id,))
+        done = {r[0] for r in cur.fetchall()}
+        todo = [sid for sid in all_ids if sid not in done]
+        logger.info(f"build_fact (batched): {len(all_ids)} screens, {len(done)} already done, "
+                    f"{len(todo)} to process, batch_size={self.fact_batch_size}")
+        self._log_sql("build_fact batch template", self.FACT_BATCH_SQL,
+                      "(version, run, version, <screen_id batch>)")
+        if self.dry_run:
+            logger.info("  (dry-run: not executed)")
+            return
+        if not todo:
+            logger.info("  fact already complete for all screens — nothing to do")
+            return
+
+        total = 0
+        n_batches = (len(todo) + self.fact_batch_size - 1) // self.fact_batch_size
+        for i in range(0, len(todo), self.fact_batch_size):
+            batch = todo[i:i + self.fact_batch_size]
+            t0 = time.time()
+            cur.execute(self.FACT_BATCH_SQL,
+                        (self.version_id, self.run_id, self.version_id, batch))
+            self.conn.commit()
+            total += cur.rowcount
+            logger.info(f"  fact batch {i // self.fact_batch_size + 1}/{n_batches}: "
+                        f"screens[{batch[0]}..{batch[-1]}] +{cur.rowcount:,} rows "
+                        f"(cumulative {total:,}, {time.time() - t0:.1f}s)")
+        logger.info(f"✓ build_fact (batched): {total:,} fact rows for version {self.version_id}")
+
     def build_aggregates(self):
         logger.info("=== BUILD AGGREGATES (run_id=%s, version_id=%s) ===" % (self.run_id, self.version_id))
-        for fn in BUILD_STEPS:
+        self.build_fact_batched()
+        for fn in DIM_STEPS:
             self._log_sql(fn, f"SELECT {fn}(%s, %s)", (self.run_id, self.version_id))
             if self.dry_run:
                 logger.info("  (dry-run: not executed)")
@@ -240,6 +312,8 @@ def main():
                         help='ETL run ID (default: latest run for the version)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Log SQL + counts but make no changes')
+    parser.add_argument('--fact-batch-size', type=int, default=50,
+                        help='Screens per fact_screen_gene batch (default: 50)')
     parser.add_argument('--log-level', default='INFO', help='Logging level')
     args = parser.parse_args()
 
@@ -248,7 +322,8 @@ def main():
     logger.info(f"Log file: {log_file}")
     logger.info(f"Args: version={args.version} run_id={args.run_id} dry_run={args.dry_run}")
 
-    finisher = ETLFinisher(args.version, run_id=args.run_id, dry_run=args.dry_run)
+    finisher = ETLFinisher(args.version, run_id=args.run_id, dry_run=args.dry_run,
+                           fact_batch_size=args.fact_batch_size)
     sys.exit(0 if finisher.run() else 1)
 
 

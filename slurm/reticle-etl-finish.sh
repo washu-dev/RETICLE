@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
-#SBATCH --time=04:00:00
+#SBATCH --time=12:00:00
 #SBATCH --partition=general-cpu
 # Notes:
 # - This job is a thin client; the heavy work (aggregate GROUP BYs) runs server-side
@@ -17,10 +17,14 @@
 # did not complete (fact_screen_gene / dim_* empty for a version).
 #
 # Usage:
-#   sbatch reticle-etl-finish.sh 7            # version 7, latest run
-#   sbatch reticle-etl-finish.sh 7 4          # version 7, run_id 4
-#   sbatch reticle-etl-finish.sh 7 --dry-run  # log SQL + counts, change nothing
-#   sbatch reticle-etl-finish.sh 7 4 --dry-run
+#   sbatch reticle-etl-finish.sh 7                       # version 7, latest run
+#   sbatch reticle-etl-finish.sh 7 4                     # version 7, run_id 4
+#   sbatch reticle-etl-finish.sh 7 --dry-run             # log SQL + counts, change nothing
+#   sbatch reticle-etl-finish.sh 7 --fact-batch-size 25  # smaller fact batches
+#
+# fact_screen_gene is built in screen_id batches (default 50 screens/batch),
+# committing per batch, so a wall-time kill loses at most one batch and a re-run
+# resumes from where it stopped (screens already in fact are skipped).
 
 set -e
 
@@ -39,9 +43,10 @@ fi
 EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --dry-run) EXTRA_ARGS+=(--dry-run); shift ;;
-        --run-id)  EXTRA_ARGS+=(--run-id "$2"); shift 2 ;;
-        [0-9]*)    EXTRA_ARGS+=(--run-id "$1"); shift ;;
+        --dry-run)         EXTRA_ARGS+=(--dry-run); shift ;;
+        --run-id)          EXTRA_ARGS+=(--run-id "$2"); shift 2 ;;
+        --fact-batch-size) EXTRA_ARGS+=(--fact-batch-size "$2"); shift 2 ;;
+        [0-9]*)            EXTRA_ARGS+=(--run-id "$1"); shift ;;
         *) echo "ERROR: unknown argument: $1"; exit 1 ;;
     esac
 done
