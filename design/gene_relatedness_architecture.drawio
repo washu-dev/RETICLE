@@ -1,0 +1,319 @@
+<mxfile host="65bd71144e">
+    <diagram id="gr-arch" name="Gene-Relatedness Architecture">
+        <mxGraphModel dx="1043" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="2350" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="RETICLE — CRISPR Gene-Relatedness Scorecard — End-to-End Pipeline (Stages 0–6)&#xa;Home: public schema, reticle_biogrid (PostgreSQL / AWS RDS) · versioned per (data_load_version × config)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="1560" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-box" value="Existing warehouse (public schema) — inputs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="100" width="360" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-fsg" value="fact_screen_gene&#xa;(harmonized cols added by P1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="135" width="150" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-fsgp" value="fact_screen_gene_publication&#xa;(populated by P2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="135" width="150" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-screen" value="screen · gene · publication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="205" width="150" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-lineage" value="data_load_version · etl_pipeline_run&#xa;(version_id / run_id lineage)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="205" width="150" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="src-harm" value="harmonize_scores.py (prototype)&#xa;+= perturbation, PERCENTILE [-1,1], IS_HIT, COVERAGE_TYPE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="270" width="320" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="s0" value="STAGE 0 — Prerequisites / Staging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="100" width="380" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="s0-p1" value="P1 — port harmonization into fact_screen_gene&#xa;(harmonized_score, percentile_score, is_hit)  [#9–#12]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="135" width="340" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="s0-p2" value="P2 — populate fact_screen_gene_publication&#xa;(screen → PMID → gene links)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="190" width="340" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="s0-p3" value="P3 — capture screen-context + cited PMIDs&#xa;→ dim_screen_context · dim_pubmed_article stubs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="245" width="340" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="s0-ctx" value="dim_screen_context&#xa;(assay_domain, coverage_type, context_key)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="298" width="340" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1" value="STAGE 1 — Profiler (cheap, NO n×n)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="100" width="360" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1-body" value="Capture data shape · build threshold → (projected pairs, cost) curves&#xa;&#xa;• co-hit / co-citation projection = EXACT (sparse Hᵀ·H over hit/pub sets)&#xa;• co-essentiality volume = ESTIMATED from random sample of selective genes + confidence band&#xa;• record sample size + seed (reproducibility)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="135" width="320" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1-store" value="relatedness_profile&#xa;(snapshot JSONB: curves, coverage dist)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="278" width="180" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2" value="STAGE 2 — What-if config loop  (profiler → recommend → accept → TRIGGER)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="400" width="800" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2-recommend" value="Recommend thresholds&#xa;within compute_budget" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="490" y="450" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2-user" value="Researcher&#xa;accept / modify&#xa;(live projected pairs + cost)" style="shape=umlActor;verticalLabelPosition=bottom;labelPosition=center;verticalAlign=top;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="445" width="60" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2-config" value="relatedness_config&#xa;(thresholds JSONB, compute_budget,&#xa;status: draft→accepted, label = A/B)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="860" y="440" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2-ab" value="Multiple configs per data load COEXIST → A/B comparable" style="text;html=1;fillColor=none;strokeColor=none;fontSize=10;fontStyle=2;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="490" y="555" width="560" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2-trigger" value="ACCEPT → TRIGGER build" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1090" y="440" width="150" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3" value="STAGE 3 — Candidate generation (evidence-generated, NOT cartesian)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="650" width="800" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3-body" value="• Partition by ORGANISM (never cross)&#xa;• Prefilter to SELECTIVE genes (drop pan-essential &amp; pan-inert → quadratic reduction)&#xa;• Candidate set = ∪ (co-measured FULL screens, co-hit HIT_ONLY, co-cited)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="685" width="470" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="s3-mode" value="Compute mode&#xa;EXACT (default)&#xa;⟶ ANN top-K FALLBACK&#xa;only if profiler flags&#xa;budget overflow" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="680" width="220" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4" value="STAGE 4 — Metric computation (DETERMINISTIC · exact ρ · tiled/thresholded GEMM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="860" width="800" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4-c1" value="① Co-essentiality (PRIMARY)&#xa;tail-restricted |Spearman ρ|&#xa;over shared FULL screens&#xa;GPU/CPU tiled GEMM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="900" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4-c2" value="② Co-hit enrichment&#xa;Jaccard + PMI + Fisher&#xa;sparse Hᵀ·H (HIT_ONLY)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="900" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4-c3" value="③ Co-citation&#xa;PMI + Jaccard over&#xa;shared publications&#xa;(cold-start rescue)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="900" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4-c4" value="④ Contextual convergence&#xa;co-hit stratified by&#xa;context_key (assay domain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1080" y="900" width="160" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4-dims" value="Evidence rows → dim_gene_pair_screen · dim_gene_pair_context · dim_gene_pair_publication&#xa;(each channel: effect · support · significance p)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="1005" width="760" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4b" value="STAGE 4b (D5b) — Residual / mechanistic-divergence&#xa;&quot;find genes that break the same rule&quot; (ADDITIVE)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;verticalAlign=top;fontStyle=1;dashed=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1290" y="860" width="330" height="315" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4b-exp" value="Fit LIGHT additive / median-polish / mixed-effects&#xa;E[g,i] = gene baseline + screen baseline + context-group means&#xa;(modality · library · cell_line · assay_domain)&#xa;NOT a Gaussian process" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1305" y="895" width="300" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4b-resid" value="⑤ Residual co-essentiality&#xa;R = observed − E · tail-restricted |ρ| of residual profiles&#xa;novelty_score = contrast(resid_rho vs raw_rho)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eafaf1;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1305" y="985" width="300" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4b-flags" value="Flags: is_antagonistic (strong −ρ)&#xa;is_buffering_candidate + buffering_basis&#xa;HYPOTHESIS only — testable by combinatorial KO&#xa;(single-gene ORCS cannot measure true buffering)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1305" y="1065" width="300" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="s4b-store" value="dim_gene_expectation_model&#xa;(fitted params per version×config)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="740" width="240" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="s5" value="STAGE 5 — Roll-up &amp; FDR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="1140" width="800" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="s5-body" value="• BH-FDR per channel across WHOLE pair space (record space size)&#xa;• per-channel + overall tier (Strong / Moderate / Weak) via empirical tier_cuts&#xa;• DROP pairs below support floor → logged in etl_audit_log&#xa;• supersede prior config build (is_current = FALSE)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="1180" width="470" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="s5-fact" value="fact_gene_pair  (SCORECARD HEADER)&#xa;per (version_id, config_id, gene_a_id&lt;gene_b_id)&#xa;4 metric attribute-groups + overall tier + evidence_channels + total_support" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="980" y="1180" width="260" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6" value="STAGE 6 — Insight subsystem &amp; surfacing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="1370" width="800" height="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-prefetch" value="PubMed pre-fetch job (batch, idempotent per PMID)&#xa;resolve cited PMIDs → efetch/PMC → S3 → dim_pubmed_article facets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="1410" width="360" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-agent" value="LLM Insight Agent (on-demand, per gene AND per pair)&#xa;agency L1 default (L0/L1/L2 open)&#xa;3 questions: (1) established (2) recognized gaps (3) open uncertainty&#xa;DUAL-GROUNDING: every claim ≥1 PMID and/or internal evidence ref&#xa;unsupported claims dropped/flagged" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="1490" width="360" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-seam" value="Provider-agnostic LLM seam&#xa;→ Claude adapter (WashU Secure API)&#xa;tiered: Opus (synthesis) / Sonnet (default) / Haiku (sub-steps) / Fable (soon)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="1650" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-insight-store" value="dim_gene_insight · dim_gene_pair_insight&#xa;3-section claims JSON · citations · internal_refs · model · status(draft/edited/approved) · version" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="1410" width="360" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-api" value="API (FastAPI) — scorecard reads · evidence drill-down · what-if · insight curation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="1520" width="360" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-ui" value="UI — scorecard · network · what-if simulator · insight review (edit/accept/reject per claim)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="1600" width="360" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="s6-curator" value="Researcher&#xa;curates claims" style="shape=umlActor;verticalLabelPosition=bottom;labelPosition=center;verticalAlign=top;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="1685" width="60" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="tb" value="External / trust boundary (egress allowlisted; keys from AWS Secrets Manager; TLS)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#b85450;verticalAlign=top;fontStyle=2;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="1370" width="290" height="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-ncbi" value="NCBI efetch / PMC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="1410" width="250" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-s3" value="Amazon S3&#xa;s3://&lt;bucket&gt;/pubmed/&lt;pmid&gt;.json&#xa;(private · SSE)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="1490" width="250" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-claude" value="WashU Secure API — Claude&#xa;Opus / Sonnet / Haiku / Fable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="1600" width="250" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-secrets" value="AWS Secrets Manager&#xa;(LLM keys, DB creds)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="1690" width="250" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;align=left;spacingLeft=6;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1830" width="1560" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg1" value="Warehouse source table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1865" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg2" value="Prerequisite / job / actor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="1865" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg3" value="Compute stage / logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5f4e6;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="1865" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg4" value="Service / API / config loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="660" y="1865" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg5" value="New table / data store / UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="860" y="1865" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg6" value="External system (trust boundary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1060" y="1865" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg7" value="Prerequisite modules (P1/P2/P3) sub-stage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="1865" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg-note" value="Deterministic boundary: Stages 3–5 compute EXACT metrics on a prefiltered selective-gene space; ANN top-K is a fallback ONLY on profiler budget-overflow. Guardrails: never cross organism · evidence only from screens measuring both genes · tail-restricted correlation · BH-FDR across whole pair space." style="text;html=1;fillColor=none;strokeColor=none;fontSize=10;fontStyle=2;align=left;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1905" width="1500" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="src-box" target="s0" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-harm" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="src-harm" target="s0-p1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="298"/>
+                            <mxPoint x="430" y="158"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e2" value="harmonized facts + context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;fontSize=9;" parent="1" source="s0" target="s1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s1-body" target="s1-store" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="projection curves" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=9;" parent="1" source="s1-store" target="s2-recommend" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1090" y="360"/>
+                            <mxPoint x="575" y="360"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e5" value="recommend" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=9;" parent="1" source="s2-recommend" target="s2-user" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" value="accept / modify (live)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d79b00;fontSize=9;" parent="1" source="s2-user" target="s2-config" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6b" value="re-query curves (what-if)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#6c8ebf;fontSize=9;" parent="1" source="s2-user" target="s2-recommend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" value="accepted" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=9;" parent="1" source="s2-config" target="s2-trigger" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" value="trigger build" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;fontSize=9;" parent="1" source="s2-trigger" target="s3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" value="budget flag" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;fontSize=9;" parent="1" source="s3-body" target="s3-mode" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" value="candidate pairs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;fontSize=9;" parent="1" source="s3" target="s4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s4-c1" target="s4-dims" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s4-c2" target="s4-dims" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s4-c3" target="s4-dims" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s4-c4" target="s4-dims" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14b" value="same percentile matrix (D5) + P3 context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#82b366;fontSize=9;" parent="1" source="s4-c1" target="s4b" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14c" value="fitted params" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;fontSize=9;" parent="1" source="s4b-exp" target="s4b-store" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14d" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="s4b-exp" target="s4b-resid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14e" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="s4b-resid" target="s4b-flags" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14f" value="residuals → dim_gene_pair_screen" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;fontSize=9;" parent="1" source="s4b-resid" target="s4-dims" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14g" value="resid_* · novelty_score · flags" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;fontSize=9;" parent="1" source="s4b" target="s5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" value="channel effect/support/p" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=9;" parent="1" source="s4" target="s5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="s5-body" target="s5-fact" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e17" value="scorecard + evidence" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d6b656;fontSize=9;" parent="1" source="s5" target="s6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e-p3-prefetch" value="cited PMIDs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#d79b00;fontSize=9;" parent="1" source="s0-p3" target="s6-prefetch" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="440" y="268"/>
+                            <mxPoint x="440" y="1440"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e18" value="efetch/PMC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#666666;fontSize=9;" parent="1" source="s6-prefetch" target="ext-ncbi" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e19" value="store once/PMID" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#666666;fontSize=9;" parent="1" source="s6-prefetch" target="ext-s3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e20" value="retrieve passages (RAG)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#666666;fontSize=9;" parent="1" source="s6-agent" target="ext-s3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="s6-agent" target="s6-seam" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e22" value="Claude call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#666666;fontSize=9;" parent="1" source="s6-seam" target="ext-claude" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e23" value="keys" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#666666;fontSize=9;" parent="1" source="ext-secrets" target="s6-seam" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e24" value="internal evidence refs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;fontSize=9;" parent="1" source="s5-fact" target="s6-agent" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e25" value="cited claims" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;fontSize=9;" parent="1" source="s6-agent" target="s6-insight-store" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e26" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="s6-insight-store" target="s6-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e27" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="s6-api" target="s6-ui" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e28" value="edit/accept/reject" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d79b00;fontSize=9;" parent="1" source="s6-curator" target="s6-ui" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e29" value="scorecard reads" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;fontSize=9;" parent="1" source="s5-fact" target="s6-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

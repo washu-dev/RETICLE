@@ -1,0 +1,133 @@
+<mxfile host="65bd71144e">
+    <diagram id="gr-erd" name="Gene-Relatedness ERD">
+        <mxGraphModel dx="1043" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1750" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="RETICLE — Gene-Relatedness Scorecard — Entity-Relationship Diagram&#xa;New tables (purple) · referenced existing warehouse tables (red) · config/provenance (blue) · PK = primary key, FK = foreign key" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=15;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="15" width="1820" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="dlv" value="data_load_version  [existing]&#xa;──────────────&#xa;PK version_id&#xa;organism · source_type&#xa;status · is_current" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="100" width="220" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="epr" value="etl_pipeline_run  [existing]&#xa;──────────────&#xa;PK run_id&#xa;FK data_load_version_id → version_id&#xa;status · is_current" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="250" width="220" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="screen" value="screen  [existing]&#xa;──────────────&#xa;PK screen_id&#xa;FK version_id → version_id&#xa;biogrid_screen_id · organism&#xa;annotation_source" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="400" width="220" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="gene" value="gene  [existing]&#xa;──────────────&#xa;PK gene_id&#xa;FK version_id → version_id&#xa;identifier_id · gene_symbol&#xa;organism" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="560" width="220" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="pub" value="publication  [existing, shared]&#xa;──────────────&#xa;PK publication_id&#xa;(not versioned)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="720" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="fsg" value="fact_screen_gene  [existing +P1]&#xa;──────────────&#xa;PK fact_id&#xa;FK version_id · FK run_id&#xa;screen_id · gene_id&#xa;+ harmonized_score  (P1)&#xa;+ percentile_score [-1,1] (P1)&#xa;+ robust_z_score · is_hit (P1)&#xa;UNIQUE(version_id,screen_id,gene_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="840" width="240" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="fsgp" value="fact_screen_gene_publication  [existing +P2]&#xa;──────────────&#xa;PK fact_pub_id&#xa;FK version_id · FK run_id&#xa;screen_id · gene_id&#xa;FK publication_id → publication_id&#xa;hit_flag  (populated by P2)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1060" width="270" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="profile" value="relatedness_profile  [new]&#xa;──────────────&#xa;PK profile_id&#xa;FK data_load_version_id → version_id&#xa;organism · snapshot JSONB&#xa;(threshold→pair/cost curves)&#xa;created_at" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="100" width="260" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="config" value="relatedness_config  [new]&#xa;──────────────&#xa;PK config_id&#xa;FK data_load_version_id → version_id&#xa;FK profile_id → profile_id&#xa;organism · label (A/B)&#xa;thresholds JSONB · compute_budget JSONB&#xa;projected_pairs · status&#xa;UNIQUE(version_id,organism,label)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d4e6f1;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="290" width="260" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="sctx" value="dim_screen_context  [new, P3]&#xa;──────────────&#xa;PK dim_screen_context_id&#xa;FK version_id · FK run_id&#xa;FK screen_id → screen_id&#xa;assay_domain · condition · cell_line&#xa;coverage_type (FULL|HIT_ONLY)&#xa;is_directional · score_basis · context_key&#xa;UNIQUE(version_id,screen_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="540" width="270" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="pmid" value="dim_pubmed_article  [new, cache]&#xa;──────────────&#xa;PK pmid&#xa;FK publication_id → publication_id&#xa;s3_uri · s3_etag&#xa;title · journal · pub_year · abstract&#xa;fetch_status · fetched_at" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="780" width="270" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="fgp" value="fact_gene_pair  [new — SCORECARD HEADER]&#xa;═══════════════════&#xa;PK gene_pair_id&#xa;FK version_id → data_load_version&#xa;FK run_id → etl_pipeline_run&#xa;FK config_id → relatedness_config&#xa;FK gene_a_id → gene · FK gene_b_id → gene&#xa;organism  (never crosses)&#xa;───── ① co-essentiality ─────&#xa;coess_effect(|ρ|) · coess_rho · coess_support · coess_p · coess_fdr · coess_tier&#xa;───── ② co-hit ─────&#xa;cohit_effect_jaccard · cohit_effect_pmi · cohit_support · cohit_fisher_p · cohit_fdr · cohit_tier&#xa;───── ③ co-citation ─────&#xa;cocite_effect_pmi · cocite_support · cocite_p · cocite_fdr · cocite_tier&#xa;───── ④ contextual ─────&#xa;context_effect · context_support · context_best_key · context_best_fdr · context_tier&#xa;───── ⑤ novelty / mechanistic-divergence (ADDITIVE) ─────&#xa;resid_rho · resid_effect · resid_support · resid_p · resid_fdr · resid_tier&#xa;novelty_score · is_antagonistic&#xa;is_buffering_candidate · buffering_basis  (hypothesis — testable by combinatorial KO)&#xa;───── overall ─────&#xa;relatedness_tier · evidence_channels · total_support · min_fdr · is_current&#xa;CHECK(gene_a_id &lt; gene_b_id)&#xa;UNIQUE(version_id, config_id, gene_a_id, gene_b_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;fontStyle=0;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="120" width="420" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="dgps" value="dim_gene_pair_screen  [new]&#xa;──────────────&#xa;PK gene_pair_screen_id&#xa;FK gene_pair_id → fact_gene_pair&#xa;FK version_id · FK config_id&#xa;screen_id&#xa;both_measured · both_hit · in_tail&#xa;gene_a_percentile · gene_b_percentile&#xa;gene_a_residual · gene_b_residual  (Channel 5)&#xa;coverage_type · context_key&#xa;UNIQUE(gene_pair_id, screen_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="100" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="dgpc" value="dim_gene_pair_context  [new]&#xa;──────────────&#xa;PK gene_pair_context_id&#xa;FK gene_pair_id → fact_gene_pair&#xa;FK version_id · FK config_id&#xa;context_type · context_value · context_key&#xa;cohit_count · jaccard · pmi&#xa;coess_rho · fisher_p · fdr · tier&#xa;UNIQUE(gene_pair_id, context_type, context_value)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="330" width="300" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="dgpp" value="dim_gene_pair_publication  [new]&#xa;──────────────&#xa;PK gene_pair_pub_id&#xa;FK gene_pair_id → fact_gene_pair&#xa;FK version_id · FK config_id&#xa;FK publication_id → publication_id&#xa;FK pmid → dim_pubmed_article&#xa;screen_ids[] · both_cited · s3_uri&#xa;UNIQUE(gene_pair_id, publication_id)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="560" width="300" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="gi" value="dim_gene_insight  [new]&#xa;──────────────&#xa;PK gene_insight_id&#xa;FK version_id · FK config_id · FK run_id&#xa;FK gene_id → gene&#xa;sections JSONB (3-question claims)&#xa;citations · internal_refs&#xa;agency_level · model · generated_at&#xa;user_annotation · annotated_by&#xa;status(draft/edited/approved) · version&#xa;UNIQUE(version_id, config_id, gene_id, version)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="760" width="400" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="gpi" value="dim_gene_pair_insight  [new]&#xa;──────────────&#xa;PK gene_pair_insight_id&#xa;FK version_id · FK config_id · FK run_id&#xa;FK gene_pair_id → fact_gene_pair&#xa;sections JSONB (3-question claims)&#xa;citations · internal_refs&#xa;agency_level · model · generated_at&#xa;user_annotation · annotated_by&#xa;status(draft/edited/approved) · version&#xa;UNIQUE(gene_pair_id, version)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="790" width="400" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="expmodel" value="dim_gene_expectation_model  [new — Channel 5 provenance]&#xa;──────────────&#xa;PK expectation_model_id&#xa;FK version_id · FK run_id&#xa;FK config_id → relatedness_config&#xa;organism · method (additive|median_polish|mixed_effects)&#xa;covariates · params JSONB (gene/screen baselines,&#xa;context-group means) · residual_var_explained&#xa;NOT a Gaussian process&#xa;UNIQUE(version_id, config_id, organism)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5ff;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="1000" width="360" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="r19" value="1 : N&#xa;config_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="config" target="expmodel" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r20" value="context-group means&#xa;(fit input, P3)" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;fontSize=9;strokeColor=#b85450;" parent="1" source="sctx" target="expmodel" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r21" value="E[g,i] → residual channel ⑤" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;fontSize=9;strokeColor=#9673a6;" parent="1" source="expmodel" target="fgp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r1" value="1 : N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#6c8ebf;" parent="1" source="dlv" target="profile" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r2" value="1 : N" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#6c8ebf;" parent="1" source="dlv" target="config" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r3" value="1 : N&#xa;profile_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#6c8ebf;" parent="1" source="profile" target="config" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r4" value="1 : N&#xa;screen_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="screen" target="sctx" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r5" value="1 : N&#xa;gene_a_id / gene_b_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="gene" target="fgp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r6" value="1 : N&#xa;config_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="config" target="fgp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r7" value="percentile profiles&#xa;(co-essentiality input)" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;fontSize=9;strokeColor=#b85450;" parent="1" source="fsg" target="fgp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r8" value="1 : N&#xa;gene_pair_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="fgp" target="dgps" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r9" value="1 : N&#xa;gene_pair_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="fgp" target="dgpc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r10" value="1 : N&#xa;gene_pair_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="fgp" target="dgpp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r11" value="1 : N&#xa;screen_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="screen" target="dgps" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r12" value="1 : N&#xa;pmid" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="pmid" target="dgpp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r13" value="1 : N&#xa;publication_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="pub" target="dgpp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r14" value="1 : 0..1&#xa;publication_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="pub" target="pmid" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r15" value="screen→PMID→gene&#xa;(co-citation input, P2)" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;fontSize=9;strokeColor=#b85450;" parent="1" source="fsgp" target="dgpp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r16" value="1 : N&#xa;gene_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="gene" target="gi" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r17" value="1 : N&#xa;gene_pair_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#9673a6;" parent="1" source="fgp" target="gpi" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="r18" value="1 : N&#xa;run_id" style="edgeStyle=entityRelationEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;fontSize=9;strokeColor=#b85450;" parent="1" source="dlv" target="epr" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg" value="Notation: ERone (│) = one, ERmany (crow&#39;s foot) = many. Solid = FK relationship; dashed = data-flow input (source table read by a compute channel).&#xa;FK reality: existing derived tables enforce only version_id/run_id FKs in prod; surrogate screen_id/gene_id FKs shown for clarity and MAY be dropped at implementation. version_id/run_id/config_id FKs are load-bearing." style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1260" width="1580" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
