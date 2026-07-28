@@ -34,13 +34,15 @@ _MATCHED_SCREENS: list[MatchedScreen] = [
                   citation="Orvedahl et al., 2019", pmid="31097699",
                   organism="Human", modality="KO", cell_type="THP-1 macrophages",
                   rho=0.82, fdr=0.0003, directionality="agree",
-                  shared_genes=18, total_genes=847),
+                  shared_genes=18, total_genes=847,
+                  shared_gene_symbols=["ATG5", "ATG7", "ULK1", "IRGM", "BECN1"]),
     MatchedScreen(id=2, biogrid_id="ORCS-6102",
                   name="IFNγ pathway modulators in monocyte-derived macrophages",
                   citation="Zhao et al., 2021", pmid="33782614",
                   organism="Human", modality="KO", cell_type="MDMs",
                   rho=0.74, fdr=0.0011, directionality="agree",
-                  shared_genes=15, total_genes=912),
+                  shared_genes=15, total_genes=912,
+                  shared_gene_symbols=["ATG7", "IRGM", "TBK1", "ATG5"]),
     MatchedScreen(id=3, biogrid_id="ORCS-7883",
                   name="mTOR complex regulation in nutrient stress",
                   citation="Lin et al., 2022", pmid="35124892",
@@ -343,6 +345,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
             AVG(hs.percentile_score) FILTER (WHERE hs.percentile_score IS NOT NULL) AS rho,
             COALESCE(smc.growth_direction, 'none')              AS directionality,
             COUNT(DISTINCT hs.gene_symbol)                      AS shared_genes,
+            array_agg(DISTINCT hs.gene_symbol)                  AS shared_symbols,
             COALESCE(sm.scores_size, 0)                         AS total_genes
         FROM reticle.harmonized_scores hs
         JOIN  reticle.screen_metadata          sm  ON hs.screen_id = sm.screen_id
@@ -372,6 +375,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
             directionality=str(row["directionality"] or "normal"),
             shared_genes=int(row["shared_genes"]),
             total_genes=int(row["total_genes"]),
+            shared_gene_symbols=[str(g) for g in (row["shared_symbols"] or [])],
         )
         for i, row in enumerate(screen_rows)
     ]

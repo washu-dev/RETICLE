@@ -67,6 +67,8 @@ export interface MatchedScreen {
   directionality: string;
   sharedGenes: number;
   totalGenes: number;
+  /** The query genes that are hits in this screen — clickable into gene lookup. */
+  sharedGeneSymbols?: string[];
 }
 
 export interface DarkGene {
@@ -171,6 +173,65 @@ export async function runQuery(
     screenContext: options.screenContext,
     corpusFilters: options.corpusFilters,
   });
+}
+
+// ---------------------------------------------------------------------------
+// Screen detail — one screen's metadata + its (capped) gene list.
+// ---------------------------------------------------------------------------
+
+export interface ScreenGene {
+  symbol: string;
+  percentile?: number | null;
+  isHit: boolean;
+  harmonizedScore?: number | null;
+  robustZ?: number | null;
+}
+
+export interface ScreenDetail {
+  screenId: string;
+  biogridUrl: string;
+  pmid?: string | null;
+  pubmedUrl?: string | null;
+  author?: string | null;
+  name?: string | null;
+  organism?: string | null;
+  cellLine?: string | null;
+  cellType?: string | null;
+  screenType?: string | null;
+  modality?: string | null;
+  analysis?: string | null;
+  methodology?: string | null;
+  phenotype?: string | null;
+  rationale?: string | null;
+  coverageType?: string | null;
+  assayDomain?: string | null;
+  conditionName?: string | null;
+  growthDirection?: string | null;
+  scoreBasis?: string | null;
+  isDirectional?: boolean | null;
+  scoresSize?: number | null;
+  nGenes?: number | null;
+  nHits?: number | null;
+  genesShown?: number | null;
+  genes: ScreenGene[];
+}
+
+/** A matched screen's full metadata + top genes. 404s for an unknown screen id. */
+export async function fetchScreenDetail(
+  screenId: string | number,
+  signal?: AbortSignal
+): Promise<ScreenDetail> {
+  return apiGet<ScreenDetail>(`/api/screen/${encodeURIComponent(String(screenId))}`, { signal });
+}
+
+/** PubMed article URL for a pmid (empty string when absent). */
+export function pubmedUrl(pmid?: string | null): string {
+  return pmid ? `https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(pmid)}` : '';
+}
+
+/** BioGRID ORCS screen page URL (screen_id is the ORCS id). */
+export function orcsUrl(screenId?: string | number | null): string {
+  return screenId ? `https://orcs.thebiogrid.org/Screen/${encodeURIComponent(String(screenId))}` : '';
 }
 
 /** Live count of corpus screens matching the given compare-to filters. */

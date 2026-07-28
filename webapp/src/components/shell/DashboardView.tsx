@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react';
+import { ExternalLink } from 'lucide-react';
 import DashboardShell, { type ShellSection, type ContextItem } from './DashboardShell';
 import GeneDrawer from './GeneDrawer';
+import ScreenDrawer from './ScreenDrawer';
 import Provenance, { ProvenanceLegend } from '../washu/Provenance';
-import { fetchPathways, type QueryResponse, type PathwayResult } from '../../services/reticleApi';
+import {
+  fetchPathways, pubmedUrl, orcsUrl,
+  type QueryResponse, type PathwayResult, type MatchedScreen,
+} from '../../services/reticleApi';
+
+/** The numeric BioGRID ORCS screen id for a matched screen (used to open its
+ *  detail + external link). biogridId is the screen_id on real data; strip any
+ *  "ORCS-" prefix from mock ids so both paths resolve. */
+function screenIdOf(s: MatchedScreen): string {
+  const digits = String(s.biogridId ?? '').replace(/\D/g, '');
+  return digits || String(s.id);
+}
 
 /**
  * The unified analysis view (W1) — one scrolling dashboard skinned in the WashU
@@ -28,6 +41,7 @@ interface DashboardViewProps {
 
 export default function DashboardView({ genes, options, queryResults, onNewAnalysis }: DashboardViewProps) {
   const [drawerGene, setDrawerGene] = useState<string | null>(null);
+  const [detailScreen, setDetailScreen] = useState<string | null>(null);
   const [numScreens, setNumScreens] = useState(false);
   const [numGenes, setNumGenes] = useState(false);
   const [pathways, setPathways] = useState<PathwayResult | null>(null);
@@ -127,18 +141,26 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
                 <thead>
                   <tr>
                     <th>Screen</th><th>Shared context</th><th>Direction</th>
-                    <th style={{ textAlign: 'right' }}>Shared genes</th>
+                    <th>Shared genes</th><th>Links</th>
                     {numScreens && <th style={{ textAlign: 'right' }}>raw ρ*</th>}
                     {numScreens && <th style={{ textAlign: 'right' }}>FDR*</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {screens.map((s) => (
-                    <tr key={s.id}>
-                      <td><b>{s.name}</b><div style={faint}>{s.citation}</div></td>
-                      <td>{[s.cellType, s.modality].filter(Boolean).join(' · ') || '—'}</td>
+                    <tr key={s.id} className="clickable" onClick={() => setDetailScreen(screenIdOf(s))}
+                        title="Open this screen's data">
+                      <td>
+                        <span className="lk" style={{ fontWeight: 600, color: 'var(--washu-red)' }}>{s.name}</span>
+                        <div style={faint}>{s.citation}</div>
+                      </td>
+                      <td>{[s.cellType, s.organism, s.modality].filter(Boolean).join(' · ') || '—'}</td>
                       <td><DirectionBadge d={s.directionality} /></td>
-                      <td style={{ textAlign: 'right' }} className="tnum">{s.sharedGenes}/{s.totalGenes}</td>
+                      <td>
+                        <span className="tnum" style={{ color: 'var(--fg-muted)' }}>{s.sharedGenes}/{s.totalGenes}</span>
+                        <SharedGeneChips symbols={s.sharedGeneSymbols} onOpen={openGene} />
+                      </td>
+                      <td><ScreenLinks pmid={s.pmid} screenId={screenIdOf(s)} /></td>
                       {numScreens && <td style={{ textAlign: 'right' }} className="tnum">{s.rho.toFixed(2)}</td>}
                       {numScreens && <td style={{ textAlign: 'right' }} className="tnum">{s.fdr.toExponential(1)}</td>}
                     </tr>
@@ -150,9 +172,11 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
             <EmptyNote>No matched screens in this result. Run an analysis to populate this list.</EmptyNote>
           )}
           <p style={faintHint}>
+            Click a screen to open its data and genes. Shared genes and links open in place or a new tab.
+            {' '}
             {numScreens
               ? '* Raw pipeline values: ρ is an uncalibrated aggregate and FDR is a placeholder until the correlation engine reports calibrated statistics. Read support from shared genes for now.'
-              : 'Support is shown as shared genes. Similarity statistics (ρ, FDR) are still uncalibrated — reveal them with “show numbers,” and read with care.'}
+              : 'Similarity statistics (ρ, FDR) are still uncalibrated — reveal them with “show numbers,” and read with care.'}
           </p>
         </section>
 
@@ -247,8 +271,48 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
         </section>
       </DashboardShell>
 
+      <ScreenDrawer
+        screenId={detailScreen}
+        onClose={() => setDetailScreen(null)}
+        onOpenGene={openGene}
+      />
       <GeneDrawer symbol={drawerGene} organism={options?.organism} onClose={() => setDrawerGene(null)} />
     </>
+  );
+}
+
+/* Shared query genes that are hits in a matched screen — clickable into gene lookup. */
+function SharedGeneChips({ symbols, onOpen }: { symbols?: string[]; onOpen: (s: string) => void }) {
+  if (!symbols || symbols.length === 0) return null;
+  const shown = symbols.slice(0, 6);
+  const extra = symbols.length - shown.length;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
+      {shown.map((sym) => (
+        <button
+          key={sym}
+          className="lk"
+          onClick={(e) => { e.stopPropagation(); onOpen(sym); }}
+          style={chip}
+          title={`Open ${sym}`}
+        >{sym}</button>
+      ))}
+      {extra > 0 && <span style={{ fontSize: '0.74rem', color: 'var(--faint)', alignSelf: 'center' }}>+{extra}</span>}
+    </div>
+  );
+}
+
+/* PubMed + BioGRID link-outs; stopPropagation so they don't open the drawer. */
+function ScreenLinks({ pmid, screenId }: { pmid?: string; screenId: string }) {
+  return (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+      {pmid && (
+        <a href={pubmedUrl(pmid)} target="_blank" rel="noreferrer" title="Open the paper in PubMed"
+           style={linkIcon}>PubMed <ExternalLink size={12} /></a>
+      )}
+      <a href={orcsUrl(screenId)} target="_blank" rel="noreferrer" title="Open the screen in BioGRID ORCS"
+         style={linkIcon}>ORCS <ExternalLink size={12} /></a>
+    </div>
   );
 }
 
@@ -307,6 +371,14 @@ const faintHint: React.CSSProperties = { fontSize: '0.82rem', color: 'var(--fain
 const numBtn: React.CSSProperties = {
   fontSize: '0.78rem', color: 'var(--fg-muted)', border: '1px solid var(--border-2)',
   borderRadius: 6, padding: '6px 11px', background: '#fff',
+};
+const chip: React.CSSProperties = {
+  padding: '2px 8px', borderRadius: 5, border: '1px solid rgba(186,12,47,0.28)',
+  background: 'rgba(186,12,47,0.04)', color: 'var(--washu-red)', fontSize: '0.76rem', fontWeight: 600,
+};
+const linkIcon: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 3,
+  fontSize: '0.76rem', color: 'var(--teal)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
 };
 
 /* ---- CSV export (client-side) ---- */

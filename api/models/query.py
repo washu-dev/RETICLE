@@ -14,7 +14,7 @@ class ScreenContext(CamelModel):
 
     modality: str | None = None            # KO | CRISPRi | CRISPRa | RNAi | Other
     organism: str | None = None            # Human | Mouse
-    selection_method: str | None = None    # Negative | Positive | Bidirectional | Phenotype | Unknown
+    selection_method: str | None = None    # Negative|Positive|Bidirectional|Phenotype|Unknown
     coverage_scope: str | None = None      # Genome-wide | Focused | Unknown
     coverage_availability: str | None = None  # FULL | HITS_ONLY (auto-detected)
     assay_domain: str | None = None        # fitness | stress | reporter | other
@@ -72,6 +72,48 @@ class MatchedScreen(CamelModel):
     directionality: str
     shared_genes: int
     total_genes: int
+    # The query genes that are hits in this screen — the clickable bridge to the
+    # single-gene lookup. Empty when unknown (e.g. the offline mock path).
+    shared_gene_symbols: list[str] = []
+
+
+class ScreenGene(CamelModel):
+    symbol: str
+    percentile: float | None = None
+    is_hit: bool = False
+    harmonized_score: float | None = None
+    robust_z: float | None = None
+
+
+class ScreenDetail(CamelModel):
+    """One screen's metadata + a capped, control-filtered list of its genes."""
+
+    screen_id: str
+    biogrid_url: str
+    pmid: str | None = None
+    pubmed_url: str | None = None
+    author: str | None = None
+    name: str | None = None
+    organism: str | None = None
+    cell_line: str | None = None
+    cell_type: str | None = None
+    screen_type: str | None = None
+    modality: str | None = None
+    analysis: str | None = None
+    methodology: str | None = None
+    phenotype: str | None = None
+    rationale: str | None = None
+    coverage_type: str | None = None
+    assay_domain: str | None = None
+    condition_name: str | None = None
+    growth_direction: str | None = None
+    score_basis: str | None = None
+    is_directional: bool | None = None
+    scores_size: int | None = None
+    n_genes: int | None = None
+    n_hits: int | None = None
+    genes_shown: int | None = None
+    genes: list[ScreenGene] = []
 
 
 class DarkGene(CamelModel):
