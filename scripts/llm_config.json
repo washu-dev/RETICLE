@@ -1,0 +1,44 @@
+{
+  "_readme": "LLM gateway configuration for the WashU Secure API (aiapi.wustl.edu). Endpoints + per-provider native payload styles + the curated enabled models. Credentials are NEVER stored here: they are fetched at runtime from AWS Secrets Manager (see auth.secret_ids). Change the default model or add/remove enabled models by editing 'models' only. Consumed by scripts/llm_gateway.py.",
+
+  "auth": {
+    "aws_region": "us-east-1",
+    "secret_ids": {
+      "client_id":     "RETICLE/secure_api/CLIENT_ID",
+      "client_secret": "RETICLE/secure_api/CLIENT_SECRET",
+      "api_key":       "RETICLE/secure_api/API_KEY",
+      "tenant_id":     "RETICLE/sso/TENANT_ID"
+    },
+    "token_url_template": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+    "scope": "FILL_ME:aiapi-gateway-scope (e.g. api://<gateway-app-id>/.default)",
+    "api_key_header": "X-Api-Key"
+  },
+
+  "default_model": "claude-sonnet-5",
+
+  "providers": {
+    "claude": {
+      "endpoint": "https://aiapi.wustl.edu/models/v2/messages",
+      "api_style": "anthropic_messages",
+      "default_max_tokens": 1024,
+      "requires_max_tokens": true
+    },
+    "gpt": {
+      "endpoint": "https://aiapi.wustl.edu/models/v2/chat/completions",
+      "api_style": "openai_chat"
+    },
+    "gemini": {
+      "endpoint": "https://aiapi.wustl.edu/models/v2/generateContent",
+      "api_style": "gemini_generate"
+    }
+  },
+
+  "models": {
+    "claude-sonnet-5":  { "provider": "claude", "role": "default" },
+    "claude-opus-5":    { "provider": "claude", "role": "escalate" },
+    "gpt-5.5":          { "provider": "gpt",    "role": "alt" },
+    "gpt-5.4-pro":      { "provider": "gpt",    "role": "alt" },
+    "gemini-2.5-pro":   { "provider": "gemini", "role": "alt" },
+    "gemini-3.5-flash": { "provider": "gemini", "role": "alt" }
+  }
+}

@@ -17,6 +17,8 @@ service-account-key.json
 # Data
 data/
 *.json
+# LLM gateway config is tracked (holds secret *references* only, no secrets):
+!llm_config.json
 *.csv
 *.xlsx
 *.parquet
