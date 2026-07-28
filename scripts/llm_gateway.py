@@ -107,11 +107,17 @@ def _build_anthropic(model, messages, max_tokens, temperature, want_json):
 
 
 def _parse_anthropic(data):
-    parts = data.get("content") or []
-    for blk in parts:
+    # Skip extended-thinking / redacted_thinking blocks; the answer is the text block.
+    for blk in (data.get("content") or []):
         if blk.get("type") == "text":
             return blk.get("text", "")
-    raise RuntimeError(f"Unexpected Anthropic response: {json.dumps(data)[:400]}")
+    stop = data.get("stop_reason")
+    if stop == "max_tokens":
+        raise RuntimeError("Anthropic response truncated before any text block "
+                           "(stop_reason=max_tokens) — increase max_tokens (thinking "
+                           "consumed the budget).")
+    raise RuntimeError(f"Anthropic response had no text block (stop_reason={stop}): "
+                       f"{json.dumps(data)[:300]}")
 
 
 def _build_openai(model, messages, max_tokens, temperature, want_json):
