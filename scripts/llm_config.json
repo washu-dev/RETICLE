@@ -20,7 +20,7 @@
     "claude": {
       "endpoint": "https://aiapi.wustl.edu/models/v2/messages",
       "api_style": "anthropic_messages",
-      "default_max_tokens": 1024,
+      "default_max_tokens": 8192,
       "requires_max_tokens": true
     },
     "gpt": {

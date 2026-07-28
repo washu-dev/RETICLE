@@ -330,10 +330,10 @@ def main():
         messages = [{"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": build_prompt(bid, bio)}]
         try:
-            # 4096 (not 512): thinking-capable models (e.g. claude-sonnet-5) can spend
-            # the budget on extended thinking before emitting the JSON answer; a small
-            # cap truncates the response to a thinking-only block. See _parse_anthropic.
-            d = gw.chat_json(messages, model=args.model, max_tokens=4096)
+            # max_tokens is config-driven (not hardcoded): Claude requires it and uses
+            # providers.claude.default_max_tokens from llm_config.json (sized for
+            # extended-thinking headroom); OpenAI/Gemini send none (provider default).
+            d = gw.chat_json(messages, model=args.model)
             raw = json.dumps(d, ensure_ascii=False)
             decision = parse_decision(d, layout)
         except Exception as e:
