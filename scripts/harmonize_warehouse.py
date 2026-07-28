@@ -14,7 +14,7 @@ resumable (screens already in screen_harmonization are skipped).
 Usage (from scripts/, or via slurm/reticle-harmonize.sh):
   python3 harmonize_warehouse.py --version 7
   python3 harmonize_warehouse.py --version 7 --dry-run
-  python3 harmonize_warehouse.py --version 7 --overrides /path/directionality_overrides.json
+  python3 harmonize_warehouse.py --version 7 --apply-directionality   # apply auto overrides from DB
 """
 
 import argparse
@@ -70,9 +70,9 @@ def load_metadata(organism):
 
 
 class WarehouseHarmonizer:
-    def __init__(self, version_id, overrides_path=None, dry_run=False):
+    def __init__(self, version_id, apply_directionality=False, dry_run=False):
         self.version_id = version_id
-        self.overrides_path = overrides_path
+        self.apply_directionality = apply_directionality
         self.dry_run = dry_run
         self.conn = None
         self.organism = None
@@ -98,13 +98,32 @@ class WarehouseHarmonizer:
         self.organism = row[0]
         logger.info(f"version_id={self.version_id} organism={self.organism}")
 
+    def _load_directionality(self):
+        """status='auto' directionality overrides for this version, from the DB
+        (screen_directionality), keyed by normalized biogrid_screen_id. Each value
+        is the dict hc.apply_override expects. Written by directionality_mapper.py."""
+        cur = self.conn.cursor()
+        cur.execute(
+            "SELECT biogrid_screen_id, mode, sign, positive_column, negative_column, confidence "
+            "FROM screen_directionality WHERE version_id = %s AND status = 'auto'",
+            (self.version_id,))
+        out = {}
+        for bid, mode, sign, pos, neg, conf in cur.fetchall():
+            out[hc.normalize_screen_id(bid)] = {
+                "mode": mode, "sign": (int(sign) if sign is not None else None),
+                "positive_column": pos, "negative_column": neg, "confidence": conf,
+            }
+        return out
+
     def run(self):
         self.connect()
         self.resolve_organism()
         metadata = load_metadata(self.organism)
-        overrides = hc.load_overrides(self.overrides_path)
+        overrides = self._load_directionality() if self.apply_directionality else {}
         if overrides:
-            logger.info(f"Loaded {len(overrides)} directionality overrides")
+            logger.info(f"Applying {len(overrides)} auto directionality overrides from screen_directionality")
+        elif self.apply_directionality:
+            logger.info("--apply-directionality set, but no status='auto' rows in screen_directionality")
 
         cur = self.conn.cursor()
         cur.execute("SELECT screen_id, biogrid_screen_id FROM screen WHERE version_id=%s ORDER BY screen_id",
@@ -220,14 +239,17 @@ class WarehouseHarmonizer:
 def main():
     ap = argparse.ArgumentParser(description="Warehouse-native CRISPR score harmonization")
     ap.add_argument("--version", type=int, required=True, help="Data load version ID")
-    ap.add_argument("--overrides", default=None, help="Path to directionality_overrides.json (optional)")
+    ap.add_argument("--apply-directionality", action="store_true",
+                    help="Apply status='auto' directionality overrides from the DB "
+                         "(screen_directionality) — run directionality_mapper.py first")
     ap.add_argument("--dry-run", action="store_true", help="Resolve + log, write nothing")
     ap.add_argument("--log-level", default="INFO")
     args = ap.parse_args()
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO),
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    ok = WarehouseHarmonizer(args.version, overrides_path=args.overrides, dry_run=args.dry_run).run()
+    ok = WarehouseHarmonizer(args.version, apply_directionality=args.apply_directionality,
+                             dry_run=args.dry_run).run()
     sys.exit(0 if ok else 1)
 
 

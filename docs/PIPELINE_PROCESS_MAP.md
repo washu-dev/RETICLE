@@ -21,7 +21,7 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
         │
  (3) HARMONIZE ──────────► fact_screen_gene.{harmonized,percentile,robust_z}_score,
         │                   screen_harmonization
-        │   ⇧ optional upstream: DIRECTIONALITY MAPPER → directionality_overrides.json
+        │   ⇧ optional: DIRECTIONALITY MAPPER (LLM) → screen_directionality (DB); re-harmonize --apply-directionality
         │
  (4+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
         (see design/gene_relatedness_design.md — deliverables D2…D13)
@@ -55,15 +55,16 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 ### (3) Harmonize  ← P1 of gene-relatedness (backlog #9)
 - **Prerequisite migration:** `database/migrations/0012_fact_screen_gene_harmonization.sql` (applied once).
 - **Script:** `scripts/harmonize_warehouse.py` (uses pure `scripts/harmonization_core.py`)
-- **SLURM:** `sbatch slurm/reticle-harmonize.sh <version_id> [--dry-run] [--overrides PATH]`  **(CPU — I/O-bound, no GPU benefit)**
+- **SLURM:** `sbatch slurm/reticle-harmonize.sh <version_id> [--dry-run] [--apply-directionality]`  **(CPU — I/O-bound, no GPU benefit)**
 - **In → Out:** `screen_gene_raw` score values **+** `screen_metadata_*.json` score types →
   `fact_screen_gene.{harmonized_score, percentile_score, robust_z_score}` + `screen_harmonization` (per-screen coverage/basis/direction).
 - **Resumable:** skips screens already in `screen_harmonization`. Start with `--dry-run` (basis distribution, no writes).
 
-#### (3-opt) Directionality mapper — occasional, upstream of harmonize
-- **Script:** `prototype/script/directionality_mapper.py` (LLM, WashU gateway) — **prototype-side, not warehouse-native yet**.
-- **Produces:** `directionality_overrides.json` — LLM-resolved signs for screens the deterministic pass can't sign (ambiguous selection type + unsigned significance).
-- **Order:** run this **before** `harmonize_warehouse.py` **only if** you want those ambiguous screens correctly signed; feed the file via `--overrides`. It is a **frozen artifact** — regenerate only when new unsigned/ambiguous screens appear, not every run. Without it, harmonization is deterministic-only and flags such screens `[AMBIGUOUS_SELECTION]`.
+#### (3-opt) Directionality mapper — occasional, DB-backed (warehouse-native)
+- **Script:** `scripts/directionality_mapper.py` · **SLURM:** `sbatch slurm/reticle-directionality.sh <version_id>` (LLM via `scripts/llm_gateway`, config-driven model). Targets from `screen_harmonization`, metadata from `$DATA_DIR`, output to the DB — no JSON, no prototype paths.
+- **Produces:** rows in **`screen_directionality`** (per `version_id, screen_id`): `mode`/`sign`/columns/`confidence`/`status` (`auto` | `needs_review` | `binary_only`). Versioned + auditable in the DB (migration `0013`).
+- **Order:** run **after** a deterministic `harmonize_warehouse.py` pass has tagged ambiguous screens, then re-run **`harmonize_warehouse.py --apply-directionality`** to apply the `status='auto'` decisions. Only worth running if there ARE ambiguous screens and you choose to *rescue* them (vs exclude). `needs_review` rows await human adjudication (`SELECT … WHERE status='needs_review'`).
+- **Invariant:** the override sign is FINAL (perturbation folded in) — harmonize does NOT re-apply `perturbation_mult` to overridden screens.
 - **Invariant:** the override sign is FINAL (perturbation already folded in) — `harmonize_warehouse` does **not** re-apply `perturbation_mult` to overridden screens.
 
 ### (4+) Gene-relatedness scorecard
