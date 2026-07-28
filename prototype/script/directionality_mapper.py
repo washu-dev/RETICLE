@@ -269,6 +269,15 @@ def main():
     n_unr = sum(1 for _, u in targets if u)
     log(f"Targets: {len(targets)}  (AMBIGUOUS={n_amb}, UNRESOLVED={n_unr})")
 
+    if not targets:
+        log("No target screens to resolve (no AMBIGUOUS_SELECTION / UNRESOLVED rows).")
+        log(f"  Source: screen_metadata in {paths.DB}")
+        log("  It is empty in this environment. Run the deterministic harmonization")
+        log("  first so ambiguous screens get tagged, then re-run:")
+        log("    prototype : python3 prototype/script/harmonize_scores.py")
+        log("    warehouse : screen_harmonization via harmonize_warehouse.py (RDS)")
+        return
+
     if args.show_prompt:
         sid = targets[0][0]
         print("\n--- SYSTEM ---\n" + SYSTEM_PROMPT)
