@@ -10,7 +10,7 @@
       "tenant_id":     "RETICLE/sso/TENANT_ID"
     },
     "token_url_template": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
-    "scope": "FILL_ME:aiapi-gateway-scope (e.g. api://<gateway-app-id>/.default)",
+    "scope": "api://bbeee386-60d6-4ba4-b9a7-631763f66065/.default",
     "api_key_header": "X-Api-Key"
   },
 

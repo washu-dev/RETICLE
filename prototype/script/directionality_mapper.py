@@ -46,8 +46,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+# Shared, config-driven multi-provider LLM gateway lives in the warehouse scripts/ dir.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import paths
-from llm_client import WashULLMClient, _extract_json_block
+from llm_gateway import LLMGateway
 
 OVERRIDES_PATH = paths.PROCESSED_DATA / "directionality_overrides.json"
 CONFIDENCE_THRESHOLD = 0.7
@@ -170,13 +172,10 @@ def build_prompt(screen_id: str, bio: dict) -> str:
 # LLM call + validation
 # --------------------------------------------------------------------------
 
-def parse_decision(raw: str, layout: dict) -> dict:
-    """Parse + sanity-check the model's JSON. Returns a normalized dict; on any
-    structural problem returns an UNDEFINED decision with confidence 0."""
-    try:
-        d = json.loads(raw)
-    except json.JSONDecodeError:
-        d = _extract_json_block(raw)
+def parse_decision(d, layout: dict) -> dict:
+    """Sanity-check the model's already-parsed JSON object. Returns a normalized
+    dict; on any structural problem returns an UNDEFINED decision with confidence 0.
+    (JSON parsing / coaxing is handled upstream by LLMGateway.chat_json.)"""
     if not isinstance(d, dict):
         return _undef("model returned non-JSON")
 
@@ -247,8 +246,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--screen-ids", type=str, default="")
-    ap.add_argument("--model", type=str, default="gpt-4o",
-                    help="方向裁决用的模型（默认 gpt-4o；PAIR 列识别比 mini 更可靠）")
+    ap.add_argument("--model", type=str, default=None,
+                    help="Model key from scripts/llm_config.json (default: the config's "
+                         "default_model, currently claude-sonnet-5). "
+                         "e.g. claude-opus-5, gpt-5.5, gemini-2.5-pro")
     ap.add_argument("--dry-run", action="store_true", help="列出将处理的 screen，不调 LLM")
     ap.add_argument("--show-prompt", action="store_true", help="打印第一条 prompt 后退出")
     args = ap.parse_args()
@@ -280,10 +281,11 @@ def main():
                   f"layout={score_layout(get_bio(sid))}")
         return
 
-    client = WashULLMClient(model=args.model)
-    log(f"Model: {client.model}")
+    gw = LLMGateway(model=args.model)
+    model_name = args.model or gw.default_model
+    log(f"Model: {model_name}")
     try:
-        client.chat([{"role": "user", "content": "ping"}], max_tokens=5)
+        gw.chat([{"role": "user", "content": "ping"}], max_tokens=5)
     except Exception as e:
         log("LLM preflight FAILED — 中止，未写任何文件。")
         log(f"  {e}")
@@ -292,7 +294,6 @@ def main():
 
     results = {}
     counts = {"auto": 0, "needs_review": 0, "binary_only": 0}
-    tok_p = tok_c = 0
 
     for i, (sid, is_unr) in enumerate(targets, 1):
         bio = get_bio(sid)
@@ -302,13 +303,11 @@ def main():
             {"role": "user", "content": build_prompt(sid, bio)},
         ]
         try:
-            resp = client.complete(messages, temperature=0, max_tokens=300,
-                                   response_format={"type": "json_object"})
-            raw = resp["choices"][0]["message"]["content"]
-            usage = resp.get("usage", {})
-            tok_p += usage.get("prompt_tokens", 0)
-            tok_c += usage.get("completion_tokens", 0)
-            decision = parse_decision(raw, layout)
+            # temperature intentionally omitted: some GPT-5-class models reject a
+            # non-default temperature; the gateway sends only what each model accepts.
+            d = gw.chat_json(messages, model=args.model, max_tokens=512)
+            raw = json.dumps(d, ensure_ascii=False)
+            decision = parse_decision(d, layout)
         except Exception as e:
             log(f"  ! screen {sid} LLM error: {e}")
             decision = _undef(f"LLM error: {e}")
@@ -321,7 +320,7 @@ def main():
             "status": status,
             "is_unresolved": is_unr,
             "score_layout": layout,
-            "llm_model": client.model,
+            "llm_model": model_name,
             "prompt_version": PROMPT_VERSION,
             "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "raw_llm_output": raw,
@@ -333,7 +332,7 @@ def main():
     payload = {
         "_meta": {
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "model": client.model,
+            "model": model_name,
             "prompt_version": PROMPT_VERSION,
             "confidence_threshold": CONFIDENCE_THRESHOLD,
             "counts": counts,
@@ -348,7 +347,6 @@ def main():
     log(f"Wrote {OVERRIDES_PATH}")
     log(f"  auto-apply={counts['auto']}  needs_review={counts['needs_review']}  "
         f"binary_only={counts['binary_only']}")
-    log(f"  tokens: prompt={tok_p:,} completion={tok_c:,}")
     if counts["needs_review"]:
         log("  人工裁决清单（status=needs_review）:")
         for sid, r in results.items():
