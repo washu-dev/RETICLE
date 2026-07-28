@@ -31,24 +31,30 @@ UNRESOLVED），用 LLM 读 BioGRID 的 NOTES + SIGNIFICANCE_CRITERIA + RATIONAL
 
 RUN
 ---
-  python3 script/directionality_mapper.py --show-prompt        # 看第一条 prompt，不调 LLM
-  python3 script/directionality_mapper.py --dry-run            # 打印将处理的 screen，不调 LLM
-  python3 script/directionality_mapper.py --limit 5            # 需要 WashU VPN
-  python3 script/directionality_mapper.py                      # 全部 111 个
+  Targets are read from RDS screen_harmonization for a data version (run
+  harmonize_warehouse.py first). All modes need DB access (~/.pgpass); live runs
+  also need the WashU VPN + LLM secrets.
+
+  python3 prototype/script/directionality_mapper.py --version 8 --show-prompt  # first prompt, no LLM
+  python3 prototype/script/directionality_mapper.py --version 8 --dry-run      # list target screens, no LLM
+  python3 prototype/script/directionality_mapper.py --version 8 --limit 5      # live, 5 screens
+  python3 prototype/script/directionality_mapper.py --version 8                # all ambiguous screens
+  #   --model claude-opus-5 | gpt-5.5 | gemini-2.5-pro   (default from llm_config.json)
 """
 
 import argparse
 import json
-import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-# Shared, config-driven multi-provider LLM gateway lives in the warehouse scripts/ dir.
+# Shared warehouse code (config + LLM gateway) lives in the warehouse scripts/ dir.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import paths
+import psycopg2
+from config import Config
 from llm_gateway import LLMGateway
 
 OVERRIDES_PATH = paths.PROCESSED_DATA / "directionality_overrides.json"
@@ -231,19 +237,34 @@ def log(msg: str):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
-def target_screens(db) -> list[tuple[str, bool]]:
-    """Return [(screen_id, is_unresolved), ...] for every screen Phase 1 could not
-    resolve a direction for."""
-    rows = db.execute(
-        "SELECT SCREEN_ID, SCORE_BASIS FROM screen_metadata "
-        "WHERE SCORE_BASIS LIKE '%AMBIGUOUS_SELECTION%' OR SCORE_BASIS='UNRESOLVED' "
-        "ORDER BY CAST(SCREEN_ID AS INTEGER)"
-    ).fetchall()
-    return [(str(sid), basis == "UNRESOLVED") for sid, basis in rows]
+def target_screens(version_id) -> list:
+    """[(biogrid_screen_id, is_unresolved), ...] for screens whose deterministic
+    harmonization could not fix a direction — read from RDS screen_harmonization
+    for this data version (score_basis tagged AMBIGUOUS_SELECTION, or UNRESOLVED).
+
+    Warehouse-native: harmonize_warehouse.py writes screen_harmonization.score_basis;
+    this reads it back. No dependency on the prototype SQLite."""
+    params = Config.get_psycopg2_params()
+    params["sslmode"] = "require"
+    conn = psycopg2.connect(**params)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT biogrid_screen_id, score_basis FROM screen_harmonization "
+            "WHERE version_id = %s AND (score_basis LIKE %s OR score_basis = %s) "
+            "ORDER BY biogrid_screen_id",
+            (version_id, "%AMBIGUOUS_SELECTION%", "UNRESOLVED"),
+        )
+        return [(str(bid), basis == "UNRESOLVED") for bid, basis in cur.fetchall()]
+    finally:
+        conn.close()
 
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--version", type=int, required=True,
+                    help="data_load_version_id whose ambiguous screens to resolve "
+                         "(read from RDS screen_harmonization)")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--screen-ids", type=str, default="")
     ap.add_argument("--model", type=str, default=None,
@@ -254,9 +275,7 @@ def main():
     ap.add_argument("--show-prompt", action="store_true", help="打印第一条 prompt 后退出")
     args = ap.parse_args()
 
-    db = sqlite3.connect(str(paths.DB))
-    targets = target_screens(db)
-    db.close()
+    targets = target_screens(args.version)
 
     if args.screen_ids:
         want = {s.strip() for s in args.screen_ids.split(",") if s.strip()}
@@ -270,12 +289,10 @@ def main():
     log(f"Targets: {len(targets)}  (AMBIGUOUS={n_amb}, UNRESOLVED={n_unr})")
 
     if not targets:
-        log("No target screens to resolve (no AMBIGUOUS_SELECTION / UNRESOLVED rows).")
-        log(f"  Source: screen_metadata in {paths.DB}")
-        log("  It is empty in this environment. Run the deterministic harmonization")
-        log("  first so ambiguous screens get tagged, then re-run:")
-        log("    prototype : python3 prototype/script/harmonize_scores.py")
-        log("    warehouse : screen_harmonization via harmonize_warehouse.py (RDS)")
+        log(f"No target screens for version {args.version} "
+            "(no AMBIGUOUS_SELECTION / UNRESOLVED rows in screen_harmonization).")
+        log("  Run harmonize_warehouse.py (P1) for this version first so ambiguous")
+        log("  screens get tagged in screen_harmonization, then re-run.")
         return
 
     if args.show_prompt:
@@ -341,6 +358,7 @@ def main():
     payload = {
         "_meta": {
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "version_id": args.version,
             "model": model_name,
             "prompt_version": PROMPT_VERSION,
             "confidence_threshold": CONFIDENCE_THRESHOLD,
@@ -349,11 +367,12 @@ def main():
         },
         "overrides": results,
     }
-    OVERRIDES_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OVERRIDES_PATH.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
+    overrides_path = paths.PROCESSED_DATA / f"directionality_overrides_v{args.version}.json"
+    overrides_path.parent.mkdir(parents=True, exist_ok=True)
+    overrides_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
 
     print()
-    log(f"Wrote {OVERRIDES_PATH}")
+    log(f"Wrote {overrides_path}")
     log(f"  auto-apply={counts['auto']}  needs_review={counts['needs_review']}  "
         f"binary_only={counts['binary_only']}")
     if counts["needs_review"]:
