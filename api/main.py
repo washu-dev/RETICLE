@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from config import settings
 from routers.auth import router as auth_router
 from routers.coessential import router as coessential_router
+from routers.corpus import router as corpus_router
 from routers.explorer import router as explorer_router
 from routers.genes import router as genes_router
 from routers.interpret import router as interpret_router
@@ -100,6 +101,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(query_router)
+app.include_router(corpus_router)
 app.include_router(genes_router)
 app.include_router(explorer_router)
 app.include_router(coessential_router)

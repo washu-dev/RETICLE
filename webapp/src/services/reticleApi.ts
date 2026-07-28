@@ -9,11 +9,48 @@ export interface GeneInput {
   score: number;
 }
 
+/** The researcher's description of their uploaded screen (context vector). */
+export interface ScreenContext {
+  modality?: string;
+  organism?: string;
+  selectionMethod?: string;
+  coverageScope?: string;
+  coverageAvailability?: string;
+  assayDomain?: string;
+  cellLine?: string;
+  cellType?: string;
+  library?: string;
+  condition?: string;
+  concentration?: string;
+  timepoint?: string;
+  timepointUnit?: string;
+  nReplicates?: number;
+  comparisonDirection?: string;
+  hitThresholdType?: string;
+  hitThresholdValue?: number;
+  direction?: string;
+  algorithm?: string;
+  scoreColumn?: string;
+  fileFormat?: string;
+}
+
+/** Which corpus screens to compare against. Defaults are no-ops (full corpus). */
+export interface CorpusFilters {
+  organism: string;            // Any | Human | Mouse
+  assayDomains: string[];      // subset of fitness|stress|reporter|other
+  coverage: string;            // Any | FULL
+  cellTypes: string[];
+  modalities: string[];
+  minSharedGenes: number;
+}
+
 export interface QueryOptions {
   algorithm?: string;
   organism?: string;
   modalities?: string[];
   pathwayAnalysis?: boolean;
+  screenContext?: ScreenContext;
+  corpusFilters?: CorpusFilters;
 }
 
 export interface MatchedScreen {
@@ -88,6 +125,8 @@ export interface QueryResponse {
   matchedScreens: MatchedScreen[];
   darkGenes: DarkGene[];
   graphElements: GraphElements;
+  screenContext?: ScreenContext;
+  corpusPoolSize?: number;
 }
 
 export interface Citation {
@@ -129,7 +168,25 @@ export async function runQuery(
     organism: options.organism ?? "Both",
     modalities: options.modalities ?? ["KO", "CRISPRa"],
     pathwayAnalysis: options.pathwayAnalysis ?? false,
+    screenContext: options.screenContext,
+    corpusFilters: options.corpusFilters,
   });
+}
+
+/** Live count of corpus screens matching the given compare-to filters. */
+export async function fetchCorpusCount(
+  filters: CorpusFilters,
+  signal?: AbortSignal
+): Promise<number> {
+  const p = new URLSearchParams();
+  if (filters.organism) p.set('organism', filters.organism);
+  filters.assayDomains.forEach(d => p.append('assayDomains', d));
+  if (filters.coverage) p.set('coverage', filters.coverage);
+  filters.cellTypes.forEach(c => p.append('cellTypes', c));
+  filters.modalities.forEach(m => p.append('modalities', m));
+  if (filters.minSharedGenes) p.set('minSharedGenes', String(filters.minSharedGenes));
+  const res = await apiGet<{ count: number }>(`/api/corpus/count?${p.toString()}`, { signal });
+  return res.count;
 }
 
 export async function fetchGeneDetail(

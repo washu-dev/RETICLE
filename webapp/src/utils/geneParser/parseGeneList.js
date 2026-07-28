@@ -18,17 +18,30 @@ function splitLine(line, delimiter) {
   return line.split(delimiter).map(f => f.trim().replace(/^["']|["']$/g, ''));
 }
 
+// Tokens that stand in for "no value" in real screen exports (BioGRID uses '-').
+const MISSING_TOKENS = new Set(['', '-', 'na', 'nan', 'null', 'none', '.']);
+
 /**
- * Parse a numeric score from a string. Returns NaN if unparseable.
- * Handles values like "1.23e-4", "-2.5", "0.001".
+ * Parse a numeric score from a string. Returns NaN if unparseable or a known
+ * missing-value token ('-', 'NA', …). Handles "1.23e-4", "-2.5", "0.001".
  *
  * @param {string} raw
  * @returns {number}
  */
 function parseScore(raw) {
-  if (raw === undefined || raw === null || raw === '') return NaN;
-  const n = parseFloat(raw);
-  return n;
+  if (raw === undefined || raw === null) return NaN;
+  if (MISSING_TOKENS.has(String(raw).trim().toLowerCase())) return NaN;
+  return parseFloat(raw);
+}
+
+/**
+ * Interpret a hit-flag cell (YES/NO, 1/0, true/false) as a boolean.
+ * @param {string} raw
+ * @returns {boolean}
+ */
+function parseHit(raw) {
+  const v = String(raw ?? '').trim().toLowerCase();
+  return v === 'yes' || v === '1' || v === 'true' || v === 'hit' || v === 'y';
 }
 
 /**
@@ -36,17 +49,18 @@ function parseScore(raw) {
  *
  * @param {string} raw  Raw paste or file content
  * @param {{
- *   format: 'MAGECK'|'STARS'|'DESEQ2'|'SIMPLE'|'UNKNOWN',
+ *   format?: 'MAGECK'|'STARS'|'DESEQ2'|'ORCS'|'RESIDUAL'|'SIMPLE'|'UNKNOWN',
  *   delimiter: '\t'|',',
  *   idColumn: string,
- *   scoreColumn: string
+ *   scoreColumn: string,
+ *   hitColumn?: string
  * }} options
  * @returns {{
- *   genes: Array<{symbol: string, score: number, rawId?: string, extra?: Object}>,
+ *   genes: Array<{symbol: string, score: number, rawId?: string, isHit?: boolean, extra?: Object}>,
  *   warnings: string[]
  * }}
  */
-export function parseGeneList(raw, { delimiter, idColumn, scoreColumn }) {
+export function parseGeneList(raw, { delimiter, idColumn, scoreColumn, hitColumn }) {
   const warnings = [];
   const genes    = [];
 
@@ -55,14 +69,16 @@ export function parseGeneList(raw, { delimiter, idColumn, scoreColumn }) {
     return { genes, warnings };
   }
 
-  const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length === 0) {
+  // Drop blank lines. The FIRST line may be a `#`-prefixed header (BioGRID ORCS);
+  // any OTHER `#`-prefixed lines are comments and are skipped.
+  const allLines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if (allLines.length === 0) {
     warnings.push('No content to parse.');
     return { genes, warnings };
   }
+  const headerLine = allLines[0].replace(/^#+\s*/, '');
+  const lines = [headerLine, ...allLines.slice(1).filter(l => !l.startsWith('#'))];
 
-  // First line is always the header
-  const headerLine = lines[0];
   const headers    = splitLine(headerLine, delimiter).map(h => h.toLowerCase());
 
   // Resolve column indices
@@ -88,6 +104,13 @@ export function parseGeneList(raw, { delimiter, idColumn, scoreColumn }) {
   if (scoreIdx < 0) {
     scoreIdx = idIdx === 0 ? 1 : 0;
   }
+
+  // Optional hit-flag column (BioGRID ORCS "HIT" = YES/NO). When present, each
+  // gene carries an isHit boolean so callers can route hit-only lists to the
+  // Jaccard-overlap path.
+  const hitIdx = hitColumn
+    ? headers.indexOf(hitColumn.toLowerCase())
+    : headers.findIndex(h => h === 'hit' || h === 'hit_flag' || h === 'is_hit');
 
   let emptyScoreCount = 0;
   let unparsedCount   = 0;
@@ -122,6 +145,7 @@ export function parseGeneList(raw, { delimiter, idColumn, scoreColumn }) {
       symbol: rawId,
       score:  isNaN(score) ? 0 : score,
       rawId,
+      ...(hitIdx >= 0 ? { isHit: parseHit(fields[hitIdx]) } : {}),
       ...(Object.keys(extra).length > 0 ? { extra } : {}),
     });
   }

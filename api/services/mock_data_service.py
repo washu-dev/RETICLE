@@ -303,7 +303,10 @@ _DARK_GENE_INDEX: dict[str, DarkGene] = {g.symbol: g for g in _DARK_GENES}
 # ---------------------------------------------------------------------------
 
 async def run_query(request: QueryRequest) -> QueryResponse:
+    from services.corpus_service import build_corpus_where, corpus_count
     from services.db_service import USE_PG, db_fetchall
+
+    pool_size = corpus_count(request.corpus_filters)
 
     if not USE_PG:
         sig_count   = sum(1 for s in _MATCHED_SCREENS if s.fdr < 0.05)
@@ -311,7 +314,7 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         return QueryResponse(
             query_id=str(uuid4()),
             stats=QueryStats(
-                screens_compared=287,
+                screens_compared=pool_size,
                 significant_matches=sig_count,
                 agree_directionality=agree_count,
                 query_gene_count=len(request.genes),
@@ -319,12 +322,15 @@ async def run_query(request: QueryRequest) -> QueryResponse:
             matched_screens=_MATCHED_SCREENS,
             dark_genes=_DARK_GENES,
             graph_elements=_GRAPH_ELEMENTS,
+            screen_context=request.screen_context,
+            corpus_pool_size=pool_size,
         )
 
     symbols = [g.symbol.upper() for g in request.genes] or ["ATG5"]
     gene_ph = ", ".join("?" * len(symbols))
+    corpus_where, corpus_params = build_corpus_where(request.corpus_filters)
 
-    # nosec B608 — placeholders only, no user data in SQL
+    # nosec B608 — placeholders only (gene_ph / corpus_where are fixed clauses)
     screen_rows = db_fetchall(f"""
         SELECT
             sm.screen_id                                        AS biogrid_id,
@@ -342,13 +348,14 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         JOIN  reticle.screen_metadata          sm  ON hs.screen_id = sm.screen_id
         LEFT JOIN reticle.screen_metadata_curated smc ON hs.screen_id = smc.screen_id
         WHERE hs.gene_symbol IN ({gene_ph})
-          AND hs.is_hit = 1
+          AND hs.is_hit = 1{corpus_where}
         GROUP BY sm.screen_id, sm.screen_name, sm.author, sm.organism_official,
                  smc.pmid, smc.selection_method, sm.screen_type, sm.cell_type,
                  sm.cell_line, smc.growth_direction, sm.scores_size
+        HAVING COUNT(DISTINCT hs.gene_symbol) >= ?
         ORDER BY shared_genes DESC, rho DESC
         LIMIT 20
-    """, tuple(symbols))
+    """, tuple(symbols) + tuple(corpus_params) + (int(getattr(request.corpus_filters, "min_shared_genes", 0) or 0),))
 
     matched_screens = [
         MatchedScreen(
@@ -474,6 +481,8 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         matched_screens=matched_screens,
         dark_genes=dark_genes,
         graph_elements=GraphElements(nodes=screen_nodes + gene_nodes, edges=edges),
+        screen_context=request.screen_context,
+        corpus_pool_size=pool_size,
     )
 
 
