@@ -35,7 +35,7 @@ VERSION="$1"; shift
 if ! [[ "$VERSION" =~ ^[0-9]+$ ]]; then
     echo "ERROR: version_id must be a number, got: $VERSION"; exit 1
 fi
-EXTRA_ARGS=("$@")   # passthrough: --dry-run / --overrides PATH
+EXTRA_ARGS=("$@")   # passthrough: --dry-run / --apply-directionality
 
 if [ -z "$RETICLE_DIR" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
