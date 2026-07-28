@@ -17,8 +17,20 @@ fact_screen_gene / screen_harmonization.
 """
 
 import json
+import re
 import numpy as np
 import pandas as pd
+
+
+def normalize_screen_id(s):
+    """Canonical screen-id key: digits only (e.g. 'SCREEN_1234' -> '1234').
+
+    Used for BOTH the override-map keys (load_overrides) and the per-screen
+    lookup in the driver, so an id-format mismatch can never silently no-op an
+    override.
+    """
+    m = re.search(r"(\d+)", str(s or ""))
+    return m.group(1) if m else str(s or "")
 
 # ---------------------------------------------------------------------------
 # Controlled-vocabulary registry of SCORE.k_TYPE strings (58 distinct types).
@@ -231,7 +243,7 @@ def load_overrides(path):
     out = {}
     for sid, ov in data.get("overrides", {}).items():
         if ov.get("status") == "auto":
-            out[str(sid)] = ov
+            out[normalize_screen_id(sid)] = ov   # digit-normalized to match the driver's lookup
     return out
 
 

@@ -2,6 +2,8 @@
 
 HPC-optimized Python scripts for loading and transforming CRISPR screen data into a versioned PostgreSQL data warehouse.
 
+> **Run order / where each script fits:** see the canonical [Pipeline Process Map](../docs/PIPELINE_PROCESS_MAP.md) (raw → stage → dedup → load → harmonize → gene-relatedness).
+
 ---
 
 ## Quick Reference

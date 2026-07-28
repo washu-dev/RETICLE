@@ -20,7 +20,6 @@ Usage (from scripts/, or via slurm/reticle-harmonize.sh):
 import argparse
 import logging
 import os
-import re
 import sys
 import time
 
@@ -40,10 +39,9 @@ _JSON_FALLBACK = {
 }
 
 
-def _digits(s):
-    """Normalize a BioGRID screen id to its digit string for JSON key matching."""
-    m = re.search(r"(\d+)", str(s or ""))
-    return m.group(1) if m else str(s)
+# Canonical screen-id normalization lives in harmonization_core so the override
+# map keys and these lookups can never drift apart.
+_digits = hc.normalize_screen_id
 
 
 def load_metadata(organism):

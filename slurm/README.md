@@ -2,6 +2,8 @@
 
 Complete SLURM integration for submitting, monitoring, and managing RETICLE ETL jobs on HPC clusters.
 
+> **Run order / which job runs when:** see the canonical [Pipeline Process Map](../docs/PIPELINE_PROCESS_MAP.md) (stage → dedup → load → finish → harmonize → gene-relatedness).
+
 ---
 
 ## Quick Reference
