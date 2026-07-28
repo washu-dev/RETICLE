@@ -251,6 +251,31 @@ def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def resolve_with_fallback(gw, messages, primary, fallbacks, layout, bid):
+    """Try the primary model, then each fallback model in turn on refusal/error.
+
+    A single provider's safety classifier (e.g. Claude's bio-sensitivity refusal on
+    legitimate published CRISPR curation) can't block the call — a different provider
+    covers it. Returns (decision, model_used, raw_json)."""
+    chain = [primary] + [m for m in fallbacks if m and m != primary]
+    last_err = None
+    for idx, model in enumerate(chain):
+        try:
+            d = gw.chat_json(messages, model=model)
+            return parse_decision(d, layout), model, json.dumps(d, ensure_ascii=False)
+        except Exception as e:
+            last_err = e
+            nxt = chain[idx + 1] if idx + 1 < len(chain) else None
+            blocked = "refusal" in str(e).lower()
+            reason = "BLOCKED for bio-sensitivity (model refusal)" if blocked else f"error: {e}"
+            if nxt:
+                log(f"  ! screen {bid}: primary inference '{model}' {reason} "
+                    f"— falling back: '{model}' -> '{nxt}'")
+            else:
+                log(f"  ! screen {bid}: '{model}' {reason}; no fallback model left")
+    return _undef(f"all models failed: {last_err}"), (chain[-1] if chain else primary), ""
+
+
 # --------------------------------------------------------------------------
 # Main
 # --------------------------------------------------------------------------
@@ -323,28 +348,28 @@ def main():
         conn.close()
         return
 
+    fallbacks = gw.cfg.get("fallback_models", [])
+    if fallbacks:
+        log(f"Fallback chain (on refusal/error): "
+            f"{model_name} -> {' -> '.join(m for m in fallbacks if m != model_name)}")
+
     counts = {"auto": 0, "needs_review": 0, "binary_only": 0}
     for i, (sid, bid, is_unr) in enumerate(targets, 1):
         bio = get_bio(bid)
         layout = score_layout(bio)
         messages = [{"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": build_prompt(bid, bio)}]
-        try:
-            # max_tokens is config-driven (not hardcoded): Claude requires it and uses
-            # providers.claude.default_max_tokens from llm_config.json (sized for
-            # extended-thinking headroom); OpenAI/Gemini send none (provider default).
-            d = gw.chat_json(messages, model=args.model)
-            raw = json.dumps(d, ensure_ascii=False)
-            decision = parse_decision(d, layout)
-        except Exception as e:
-            log(f"  ! screen {bid} LLM error: {e}")
-            decision = _undef(f"LLM error: {e}")
-            raw = ""
+        # max_tokens is config-driven (Claude uses providers.claude.default_max_tokens;
+        # OpenAI/Gemini send none). On refusal/error the call falls back through
+        # fallback_models — see resolve_with_fallback.
+        decision, model_used, raw = resolve_with_fallback(
+            gw, messages, model_name, fallbacks, layout, bid)
         status = classify_status(decision, is_unr)
         counts[status] += 1
-        upsert_decision(conn, args.version, sid, bid, decision, status, is_unr, model_name, raw)
+        upsert_decision(conn, args.version, sid, bid, decision, status, is_unr, model_used, raw)
+        via = f" [via {model_used}]" if model_used != model_name else ""
         log(f"[{i}/{len(targets)}] screen {bid}: {decision['mode']} "
-            f"conf={decision['confidence']:.2f} -> {status}")
+            f"conf={decision['confidence']:.2f} -> {status}{via}")
         time.sleep(LLM_RATE_LIMIT)
 
     log("=== Summary (written to screen_directionality) ===")
