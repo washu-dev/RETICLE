@@ -29,7 +29,10 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
  (5) CONFIG (D3) ────────► relatedness_config  [recommend→accept thresholds+budget; server-side cost gate]
         │                   (login-node, DB-only; produces the ACCEPTED config D4/D5 read)
         │
- (6+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
+ (6) CO-ESSENTIALITY(D5)─► fact_gene_pair.coess_*  [tail-restricted Spearman ρ, GPU; |ρ|-floor + top-K]
+        │                   (--histogram to pick the cut, then --build)
+        │
+ (7+) GENE-RELATEDNESS ──► + co-hit/co-citation/contextual/novelty channels + roll-up + insights
         (see design/gene_relatedness_design.md — deliverables D2…D13)
 ```
 
@@ -86,7 +89,13 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Guardrail (OWASP A04):** the budget check on `--accept` is server-authoritative — thresholds that exceed `compute_budget.max_pairs` are rejected (re-recommend tighter or set `compute_mode=ANN_TOPK`).
 - **Note:** `tier_cuts` (Strong/Moderate/Weak) are seeded defaults here (the profiler measures volume, not the ρ distribution) and get **recalibrated post-D5** from the real effect-size distribution.
 
-### (6+) Gene-relatedness scorecard
+### (6) Co-essentiality  ← D5 (primary channel, Channel 1)
+- **Script:** `scripts/compute_coessentiality.py` (shared selective/tail logic in `scripts/relatedness_core.py`) · **SLURM:** `sbatch slurm/reticle-coessentiality.sh <version> …`  **(GPU — masked-GEMM tail-restricted Spearman; `--cpu` fallback)**
+- **Two passes:** `--histogram` reports the **real** |ρ| distribution + true tested-pair count (pick the cut, recalibrate `tier_cuts`); `--build --rho-min X --top-k K` stores pairs clearing **both** gates into `fact_gene_pair.coess_*` with BH-FDR (`min_support` = min co-tail screens).
+- **Prereq chain:** P1 harmonize → D2 profile → **D3 accepted config** → D5. Reads only the warehouse (no `$DATA_DIR`); organism-partitioned (never cross-organism).
+- **Note:** first build leaves `dim_gene_pair_screen` evidence rows unpopulated (`--with-evidence` is a deferred heavy pass); `relatedness_tier` is provisionally the co-ess tier until D9 rolls up all channels.
+
+### (7+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
 - **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
 - **Prereqs:** P1 harmonize (this file, stage 3) · P2 populate `fact_screen_gene_publication` · P3 capture screen-context + PMIDs at staging.
@@ -97,4 +106,4 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Account/partition:** set `SBATCH_ACCOUNT` (and `SBATCH_PARTITION` if needed) as env vars — never hardcoded in `#SBATCH`.
 - **Credentials:** `~/.pgpass` (mode 600). **`$DATA_DIR`** must hold `screen_metadata_*.json`; **`$STAGING_DIR`** must be shared storage for the dedup→load handoff.
 - **Versioning:** one `version_id` threads every stage; `maintenance.py --list-versions` to find it.
-- **GPU vs CPU:** only **dedup (1)** and **co-essentiality (D5)** benefit from GPU. Staging, load, finish, **harmonize**, and the **profiler (4)** are CPU (I/O-bound / sparse).
+- **GPU vs CPU:** only **dedup (1)** and **co-essentiality (6/D5)** benefit from GPU (`--gres=gpu:1 --partition=general-gpu`; provision `~/.rapids-gpu-venv` from the login node). Staging, load, finish, **harmonize**, **profiler (4)**, and **config (5)** are CPU.

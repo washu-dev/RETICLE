@@ -49,6 +49,7 @@ except ImportError:  # pragma: no cover - environment guard
     raise
 
 from config import Config
+import relatedness_core as rc
 
 logger = logging.getLogger("profile_relatedness")
 
@@ -164,27 +165,15 @@ class RelatednessProfiler:
         self.gene_ids = np.asarray([int(g) for g, _, _ in stats], dtype=np.int64)
         n_measured = np.asarray([int(m) for _, m, _ in stats], dtype=np.int64)
         n_hits = np.asarray([int(h or 0) for _, _, h in stats], dtype=np.int64)
-        with np.errstate(divide="ignore", invalid="ignore"):
-            hit_rate = np.where(n_measured > 0, n_hits / n_measured, 0.0)
 
-        enough = n_measured >= self.min_measured_screens
-        pan_inert = n_hits == 0                                   # "never moves"
-        pan_essential = (hit_rate >= self.pan_essential_rate) & enough
-        selective_mask = enough & ~pan_inert & ~pan_essential
-
+        # shared selective-gene rule (relatedness_core) so the profiler's
+        # projections match what D5 actually builds from the same config.
+        cls = rc.classify_selective(n_measured, n_hits,
+                                    pan_essential_rate=self.pan_essential_rate,
+                                    min_measured_screens=self.min_measured_screens)
+        selective_mask = cls["selective"]
         self.selective_gene_ids = self.gene_ids[selective_mask]
-        self.selective_stats = {
-            "total_genes": int(len(self.gene_ids)),
-            "selective_gene_count": int(selective_mask.sum()),
-            "pan_essential_dropped": int(pan_essential.sum()),
-            "pan_inert_dropped": int(pan_inert.sum()),
-            "insufficient_coverage_dropped": int((~enough & ~pan_inert).sum()),
-            "filter": {
-                "pan_essential_rate": self.pan_essential_rate,
-                "pan_inert_rule": "n_hit_screens == 0",
-                "min_measured_screens": self.min_measured_screens,
-            },
-        }
+        self.selective_stats = cls["summary"]
         logger.info(f"Selective genes: {self.selective_stats['selective_gene_count']:,} "
                     f"(pan-essential dropped {self.selective_stats['pan_essential_dropped']:,}, "
                     f"pan-inert dropped {self.selective_stats['pan_inert_dropped']:,})")

@@ -47,6 +47,7 @@ if command -v conda &> /dev/null; then
             psycopg2-binary \
             pandas \
             numpy \
+            scipy \
             python-dotenv \
             tqdm
         conda activate rapids-gpu
@@ -75,8 +76,9 @@ else
         pip install pandas numpy psycopg2-binary python-dotenv tqdm --quiet
     }
 
-    # Fallback packages if GPU unavailable
-    pip install pandas numpy psycopg2-binary python-dotenv tqdm --quiet
+    # Fallback packages if GPU unavailable (scipy: ranks + t-dist p-values for D5)
+    pip install pandas numpy scipy psycopg2-binary python-dotenv tqdm --quiet \
+        || echo "  [WARN] pip install could not run (offline compute node?) — relying on preinstalled venv"
 fi
 
 # Verify packages
@@ -86,6 +88,8 @@ import sys
 
 packages = {
     'pandas': 'CPU fallback',
+    'numpy': 'Numerical computing',
+    'scipy': 'Ranks + t-dist p-values (D5 co-essentiality)',
     'psycopg2': 'PostgreSQL',
     'dotenv': 'Configuration management',
     'tqdm': 'Progress reporting',
