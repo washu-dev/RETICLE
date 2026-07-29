@@ -11,6 +11,7 @@ alembic>=1.10.0
 # Data Processing
 pandas>=1.5.0
 numpy>=1.23.0
+scipy>=1.10.0   # sparse Hᵀ·H for the relatedness profiler (D2) + CPU co-hit/co-citation stages
 
 # Configuration & Secrets
 python-dotenv>=1.0.0

@@ -23,7 +23,10 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
         │                   screen_harmonization
         │   ⇧ optional: DIRECTIONALITY MAPPER (LLM) → screen_directionality (DB); re-harmonize --apply-directionality
         │
- (4+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
+ (4) PROFILE (D2) ───────► relatedness_profile  [data shape + threshold→projected-pairs/cost curves]
+        │                   (cheap, CPU; gates the what-if config before D5 pays for compute)
+        │
+ (5+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
         (see design/gene_relatedness_design.md — deliverables D2…D13)
 ```
 
@@ -67,9 +70,15 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Invariant:** the override sign is FINAL (perturbation folded in) — harmonize does NOT re-apply `perturbation_mult` to overridden screens.
 - **Invariant:** the override sign is FINAL (perturbation already folded in) — `harmonize_warehouse` does **not** re-apply `perturbation_mult` to overridden screens.
 
-### (4+) Gene-relatedness scorecard
+### (4) Profiler  ← D2 of gene-relatedness
+- **Schema:** migration `0014` (`relatedness_profile`, `relatedness_config`, `fact_gene_pair`, …) — apply before running.
+- **Script:** `scripts/profile_relatedness.py` · **SLURM:** `sbatch slurm/reticle-profile.sh <version_id> [--dry-run] [--sample-size N] [--seed N]`  **(CPU — exact sparse Hᵀ·H + sampled co-ess; no n×n, no GPU)**
+- **Produces:** one `relatedness_profile` snapshot: data shape (screen counts, coverage dist, selective-gene count, pan-essential/pan-inert drops) + threshold→(projected pairs, cost) curves — **exact** co-hit/co-citation, **sampled+CI** co-essentiality (seed recorded → reproducible).
+- **Order:** run **after** P1 harmonize (needs `screen_harmonization` + `fact_screen_gene.percentile_score`); errors clearly if harmonize hasn't run. Reads only the warehouse — **no `$DATA_DIR` needed**. Gates D3 (pick thresholds/budget → `relatedness_config`) before D4/D5 pay for real compute.
+
+### (5+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
-- **Order (D2→D13):** profiler → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
+- **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
 - **Prereqs:** P1 harmonize (this file, stage 3) · P2 populate `fact_screen_gene_publication` · P3 capture screen-context + PMIDs at staging.
 
 ---
@@ -78,4 +87,4 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Account/partition:** set `SBATCH_ACCOUNT` (and `SBATCH_PARTITION` if needed) as env vars — never hardcoded in `#SBATCH`.
 - **Credentials:** `~/.pgpass` (mode 600). **`$DATA_DIR`** must hold `screen_metadata_*.json`; **`$STAGING_DIR`** must be shared storage for the dedup→load handoff.
 - **Versioning:** one `version_id` threads every stage; `maintenance.py --list-versions` to find it.
-- **GPU vs CPU:** only **dedup (1)** and **co-essentiality (D5)** benefit from GPU. Staging, load, finish, and **harmonize are CPU** (I/O-bound).
+- **GPU vs CPU:** only **dedup (1)** and **co-essentiality (D5)** benefit from GPU. Staging, load, finish, **harmonize**, and the **profiler (4)** are CPU (I/O-bound / sparse).
