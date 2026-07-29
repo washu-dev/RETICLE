@@ -47,9 +47,16 @@ else
     echo "  Activating virtual environment..."
     source "$VENV_HOME/bin/activate"
 
-    echo "  Installing packages (this may take a minute)..."
-    pip install --upgrade pip --quiet
-    pip install pandas numpy scipy psycopg2-binary python-dotenv tqdm --quiet
+    # Compute nodes on compute2 have NO outbound internet, so pip cannot reach
+    # PyPI there. The venv lives on shared home and is meant to be PROVISIONED
+    # FROM THE LOGIN NODE. Make the install tolerant: if pip can't run (offline
+    # compute node) we fall through to the verify block below, which reports
+    # exactly which package is missing and how to fix it — instead of set -e
+    # killing the job mid-source with a cryptic signal.
+    echo "  Installing packages (this may take a minute; skipped if offline)..."
+    pip install --upgrade pip --quiet 2>/dev/null || true
+    pip install pandas numpy scipy psycopg2-binary python-dotenv tqdm --quiet 2>/dev/null \
+        || echo "  [WARN] pip install could not run (offline compute node?) — relying on preinstalled venv"
 fi
 
 # Verify required packages
@@ -77,6 +84,8 @@ for pkg, desc in packages.items():
 
 if missing:
     print(f"\nError: Missing packages: {', '.join(missing)}")
+    print("Compute nodes are offline — provision the venv FROM THE LOGIN NODE, then resubmit:")
+    print(f"    source ~/.reticle-etl-venv/bin/activate && pip install {' '.join(missing)}")
     sys.exit(1)
 PYTHON
 
