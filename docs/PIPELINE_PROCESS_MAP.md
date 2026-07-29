@@ -26,7 +26,10 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
  (4) PROFILE (D2) ───────► relatedness_profile  [data shape + threshold→projected-pairs/cost curves]
         │                   (cheap, CPU; gates the what-if config before D5 pays for compute)
         │
- (5+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
+ (5) CONFIG (D3) ────────► relatedness_config  [recommend→accept thresholds+budget; server-side cost gate]
+        │                   (login-node, DB-only; produces the ACCEPTED config D4/D5 read)
+        │
+ (6+) GENE-RELATEDNESS ──► fact_gene_pair + dim_gene_pair_* + insights
         (see design/gene_relatedness_design.md — deliverables D2…D13)
 ```
 
@@ -76,7 +79,14 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Produces:** one `relatedness_profile` snapshot: data shape (screen counts, coverage dist, selective-gene count, pan-essential/pan-inert drops) + threshold→(projected pairs, cost) curves — **exact** co-hit/co-citation, **sampled+CI** co-essentiality (seed recorded → reproducible).
 - **Order:** run **after** P1 harmonize (needs `screen_harmonization` + `fact_screen_gene.percentile_score`); errors clearly if harmonize hasn't run. Reads only the warehouse — **no `$DATA_DIR` needed**. Gates D3 (pick thresholds/budget → `relatedness_config`) before D4/D5 pay for real compute.
 
-### (5+) Gene-relatedness scorecard
+### (5) Config  ← D3 of gene-relatedness
+- **Script:** `scripts/configure_relatedness.py`  **(login-node, DB-only — no SLURM, no scipy; runs in seconds)**
+- **Actions:** `--list-profiles` / `--list-configs`; `--recommend --max-pairs N` (pick most-inclusive thresholds off the profile curves that fit the budget → writes a **draft** `relatedness_config`); `--accept --config-id N` (re-validate projected cost **server-side** against the stored profile, then flip draft→**accepted**). `--recommend --accept` does both.
+- **Produces:** an **accepted** `relatedness_config` (thresholds + `compute_budget` + `projected_pairs`/cost, per `version × organism × label`; A/B configs coexist). This is the row **D4/D5 read**.
+- **Guardrail (OWASP A04):** the budget check on `--accept` is server-authoritative — thresholds that exceed `compute_budget.max_pairs` are rejected (re-recommend tighter or set `compute_mode=ANN_TOPK`).
+- **Note:** `tier_cuts` (Strong/Moderate/Weak) are seeded defaults here (the profiler measures volume, not the ρ distribution) and get **recalibrated post-D5** from the real effect-size distribution.
+
+### (6+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
 - **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
 - **Prereqs:** P1 harmonize (this file, stage 3) · P2 populate `fact_screen_gene_publication` · P3 capture screen-context + PMIDs at staging.
