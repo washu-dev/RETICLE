@@ -13,7 +13,14 @@ echo "Setting up environment..."
 
 # Load Python module (adjust for your cluster if needed)
 # WashU C2: python3 (default), python39
-module load python3
+# Guarded: `module` is the HPC Lmod command and only exists on cluster nodes.
+# Off-cluster (laptop / login shell without Lmod) we skip it and fall back to
+# whatever python3 is on PATH, so a local --dry-run isn't killed with exit 127.
+if command -v module >/dev/null 2>&1; then
+    module load python3
+else
+    echo "  (no 'module' command — skipping module load, using python3 on PATH)"
+fi
 
 # Path for virtual environment (in home directory to avoid quota issues)
 VENV_HOME="$HOME/.reticle-etl-venv"
