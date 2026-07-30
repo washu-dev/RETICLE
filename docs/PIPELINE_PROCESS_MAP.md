@@ -105,6 +105,11 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Produces:** the unified header on `fact_gene_pair` — `relatedness_score` (weighted, support-renormalized over present base channels; co-ess weighted highest), `relatedness_tier`, `evidence_channels` / `evidence_channel_count`, `total_support`, `min_fdr`.
 - **Runs after** any channel driver (D5/D6/…). Idempotent — re-run whenever a channel adds/updates columns (D7/D8 slot in automatically). Weights + overall cuts are config-driven (`thresholds.channel_weights`, `tier_cuts.overall`).
 
+### (6d) Co-citation  ← D7 (Channel 3) — needs P2 first
+- **P2 populate:** `scripts/populate_publications.py` · **SLURM:** `sbatch slurm/reticle-publications.sh <version>` **(CPU, needs `$DATA_DIR`)** — reads each screen's PMID (`SOURCE_ID`) from the metadata JSON, upserts `publication`, and fills `fact_screen_gene_publication` (**hits-only** by default; `--all` for non-hits too). The ETL's `build_fact_screen_gene_publication()` is a placeholder — this replaces it.
+- **D7 compute:** `scripts/compute_cocitation.py` · **SLURM:** `sbatch slurm/reticle-cocitation.sh <version> --config-id N` **(CPU — sparse Pᵀ·P over gene×publication hit sets)** — shared-pub support, Jaccard, PMI, hypergeometric p → BH-FDR into `fact_gene_pair.cocite_*` (tiers on PMI). Upsert composes with coess/cohit.
+- **Order:** P2 → D7 → re-run D9 roll-up (folds co-citation into `relatedness_tier`/`evidence_channels`).
+
 ### (7+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
 - **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
