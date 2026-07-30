@@ -78,6 +78,35 @@ def classify_selective(n_measured, n_hits, pan_essential_rate=0.90, min_measured
 # per-gene rank + tail transform (host/numpy; feeds the GPU masked GEMMs)
 # ---------------------------------------------------------------------------
 
+def hypergeom_sf(k, M, ngood, ndraw, chunk=5_000_000):
+    """One-sided hypergeometric enrichment p = P(X >= k), computed in chunks so a
+    100M-element pair vector doesn't spike scipy's internal temporaries. Returns a
+    clipped, NaN-safe float64 array aligned to k."""
+    from scipy.stats import hypergeom
+    k = np.asarray(k); ngood = np.asarray(ngood); ndraw = np.asarray(ndraw)
+    out = np.empty(k.size, dtype=np.float64)
+    for s in range(0, k.size, chunk):
+        e = min(s + chunk, k.size)
+        out[s:e] = hypergeom.sf(k[s:e] - 1, M, ngood[s:e], ndraw[s:e])
+    return np.clip(np.nan_to_num(out, nan=1.0), 0.0, 1.0)
+
+
+def bh_fdr(p):
+    """Vectorized Benjamini-Hochberg q-values over an array of p-values (m = the
+    number of tests = p.size). q_(i) = p_(i)·m/i, enforced monotonic from the top.
+    Returns q aligned to the input order, clipped to [0,1]."""
+    p = np.asarray(p, dtype=np.float64)
+    m = p.size
+    if m == 0:
+        return p
+    order = np.argsort(p)
+    q = p[order] * m / np.arange(1, m + 1)
+    q = np.minimum.accumulate(q[::-1])[::-1]      # cummin from largest p down
+    out = np.empty(m, dtype=np.float64)
+    out[order] = np.minimum(q, 1.0)
+    return out
+
+
 def selective_binary_csr(gene_arr, col_arr, sel_gene_ids):
     """Build a binary CSR (selective_gene × col) matrix from (gene_id, col_id)
     pairs, keeping only selective genes and mapping them to compact row indices

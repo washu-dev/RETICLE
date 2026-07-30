@@ -40,12 +40,13 @@ COMPUTE_VERSION = "d7-cocite-1.0"
 
 class CoCitationCompute:
     def __init__(self, version_id, config_id=None, label=None, min_copub=None,
-                 fdr_alpha=None, dry_run=False):
+                 fdr_alpha=None, max_store=5_000_000, dry_run=False):
         self.version_id = version_id
         self.config_id = config_id
         self.label = label
         self.min_copub = min_copub
         self.fdr_alpha = fdr_alpha
+        self.max_store = max_store
         self.dry_run = dry_run
         self.conn = None
 
@@ -148,86 +149,102 @@ class CoCitationCompute:
         logger.info(f"Publication matrix: {self.n_sel:,} genes × {n_pub:,} publications "
                     f"({int(self.P.nnz):,} gene-pub hits)")
 
+    _INSERT_SQL = """
+        INSERT INTO fact_gene_pair
+            (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
+             gene_a_symbol, gene_b_symbol,
+             cocite_effect_pmi, cocite_effect_jaccard, cocite_support, cocite_a_pubs,
+             cocite_b_pubs, cocite_p_value, cocite_fdr, cocite_tier,
+             relatedness_tier, relatedness_score, evidence_channels, evidence_channel_count,
+             total_support, min_fdr)
+        VALUES %s
+        ON CONFLICT (version_id, config_id, gene_a_id, gene_b_id) DO UPDATE SET
+            cocite_effect_pmi=EXCLUDED.cocite_effect_pmi,
+            cocite_effect_jaccard=EXCLUDED.cocite_effect_jaccard,
+            cocite_support=EXCLUDED.cocite_support, cocite_a_pubs=EXCLUDED.cocite_a_pubs,
+            cocite_b_pubs=EXCLUDED.cocite_b_pubs, cocite_p_value=EXCLUDED.cocite_p_value,
+            cocite_fdr=EXCLUDED.cocite_fdr, cocite_tier=EXCLUDED.cocite_tier, is_current=TRUE
+    """
+
     def compute_and_write(self):
-        from scipy.stats import hypergeom
         t0 = time.time()
         C = (self.P @ self.P.T).tocoo()
         upper = C.row < C.col
-        r = C.row[upper]; c = C.col[upper]; n11 = C.data[upper].astype(np.int64)
+        r = C.row[upper].astype(np.int32)
+        c = C.col[upper].astype(np.int32)
+        n11 = C.data[upper].astype(np.int32)
+        del C, upper
         keep = n11 >= self.min_copub
         r, c, n11 = r[keep], c[keep], n11[keep]
-        logger.info(f"Co-citation: {C.nnz:,} co-cited pairs, {len(n11):,} clear support "
-                    f"(≥{self.min_copub}) in {time.time()-t0:.0f}s")
-        if len(n11) == 0:
+        del keep
+        n_tested = n11.size
+        logger.info(f"Co-citation: {n_tested:,} pairs clear support (≥{self.min_copub}) "
+                    f"in {time.time()-t0:.0f}s")
+        if n_tested == 0:
             print("No pairs cleared the co-publication support floor — lower --min-copub.")
             return {"pairs": 0}
 
-        ap = self.a_pubs[r]; bp = self.a_pubs[c]
+        # metrics + BH-FDR over the full tested space (kept as compact numpy, never
+        # as Python rows). Only SIGNIFICANT pairs are materialized/stored — the
+        # 100M+ weak co-occurrences (few source publications) are noise.
+        ap = self.a_pubs[r].astype(np.int64)
+        bp = self.a_pubs[c].astype(np.int64)
         N = self.n_pubs_total
-        union = ap + bp - n11
-        jaccard = n11 / np.maximum(union, 1)
         pmi = np.log2((n11.astype(np.float64) * N) / np.maximum(ap * bp, 1))
-        p = hypergeom.sf(n11 - 1, N, ap, bp)
-        p = np.clip(np.nan_to_num(p, nan=1.0), 0.0, 1.0)
+        p = rc.hypergeom_sf(n11, N, ap, bp)
+        del ap, bp
+        fdr = rc.bh_fdr(p)
 
-        L = len(p)
-        order = np.argsort(p)
-        fdr = np.empty(L)
-        prev = 1.0
-        for rank in range(L, 0, -1):
-            idx = order[rank - 1]
-            prev = min(prev, p[idx] * L / rank)
-            fdr[idx] = min(prev, 1.0)
+        idx = np.where(fdr <= self.fdr_alpha)[0]
+        n_sig = idx.size
+        capped = idx.size > self.max_store
+        if capped:                                    # keep top by PMI (no silent truncation)
+            idx = idx[np.argpartition(-pmi[idx], self.max_store)[:self.max_store]]
+        logger.info(f"{n_tested:,} tested, {n_sig:,} pass FDR≤{self.fdr_alpha}"
+                    + (f" — capped to top {self.max_store:,} by PMI" if capped else "")
+                    + f"; storing {idx.size:,}")
+        if idx.size == 0:
+            print(f"No co-citation pairs passed FDR≤{self.fdr_alpha} — nothing to store "
+                  f"(loosen --fdr-alpha / --min-copub if expected).")
+            return {"pairs": 0}
+        if self.dry_run:
+            print(f"[dry-run] would upsert {idx.size:,} co-citation pairs "
+                  f"(of {n_tested:,} tested, {n_sig:,} significant).")
+            return {"pairs": int(idx.size)}
 
         strong = self.tier_cuts.get("strong", 2.0)
         moderate = self.tier_cuts.get("moderate", 1.0)
-        tiers = np.where(pmi >= strong, "Strong", np.where(pmi >= moderate, "Moderate", "Weak"))
-
-        ga = self.gene_ids[r]; gb = self.gene_ids[c]
-        swap = ga > gb
-        gene_a = np.where(swap, gb, ga); gene_b = np.where(swap, ga, gb)
-        ap_a = np.where(swap, bp, ap);   bp_b = np.where(swap, ap, bp)
-        la = np.where(swap, c, r);       lb = np.where(swap, r, c)
-
-        rows_out = [(
-            self.version_id, self.run_id, self.config_id, self.organism,
-            int(gene_a[i]), int(gene_b[i]), str(self.symbols[la[i]]), str(self.symbols[lb[i]]),
-            float(pmi[i]), float(jaccard[i]), int(n11[i]), int(ap_a[i]), int(bp_b[i]),
-            float(p[i]), float(fdr[i]), str(tiers[i]),
-            str(tiers[i]), float(jaccard[i]), "cocite", 1, int(n11[i]), float(fdr[i]),
-        ) for i in range(L)]
-
-        n_strong = int((tiers == "Strong").sum())
-        n_mod = int((tiers == "Moderate").sum())
-        logger.info(f"Tiers: {n_strong:,} Strong, {n_mod:,} Moderate, {L-n_strong-n_mod:,} Weak")
-
-        if self.dry_run:
-            print(f"[dry-run] would upsert {L:,} co-citation pairs into fact_gene_pair "
-                  f"(config_id={self.config_id})")
-            return {"pairs": L}
-
         cur = self.conn.cursor()
-        psycopg2.extras.execute_values(cur, """
-            INSERT INTO fact_gene_pair
-                (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
-                 gene_a_symbol, gene_b_symbol,
-                 cocite_effect_pmi, cocite_effect_jaccard, cocite_support, cocite_a_pubs,
-                 cocite_b_pubs, cocite_p_value, cocite_fdr, cocite_tier,
-                 relatedness_tier, relatedness_score, evidence_channels, evidence_channel_count,
-                 total_support, min_fdr)
-            VALUES %s
-            ON CONFLICT (version_id, config_id, gene_a_id, gene_b_id) DO UPDATE SET
-                cocite_effect_pmi=EXCLUDED.cocite_effect_pmi,
-                cocite_effect_jaccard=EXCLUDED.cocite_effect_jaccard,
-                cocite_support=EXCLUDED.cocite_support, cocite_a_pubs=EXCLUDED.cocite_a_pubs,
-                cocite_b_pubs=EXCLUDED.cocite_b_pubs, cocite_p_value=EXCLUDED.cocite_p_value,
-                cocite_fdr=EXCLUDED.cocite_fdr, cocite_tier=EXCLUDED.cocite_tier, is_current=TRUE
-        """, rows_out, page_size=10000)
-        self.conn.commit()
-        logger.info(f"Upserted {L:,} co-citation pairs into fact_gene_pair")
-        print(f"Wrote {L:,} co-citation pairs (config_id={self.config_id}, "
+        total = n_strong = n_mod = 0
+        CH = 500_000
+        for s in range(0, idx.size, CH):
+            j = idx[s:s + CH]
+            rr = r[j]; cc = c[j]; nn = n11[j].astype(np.int64)
+            aa = self.a_pubs[rr].astype(np.int64); bb = self.a_pubs[cc].astype(np.int64)
+            pm = pmi[j]; pv = p[j]; ff = fdr[j]
+            jac = nn / np.maximum(aa + bb - nn, 1)
+            tiers = np.where(pm >= strong, "Strong", np.where(pm >= moderate, "Moderate", "Weak"))
+            ga = self.gene_ids[rr]; gb = self.gene_ids[cc]
+            swap = ga > gb
+            gene_a = np.where(swap, gb, ga); gene_b = np.where(swap, ga, gb)
+            aa_a = np.where(swap, bb, aa); bb_b = np.where(swap, aa, bb)
+            la = np.where(swap, cc, rr); lb = np.where(swap, rr, cc)
+            batch = [(
+                self.version_id, self.run_id, self.config_id, self.organism,
+                int(gene_a[i]), int(gene_b[i]), str(self.symbols[la[i]]), str(self.symbols[lb[i]]),
+                float(pm[i]), float(jac[i]), int(nn[i]), int(aa_a[i]), int(bb_b[i]),
+                float(pv[i]), float(ff[i]), str(tiers[i]),
+                str(tiers[i]), float(jac[i]), "cocite", 1, int(nn[i]), float(ff[i]),
+            ) for i in range(j.size)]
+            psycopg2.extras.execute_values(cur, self._INSERT_SQL, batch, page_size=10000)
+            self.conn.commit()
+            total += len(batch)
+            n_strong += int((tiers == "Strong").sum())
+            n_mod += int((tiers == "Moderate").sum())
+            logger.info(f"  {total:,}/{idx.size:,} co-citation pairs stored")
+        print(f"Wrote {total:,} co-citation pairs (config_id={self.config_id}, "
               f"{n_strong:,} Strong / {n_mod:,} Moderate).")
-        return {"pairs": L, "strong": n_strong, "moderate": n_mod}
+        return {"pairs": total, "strong": n_strong, "moderate": n_mod}
 
     def run(self):
         self.connect()
@@ -245,6 +262,8 @@ def main():
     ap.add_argument("--label", default=None)
     ap.add_argument("--min-copub", type=int, default=None, help="min shared publications (default: config min_copub_count)")
     ap.add_argument("--fdr-alpha", type=float, default=None)
+    ap.add_argument("--max-store", type=int, default=5_000_000,
+                    help="cap on stored pairs; if more are significant, keep the top by PMI")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--log-level", default="INFO")
     args = ap.parse_args()
@@ -253,7 +272,7 @@ def main():
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ok = CoCitationCompute(args.version, config_id=args.config_id, label=args.label,
                            min_copub=args.min_copub, fdr_alpha=args.fdr_alpha,
-                           dry_run=args.dry_run).run()
+                           max_store=args.max_store, dry_run=args.dry_run).run()
     sys.exit(0 if ok else 1)
 
 

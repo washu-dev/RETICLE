@@ -41,12 +41,13 @@ COMPUTE_VERSION = "d6-cohit-1.0"
 
 class CoHitCompute:
     def __init__(self, version_id, config_id=None, label=None, min_cohit=None,
-                 fdr_alpha=None, dry_run=False):
+                 fdr_alpha=None, max_store=5_000_000, dry_run=False):
         self.version_id = version_id
         self.config_id = config_id
         self.label = label
         self.min_cohit = min_cohit
         self.fdr_alpha = fdr_alpha
+        self.max_store = max_store
         self.dry_run = dry_run
         self.conn = None
 
@@ -145,91 +146,102 @@ class CoHitCompute:
         logger.info(f"Hit matrix: {self.n_sel:,} genes × {n_scr:,} screens with selective hits "
                     f"({int(self.H.nnz):,} hits)")
 
+    _INSERT_SQL = """
+        INSERT INTO fact_gene_pair
+            (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
+             gene_a_symbol, gene_b_symbol,
+             cohit_effect_jaccard, cohit_effect_pmi, cohit_support, cohit_a_hits,
+             cohit_b_hits, cohit_screens_total, cohit_fisher_p, cohit_fdr, cohit_tier,
+             relatedness_tier, relatedness_score, evidence_channels, evidence_channel_count,
+             total_support, min_fdr)
+        VALUES %s
+        ON CONFLICT (version_id, config_id, gene_a_id, gene_b_id) DO UPDATE SET
+            cohit_effect_jaccard=EXCLUDED.cohit_effect_jaccard,
+            cohit_effect_pmi=EXCLUDED.cohit_effect_pmi, cohit_support=EXCLUDED.cohit_support,
+            cohit_a_hits=EXCLUDED.cohit_a_hits, cohit_b_hits=EXCLUDED.cohit_b_hits,
+            cohit_screens_total=EXCLUDED.cohit_screens_total,
+            cohit_fisher_p=EXCLUDED.cohit_fisher_p, cohit_fdr=EXCLUDED.cohit_fdr,
+            cohit_tier=EXCLUDED.cohit_tier, is_current=TRUE
+    """
+
     def compute_and_write(self):
-        from scipy.stats import hypergeom
         t0 = time.time()
         C = (self.H @ self.H.T).tocoo()
         upper = C.row < C.col
-        r = C.row[upper]; c = C.col[upper]; n11 = C.data[upper].astype(np.int64)
+        r = C.row[upper].astype(np.int32)
+        c = C.col[upper].astype(np.int32)
+        n11 = C.data[upper].astype(np.int32)
+        del C, upper
         keep = n11 >= self.min_cohit
         r, c, n11 = r[keep], c[keep], n11[keep]
-        logger.info(f"Co-hit: {C.nnz:,} co-occurring pairs, {len(n11):,} clear support "
-                    f"(≥{self.min_cohit}) in {time.time()-t0:.0f}s")
-        if len(n11) == 0:
+        del keep
+        n_tested = n11.size
+        logger.info(f"Co-hit: {n_tested:,} pairs clear support (≥{self.min_cohit}) "
+                    f"in {time.time()-t0:.0f}s")
+        if n_tested == 0:
             print("No pairs cleared the co-hit support floor — lower --min-cohit.")
             return {"pairs": 0}
 
-        ah = self.a_hits[r]; bh = self.a_hits[c]
+        # metrics + BH-FDR over the full tested space (compact numpy). Store only
+        # SIGNIFICANT pairs, streamed — never materialize all pairs as Python rows.
+        ah = self.a_hits[r].astype(np.int64)
+        bh = self.a_hits[c].astype(np.int64)
         N = self.n_screens_total
-        union = ah + bh - n11
-        jaccard = n11 / np.maximum(union, 1)
-        pmi = np.log2((n11.astype(np.float64) * N) / np.maximum(ah * bh, 1))
-        # one-sided hypergeometric enrichment p (= one-sided Fisher), vectorized
-        p = hypergeom.sf(n11 - 1, N, ah, bh)
-        p = np.clip(np.nan_to_num(p, nan=1.0), 0.0, 1.0)
+        jaccard_all = n11 / np.maximum(ah + bh - n11, 1)
+        p = rc.hypergeom_sf(n11, N, ah, bh)
+        del ah, bh
+        fdr = rc.bh_fdr(p)
 
-        # BH-FDR across the tested (support-clearing) pairs
-        L = len(p)
-        order = np.argsort(p)
-        fdr = np.empty(L)
-        prev = 1.0
-        for rank in range(L, 0, -1):
-            idx = order[rank - 1]
-            prev = min(prev, p[idx] * L / rank)
-            fdr[idx] = min(prev, 1.0)
+        idx = np.where(fdr <= self.fdr_alpha)[0]
+        n_sig = idx.size
+        capped = idx.size > self.max_store
+        if capped:                                    # keep top by Jaccard (no silent truncation)
+            idx = idx[np.argpartition(-jaccard_all[idx], self.max_store)[:self.max_store]]
+        logger.info(f"{n_tested:,} tested, {n_sig:,} pass FDR≤{self.fdr_alpha}"
+                    + (f" — capped to top {self.max_store:,} by Jaccard" if capped else "")
+                    + f"; storing {idx.size:,}")
+        if idx.size == 0:
+            print(f"No co-hit pairs passed FDR≤{self.fdr_alpha} — nothing to store "
+                  f"(loosen --fdr-alpha / --min-cohit if expected).")
+            return {"pairs": 0}
+        if self.dry_run:
+            print(f"[dry-run] would upsert {idx.size:,} co-hit pairs "
+                  f"(of {n_tested:,} tested, {n_sig:,} significant).")
+            return {"pairs": int(idx.size)}
 
         strong = self.tier_cuts.get("strong", 0.50)
         moderate = self.tier_cuts.get("moderate", 0.20)
-        tiers = np.where(jaccard >= strong, "Strong",
-                         np.where(jaccard >= moderate, "Moderate", "Weak"))
-
-        # canonicalize each pair by gene_id (a < b), swapping marginals/symbols
-        ga = self.gene_ids[r]; gb = self.gene_ids[c]
-        swap = ga > gb
-        gene_a = np.where(swap, gb, ga); gene_b = np.where(swap, ga, gb)
-        ah_a = np.where(swap, bh, ah);   bh_b = np.where(swap, ah, bh)
-        la = np.where(swap, c, r);       lb = np.where(swap, r, c)
-
-        rows_out = [(
-            self.version_id, self.run_id, self.config_id, self.organism,
-            int(gene_a[i]), int(gene_b[i]), str(self.symbols[la[i]]), str(self.symbols[lb[i]]),
-            float(jaccard[i]), float(pmi[i]), int(n11[i]), int(ah_a[i]), int(bh_b[i]),
-            int(N), float(p[i]), float(fdr[i]), str(tiers[i]),
-            str(tiers[i]), float(jaccard[i]), "cohit", 1, int(n11[i]), float(fdr[i]),
-        ) for i in range(L)]
-
-        n_strong = int((tiers == "Strong").sum())
-        n_mod = int((tiers == "Moderate").sum())
-        logger.info(f"Tiers: {n_strong:,} Strong, {n_mod:,} Moderate, {L-n_strong-n_mod:,} Weak")
-
-        if self.dry_run:
-            print(f"[dry-run] would upsert {L:,} co-hit pairs into fact_gene_pair "
-                  f"(config_id={self.config_id})")
-            return {"pairs": L}
-
         cur = self.conn.cursor()
-        psycopg2.extras.execute_values(cur, """
-            INSERT INTO fact_gene_pair
-                (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
-                 gene_a_symbol, gene_b_symbol,
-                 cohit_effect_jaccard, cohit_effect_pmi, cohit_support, cohit_a_hits,
-                 cohit_b_hits, cohit_screens_total, cohit_fisher_p, cohit_fdr, cohit_tier,
-                 relatedness_tier, relatedness_score, evidence_channels, evidence_channel_count,
-                 total_support, min_fdr)
-            VALUES %s
-            ON CONFLICT (version_id, config_id, gene_a_id, gene_b_id) DO UPDATE SET
-                cohit_effect_jaccard=EXCLUDED.cohit_effect_jaccard,
-                cohit_effect_pmi=EXCLUDED.cohit_effect_pmi, cohit_support=EXCLUDED.cohit_support,
-                cohit_a_hits=EXCLUDED.cohit_a_hits, cohit_b_hits=EXCLUDED.cohit_b_hits,
-                cohit_screens_total=EXCLUDED.cohit_screens_total,
-                cohit_fisher_p=EXCLUDED.cohit_fisher_p, cohit_fdr=EXCLUDED.cohit_fdr,
-                cohit_tier=EXCLUDED.cohit_tier, is_current=TRUE
-        """, rows_out, page_size=10000)
-        self.conn.commit()
-        logger.info(f"Upserted {L:,} co-hit pairs into fact_gene_pair")
-        print(f"Wrote {L:,} co-hit pairs (config_id={self.config_id}, "
+        total = n_strong = n_mod = 0
+        CH = 500_000
+        for s in range(0, idx.size, CH):
+            j = idx[s:s + CH]
+            rr = r[j]; cc = c[j]; nn = n11[j].astype(np.int64)
+            aa = self.a_hits[rr].astype(np.int64); bb = self.a_hits[cc].astype(np.int64)
+            jac = jaccard_all[j]; pv = p[j]; ff = fdr[j]
+            pm = np.log2((nn.astype(np.float64) * N) / np.maximum(aa * bb, 1))
+            tiers = np.where(jac >= strong, "Strong", np.where(jac >= moderate, "Moderate", "Weak"))
+            ga = self.gene_ids[rr]; gb = self.gene_ids[cc]
+            swap = ga > gb
+            gene_a = np.where(swap, gb, ga); gene_b = np.where(swap, ga, gb)
+            aa_a = np.where(swap, bb, aa); bb_b = np.where(swap, aa, bb)
+            la = np.where(swap, cc, rr); lb = np.where(swap, rr, cc)
+            batch = [(
+                self.version_id, self.run_id, self.config_id, self.organism,
+                int(gene_a[i]), int(gene_b[i]), str(self.symbols[la[i]]), str(self.symbols[lb[i]]),
+                float(jac[i]), float(pm[i]), int(nn[i]), int(aa_a[i]), int(bb_b[i]),
+                int(N), float(pv[i]), float(ff[i]), str(tiers[i]),
+                str(tiers[i]), float(jac[i]), "cohit", 1, int(nn[i]), float(ff[i]),
+            ) for i in range(j.size)]
+            psycopg2.extras.execute_values(cur, self._INSERT_SQL, batch, page_size=10000)
+            self.conn.commit()
+            total += len(batch)
+            n_strong += int((tiers == "Strong").sum())
+            n_mod += int((tiers == "Moderate").sum())
+            logger.info(f"  {total:,}/{idx.size:,} co-hit pairs stored")
+        print(f"Wrote {total:,} co-hit pairs (config_id={self.config_id}, "
               f"{n_strong:,} Strong / {n_mod:,} Moderate).")
-        return {"pairs": L, "strong": n_strong, "moderate": n_mod}
+        return {"pairs": total, "strong": n_strong, "moderate": n_mod}
 
     def run(self):
         self.connect()
@@ -247,6 +259,8 @@ def main():
     ap.add_argument("--label", default=None)
     ap.add_argument("--min-cohit", type=int, default=None, help="min screens both are hits (default: config min_cohit_screens)")
     ap.add_argument("--fdr-alpha", type=float, default=None)
+    ap.add_argument("--max-store", type=int, default=5_000_000,
+                    help="cap on stored pairs; if more are significant, keep the top by Jaccard")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--log-level", default="INFO")
     args = ap.parse_args()
@@ -255,7 +269,7 @@ def main():
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ok = CoHitCompute(args.version, config_id=args.config_id, label=args.label,
                       min_cohit=args.min_cohit, fdr_alpha=args.fdr_alpha,
-                      dry_run=args.dry_run).run()
+                      max_store=args.max_store, dry_run=args.dry_run).run()
     sys.exit(0 if ok else 1)
 
 
