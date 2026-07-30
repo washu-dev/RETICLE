@@ -6,6 +6,7 @@ import UploadPage from './components/UploadPage';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import ResultsPage from './components/ResultsPage';
 import ExplorerPage from './components/explorer/ExplorerPage';
+import ReticlePage_aaron from './components/reticle_aaron/ReticlePage_aaron';
 import StickyControls from './components/StickyControls';
 import type { QueryResponse } from './services/reticleApi';
 import { initAuth, type User } from './services/auth';
@@ -36,6 +37,7 @@ export default function App() {
 
   const handleStart = () => setScreen('upload');
   const handleExplore = () => setScreen('explorer');
+  const handleWiki = () => setScreen('wiki');
 
   const handleAnalyze = (parsedGenes: any, options: any) => {
     setGenes(parsedGenes);
@@ -78,9 +80,11 @@ export default function App() {
 
   let screenEl: ReactNode = null;
   if (screen === 'landing') {
-    screenEl = <LandingPage onStart={handleStart} onExplore={handleExplore} />;
+    screenEl = <LandingPage onStart={handleStart} onExplore={handleExplore} onWiki={handleWiki} />;
   } else if (screen === 'explorer') {
     screenEl = <ExplorerPage onBack={handleHome} />;
+  } else if (screen === 'wiki') {
+    screenEl = <ReticlePage_aaron onBack={handleHome} />;
   } else if (screen === 'upload') {
     screenEl = <UploadPage onAnalyze={handleAnalyze} />;
   } else if (screen === 'loading') {

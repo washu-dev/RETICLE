@@ -31,7 +31,7 @@ const FEATURES = [
   },
 ];
 
-export default function LandingPage({ onStart, onExplore }) {
+export default function LandingPage({ onStart, onExplore, onWiki }) {
   const [hovered, setHovered] = useState(null);
 
   return (
@@ -63,6 +63,14 @@ export default function LandingPage({ onStart, onExplore }) {
               fontSize: '0.875rem', fontWeight: 500,
             }}
           >Gene Explorer</button>
+          <button
+            onClick={onWiki}
+            style={{
+              padding: '8px 20px', borderRadius: 8,
+              background: 'var(--bg-3)', color: 'var(--text-2)',
+              fontSize: '0.875rem', fontWeight: 500,
+            }}
+          >Gene Wiki</button>
           <button style={{
             padding: '8px 20px', borderRadius: 8,
             background: 'var(--bg-3)', color: 'var(--text-2)',
