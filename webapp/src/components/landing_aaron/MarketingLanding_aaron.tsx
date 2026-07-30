@@ -475,7 +475,7 @@ const CSS = `
 @media (min-width: 1080px){
   .rxl .hero{
     display:grid;
-    grid-template-columns:minmax(0,47fr) minmax(0,53fr);
+    grid-template-columns:minmax(0,54fr) minmax(0,46fr);
     align-items:center;
     column-gap:clamp(36px, 4.4vw, 80px);
     width:100%; max-width:var(--wrap); margin-inline:auto;
@@ -484,7 +484,18 @@ const CSS = `
   }
   .rxl .hero > .wrap,
   .rxl .hero .readout .wrap{ max-width:none; margin-inline:0; padding-inline:0; }
-  .rxl .hero-copy{ padding-top:0; padding-bottom:0; }
+  .rxl .hero-copy{ padding-block:clamp(28px, 4vh, 56px); }
+
+  /* The headline is 66 characters — half again as long as the one this type scale was drawn for.
+     At the full display size it re-wrapped every one of its three authored lines and grew to
+     seven, which ate the column and left the lede and buttons flush against the bottom edge
+     (measured: 0px of clearance). Sized here so the authored line breaks are the ones that hold. */
+  .rxl .hero h1{
+    font-size:clamp(2.4rem, 2.95vw, 3.2rem);
+    max-width:none;
+  }
+  .rxl .hero .lede{ margin-top:1.35rem; max-width:40ch; }
+  .rxl .hero-cta{ margin-top:2rem; }
   .rxl .readout{ padding-bottom:0; }
   .rxl .hero .field{ width:auto; margin-left:0; height:clamp(320px, 44vh, 470px); }
   .rxl .hero #viz{
@@ -838,11 +849,12 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       svg!.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
       // Breakpoints are on the FIELD's width, not the viewport's. Since the hero became two
-      // columns the field is ~580px on a 1440 screen while still being tall, so the old
-      // full-bleed thresholds (620/1000) dropped it to the phone-sized branch: a third of the
-      // points and no hit labels.
-      const wantN = W < 520 ? 165 : W < 900 ? 300 : 430;
-      R = W < 520 ? 1.9 : 2.3;
+      // columns the field is ~490-580px depending on the split, while still being tall. The
+      // original full-bleed thresholds (620/1000) put that in the phone branch — a third of
+      // the points and no hit labels. 420 is a device floor rather than a layout artefact,
+      // so retuning the columns cannot silently trip it again.
+      const wantN = W < 420 ? 165 : W < 900 ? 300 : 430;
+      R = W < 420 ? 1.9 : 2.3;
 
       if (wantN !== N) {
         N = wantN;
@@ -902,7 +914,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       const scores = scoresFor(sc.seed);
 
       const pad = Math.max(10, W * 0.012);
-      const colW = W < 520 ? 11 : W < 900 ? 15 : 20.5;
+      const colW = W < 420 ? 11 : W < 900 ? 15 : 20.5;
       const NB = Math.max(12, Math.round((W - pad * 2) / colW));
       const span = (W - pad * 2) / NB;
 
@@ -917,7 +929,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
         if (counts[idx] > maxC) maxC = counts[idx];
       }
 
-      const head = W < 520 ? 20 : 30;   // room for the hit labels
+      const head = W < 420 ? 20 : 30;   // room for the hit labels
       const gap = Math.min(2 * R + 2.3, (H - head) / maxC);
       const stack = new Array(NB).fill(0);
 
@@ -936,7 +948,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       }
 
       gHits.textContent = '';
-      if (W >= 520) {
+      if (W >= 420) {
         ([[3, -13], [17, -30]] as Array<[number, number]>).forEach((spec, n) => {
           const p = pts[spec[0]];
           if (!p) return;
