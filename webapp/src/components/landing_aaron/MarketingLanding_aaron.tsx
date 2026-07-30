@@ -178,14 +178,30 @@ const CSS = `
   padding-top:clamp(48px, 8vh, 96px);
   padding-bottom:clamp(40px, 6vh, 76px);
 }
-.rxl .hero h1{
+/* The wordmark is the headline. Seven characters can carry a much larger size than a sentence
+   could, and the optical weight is what makes it read as the title rather than as a logo that
+   wandered into the copy. Letter-spacing opens slightly rather than tightening — at this size a
+   negative track makes a serif all-caps setting look cramped. */
+.rxl .hero h1.wordmark-hero{
   font-family:'Newsreader', Georgia, serif;
   font-weight:300;
-  font-size:clamp(2.35rem, 6.1vw, 4.85rem);
-  line-height:1.045;
-  letter-spacing:-.021em;
-  margin-top:.34em;
-  max-width:15ch;
+  font-size:clamp(3.4rem, 8.2vw, 7rem);
+  line-height:1;
+  letter-spacing:.005em;
+  margin-top:.18em;
+  max-width:none;
+}
+/* Serif, not the sans the lede uses: subhead and lede sit next to each other, and giving them
+   the same face at similar sizes would flatten the hierarchy the wordmark just created. */
+.rxl .hero .subhead{
+  font-family:'Newsreader', Georgia, serif;
+  font-weight:300;
+  font-size:clamp(1.32rem, 1.62vw, 1.72rem);
+  line-height:1.34;
+  letter-spacing:-.008em;
+  color:var(--ink);
+  margin-top:.9rem;
+  max-width:22ch;
 }
 .rxl .hero h1 em{
   font-style:italic;
@@ -203,6 +219,7 @@ const CSS = `
 .rxl.anim .d2{ animation-delay:.14s }
 .rxl.anim .d3{ animation-delay:.24s }
 .rxl.anim .d4{ animation-delay:.34s }
+.rxl.anim .d5{ animation-delay:.44s }
 .rxl .readout{ flex:none; padding-bottom:clamp(20px, 3vh, 34px); }
 .rxl .rd-head{
   display:flex; align-items:baseline; justify-content:space-between;
@@ -490,11 +507,9 @@ const CSS = `
      At the full display size it re-wrapped every one of its three authored lines and grew to
      seven, which ate the column and left the lede and buttons flush against the bottom edge
      (measured: 0px of clearance). Sized here so the authored line breaks are the ones that hold. */
-  .rxl .hero h1{
-    font-size:clamp(2.4rem, 2.95vw, 3.2rem);
-    max-width:none;
-  }
-  .rxl .hero .lede{ margin-top:1.35rem; max-width:40ch; }
+  .rxl .hero h1.wordmark-hero{ font-size:clamp(3.6rem, 5.6vw, 6.2rem); }
+  .rxl .hero .subhead{ max-width:27ch; }
+  .rxl .hero .lede{ margin-top:1.15rem; max-width:40ch; }
   .rxl .hero-cta{ margin-top:2rem; }
   .rxl .readout{ padding-bottom:0; }
   .rxl .hero .field{ width:auto; margin-left:0; height:clamp(320px, 44vh, 470px); }
@@ -531,13 +546,14 @@ const MARKUP = `
   <section class="hero">
     <div class="wrap hero-copy">
       <p class="eyebrow rise d1">Pooled CRISPR screens &middot; WashU</p>
-      <h1 class="rise d2">AI-powered bioinformatics<br class="brk"> for understanding<br class="brk"> every discovered gene.</h1>
-      <p class="lede rise d3">
-        RETICLE harmonizes 2,157 published pooled screens so you can ask what a knockout
+      <h1 class="wordmark-hero rise d2">RETICLE</h1>
+      <p class="subhead rise d3">AI-powered bioinformatics for understanding every discovered gene.</p>
+      <p class="lede rise d4">
+        It harmonizes 2,157 published pooled screens so you can ask what a knockout
         actually does &mdash; across all of them at once, in one reading, instead of a
         literature crawl.
       </p>
-      <div class="hero-cta rise d4">
+      <div class="hero-cta rise d5">
         <button type="button" class="btn btn-solid js-signin">
           Sign in <span class="arw" aria-hidden="true">&rarr;</span>
         </button>
