@@ -148,7 +148,7 @@ def main():
                   + (f.cocite_tier IS NOT NULL)::int + (f.context_tier IS NOT NULL)::int,
                 total_support = COALESCE(f.coess_support,0) + COALESCE(f.cohit_support,0)
                   + COALESCE(f.cocite_support,0) + COALESCE(f.context_support,0),
-                min_fdr = LEAST(f.coess_fdr, f.cohit_fdr, f.cocite_fdr, f.context_fdr),
+                min_fdr = LEAST(f.coess_fdr, f.cohit_fdr, f.cocite_fdr, f.context_best_fdr),
                 relatedness_score = sc.score,
                 relatedness_tier = {_TIER_EXPR},
                 is_current = TRUE
