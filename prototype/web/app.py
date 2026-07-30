@@ -48,22 +48,29 @@ SCREEN_HTML = HERE / "screen.html"      # Screen tab (screen-wide similarity que
 NETWORK_HTML = HERE / "network.html"
 ORG2TAX = {"Homo sapiens": 9606, "Mus musculus": 10090}
 
-# The "advanced / more expensive" model for the AI reading.
-INTERPRET_MODEL = "gpt-4.1"   # fast, capable, non-reasoning — used ONLY for the CRISPR-screen analysis
+# Model for the grounded text syntheses (screen analysis, reporter explanation, the AI reading).
+# The WashU gateway moved to Anthropic Messages in July 2026; gpt-4.1 and gpt-5 no longer exist
+# there (404), and of the Claude models this API key can reach — opus-4-7 and haiku-4-5 — opus is
+# the one chosen here. haiku is ~7x cheaper per token if the shared budget ever gets tight.
+INTERPRET_MODEL = "claude-opus-4-7"
 
-# The frontier reasoning model, reserved for the Network tab's function-prediction feature — that
-# task needs real multi-step reasoning over a partner dossier, not just fast text generation, so it
-# gets the most capable model on the WashU gateway rather than INTERPRET_MODEL's classic gpt-4.1.
-NET_PREDICT_MODEL = "gpt-5"
+# The Network tab's function prediction reasons over a partner dossier rather than summarising, so
+# it gets the strongest available model. Same name as INTERPRET_MODEL today; kept separate because
+# the two have different quality/cost tradeoffs and are tuned independently.
+NET_PREDICT_MODEL = "claude-opus-4-7"
 
 
-def _gen_kwargs(model):
-    """gpt-5 / o-series are reasoning models: they reject `max_tokens` and a custom
-    temperature, and need headroom for reasoning tokens (else the visible answer is
-    empty). Everything else uses the classic params."""
-    if model.startswith(("gpt-5", "o1", "o3", "o4")):
-        return {"max_completion_tokens": 3000}
-    return {"temperature": 0.3, "max_tokens": 600}
+def _gen_kwargs(model, max_tokens=600):
+    """The Messages API REQUIRES max_tokens — omitting it is a 400, not a default.
+
+    600 covers the ~200-word syntheses; net_predict passes more because its JSON payload of
+    predictions plus rationales is longer, and a reply truncated at the limit comes back as
+    unparseable JSON rather than as an error.
+
+    No `temperature`: claude-opus-4-7 rejects it outright ("`temperature` is deprecated for this
+    model", HTTP 400). The old gpt-5 branch here existed for the same class of reason.
+    """
+    return {"max_tokens": max_tokens}
 
 HIST_BINS = 26  # over [-1, 1]
 
@@ -883,7 +890,7 @@ def net_predict_functions(gene, context, organism="human", top=18):
                                   own_bp, own_pw, own_fn, partners)
     client = WashULLMClient(model=NET_PREDICT_MODEL)
     data = client.chat_json([{"role": "system", "content": NET_PREDICT_SYS},
-                              {"role": "user", "content": prompt}], **_gen_kwargs(NET_PREDICT_MODEL))
+                              {"role": "user", "content": prompt}], **_gen_kwargs(NET_PREDICT_MODEL, max_tokens=3000))
 
     partner_by_sym = {p["sym"]: p for p in partners}
     preds_out = []
@@ -1527,7 +1534,9 @@ def screen_analysis(gene, taxid=9606):
     data = client.chat_json(
         [{"role": "system", "content": SCREEN_SYS},
          {"role": "user", "content": _screen_prompt(w)}],
-        temperature=0.3, max_tokens=1200)
+        # 4000, not the 1200 this prompt used against gpt-4.1: Claude writes longer
+        # per-phenotype insights, and a JSON reply cut off at the limit is unparseable.
+        max_tokens=4000)   # no temperature: claude-opus-4-7 rejects it (see _gen_kwargs)
     items = [{"phenotype": x.get("phenotype"), "insight": (x.get("insight") or "").strip()}
              for x in (data.get("by_phenotype") or []) if x.get("phenotype") and x.get("insight")]
     out = {"found": True, "symbol": sym, "model": client.model,

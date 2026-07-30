@@ -47,7 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import paths
-from llm_client import WashULLMClient, _extract_json_block
+from llm_client import MODEL_BEST, WashULLMClient, _extract_json_block
 
 OVERRIDES_PATH = paths.PROCESSED_DATA / "directionality_overrides.json"
 CONFIDENCE_THRESHOLD = 0.7
@@ -247,8 +247,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--screen-ids", type=str, default="")
-    ap.add_argument("--model", type=str, default="gpt-4o",
-                    help="方向裁决用的模型（默认 gpt-4o；PAIR 列识别比 mini 更可靠）")
+    ap.add_argument("--model", type=str, default=MODEL_BEST,
+                    help="方向裁决用的模型（默认 claude-opus-4-7）")
     ap.add_argument("--dry-run", action="store_true", help="列出将处理的 screen，不调 LLM")
     ap.add_argument("--show-prompt", action="store_true", help="打印第一条 prompt 后退出")
     args = ap.parse_args()
@@ -302,9 +302,9 @@ def main():
             {"role": "user", "content": build_prompt(sid, bio)},
         ]
         try:
-            resp = client.complete(messages, temperature=0, max_tokens=300,
+            resp = client.complete(messages, max_tokens=300,
                                    response_format={"type": "json_object"})
-            raw = resp["choices"][0]["message"]["content"]
+            raw = client.text_of(resp)
             usage = resp.get("usage", {})
             tok_p += usage.get("prompt_tokens", 0)
             tok_c += usage.get("completion_tokens", 0)

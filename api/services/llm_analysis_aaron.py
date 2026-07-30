@@ -216,13 +216,14 @@ def _screen_analysis_sync(gene: str, taxid: int) -> dict[str, Any]:
     if key in _SYNTH_CACHE:
         return _SYNTH_CACHE[key]
     client = _client(INTERPRET_MODEL)
-    # temperature/max_tokens passed literally, NOT via gen_kwargs(): this call site predates the
-    # reasoning-model switch and gpt-4.1 takes the classic params. Routing it through gen_kwargs
-    # would change the wire body (max_tokens 1200 -> max_completion_tokens 3000).
+    # max_tokens passed literally rather than via gen_kwargs(): this reply is a per-phenotype list,
+    # far longer than the ~200-word syntheses gen_kwargs is sized for. 4000, not the 1200 this
+    # prompt used against gpt-4.1 — Claude writes longer insights, and a JSON reply cut off at the
+    # limit is unparseable. No temperature: claude-opus-4-7 rejects it (HTTP 400).
     data = client.chat_json(
         [{"role": "system", "content": SCREEN_SYS},
          {"role": "user", "content": _screen_prompt(w)}],
-        temperature=0.3, max_tokens=1200)
+        max_tokens=4000)
     # Entries missing either field are dropped; the phenotype label is whatever the model echoed
     # and is NOT validated against the KB label set (the frontend colour-keys on it). Order is the
     # model's, which the system prompt asks to match the input order (screen count DESC).
@@ -678,10 +679,10 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int) -> dict[
     prompt = _net_predict_prompt(seed, organism, NET_CTX_LABELS.get(context, context), view,
                                  own_bp, own_pw, own_fn, partners)
     client = _client(NET_PREDICT_MODEL)
-    # gen_kwargs resolves to {"max_completion_tokens": 3000} for gpt-5: it rejects max_tokens and a
-    # custom temperature, and needs headroom for reasoning tokens or the visible answer is empty.
+    # 3000 rather than the 600 default: the reply is a JSON list of predictions with rationales,
+    # and a truncated one is unparseable JSON rather than a short answer.
     data = client.chat_json([{"role": "system", "content": NET_PREDICT_SYS},
-                             {"role": "user", "content": prompt}], **gen_kwargs(NET_PREDICT_MODEL))
+                             {"role": "user", "content": prompt}], **gen_kwargs(NET_PREDICT_MODEL, max_tokens=3000))
 
     preds_out = _net_predict_filter(data, partners, own_bp_norm, own_pw_norm)
 
