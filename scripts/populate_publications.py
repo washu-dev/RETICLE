@@ -139,36 +139,46 @@ class PublicationPopulator:
         screen_pubid = {sid: pmid_pubid[p] for sid, p in screen_pmid.items() if p in pmid_pubid}
         logger.info(f"Upserted {len(pmid_pubid):,} publications")
 
-        # 2) stream screen_gene_raw -> fact_screen_gene_publication (screen's pub)
+        # 2) stream screen_gene_raw -> fact_screen_gene_publication (screen's pub).
+        # The read uses a DEDICATED connection: a server-side named cursor is
+        # invalidated by a COMMIT on its own connection, and we commit each write
+        # batch — so reads and writes must live on separate connections.
         where = "WHERE version_id=%s" + ("" if self.include_all else " AND hit_flag=TRUE")
-        c2 = self.conn.cursor(name="p2_links")
+        read_params = Config.get_psycopg2_params()
+        read_params["sslmode"] = "require"
+        read_conn = psycopg2.connect(**read_params)
+        read_conn.autocommit = False
+        c2 = read_conn.cursor(name="p2_links")
         c2.itersize = 200_000
         c2.execute(f"SELECT screen_id, gene_id, hit_flag FROM screen_gene_raw {where}", (self.version_id,))
         batch, total, skipped = [], 0, 0
         t0 = time.time()
         ins = self.conn.cursor()
-        while True:
-            rows = c2.fetchmany(200_000)
-            if not rows:
-                break
-            for sid, gid, hit in rows:
-                pub_id = screen_pubid.get(int(sid))
-                if pub_id is None:
-                    skipped += 1
-                    continue
-                batch.append((self.version_id, self.run_id, int(sid), int(gid), pub_id, bool(hit)))
-            if batch:
-                psycopg2.extras.execute_values(ins, """
-                    INSERT INTO fact_screen_gene_publication
-                        (version_id, run_id, screen_id, gene_id, publication_id, hit_flag)
-                    VALUES %s
-                    ON CONFLICT (version_id, screen_id, gene_id, publication_id) DO NOTHING
-                """, batch, page_size=10000)
-                self.conn.commit()
-                total += len(batch)
-                logger.info(f"  {total:,} links inserted ({time.time()-t0:.0f}s)")
-                batch = []
-        c2.close()
+        try:
+            while True:
+                rows = c2.fetchmany(200_000)
+                if not rows:
+                    break
+                for sid, gid, hit in rows:
+                    pub_id = screen_pubid.get(int(sid))
+                    if pub_id is None:
+                        skipped += 1
+                        continue
+                    batch.append((self.version_id, self.run_id, int(sid), int(gid), pub_id, bool(hit)))
+                if batch:
+                    psycopg2.extras.execute_values(ins, """
+                        INSERT INTO fact_screen_gene_publication
+                            (version_id, run_id, screen_id, gene_id, publication_id, hit_flag)
+                        VALUES %s
+                        ON CONFLICT (version_id, screen_id, gene_id, publication_id) DO NOTHING
+                    """, batch, page_size=10000)
+                    self.conn.commit()
+                    total += len(batch)
+                    logger.info(f"  {total:,} links inserted ({time.time()-t0:.0f}s)")
+                    batch = []
+        finally:
+            c2.close()
+            read_conn.close()
         logger.info(f"Done: {total:,} fact_screen_gene_publication rows "
                     f"({skipped:,} skipped: screen had no PMID)")
         print(f"P2 complete: {len(pmid_pubid):,} publications, {total:,} screen-gene-publication links "
