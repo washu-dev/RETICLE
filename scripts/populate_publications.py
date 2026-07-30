@@ -121,7 +121,11 @@ class PublicationPopulator:
 
         # 1) upsert publications, get pmid -> publication_id
         pmids = sorted(pmid_cite.keys())
-        payload = [(p, (pmid_cite[p] or None), self.version_id) for p in pmids]
+        long_ids = [p for p in pmids if len(p) > 20]
+        if long_ids:
+            logger.info(f"{len(long_ids)} source IDs > 20 chars (non-PubMed, e.g. DOIs), "
+                        f"e.g. {long_ids[:3]} — needs migration 0015 (publication.pmid VARCHAR(100))")
+        payload = [(p[:100], (pmid_cite[p] or None), self.version_id) for p in pmids]
         psycopg2.extras.execute_values(cur, """
             INSERT INTO publication (pmid, title, first_referenced_version_id)
             VALUES %s
