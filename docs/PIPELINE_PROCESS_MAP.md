@@ -95,6 +95,11 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Prereq chain:** P1 harmonize → D2 profile → **D3 accepted config** → D5. Reads only the warehouse (no `$DATA_DIR`); organism-partitioned (never cross-organism).
 - **Note:** first build leaves `dim_gene_pair_screen` evidence rows unpopulated (`--with-evidence` is a deferred heavy pass); `relatedness_tier` is provisionally the co-ess tier until D9 rolls up all channels.
 
+### (6b) Co-hit  ← D6 (Channel 2)
+- **Script:** `scripts/compute_cohit.py` · **SLURM:** `sbatch slurm/reticle-cohit.sh <version> --config-id N`  **(CPU — exact sparse Hᵀ·H, no GPU)**
+- **Produces:** `fact_gene_pair.cohit_*` — support `n11`, Jaccard, PMI, marginals (`a_hits`/`b_hits`/`screens_total`), one-sided hypergeometric (= Fisher) p → BH-FDR, tier. Upsert composes with D5 (leaves `coess_*` intact).
+- **Runs anytime after** an accepted config exists; independent of D5 (can run in parallel). Marginal universe `N` = total screens in the version (documented approximation).
+
 ### (7+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
 - **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.

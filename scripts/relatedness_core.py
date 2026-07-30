@@ -78,6 +78,31 @@ def classify_selective(n_measured, n_hits, pan_essential_rate=0.90, min_measured
 # per-gene rank + tail transform (host/numpy; feeds the GPU masked GEMMs)
 # ---------------------------------------------------------------------------
 
+def selective_binary_csr(gene_arr, col_arr, sel_gene_ids):
+    """Build a binary CSR (selective_gene × col) matrix from (gene_id, col_id)
+    pairs, keeping only selective genes and mapping them to compact row indices
+    with vectorized searchsorted. `col_arr` is screen_id (co-hit) or
+    publication_id (co-citation). Returns (csr int32, n_cols)."""
+    from scipy import sparse
+    n_sel = len(sel_gene_ids)
+    gene_arr = np.asarray(gene_arr)
+    if n_sel == 0 or gene_arr.size == 0:
+        return sparse.csr_matrix((n_sel, 0), dtype=np.int32), 0
+    order = np.argsort(sel_gene_ids)
+    sel_sorted = np.asarray(sel_gene_ids)[order]
+    pos = np.clip(np.searchsorted(sel_sorted, gene_arr), 0, n_sel - 1)
+    keep = sel_sorted[pos] == gene_arr
+    if not keep.any():
+        return sparse.csr_matrix((n_sel, 0), dtype=np.int32), 0
+    rows = order[pos[keep]]
+    _, cols = np.unique(np.asarray(col_arr)[keep], return_inverse=True)
+    n_cols = int(cols.max()) + 1 if cols.size else 0
+    M = sparse.csr_matrix((np.ones(rows.size, dtype=np.int32), (rows, cols)),
+                          shape=(n_sel, n_cols))
+    M.data[:] = 1          # collapse any dupes to binary
+    return M, n_cols
+
+
 def prepare_rank_tail(mat, tail_percentile):
     """From a genes×screens percentile matrix (NaN where a gene is not measured
     in a FULL screen), produce the two arrays the tail-restricted Spearman GEMMs
