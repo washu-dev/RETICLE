@@ -16,7 +16,10 @@ from config import settings
 from routers.auth import router as auth_router
 from routers.explorer import router as explorer_router
 from routers.genes import router as genes_router
+from routers.llm_aaron import router as llm_aaron_router
 from routers.query import router as query_router
+from routers.screens_aaron import router as screens_aaron_router
+from routers.wiki_aaron import router as wiki_aaron_router
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +101,9 @@ app.include_router(auth_router)
 app.include_router(query_router)
 app.include_router(genes_router)
 app.include_router(explorer_router)
+app.include_router(screens_aaron_router)
+app.include_router(wiki_aaron_router)
+app.include_router(llm_aaron_router)
 
 
 @app.get("/api/health", response_model=HealthResponse)
