@@ -93,6 +93,12 @@ function extract(html) {
   rest = rest.replace(RE_STYLE, (_, body) => { css.push(body); return ''; });
   rest = rest.replace(RE_INLINE_SCRIPT, (_, body) => { js.push(body); return ''; });
 
+  // gene.html ships `<body class="landing">` and its script later removes that class once a gene
+  // loads. Stripping the tag would drop the initial state, so the classes are carried across and
+  // re-applied to the .rx-body wrapper that now stands in for <body>.
+  const bodyClassMatch = rest.match(/<body\b[^>]*\bclass=(["'])(.*?)\1/i);
+  const bodyClass = bodyClassMatch ? bodyClassMatch[2].trim() : '';
+
   // Strip the document shell — the bundle lives inside a div, not a page.
   const markup = rest
     .replace(/<!DOCTYPE[^>]*>/gi, '')
@@ -106,7 +112,7 @@ function extract(html) {
     .replace(/<\/body>/gi, '')
     .trim();
 
-  return { css: css.join('\n'), js: js.join('\n'), markup, externals };
+  return { css: css.join('\n'), js: js.join('\n'), markup, externals, bodyClass };
 }
 
 // ── transforms ───────────────────────────────────────────────────────────────
@@ -164,9 +170,23 @@ function transformMarkup(markup) {
              '<a$1class=$2gnav-brand$2$3href="javascript:void(0)" data-rx-home="1"');
 }
 
-/** CSS: :root custom properties must become :host inside a shadow root. */
+/**
+ * CSS fixes for living inside a shadow root instead of a document.
+ *
+ *  :root -> :host   custom properties are declared on the shadow host, not the document element.
+ *
+ *  body  -> .rx-body   The `<body>` tag is stripped during extraction, so every `body { … }` rule
+ *      would match nothing and the page would render with no background, no base colour and no
+ *      font — the host app's own theme showing straight through. All three pages style `body`,
+ *      and gene.html also has `body.landing .bar, body.landing #gw, …`, so the rewrite has to
+ *      handle compound and descendant selectors, not just the bare tag.
+ *      The lookahead keeps it from touching our own `.rx-body` (preceded by `-`, not by a
+ *      selector boundary) or any class that merely contains the word.
+ */
 function transformCss(css) {
-  return css.replace(/(^|[\s,{}])(:root)\b/g, '$1:host');
+  return css
+    .replace(/(^|[\s,{}])(:root)\b/g, '$1:host')
+    .replace(/(^|[\s,{}])body\b(?![-\w])/g, '$1.rx-body');
 }
 
 // ── emit ─────────────────────────────────────────────────────────────────────
@@ -175,7 +195,7 @@ const q = (s) => JSON.stringify(s);
 
 const pages = PAGES.map((p) => {
   const html = readFileSync(join(SRC_DIR, p.file), 'utf8');
-  const { css, js, markup, externals } = extract(html);
+  const { css, js, markup, externals, bodyClass } = extract(html);
   if (!markup.trim()) throw new Error(`${p.file}: no markup extracted`);
   if (!js.trim()) throw new Error(`${p.file}: no inline script extracted`);
   return {
@@ -184,6 +204,7 @@ const pages = PAGES.map((p) => {
     markup: transformMarkup(markup),
     js: transformJs(js, p.file),
     externals,
+    bodyClass,
   };
 });
 
@@ -302,7 +323,7 @@ ${markupConsts}
 /** CDN globals each page needs before its script can run. */
 export const PAGE_DEPS = ${depsLiteral};
 
-const PAGES = ${JSON.stringify(pages.map((p) => ({ key: p.key, label: p.label, title: p.title })), null, 2)};
+const PAGES = ${JSON.stringify(pages.map((p) => ({ key: p.key, label: p.label, title: p.title, bodyClass: p.bodyClass })), null, 2)};
 
 const SHELL_CSS = \`
 :host{ display:block; }
@@ -420,8 +441,10 @@ export function mountReticle(host, apiBase, opts) {
     for (const dep of (PAGE_DEPS[meta.key] || [])) await ensureGlobal(dep);
     if (disposed || active !== meta.key) return;   // tab switched while the CDN was loading
 
-    // rxBody carries the prototype's own body classes (gene.html toggles \`landing\`).
-    rxBody.className = 'rx-body';
+    // rxBody stands in for the page's <body>: it carries the classes the page shipped with
+    // (gene.html starts as \`landing\` and drops it once a gene loads) and is what the rewritten
+    // \`body { … }\` CSS rules now target.
+    rxBody.className = ('rx-body ' + (meta.bodyClass || '')).trim();
 
     // Swap in a brand-new page element — see makePageEl for why this must not be reused.
     const pageEl = makePageEl();
