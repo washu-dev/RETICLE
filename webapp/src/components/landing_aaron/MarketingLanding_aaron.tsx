@@ -462,7 +462,37 @@ const CSS = `
   row-gap:14px;
 }
 .rxl .no-motion .mq-dup{ display:none; }
-.rxl .no-motion .marquee{ -webkit-mask-image:none; mask-image:none; }`;
+.rxl .no-motion .marquee{ -webkit-mask-image:none; mask-image:none; }
+
+/* ── hero: two columns on wide screens ─────────────────────────────────────────────────────
+   The design stacked the copy over a full-bleed readout, which left the right half of the
+   hero empty and pushed the visualization below the fold. On wide viewports the copy and the
+   readout sit side by side instead, and the whole block rides higher.
+
+   Two things have to be undone for that to work: the inner '.wrap' containers were sizing
+   themselves against the viewport (the section was full width), and '.field' was deliberately
+   full-bleed at 100vw. Inside a grid column both would break out of it. */
+@media (min-width: 1080px){
+  .rxl .hero{
+    display:grid;
+    grid-template-columns:minmax(0,47fr) minmax(0,53fr);
+    align-items:center;
+    column-gap:clamp(36px, 4.4vw, 80px);
+    width:100%; max-width:var(--wrap); margin-inline:auto;
+    padding-inline:var(--gutter);
+    min-height:min(84svh, 820px);
+  }
+  .rxl .hero > .wrap,
+  .rxl .hero .readout .wrap{ max-width:none; margin-inline:0; padding-inline:0; }
+  .rxl .hero-copy{ padding-top:0; padding-bottom:0; }
+  .rxl .readout{ padding-bottom:0; }
+  .rxl .hero .field{ width:auto; margin-left:0; height:clamp(320px, 44vh, 470px); }
+  .rxl .hero #viz{
+    -webkit-mask-image:linear-gradient(to right, #000 0, #000 94%, transparent 100%);
+            mask-image:linear-gradient(to right, #000 0, #000 94%, transparent 100%);
+  }
+}
+`;
 
 const MARKUP = `
 <header class="hdr" id="hdr">
@@ -807,8 +837,12 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       H = Math.max(120, Math.round(rect.height));
       svg!.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
-      const wantN = W < 620 ? 165 : W < 1000 ? 300 : 430;
-      R = W < 620 ? 1.9 : 2.3;
+      // Breakpoints are on the FIELD's width, not the viewport's. Since the hero became two
+      // columns the field is ~580px on a 1440 screen while still being tall, so the old
+      // full-bleed thresholds (620/1000) dropped it to the phone-sized branch: a third of the
+      // points and no hit labels.
+      const wantN = W < 520 ? 165 : W < 900 ? 300 : 430;
+      R = W < 520 ? 1.9 : 2.3;
 
       if (wantN !== N) {
         N = wantN;
@@ -868,7 +902,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       const scores = scoresFor(sc.seed);
 
       const pad = Math.max(10, W * 0.012);
-      const colW = W < 620 ? 11 : W < 1000 ? 16 : 20.5;
+      const colW = W < 520 ? 11 : W < 900 ? 15 : 20.5;
       const NB = Math.max(12, Math.round((W - pad * 2) / colW));
       const span = (W - pad * 2) / NB;
 
@@ -883,7 +917,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
         if (counts[idx] > maxC) maxC = counts[idx];
       }
 
-      const head = W < 620 ? 20 : 30;   // room for the hit labels
+      const head = W < 520 ? 20 : 30;   // room for the hit labels
       const gap = Math.min(2 * R + 2.3, (H - head) / maxC);
       const stack = new Array(NB).fill(0);
 
@@ -902,7 +936,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       }
 
       gHits.textContent = '';
-      if (W >= 620) {
+      if (W >= 520) {
         ([[3, -13], [17, -30]] as Array<[number, number]>).forEach((spec, n) => {
           const p = pts[spec[0]];
           if (!p) return;
