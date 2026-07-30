@@ -275,7 +275,8 @@ def _score_method_label(sb: str | None) -> str:
     return sb[a + 1 : b].strip() if (a != -1 and b > a) else sb.strip()
 
 
-def _histogram(vals: list[float], focal: float, nbins: int = 40, bounded=None) -> dict:
+def _histogram(vals: list[float], focal: float, nbins: int = 40,
+               bounded: tuple[float, float] | None = None) -> dict:
     """Pure-python histogram; clip to the 1st-99th pct for readability unless `bounded` is given."""
     xs = sorted(vals)
     n = len(xs)
@@ -393,8 +394,18 @@ async def get_gene_screen_distribution(
 
 
 def _http_json(url: str, timeout: int = 12) -> Any:
+    """GET a JSON document over https.
+
+    The scheme is enforced here rather than trusted at each call site. That is what bandit's B310
+    is about — urlopen also accepts file:/ and custom schemes — and while today's callers all build
+    their URL from a literal https prefix, the interpolated part is a UniProt accession read out of
+    the KB, so the value is data rather than a constant.
+    """
+    if not url.startswith("https://"):
+        raise ValueError("refusing to fetch a non-https URL")
     req = urllib.request.Request(url, headers={"User-Agent": "RETICLE-KB/1.0 (research)"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 — fixed EBI/RCSB hosts
+    # noqa/nosec: scheme verified immediately above; hosts are EBI and RCSB.
+    with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310  # nosec B310
         return json.loads(r.read())
 
 

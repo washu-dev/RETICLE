@@ -168,10 +168,11 @@ SCREEN_SYS = (
 )
 
 
-def _screen_prompt(w):
+def _screen_prompt(w: dict[str, Any]) -> str:
     from collections import Counter, defaultdict
     idn, sc = w["identity"], w["screens"]
-    per = defaultdict(lambda: {"conds": Counter(), "cells": Counter()})
+    per: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"conds": Counter(), "cells": Counter()})
     for r in db_fetchall(
         "SELECT s.phenotype ph, s.condition_name cond, s.cell_type ct "
         "FROM kb_screen_hit h JOIN kb_screen s ON s.screen_id = h.screen_id WHERE h.gene_id=?",
@@ -255,7 +256,7 @@ async def get_screen_analysis(gene: str, taxid: int = 9606) -> dict[str, Any]:
 # summary/partners and the abstracts of the screens' own papers.
 
 
-def _norm_process(rationale, phenotype):
+def _norm_process(rationale: str | None, phenotype: str | None) -> str:
     """A reporter screen's rationale names the process it reads out
     (e.g. 'Negative regulators of NFkB signaling') — strip the screen's design
     framing down to the bare process, falling back to the GO-style phenotype.
@@ -282,7 +283,9 @@ REXPLAIN_SYS = (
 )
 
 
-def _reporter_explain_prompt(symbol, process, screen_rows, abstracts, ann, dk, partners):
+def _reporter_explain_prompt(symbol: str, process: str, screen_rows: list[Any],
+                             abstracts: list[dict[str, Any]], ann: dict[str, Any] | None,
+                             dk: dict[str, Any] | None, partners: list[str]) -> str:
     summary = (ann or {}).get("summary") or ""
     L = [f"GENE: {symbol}", f"PROCESS (reporter read-out): {process}", "",
          "KNOWN FUNCTION (curated summary — your MAIN grounding): "
@@ -505,9 +508,11 @@ Return ONLY a single JSON object of this exact shape, no prose, no markdown fenc
  "summary": "<one sentence overall — or why nothing converged>"}"""
 
 
-def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_fn, partners):
+def _net_predict_prompt(sym: str, organism: str, context_label: str, view: str,
+                        own_bp: list[str], own_pw: list[str], own_fn: str | None,
+                        partners: list[dict[str, Any]]) -> str:
     """partners: list of dicts {sym, strength, reciprocal, lean, go, pw, fn} in strength-desc order."""
-    def esc_join(xs):
+    def esc_join(xs: list[str]) -> str:
         return "; ".join(xs) if xs else "(none on record)"
     lines = [
         f"FOCAL GENE: {sym} ({organism}) — co-essentiality context: {context_label} · view: {view}",
@@ -733,13 +738,13 @@ a concrete, testable prediction. If the abstracts are sparse because the gene is
 rather than inventing literature. Never fabricate a PMID — only cite ones provided."""
 
 
-def _signal_lines(p):
-    def blk(name, b):
+def _signal_lines(p: dict[str, Any]) -> list[str]:
+    def blk(name: str, b: dict[str, Any] | None) -> str:
         if not b:
             return f"{name}: (no screens)"
         return (f"{name}: n={b['n']}, hits={b['n_hits']}, median={b['median']:+.3f}, "
                 f"IQR=[{b['p25']:+.3f},{b['p75']:+.3f}], lean={b['lean']}")
-    def ctx(items):
+    def ctx(items: list[dict[str, Any]]) -> str:
         return "; ".join(f"{i['cell_line']} ({i['screen_type'] or 'screen'}, {i['percentile']:+.2f})"
                          for i in items[:5])
     out = [blk("FITNESS", p["fitness"])]
@@ -765,7 +770,8 @@ def _signal_lines(p):
     return out
 
 
-def build_rag_prompt(p, ext, abstracts):
+def build_rag_prompt(p: dict[str, Any], ext: dict[str, Any],
+                     abstracts: list[dict[str, Any]]) -> str:
     sym, org = p["symbol"], p["organism"]
     ann = (ext or {}).get("annotation") or {}
     dk = (ext or {}).get("darkness") or {}
@@ -791,7 +797,9 @@ def build_rag_prompt(p, ext, abstracts):
 def _interpret_sync(p: dict) -> dict[str, Any]:
     sym = p["symbol"]
     # An unknown/missing organism silently becomes human — the prototype does not error on it.
-    taxid = ORG2TAX.get(p.get("organism"), 9606)
+    # str() rather than passing the raw value: the body is client-supplied, so `organism` can be
+    # any JSON type, and ORG2TAX is keyed by str.
+    taxid = ORG2TAX.get(str(p.get("organism") or ""), 9606)
     # Order is load-bearing: enrich() first, because its gene_annotation result is reused by
     # darkness() so the annotation is fetched once. Every source fails soft (None/[]), which is
     # what produces the "(no curated summary — poorly characterized)" dark-gene path instead of an

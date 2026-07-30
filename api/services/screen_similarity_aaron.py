@@ -95,8 +95,10 @@ async def get_screen_similar(
     if rows:
         allr = np.array([x["r"] for x in rows], dtype=np.float64)
         mu, sd = float(allr.mean()), float(allr.std())
-        for x in rows:
-            x["z"] = round((x["r"] - mu) / sd, 2) if sd > 0 else 0.0
+        # Not `x`: that name is already bound to a _Row by the loop above, and rebinding it to a
+        # plain dict here is a type error.
+        for row in rows:
+            row["z"] = round((row["r"] - mu) / sd, 2) if sd > 0 else 0.0
     else:
         mu = sd = 0.0
 
