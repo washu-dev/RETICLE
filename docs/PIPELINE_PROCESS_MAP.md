@@ -100,6 +100,11 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Produces:** `fact_gene_pair.cohit_*` — support `n11`, Jaccard, PMI, marginals (`a_hits`/`b_hits`/`screens_total`), one-sided hypergeometric (= Fisher) p → BH-FDR, tier. Upsert composes with D5 (leaves `coess_*` intact).
 - **Runs anytime after** an accepted config exists; independent of D5 (can run in parallel). Marginal universe `N` = total screens in the version (documented approximation).
 
+### (6c) Roll-up  ← D9 (cross-channel combine)
+- **Script:** `scripts/rollup_relatedness.py`  **(login-node, DB-only — single set-based UPDATE; no GPU/SLURM)**
+- **Produces:** the unified header on `fact_gene_pair` — `relatedness_score` (weighted, support-renormalized over present base channels; co-ess weighted highest), `relatedness_tier`, `evidence_channels` / `evidence_channel_count`, `total_support`, `min_fdr`.
+- **Runs after** any channel driver (D5/D6/…). Idempotent — re-run whenever a channel adds/updates columns (D7/D8 slot in automatically). Weights + overall cuts are config-driven (`thresholds.channel_weights`, `tier_cuts.overall`).
+
 ### (7+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).
 - **Order (D2→D13):** profiler (stage 4 above) → what-if config → candidate generation → co-essentiality (D5, **GPU**) + co-hit + co-citation + contextual + residual/novelty (D5b) → roll-up + BH-FDR → `fact_gene_pair` → PubMed→S3 → Claude insight agent → API/UI.
