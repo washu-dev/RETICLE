@@ -148,13 +148,22 @@ def main():
                 skipped += 1
                 continue
             # --- deterministic anchor resolution: pin essential genes to negative ---
-            mag, tstr = H._primary_magnitude(df, col_types)
-            df["HARMONIZED_SCORE"] = mag            # try +1
-            H.add_rank_columns(df)
-            e2 = df[df["OFFICIAL_SYMBOL"].astype(str).isin(CORE_ESSENTIAL)]["PERCENTILE_SCORE"].dropna()
-            anchor_sign = -1 if e2.mean() > 0 else 1
-            df["HARMONIZED_SCORE"] = mag * anchor_sign
-            H.add_rank_columns(df)
+            # is_final => the value came from a DIRECTIONAL score-semantics override, whose sign was
+            # already fixed against this same essential-gene anchor during the forensic resolution
+            # (see harmonize_scores.sign_is_final). Re-deriving it here would just re-litigate a
+            # stronger, already-recorded decision, so keep the sign as given.
+            mag, tstr, is_final = H._primary_magnitude(df, col_types, sid)
+            if is_final:
+                anchor_sign = 1
+                df["HARMONIZED_SCORE"] = mag
+                H.add_rank_columns(df)
+            else:
+                df["HARMONIZED_SCORE"] = mag            # try +1
+                H.add_rank_columns(df)
+                e2 = df[df["OFFICIAL_SYMBOL"].astype(str).isin(CORE_ESSENTIAL)]["PERCENTILE_SCORE"].dropna()
+                anchor_sign = -1 if e2.mean() > 0 else 1
+                df["HARMONIZED_SCORE"] = mag * anchor_sign
+                H.add_rank_columns(df)
             new_ess = df[df["OFFICIAL_SYMBOL"].astype(str).isin(CORE_ESSENTIAL)]["PERCENTILE_SCORE"].dropna()
             basis = f"ANCHOR_SINGLE({tstr})xsign={anchor_sign:+d}[essential-gene ground truth]"
             is_dir = True

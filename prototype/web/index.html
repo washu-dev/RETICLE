@@ -261,14 +261,41 @@ footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line2);fon
   .cols{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#result{opacity:1;transform:none}}
+/* ---------- global feature nav (shared: index / gene / network) ---------- */
+.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;
+  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}
+.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;
+  text-decoration:none;letter-spacing:.01em;white-space:nowrap}
+.gnav-brand b{color:#1F6F8B}
+.gnav-tabs{display:flex;gap:4px}
+.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;
+  white-space:nowrap;transition:background .12s,color .12s}
+.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}
+.gnav-tabs a.on{background:#14161A;color:#fff}
+.gnav-sp{flex:1}
+@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}
+
+.scr-ctl{display:flex;align-items:center;gap:14px;margin:10px 0 4px;flex-wrap:wrap}
+.scr-excl{display:flex;align-items:center;gap:7px;font-size:13px;color:#3A3D44;cursor:pointer;user-select:none}
+.scr-excl input{accent-color:#1F6F8B;width:15px;height:15px}
+.scr-note{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#9AA0A6}
+.scr-same{display:inline-block;margin-left:8px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+  letter-spacing:.04em;padding:1px 6px;border-radius:9px;background:#C77D3118;color:#C77D31;vertical-align:1px}
+.scr-row.is-same{background:#C77D3108}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <span class="mark">RETI<b>C</b>LE</span>
+  <nav class="gnav">
+    <a class="gnav-brand" href="/">RETI<b>C</b>LE</a>
+    <div class="gnav-tabs">
+      <a href="/" data-t="explore">Explore</a>
+      <a href="/gene" data-t="gene">Gene wiki</a>
+      <a href="/network" data-t="network">Network</a>
+    </div>
+    <div class="gnav-sp"></div>
     <span class="tag">functional genomics · 2,157 CRISPR screens</span>
-  </div>
+  </nav>
 
   <section class="hero" id="hero">
     <div class="hero-brand">
@@ -884,19 +911,21 @@ function initWave() {
 
 // --- screen-vs-screen similarity (human · proliferation · genome-wide) ---
 const _scrEsc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let _scrState=null;                         // {sid, shown, total, maxw}
+let _scrState=null;                         // {sid, shown, total, maxw, bg, nsame}
+let _scrExcl=false;                         // 'exclude same study' toggle
 const SCR_PAGE=50;
 
 async function findSimilar(sid){
   sid=(sid||'').replace(/\D/g,''); if(!sid) return;
   const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
   try{
-    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0`);
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
     st.textContent=''; $('#hero').classList.add('compact'); document.body.classList.add('compact-view');
     _scrState={sid:d.query.screen_id, shown:d.results.length, total:d.n_total,
-               maxw:d.results.length?d.results[0].weighted:1};
+               maxw:d.results.length?Math.max(0.01,d.results[0].r):1,
+               bg:d.background, nsame:d.n_same_study};
     renderScreenSimilar(d);
   }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
 }
@@ -904,14 +933,15 @@ async function findSimilar(sid){
 function scrRowsHTML(results, start){
   const maxw=Math.max(0.01,_scrState.maxw);
   return results.map((x,i)=>{
-    const w=Math.round(100*Math.max(0,x.weighted)/maxw);
-    return `<div class="scr-row" onclick="document.getElementById('qs').value='${_scrEsc(x.screen_id)}';findSimilar('${_scrEsc(x.screen_id)}')">
+    const w=Math.round(100*Math.max(0,x.r)/maxw);
+    const same=x.same_study?`<span class="scr-same" title="same publication as the query — shared library, protocol and batch, not independent biology">same study</span>`:'';
+    return `<div class="scr-row${x.same_study?' is-same':''}" onclick="document.getElementById('qs').value='${_scrEsc(x.screen_id)}';findSimilar('${_scrEsc(x.screen_id)}')">
       <span class="scr-rank">${start+i+1}</span>
       <span class="scr-id">#${_scrEsc(x.screen_id)}</span>
-      <span class="scr-lab">${_scrEsc(x.author)} · <b>${_scrEsc(x.cell_line)}</b></span>
+      <span class="scr-lab">${_scrEsc(x.author)} · <b>${_scrEsc(x.cell_line)}</b>${same}</span>
       <span class="scr-bar"><i style="width:${w}%"></i></span>
-      <span class="scr-w">${x.weighted.toFixed(2)}</span>
-      <span class="scr-p">${x.plain!=null?x.plain.toFixed(2):'—'}</span>
+      <span class="scr-w">${x.z>=0?'+':''}${x.z.toFixed(1)}σ</span>
+      <span class="scr-p">${x.r.toFixed(2)}</span>
       <span class="scr-ov">${x.overlap.toLocaleString()}</span>
       <a class="scr-link" href="https://orcs.thebiogrid.org/Screen/${_scrEsc(x.screen_id)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗</a>
     </div>`;
@@ -930,7 +960,7 @@ async function loadMoreSimilar(){
   if(!_scrState) return;
   const btn=$('#scrmore'); if(btn){ btn.textContent='Loading…'; btn.disabled=true; }
   try{
-    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}`);
+    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     $('#scrtbl').insertAdjacentHTML('beforeend', scrRowsHTML(d.results, _scrState.shown));
     _scrState.shown+=d.results.length; _scrState.total=d.n_total;
@@ -946,12 +976,18 @@ function renderScreenSimilar(d){
       <div class="gene-sym">Screens like #${esc(q.screen_id)}</div>
       <div class="verdict">${esc(q.author)} · <em>${esc(q.cell_line)}</em>${q.n_genes?` · ${q.n_genes.toLocaleString()} genes measured`:''}${q.pmid?` · <a href="https://pubmed.ncbi.nlm.nih.gov/${esc(q.pmid)}" target="_blank" rel="noopener">PMID ${esc(q.pmid)}</a>`:''} · <em>${d.n_total}</em> comparable</div>
     </div>
-    <div class="lkey"><b>How to read</b> — ranked by <b>weighted correlation</b>: extreme (hit) genes dominate, the ~random middle is down-weighted. <b>plain</b> is the equal-weight version for contrast — a large gap means the screens agree mainly on their strongest hits. <b>overlap</b> = shared measured genes. Click a row to pivot to that screen; ↗ opens it in BioGRID.</div>
+    <div class="scr-ctl">
+      <label class="scr-excl"><input type="checkbox" id="scrExcl"${_scrExcl?' checked':''}> exclude same study</label>
+      <span class="scr-note">${d.n_same_study} of the pool share this screen's publication</span>
+    </div>
+    <div class="lkey"><b>How to read</b> — <b>σ</b> is what to read: how far above this screen's own background the match sits. Raw <b>r</b> alone is misleading — every human fitness screen shares the same essential genes, so that common axis is projected out first (background mean r ≈ ${d.background.mean_r}, sd ${d.background.sd_r}); a match only means something if it clears the background. <b>overlap</b> = shared measured genes (≥2,000 required).<br><b style="color:#C77D31">Caveat</b> — screens from the <b>same publication</b> share library, protocol and batch, so they top the list for technical, not biological, reasons. Use the toggle above; even the best cross-study match usually sits only ~1σ out. Click a row to pivot; ↗ opens BioGRID.</div>
     <div class="scrtbl" id="scrtbl">
-      <div class="scr-row scr-hd"><span class="scr-rank">#</span><span class="scr-id">screen</span><span class="scr-lab">author · cell line</span><span class="scr-bar"></span><span class="scr-w">weighted</span><span class="scr-p">plain</span><span class="scr-ov">overlap</span><span class="scr-link"></span></div>
-      ${d.results.length?scrRowsHTML(d.results,0):'<div class="lkey">No comparable screens (need ≥200 shared genes).</div>'}
+      <div class="scr-row scr-hd"><span class="scr-rank">#</span><span class="scr-id">screen</span><span class="scr-lab">author · cell line</span><span class="scr-bar"></span><span class="scr-w">vs bg</span><span class="scr-p">r</span><span class="scr-ov">overlap</span><span class="scr-link"></span></div>
+      ${d.results.length?scrRowsHTML(d.results,0):'<div class="lkey">No comparable screens (need ≥2,000 shared genes).</div>'}
     </div>
     <div class="scr-morewrap" id="scrmorewrap">${scrMoreHTML()}</div>`;
+  const ex=document.getElementById('scrExcl');
+  if(ex) ex.addEventListener('change',e=>{ _scrExcl=e.target.checked; findSimilar(_scrState.sid); });
   requestAnimationFrame(()=>$('#result').classList.add('show'));
 }
 
@@ -960,6 +996,25 @@ $('#q').addEventListener('keydown',e=>{if(e.key==='Enter')explore($('#q').value)
 $('#gos').addEventListener('click',()=>findSimilar($('#qs').value));
 $('#qs').addEventListener('keydown',e=>{if(e.key==='Enter')findSimilar($('#qs').value);});
 initWave();
+
+/* ---------- global nav: mark active tab, carry the current gene across features ---------- */
+(function(){
+  const path=location.pathname, sp=new URLSearchParams(location.search);
+  const cur = /^\/(network|net)/.test(path) ? 'network'
+            : /^\/(gene|wiki)/.test(path)   ? 'gene' : 'explore';
+  const gene = sp.get('gene')||'';
+  const tax  = sp.get('taxid') || (sp.get('organism')==='mouse' ? '10090' : '9606');
+  document.querySelectorAll('.gnav-tabs a').forEach(a=>{
+    const t=a.dataset.t;
+    if(t===cur) a.classList.add('on');
+    if(gene){                                   // keep the gene when switching feature
+      a.href = t==='gene'    ? `/gene?gene=${encodeURIComponent(gene)}&taxid=${tax}`
+             : t==='network' ? `/network?gene=${encodeURIComponent(gene)}&organism=${tax==='10090'?'mouse':'human'}`
+             : '/';
+    }
+  });
+})();
+
 </script>
 </body>
 </html>

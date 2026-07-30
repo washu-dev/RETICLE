@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETICLE — the co-hit channel (Fisher)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});"></script>
+<style>
+:root{
+  --paper:#FCFCFB;--ink:#14161A;--ink2:#3A3D44;--muted:#6B7280;--faint:#9AA0A6;
+  --line:#E2E0DA;--line2:#EFEDE8;--card:#FFFFFF;
+  --know:#1F6F8B;--eviq:#C77D31;--pred:#7C5CBF;--bad:#B4483C;--ok:#3E7C4A;
+  --know-soft:#1F6F8B12;--eviq-soft:#C77D3112;--pred-soft:#7C5CBF12;--bad-soft:#B4483C10;--ok-soft:#3E7C4A10;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"SF Mono",ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:14.5px}
+main{max-width:840px;margin:0 auto;padding:44px 56px 90px}
+a{color:var(--know)}
+code{font-family:var(--mono);font-size:.87em;background:var(--line2);padding:1.5px 6px;border-radius:5px;color:#155568}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--pred);font-weight:600}
+h1{font-family:var(--serif);font-weight:700;font-size:31px;margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:15px;max-width:66ch;margin:0 0 4px}
+.tldr{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:2px;padding:16px 20px;margin:20px 0 8px;font-size:14.5px}
+.tldr b.k{color:var(--pred)}
+
+h2{font-family:var(--serif);font-weight:700;font-size:20px;margin:34px 0 4px;padding-bottom:6px;border-bottom:1.5px solid var(--ink)}
+h3{font-family:var(--sans);font-weight:700;font-size:14.5px;margin:20px 0 4px;color:var(--ink)}
+p{margin:9px 0}
+.step{margin:22px 0}
+
+.math{background:var(--pred-soft);border:1px solid #7C5CBF30;border-radius:8px;padding:16px 20px;margin:12px 0;overflow-x:auto}
+.math .katex-display{margin:2px 0}
+.math .katex{font-size:1.06em}
+.math .note{font-family:var(--sans);font-size:12.5px;color:var(--ink2);margin-top:10px;padding-top:9px;border-top:1px dashed #7C5CBF30}
+
+.term{border-bottom:1.5px dotted var(--pred);cursor:default}
+.gloss{background:var(--pred-soft);border:1px solid #7C5CBF30;border-radius:8px;padding:5px 14px;margin:10px 0;font-size:13px}
+.gloss b{color:var(--pred)}
+
+.prob,.sol,.warn{border-radius:6px;padding:10px 16px;margin:10px 0;font-size:13.8px}
+.prob{background:var(--eviq-soft);border-left:3px solid var(--eviq)}
+.prob b{color:var(--eviq)}
+.sol{background:var(--know-soft);border-left:3px solid var(--know)}
+.sol b{color:var(--know)}
+.warn{background:var(--bad-soft);border-left:3px solid var(--bad)}
+.warn b{color:var(--bad)}
+
+figure{margin:16px 0;text-align:center}
+figcaption{font-size:12px;color:var(--muted);margin-top:7px;font-style:italic}
+svg{max-width:100%;height:auto}
+
+.example{border:1px dashed var(--line);border-radius:8px;padding:14px 18px;margin:14px 0;background:var(--card)}
+.example h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pred)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+table.mat{width:auto;margin:10px auto;font-family:var(--mono)}
+th,td{border:1px solid var(--line);padding:6px 11px;text-align:left}
+th{background:var(--line2);font-weight:700;color:var(--ink2);font-size:12px}
+table.mat th,table.mat td{text-align:center}
+td.g{font-weight:700;background:var(--line2)}
+.res{font-family:var(--mono);font-size:13px;margin-top:8px}
+.res .hi{color:var(--pred);font-weight:700}.res .lo{color:var(--faint)}
+
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 13px;text-align:center}
+.stat b{display:block;font-size:19px;font-family:var(--mono);color:var(--pred)}
+.stat span{font-size:11px;color:var(--muted)}
+
+table.gloss-t{font-size:12.8px}
+table.gloss-t td:first-child{font-family:var(--mono);font-weight:700;white-space:nowrap;color:var(--pred)}
+.foot{color:var(--faint);font-family:var(--mono);font-size:10.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;font-weight:700;padding:2px 8px;border-radius:9px}
+.pill.open{background:var(--bad-soft);color:var(--bad)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+
+@media print{
+  main{max-width:100%;padding:0 8mm}
+  a{color:inherit;text-decoration:none}
+  .example,figure,.math,.gloss,.prob,.sol,.warn,.statgrid{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<main>
+
+<div class="kicker">Working note · exploratory, not yet in production</div>
+<h1>The co-hit channel</h1>
+<p class="sub">A second, independent way to connect two genes — not by how alike their scores look (channel&nbsp;1), but by how often the original screen authors called <b>both of them significant in the same experiment</b>, more than chance predicts. Built and stress-tested today; three real problems are still open (§7) and are stated plainly, not glossed over.</p>
+
+<div class="tldr">Channel 1 (Pearson correlation on <code>PERCENTILE_SCORE</code>) is strong on constitutive machines — ribosome, proteasome, spliceosome — and weak on <b>conditional</b> genes, whose phenotype only shows up in a minority of screens. FANCA–FANCB scores just <b>r&nbsp;=&nbsp;0.41</b> there, diluted by ~950 screens where neither gene does anything. This channel asks a narrower question instead — <b class="k">among the screens where a gene mattered enough to be called a hit, does it keep showing up alongside the same partner?</b> — using <a href="https://en.wikipedia.org/wiki/Fisher%27s_exact_test" class="term">Fisher's exact test</a>. On the same pair it answers with overwhelming confidence: 33 co-hits against an expectation of 3.6.</p>
+
+<hr>
+
+<!-- ================= 1 ================= -->
+<section class="step">
+<h2>1 · Why a second channel</h2>
+<p>Channel 1 treats every screen the same way, hit or not: a gene's full numeric profile — deleterious, neutral, or advantageous — goes into a Pearson correlation. That works beautifully for genes that are <i>always</i> doing something (a ribosomal protein is essential in almost every screen), but it actively hurts genes that are only <i>sometimes</i> doing something. Fanconi-anemia genes are a clean example: FANCA and FANCB only really diverge from "nothing happening" in a small subset of screens — usually ones with a DNA-damaging or replication-stress component. In the other ~95% of screens, both genes sit near the noisy middle, and that shared silence drags the correlation toward zero.</p>
+<div class="prob"><b>The idea this channel tests.</b> If a gene was never called a <span class="term"><code>IS_HIT</code></span> in a screen, that screen has nothing to say about it — treat the cell as missing, not as a weak zero. Keep <i>only</i> the screens where a gene actually did something, and ask whether two genes are significant <i>together</i> far more than their individual hit rates would predict on their own.</p>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="step">
+<h2>2 · The question, as an urn</h2>
+<p>Take the 985 genome-wide screens where <b>both</b> FANCA and FANCB were measured. Imagine them as 985 balls in an urn. FANCA was a hit in 94 of them — paint those 94 balls red. Now look at the 38 screens where FANCB was a hit, <i>with no reference to FANCA at all</i>. If FANCB's hits were scattered through the urn at random, how many of its 38 balls would you expect to be red, just by chance?</p>
+<div class="math">
+  \[ \mathbb{E}[\text{co-hit}] \;=\; \frac{r_i \cdot r_j}{n} \;=\; \frac{94 \times 38}{985} \;=\; 3.626 \]
+  <div class="note"><code>n</code> = co-measured screens (985), <code>r_i</code> = gene i's hits within that population (94), <code>r_j</code> = gene j's hits within that population (38). This is just "38 draws from an urn that's 9.5% red, on average land ≈3.6 red."</div>
+</div>
+<figure>
+<svg viewBox="0 0 640 260" width="600">
+  <circle cx="230" cy="130" r="105" fill="#B4483C14" stroke="#B4483C" stroke-width="1.6"/>
+  <circle cx="330" cy="130" r="66"  fill="#1F6F8B18" stroke="#1F6F8B" stroke-width="1.6"/>
+  <text x="150" y="70" font-family="-apple-system" font-weight="700" font-size="13" fill="#B4483C">FANCA hits</text>
+  <text x="150" y="86" font-family="SF Mono, monospace" font-size="12" fill="#B4483C">94 screens</text>
+  <text x="345" y="70" font-family="-apple-system" font-weight="700" font-size="13" fill="#1F6F8B">FANCB hits</text>
+  <text x="345" y="86" font-family="SF Mono, monospace" font-size="12" fill="#1F6F8B">38 screens</text>
+  <text x="292" y="134" font-family="SF Mono, monospace" font-weight="700" font-size="19" fill="#14161A">33</text>
+  <text x="272" y="150" font-family="-apple-system" font-size="10.5" fill="#3A3D44">observed co-hit</text>
+  <text x="270" y="235" font-family="-apple-system" font-size="11" fill="#6B7280">universe = 985 screens where both genes were measured</text>
+  <rect x="20" y="20" width="600" height="222" fill="none" stroke="#E2E0DA" stroke-width="1" rx="6"/>
+</svg>
+<figcaption>The overlap chance alone would produce ≈3.6 of. It produced 33 — 9.1× more.</figcaption>
+</figure>
+<p>The observed overlap is <b>9.1 times</b> the chance expectation. <a class="term" href="https://en.wikipedia.org/wiki/Fisher%27s_exact_test">Fisher's exact test</a> turns "9.1× more than expected" into a calibrated probability: <i>if FANCA and FANCB were truly independent, how likely is it that pure luck would hand you 33-or-more red balls in 38 draws?</i> That's exactly what the <a class="term" href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">hypergeometric distribution</a> computes.</p>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="step">
+<h2>3 · The 2×2 table and the formula</h2>
+<p>Every gene pair reduces to four numbers, which fill in a standard contingency table:</p>
+<table class="mat">
+<tr><th></th><th>FANCB hit</th><th>FANCB not hit</th><th>row total</th></tr>
+<tr><td class="g">FANCA hit</td><td>a&nbsp;=&nbsp;33</td><td>61</td><td>r<sub>i</sub>&nbsp;=&nbsp;94</td></tr>
+<tr><td class="g">FANCA not hit</td><td>5</td><td>887</td><td>891</td></tr>
+<tr><td class="g">col total</td><td>r<sub>j</sub>&nbsp;=&nbsp;38</td><td>947</td><td>n&nbsp;=&nbsp;985</td></tr>
+</table>
+<div class="math">
+  \[ p \;=\; P(X \ge a) \;=\; \sum_{k=a}^{\min(r_i,r_j)} \frac{\binom{r_i}{k}\binom{n-r_i}{r_j-k}}{\binom{n}{r_j}} \]
+  <div class="note">The one-sided (enrichment) hypergeometric survival probability: draw <code>r_j</code> balls without replacement from an urn of <code>n</code> balls with <code>r_i</code> marked, and ask how likely <code>a</code>-or-more marked balls is. In code this is one call: <code>hypergeom.sf(a-1, n, r_i, r_j)</code> — the <code>a-1</code> is because <code>sf(k)</code> gives <code>P(X&gt;k)</code>, not <code>P(X≥k)</code>.</div>
+</div>
+<div class="example">
+<h4>Worked example — FANCA / FANCB, real numbers</h4>
+<table class="mat">
+<tr><th>n</th><th>r<sub>i</sub></th><th>r<sub>j</sub></th><th>a</th><th>expected</th><th>fold</th><th>p</th></tr>
+<tr><td>985</td><td>94</td><td>38</td><td>33</td><td>3.626</td><td>9.10</td><td>2.21×10⁻³¹</td></tr>
+</table>
+<div class="res">p = hypergeom.sf(32, 985, 94, 38) = <span class="hi">2.207e-31</span> — verified against <code>scipy.stats.fisher_exact([[33,61],[5,887]])</code>, exact match.</div>
+</div>
+<p>2.2×10⁻³¹ is not a "these might be related" number — it is a "this could not plausibly be chance" number. For comparison, a fair coin landing heads 20 times running has probability ≈9.5×10⁻⁷ — roughly 24 orders of magnitude <i>more</i> likely than this co-hit pattern arising by chance.</p>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="step">
+<h2>4 · Why not just correlate the hit-only screens?</h2>
+<p>The obvious alternative — keep <code>PERCENTILE_SCORE</code> and Pearson-correlate only the co-hit screens — was tried first and fails three separate ways:</p>
+<table>
+<tr><th>Failure mode</th><th>What happens</th><th>Real example</th></tr>
+<tr><td><b>Range restriction</b></td><td>Conditioning on "is a hit" selects a gene's extreme tail — the variance Pearson needs is gone</td><td>PSMB5 keeps 8% of its spread inside its own hit set; r(PSMB5,PSMB4) collapses 0.667 → 0.046</td></tr>
+<tr><td><b>n=2 is arithmetic</b></td><td>Two points always fit a line exactly — every 2-co-hit pair scores |r|=1.000, the mathematical ceiling</td><td>12% of all gene pairs in a 3,000-gene sample have exactly 2 co-hits — enough noise at r=1.0 to bury every real edge</td></tr>
+<tr><td><b>No natural threshold</b></td><td>A hand-picked support floor is needed, and the whole "how much evidence" question is left unanswered by r itself</td><td>Fisher's p-value already encodes evidence volume — nothing to hand-tune</td></tr>
+</table>
+<p>Fisher fixes all three by construction: it needs no variance (only counts), degrades gracefully at n=2 (2 co-hits against expectation 0.4 gives p≈0.05 — correctly "not significant," not a fake perfect correlation), and evidence volume is already inside the p-value.</p>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="step">
+<h2>5 · Computing 224 million pairs without a loop</h2>
+<p>~21,000 candidate genes means ~224 million pairs. Calling <code>scipy.stats.fisher_exact</code> that many times would take days. The fix: all four ingredients of the 2×2 table are just matrix products over two 0/1 matrices — <code>M</code> (measured) and <code>H</code> (hit, zeroed wherever not measured) — each gene×screen.</p>
+<figure>
+<svg viewBox="0 0 680 250" width="640">
+  <rect x="20" y="30" width="150" height="150" fill="#1F6F8B14" stroke="#1F6F8B" stroke-width="1.3" rx="4"/>
+  <text x="95" y="20" text-anchor="middle" font-family="SF Mono, monospace" font-weight="700" font-size="13" fill="#1F6F8B">M</text>
+  <text x="95" y="200" text-anchor="middle" font-family="-apple-system" font-size="10.5" fill="#6B7280">genes × screens — measured?</text>
+  <rect x="200" y="30" width="150" height="150" fill="#B4483C14" stroke="#B4483C" stroke-width="1.3" rx="4"/>
+  <text x="275" y="20" text-anchor="middle" font-family="SF Mono, monospace" font-weight="700" font-size="13" fill="#B4483C">H</text>
+  <text x="275" y="200" text-anchor="middle" font-family="-apple-system" font-size="10.5" fill="#6B7280">genes × screens — hit?</text>
+  <text x="400" y="115" font-family="-apple-system" font-size="22" fill="#3A3D44">&#8594;</text>
+  <rect x="450" y="30" width="200" height="150" fill="#7C5CBF14" stroke="#7C5CBF" stroke-width="1.3" rx="4"/>
+  <text x="550" y="20" text-anchor="middle" font-family="SF Mono, monospace" font-weight="700" font-size="13" fill="#7C5CBF">n, a, r_i, r_j</text>
+  <text x="550" y="200" text-anchor="middle" font-family="-apple-system" font-size="10.5" fill="#6B7280">genes × genes, all pairs at once</text>
+  <text x="550" y="90" text-anchor="middle" font-family="SF Mono, monospace" font-size="12" fill="#14161A">n  = M @ M.T</text>
+  <text x="550" y="112" text-anchor="middle" font-family="SF Mono, monospace" font-size="12" fill="#14161A">a  = H @ H.T</text>
+  <text x="550" y="134" text-anchor="middle" font-family="SF Mono, monospace" font-size="12" fill="#14161A">r_i = H @ M.T</text>
+  <text x="550" y="156" text-anchor="middle" font-family="SF Mono, monospace" font-size="12" fill="#14161A">r_j = M @ H.T</text>
+</svg>
+<figcaption>4 matrix multiplications replace 224 million individual test constructions. <code>hypergeom.sf</code> then runs once, elementwise, over the whole result.</figcaption>
+</figure>
+<div class="math">
+  \[ a[i,j] \;=\; (H \, H^{\top})[i,j] \;=\; \sum_{s} H[i,s]\cdot H[j,s] \]
+  <div class="note">Each screen <i>s</i> contributes 1 to the sum only when both <code>H[i,s]</code> and <code>H[j,s]</code> are 1 — i.e. only when both genes are hits in that screen. Summed over all screens, that is exactly the co-hit count. The other three matrices follow the identical logic with <code>M</code> in place of <code>H</code> on one side.</div>
+</div>
+<div class="warn"><b>A real bug this caught.</b> Matrix multiplication is floating point — counts that should be exact integers (like 985.0000000001) drift off-integer, and <code>hypergeom</code> silently returns <code>NaN</code> on non-integer inputs rather than erroring. Every matrix is rounded with <code>np.rint()</code> before being handed to <code>hypergeom.sf</code> — found via two real NaNs during validation, not by inspection.</div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section class="step">
+<h2>6 · What it recovers that channel 1 misses</h2>
+<p>FANCD2's neighborhood, side by side — same genome-wide screens, same gene, two different questions asked of the data:</p>
+<table>
+<tr><th>Channel 1 (Pearson, reciprocal-rank)</th><th>Channel 2 (Fisher, this channel)</th></tr>
+<tr><td>FANCC (r=0.40) · FANCA (r=0.36) · UBE2T (r=0.34) · FANCB (r=0.33)</td><td>FANCA (66 co-hits, 7.2×) · FANCI (61, 6.2×) · FANCL (56, 7.0×) · UBE2T (54, 7.0×) · FAAP100 (53, 5.9×) · FANCC (45, 7.0×)</td></tr>
+<tr><td>4 reciprocal partners, all r&lt;0.41</td><td>6 reciprocal partners, all fold≥5.9× — including FANCI and FANCL, which channel 1 does not surface at all</td></tr>
+</table>
+<p><b>FANCI</b> (the direct binding partner in the FANCD2–FANCI, "ID2," complex) and <b>FANCL</b> (the E3 ligase that monoubiquitinates them both) are core, well-established members of this pathway — channel 1's correlation never ranks them highly enough to appear. Restricting to "only the screens where it mattered" recovers them cleanly.</p>
+</section>
+
+<!-- ================= 7 ================= -->
+<section class="step">
+<h2>7 · What's still open <span class="pill open">unresolved</span></h2>
+<p>This channel has not been through the same scrutiny channel 1 has (CORUM validation, shuffle-null threshold search). Three concrete problems are known and unfixed:</p>
+
+<h3>7a · The ranking key is wrong</h3>
+<div class="prob"><b>Problem.</b> Each gene's top-25 partners are currently chosen by <i>smallest p-value</i>, not by effect size. p-value conflates "how strong is this relationship" with "how much data do we have" — a pan-essential pair with huge marginals can out-rank a real, tight, low-data relationship by hundreds of orders of magnitude.</div>
+<table>
+<tr><th>pair</th><th>co-hit</th><th>fold (effect size)</th><th>p-value (current sort key)</th></tr>
+<tr><td>RPL13–RPL3 (ribosome, generic)</td><td>835</td><td>1.5×</td><td>1.53×10⁻²⁶⁴ ← ranks <b>first</b></td></tr>
+<tr><td>FANCA–FANCB (Fanconi, specific)</td><td>33</td><td><b>9.1×</b></td><td>2.21×10⁻³¹ ← ranks behind it</td></tr>
+</table>
+<p>By the current sort key, a weak (1.5×) but data-heavy pair outranks a strong (9.1×), genuinely specific one. <span class="pill open">not fixed</span> — the sort key should be <code>fold</code> (or a shrunk/regularized version of it, since raw fold is itself biased toward rare-hit genes), with <code>q_value</code> used only as a pass/fail gate.</p>
+
+<h3>7b · <code>IS_HIT</code> was never harmonized</h3>
+<div class="prob"><b>Problem.</b> Channel 1 exists specifically because raw scores from different labs (MaGeCK, CasTLE, STARS, Log2FC) aren't comparable — that's what <code>PERCENTILE_SCORE</code> fixes. This channel's entire signal is <code>IS_HIT</code>, which is the <b>original screen authors' own significance call</b>, inherited as-is. It was never put through that same harmonization.</div>
+<div class="statgrid">
+<div class="stat"><b>0%</b><span>strictest screen's hit rate</span></div>
+<div class="stat"><b>6.7%</b><span>mean hit rate</span></div>
+<div class="stat"><b>44.5%</b><span>loosest screen's hit rate</span></div>
+<div class="stat"><b>1,377</b><span>screens compared</span></div>
+</div>
+<p>Fisher's model implicitly assumes every screen calls hits at a comparable standard. It doesn't: a rare gene that happens to be a hit only in the "loosely-called" screens will look artificially co-hit with anything else called a hit in those same loose screens, purely from that shared laxity — not biology. <span class="pill open">not fixed</span> — candidate repair is to re-derive a per-screen hit flag from a fixed <code>PERCENTILE_SCORE</code> quantile (so every screen's "hit" means the same relative extremeness), rather than trusting each screen's own threshold.</p>
+
+<h3>7c · Two-class artifact filter was hand-tuned, not derived</h3>
+<div class="prob"><b>Problem.</b> Spot-checking found two failure classes: genes with no real phenotype that still cluster (olfactory receptors, defensins — near-zero co-hits, mostly self-resolving) and multi-mapping sgRNA genes whose guides cut several loci at once, producing a real but non-biological "cutting toxicity" phenotype that mimics genuine co-essentiality (paralog/tandem-repeat families).</div>
+<div class="sol"><b>What was found to work, on spot-checks only.</b> <code>co_hit ≥ 20 AND concordance ≥ 0.90 AND fold ≥ 2.0</code> silences both known artifact examples (<code>OR51A2</code>, <code>USP17L28</code>) while keeping the full FANCD2 Fanconi neighborhood intact.</div>
+<p>These three numbers were chosen by eyeballing a handful of known genes — exactly the "picking a cutoff by eye is arbitrary" problem channel 1's shuffle-null threshold (§7 of the Pearson doc) was built to avoid. <span class="pill open">not fixed</span> — this channel needs the equivalent: a within-screen shuffle null, calibrated FDR, not a hand-picked triple.</p>
+</section>
+
+<hr>
+
+<!-- ================= status ================= -->
+<section class="step">
+<h2>Status</h2>
+<div class="statgrid">
+<div class="stat"><b>417,924</b><span>co-hit edges stored</span></div>
+<div class="stat"><b>70,253</b><span>reciprocal</span></div>
+<div class="stat"><b>19,167</b><span>genes involved</span></div>
+<div class="stat"><b>448.3M</b><span>pairs tested</span></div>
+</div>
+<p><code>hit_only_connection</code> table: <code>gene_a, gene_b, co_hit, expected, fold, p_value, q_value, support, concordance, reciprocal</code>. Built by <code>script/compute_hit_only.py</code> over the same 1,377 genome-wide screens as channel 1. <b>Not yet wired into the frontend or validated against CORUM</b> — §7's three issues should be closed first, particularly 7a (sort key), since it currently determines which edges even get stored.</p>
+</section>
+
+<hr>
+<h2>Glossary</h2>
+<table class="gloss-t">
+<tr><td>Fisher's exact test</td><td>A statistical test for whether two binary outcomes (here: "hit in screen X") co-occur more than chance predicts, exact for any sample size (no large-sample approximation needed).</td></tr>
+<tr><td>Hypergeometric distribution</td><td>The probability distribution of "marked balls drawn without replacement from an urn" — the engine under Fisher's exact test.</td></tr>
+<tr><td>Co-hit</td><td>A screen where both genes in a pair were independently called a hit by the original authors.</td></tr>
+<tr><td>Fold (enrichment)</td><td>Observed co-hits ÷ co-hits expected from the two genes' individual hit rates alone. The effect-size number; not currently used for ranking (§7a).</td></tr>
+<tr><td>Concordance</td><td>Share of co-hit screens where both genes moved the <i>same</i> direction (both deleterious or both advantageous). Real complexes fail together, not oppositely.</td></tr>
+<tr><td>BH-FDR / q-value</td><td>Benjamini-Hochberg false discovery rate correction, applied across all pairs tested, not just the ones kept.</td></tr>
+<tr><td>Support</td><td>Co-measured screens — the Fisher population size, <code>n</code> in the formula.</td></tr>
+</table>
+
+<div class="foot">RETICLE · co-hit / Fisher channel · working note, not a validated deliverable · pipeline is deterministic (fixed-seed shuffle where used, no LLM at compute time)</div>
+
+</main>
+</body>
+</html>

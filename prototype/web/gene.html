@@ -14,6 +14,7 @@
   --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;
   --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;
   --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;
+  --ess:#1F6F8B; --adv:#E08A3C; --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;
   --serif:"Fraunces",Georgia,serif;
   --sans:"IBM Plex Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -190,6 +191,15 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 .struct{position:relative;height:300px;background:#FCFCFB;border-bottom:1px solid var(--line)}
 .struct canvas{border-radius:0}
 .struct-none{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;padding:20px}
+.distwrap{margin-top:4px}
+.dctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.dtoggle{display:inline-flex;gap:4px}
+.dbtn{font-family:var(--mono);font-size:11.5px;padding:3px 11px;border:1px solid var(--line);background:var(--card);border-radius:20px;cursor:pointer;color:var(--ink2)}
+.dbtn.on{background:var(--eviq);border-color:var(--eviq);color:#fff}
+.dsel{font-family:var(--sans);font-size:12.5px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);max-width:280px}
+.dhist{width:100%;max-width:560px;height:auto;display:block;margin:2px 0}
+.dcap{font-size:13.5px;color:var(--ink2);margin:8px 0 2px}
+.dcap .hit{color:var(--eviq);font-weight:600}
 .struct-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(0deg,rgba(255,255,255,.94),rgba(255,255,255,.6));font-family:var(--mono);font-size:10.5px;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .struct-cap .badge{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px}
 .struct-cap .badge.pred{background:var(--eviq-soft);color:#8a5410}
@@ -222,11 +232,140 @@ section{scroll-margin-top:86px;margin-bottom:44px}
   .go{grid-template-columns:1fr}.dep{grid-template-columns:1fr}.ph{grid-template-columns:120px 1fr auto}.ph-cond{padding-left:0}
   .fp{grid-template-columns:1fr}.fp-num{border-right:0;border-bottom:1px solid var(--line2);padding:0 0 12px}
 }
+/* ===== gene-level phenotype profile (merged from the old Explore page) ===== */
+.gene-verdict{margin:14px 0 4px;font-family:var(--serif);font-weight:300;font-size:clamp(17px,2.4vw,22px);line-height:1.4;color:var(--ink);max-width:70ch}
+.gene-verdict em{font-style:normal;font-weight:500}
+.gene-verdict .e{color:var(--ess)} .gene-verdict .a{color:var(--adv)}
+.gene-verdict .vs{display:block;font-family:var(--sans);font-weight:400;font-size:14.5px;color:var(--ink2);margin-top:10px;padding-left:13px;border-left:2px solid var(--line)}
+.gene-verdict .vs em{font-weight:600}.gene-verdict .vs em.e{color:var(--ess)}.gene-verdict .vs em.a{color:var(--adv)}
+
+.band{margin-top:8px}
+.band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
+.band-h .name{font-family:var(--serif);font-size:21px;font-weight:500}
+.band.stress .band-h .name,.band.reporter .band-h .name{font-size:18px}
+.band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+.sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}
+.ends{display:flex;justify-content:space-between;margin-top:2px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ends .l b,.ends .r b{display:block;font-family:var(--sans);font-size:12.5px;font-weight:500}
+.ends .l b{color:var(--ess)} .ends .r{text-align:right} .ends .r b{color:var(--adv)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;background:var(--card);margin:22px 0;overflow:hidden}
+.stat{padding:16px 18px;border-right:1px solid var(--line2)}
+.stat:last-child{border-right:0}
+.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.stat .v{font-family:var(--mono);font-size:25px;font-weight:500;margin-top:6px;letter-spacing:-.01em}
+.stat .v small{font-size:13px;color:var(--muted);font-weight:400}
+.hist-svg{width:100%;height:190px;display:block;overflow:visible;margin-top:8px}
+.sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:26px 0 6px;display:flex;align-items:center;gap:10px}
+.sec-h .lead2{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:12px}
+.sec-h::after{content:"";flex:1;height:1px;background:var(--line2)}
+.caveat{font-size:13px;color:var(--muted);margin-top:16px;padding-left:12px;border-left:2px solid var(--line)}
+
+/* stress / reporter fact ledgers */
+.lkey{font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--muted);margin-top:14px;padding:11px 14px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}
+.lkey b{color:var(--ink);font-weight:600}.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}
+.ledger{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.lrow{border-bottom:1px solid var(--line2)}.lrow:last-child{border-bottom:0}
+.lrow>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:70px minmax(0,1fr) 104px 60px 40px;align-items:center;gap:12px;padding:10px 16px;transition:background .12s}
+.lrow>summary::-webkit-details-marker{display:none}
+.lrow>summary:hover{background:#FBFAF7}
+.lcc{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:3px 5px;text-align:center}
+.lcond{font-family:var(--sans);font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ldir{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap}
+.ldir.resist{color:var(--adv)} .ldir.sensitise{color:var(--ess)} .ldir.mixed{color:var(--muted)}
+.lbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.lbar i{display:block;height:100%;border-radius:3px;background:var(--faint)}
+.lrow.resist .lbar i{background:var(--adv)} .lrow.sensitise .lbar i{background:var(--ess)}
+.lcount{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.lfacts{display:flex;flex-direction:column;gap:2px;padding:2px 16px 14px 94px;background:#FCFBF9}
+.lfact{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:none;padding:2px 0}
+a.lfact:hover{color:var(--ink);text-decoration:underline}
+.fs.resist{color:var(--adv)} .fs.sensitise{color:var(--ess)}
+.lmore>summary{list-style:none;cursor:pointer;text-align:center;padding:10px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ess);transition:background .12s}
+.lmore>summary::-webkit-details-marker{display:none}
+.lmore>summary:hover{background:#FBFAF7}
+.lmore>summary .s-hide{display:none}
+.lmore[open]>summary .s-show{display:none}.lmore[open]>summary .s-hide{display:inline}
+.lmore .lrow{border-top:1px solid var(--line2);border-bottom:0}
+.lrow.rep>summary{grid-template-columns:74px minmax(0,1fr) 60px 34px}
+.rreg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.band.reporter .lbar i{background:var(--faint)}
+.rphen{color:var(--faint)}
+.rexplain:empty{display:none}
+.rexplain{margin:0 0 10px;padding:11px 13px;border:1px solid var(--line);border-left:2px solid var(--adv);border-radius:8px;background:var(--card)}
+.rex-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rex-src{text-transform:none;letter-spacing:0}
+.rex-src a{color:var(--ess);text-decoration:none}.rex-src a:hover{text-decoration:underline}
+.rex-t{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:#2C3037}
+.rex-load,.rex-err{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.rex-err{color:#B23A3A}
+
+/* darkness card (right rail) */
+.darkcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin-bottom:14px}
+.darkcard .darknum{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1}
+.darkcard .darknum small{font-size:16px;color:var(--faint)}
+.darkcard .band-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+.darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}
+.darkfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.darkcard .darkmeta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px}
+.darkcard .partners{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.darkcard .partners .lab{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);width:100%}
+.pchip2{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:16px;padding:2px 10px;color:var(--muted);cursor:pointer;transition:.15s;text-decoration:none}
+.pchip2:hover{border-color:var(--ess);color:var(--ess)}
+
+/* co-essentiality network (force-directed) */
+.netwrap{margin-top:6px}
+.netsvg{width:100%;height:auto;max-width:720px;display:block;margin-top:12px;background:var(--card);border:1px solid var(--line2);border-radius:14px}
+.netlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center}
+.netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.gnode text{transition:fill .15s}
+.gnode:hover text{fill:#14161A!important;font-weight:600}
+.gnode:hover circle{filter:brightness(1.08)}
+
+/* AI reading (whole-gene interpret) */
+.ai{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);padding:22px 26px;margin:14px 0 22px;position:relative;overflow:hidden}
+.ai::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--ess),var(--adv))}
+.ai-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ai-h .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq)}
+.ai-h .m{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.ai-body{font-size:18px;line-height:1.56;color:var(--ink);font-family:var(--serif);font-weight:300;max-width:70ch}
+.ai-body a{color:var(--ess);font-weight:500;text-decoration:none;border-bottom:1px solid var(--ess-soft);font-family:var(--sans);font-size:13.5px}
+.ai-body a:hover{border-bottom-color:var(--ess)}
+.ai-body.loading{color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:400;display:flex;align-items:center;gap:10px}
+.ai .dot{width:7px;height:7px;border-radius:50%;background:var(--ess);animation:pulse 1.1s infinite ease-in-out}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.ai .sources{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.ai .sources a{color:var(--ess);text-decoration:none}.ai .sources a:hover{text-decoration:underline}
+.ai .disc{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:14px}
+.tooltip{position:fixed;pointer-events:none;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:7px;opacity:0;transform:translateY(4px);transition:opacity .12s;z-index:400;white-space:nowrap}
+.tooltip.on{opacity:1;transform:none}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}}
+
+/* ---------- global feature nav (shared: gene / screen / network) ---------- */
+.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;
+  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}
+.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;
+  text-decoration:none;letter-spacing:.01em;white-space:nowrap}
+.gnav-brand b{color:#1F6F8B}
+.gnav-tabs{display:flex;gap:4px}
+.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;
+  white-space:nowrap;transition:background .12s,color .12s}
+.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}
+.gnav-tabs a.on{background:#14161A;color:#fff}
+.gnav-sp{flex:1}
+@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}
 </style>
 </head>
 <body class="landing">
+<nav class="gnav">
+  <a class="gnav-brand" href="/">RETI<b>C</b>LE</a>
+  <div class="gnav-tabs">
+    <a href="/" data-t="gene">Gene</a>
+    <a href="/screen" data-t="screen">Screen</a>
+    <a href="/network" data-t="network">Network</a>
+  </div>
+</nav>
 <div class="bar"><div class="in">
-  <div class="mark">RETICLE<b>·</b>gene<s>wiki</s></div>
+  <div class="mark">gene<s>wiki</s></div>
   <div class="srch">
     <input id="q" type="text" placeholder="Gene symbol — TP53, BRCA1, KRAS…" autocomplete="off" spellcheck="false">
     <select id="tax"><option value="9606">human</option><option value="10090">mouse</option></select>
@@ -249,6 +388,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 <div id="status" class="status"></div>
 <div id="gw"></div>
 <div id="foot" class="foot"></div>
+<div class="tooltip" id="tip"></div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -280,7 +420,9 @@ const SECTIONS=[
   {id:'interactions',label:'Interactions',mv:'k'},
   {id:'clinical',label:'Clinical significance',mv:'k',cond:w=>w.uniprot.disease},
   {id:'predictions',label:'Predicted functions',mv:'p'},
+  {id:'behavior',label:'Screen behavior',mv:'e'},
   {id:'dependency',label:'Dependency',mv:'e'},
+  {id:'coess',label:'Co-essentiality',mv:'e'},
   {id:'screens',label:'CRISPR Screening',mv:'e',cond:w=>w.screens.n_total},
   {id:'literature',label:'Literature',mv:'e'},
 ];
@@ -455,18 +597,27 @@ function render(w){
         <div class="ey">${[w.identity.organism,`GeneID ${w.identity.gene_id}`,w.identity.type_of_gene,w.identity.map_location?`chr${w.identity.chromosome} ${w.identity.map_location}`:null].filter(Boolean).map((m,i)=>i===0?`<b>${esc(m)}</b>`:esc(m)).join(' · ')}</div>
         <h1>${esc(w.identity.symbol)}</h1>
         ${w.identity.full_name?`<div class="fn">${esc(w.identity.full_name)}</div>`:''}
+        <div class="gene-verdict" id="gene-verdict" style="display:none"></div>
       </header>
+      <div class="ai" id="ai-lead" style="display:none">
+        <div class="ai-h"><span class="t">AI reading · screen behavior</span><span class="m" id="aimodel"></span></div>
+        <div class="ai-body loading" id="aibody"><span class="dot"></span> Reading ${esc(w.identity.symbol)} across its screens…</div>
+        <div class="disc">Fitness essentiality + stress divergence + reporter probes, grounded in PubMed. Verify against primary screens.</div>
+      </div>
       ${sec('function','know','Function','curated','')}
       ${sec('ontology','know','Gene ontology','GO','')}
       ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','Reactome',''):''}
       ${sec('interactions','know','Interactions','STRING v12','')}
       ${w.uniprot.disease?sec('clinical','know','Clinical significance','UniProt','<div class="src"><b>UniProt</b> · involvement in disease</div>'+clampProse(w.uniprot.disease,3)):''}
       ${sec('predictions','pred','Predicted functions','inferred','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
+      ${sec('behavior','eviq','Screen behavior','RETICLE · harmonized','<div id="behavior-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Reading the harmonized screens…</div>')}
       ${sec('dependency','eviq','Dependency','DepMap 24Q4','')}
+      ${sec('coess','eviq','Co-essentiality','RETICLE · data-driven','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
       ${w.screens.n_total?sec('screens','eviq','CRISPR Screening','BioGRID ORCS',''):''}
+      ${w.screens.n_total?sec('distribution','eviq','Score distribution','in-screen',''):''}
       ${sec('literature','eviq','Literature','PubMed','')}
     </main>
-    <aside class="rail">${infobox(w)}</aside>
+    <aside class="rail"><div id="darkcard-slot"></div>${infobox(w)}</aside>
   </div>`;
   const gw=$('#gw'); gw.innerHTML=html;
   buildTOC(w);
@@ -482,6 +633,7 @@ function render(w){
       `<div class="lead scr"><div class="ey">AI screen-hit analysis <i>· per-phenotype inference from the CRISPR hits below — the only AI text, uses no other RETICLE source</i></div>`+
       `<div class="load" id="scr-body">Reading the ${w.screens.n_total} screens, phenotype by phenotype…</div></div>`+
       screensSection(w.screens));
+    $('#distribution').insertAdjacentHTML('beforeend','<div class="load" id="dist-body">Loading in-screen distributions…</div>');
   }
   $('#literature').insertAdjacentHTML('beforeend',`<div class="lit"><b>${num(w.literature.n_pmid)}</b><div><s>linked publications</s><p>PubMed papers curated to this gene — the anchor for literature retrieval.</p></div></div>`);
   $('#foot').innerHTML='Every section is retrieved verbatim from NCBI · UniProt · GO · Reactome · STRING · DepMap · BioGRID ORCS; the 3D model is from AlphaFold / RCSB PDB. The ONLY AI-generated text is the screen-hit analysis in CRISPR Screening, which reads only the screen hits.';
@@ -490,8 +642,59 @@ function render(w){
   loadStructure(w.identity.symbol,w.identity.taxid);
   loadPredictions(w.identity.symbol,w.identity.taxid);
   if(w.screens.n_total) loadScreenAnalysis(w.identity.symbol,w.identity.taxid);
+  if(w.screens.n_total) loadDistribution(w.identity.symbol,w.identity.taxid);
+  loadContext(w.identity.symbol, w.identity.organism);     // darkness → right rail (always)
+  loadGeneProfile(w.identity.symbol, w.identity.organism);  // fitness/stress/reporter + co-ess + AI
 }
 
+/* ---------- in-screen score distribution ---------- */
+let _dist={sym:null,taxid:null,screen:null,score:'percentile'}, _distSeq=0;
+async function loadDistribution(sym,taxid){ _dist={sym,taxid,screen:null,score:'percentile'}; fetchDist(); }
+async function fetchDist(){
+  const host=$('#dist-body'); if(!host) return;
+  const {sym,taxid,screen,score}=_dist;
+  const seq=++_distSeq;   // only the most recent request may render — drops out-of-order responses
+  const u=`/api/gene_screen_distribution?gene=${encodeURIComponent(sym)}&taxid=${taxid}&score=${score}`+(screen?`&screen=${encodeURIComponent(screen)}`:'');
+  let d; try{ d=await (await fetch(u)).json(); }catch(e){ if(seq===_distSeq) host.innerHTML='<div class="struct-none">Distribution unavailable</div>'; return; }
+  if(seq!==_distSeq) return;   // a newer click superseded this fetch — discard the stale result
+  if(d.error){ host.innerHTML=`<div class="struct-none">${esc(d.error)}</div>`; return; }
+  _dist.screen=d.screen; _dist.score=d.score;
+  host.innerHTML=distPanel(d); bindDistControls();
+}
+function ord(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function distPanel(d){
+  const scores=[['percentile','Percentile'],['robustz','Robust z'],['native',d.screen_meta.method]];
+  const toggle=scores.map(s=>`<button class="dbtn${s[0]===d.score?' on':''}" data-score="${s[0]}">${esc(s[1])}</button>`).join('');
+  const opts=d.screens.map(s=>`<option value="${esc(s.sid)}"${s.sid===d.screen?' selected':''}>${esc(s.label)} · ${esc(s.method)}${s.hit?' ✓':''}</option>`).join('');
+  const f=d.focal,pos=Math.max(1,Math.round(f.pct_in_screen*100));
+  const dirTxt=f.direction==='enriched'?'<b style="color:var(--eviq)">enriched</b> (knockout favoured)'
+              :f.direction==='depleted'?'<b style="color:var(--know)">depleted</b> (knockout costly)':'neutral';
+  const tieTxt=f.n_tied>50?` · <span style="color:var(--muted)">${num(f.n_tied)} genes tied at this exact score, so the rank is a midpoint</span>`:'';
+  const cap=`<b>${esc(d.focus)}</b> sits at the <b>${ord(pos)} percentile</b> of <b>${num(f.n_genes)}</b> genes here — ${dirTxt}${f.is_hit?' · <span class="hit">called a hit ✓</span>':''}${tieTxt}`;
+  return `<div class="distwrap">
+    <div class="dctl"><span class="ey">Score</span><div class="dtoggle">${toggle}</div>
+      <span class="ey" style="margin-left:10px">Screen</span><select id="dscreen" class="dsel">${opts}</select></div>
+    ${distSVG(d)}
+    <div class="dcap">${cap}</div>
+    <div class="src"><b>BioGRID ORCS</b> · position of ${esc(d.focus)} vs all genes measured in this FULL screen · axis = ${esc(d.score==='native'?d.screen_meta.method+' (native scale)':d.score==='robustz'?'robust z-score':'within-screen percentile')}</div>
+  </div>`;
+}
+function distSVG(d){
+  const W=560,H=190,PL=42,PR=16,PT=16,PB=32;
+  const bins=d.dist.bins,n=bins.length,maxc=Math.max(...bins.map(b=>b.c),1);
+  const iw=W-PL-PR,ih=H-PT-PB,bw=iw/n,baseY=PT+ih;
+  const bars=bins.map((b,i)=>{const h=b.c/maxc*ih,x=PL+i*bw,y=baseY-h,on=i===d.dist.focal_bin;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.5,bw-0.6).toFixed(1)}" height="${h.toFixed(1)}" fill="${on?'var(--eviq)':'var(--know)'}" opacity="${on?1:.30}"/>`;}).join('');
+  const fx=PL+(d.dist.focal_bin+0.5)*bw;
+  const marker=`<line x1="${fx.toFixed(1)}" y1="${PT-3}" x2="${fx.toFixed(1)}" y2="${baseY}" stroke="var(--eviq)" stroke-width="1.4" stroke-dasharray="3 2"/><text x="${fx.toFixed(1)}" y="${PT-5}" text-anchor="middle" font-family="var(--mono)" font-size="10.5" fill="var(--eviq)">${esc(d.focus)}</text>`;
+  const dirLab=d.score==='native'?'native '+esc(d.screen_meta.method):'← more depleted            enriched →';
+  const axis=`<line x1="${PL}" y1="${baseY}" x2="${W-PR}" y2="${baseY}" stroke="var(--line)" stroke-width="1"/><text x="${PL}" y="${baseY+15}" font-family="var(--mono)" font-size="10" fill="var(--muted)">${d.dist.lo}</text><text x="${W-PR}" y="${baseY+15}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">${d.dist.hi}</text><text x="${(PL+iw/2).toFixed(0)}" y="${baseY+27}" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--faint)">${dirLab}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="dhist" role="img" aria-label="in-screen score distribution of ${esc(d.focus)}">${bars}${marker}${axis}</svg>`;
+}
+function bindDistControls(){
+  document.querySelectorAll('.dbtn').forEach(b=>b.addEventListener('click',()=>{_dist.score=b.dataset.score;fetchDist();}));
+  const sel=document.getElementById('dscreen'); if(sel) sel.addEventListener('change',e=>{_dist.screen=e.target.value;fetchDist();});
+}
 /* ---------- 3D structure ---------- */
 function whenReady(cb,tries){tries=tries||0; if(window.$3Dmol) return cb(); if(tries>40) return cb(true); setTimeout(()=>whenReady(cb,tries+1),150);}
 let _struct=null;
@@ -572,6 +775,332 @@ async function loadScreenAnalysis(sym,taxid){
   }catch(e){ body.className='';body.style.color='var(--faint)';body.textContent='Screen analysis unavailable — server unreachable.'; }
 }
 
+/* ============================================================================
+   Gene-level phenotype profile — fitness / stress / reporter + darkness +
+   co-essentiality + AI reading. Merged in from the old Explore page so one
+   gene lookup answers both "what is it" (wiki) and "how does it behave in
+   screens" (RETICLE's harmonized data).
+   ============================================================================ */
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COL = p => p<0 ? '#1F6F8B' : '#E08A3C';
+const op  = p => 0.32 + 0.62*Math.min(1,Math.abs(p));
+const fmt = (v,d=2)=> (v>=0?'+':'')+Number(v).toFixed(d);
+const FIT = {name:'Fitness', sub:'baseline growth & viability',
+  eL:'−1 · essential ', eLb:'knockout is lethal', eR:'+1 · advantageous ', eRb:'knockout favored', statK:'fitness screens'};
+function showTip(h,x,y){const t=document.getElementById('tip');if(!t)return;t.innerHTML=h;t.style.left=(x+12)+'px';t.style.top=(y+12)+'px';t.classList.add('on');}
+function hideTip(){const t=document.getElementById('tip');if(t)t.classList.remove('on');}
+function hideSection(id){const s=document.getElementById(id);if(s)s.style.display='none';const a=document.querySelector(`#toc a[data-sec="${id}"]`);if(a)a.style.display='none';}
+
+async function loadGeneProfile(sym, organism){
+  let d; try{ d=await (await fetch('/api/gene?symbol='+encodeURIComponent(sym))).json(); }
+  catch(e){ hideSection('behavior'); hideSection('coess'); return; }
+  if(!d || d.error || !d.symbol){ hideSection('behavior'); hideSection('coess'); return; }
+  renderBehavior(d);
+  loadCoess(sym, organism);
+  runInterpret(d);
+}
+
+function renderBehavior(d){
+  const F=d.fitness,S=d.stress,R=d.reporter, fn=F?F.n:0, sn=S?S.n:0, rn=R?R.n:0;
+  let verdict;
+  if(F){
+    verdict = F.lean==='essential'
+      ? `Across <em>${fn}</em> fitness screens, losing <em class="e">${esc(d.symbol)}</em> is usually costly — it behaves like an <em class="e">essential</em> gene.`
+      : F.lean==='advantageous'
+      ? `Across <em>${fn}</em> fitness screens, knocking out <em class="a">${esc(d.symbol)}</em> is usually <em class="a">advantageous</em> — loss tends to help cells grow.`
+      : `Across <em>${fn}</em> fitness screens, <em>${esc(d.symbol)}</em> cuts both ways — its baseline effect is context-dependent.`;
+  }else{
+    verdict = `<em>${esc(d.symbol)}</em> wasn't measured in baseline fitness screens — showing stress / marker behavior below.`;
+  }
+  let stressLine='';
+  if(S && (S.ledger||[]).length){
+    const top=S.ledger.slice(0,2).map(r=>{
+      const cls=r.direction==='resist'?'a':r.direction==='sensitise'?'e':'';
+      const verb=r.direction==='resist'?'confers resistance to':r.direction==='sensitise'?'sensitizes to':'is mixed on';
+      const cnt=r.n_agree===r.n_papers?r.n_papers:`${r.n_agree}/${r.n_papers}`;
+      return `<em class="${cls}">${verb} ${esc(r.condition)}</em> (${cnt} paper${r.n_papers>1?'s':''})`;
+    }).join(', ');
+    stressLine = `Under drug, pathogen or immune pressure, ${esc(d.symbol)} is <b>condition-specific</b> — e.g. ${top}.`;
+  }
+  const gv=document.getElementById('gene-verdict');
+  if(gv){ gv.innerHTML=verdict+(stressLine?`<span class="vs">${stressLine}</span>`:''); gv.style.display=''; }
+
+  const meta=`<div style="font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-bottom:6px">${esc(d.organism)} · ${d.n_total} screens · <b style="color:var(--ess)">${fn} fitness</b> · ${sn} drug/pathogen · ${rn} reporter</div>`;
+  const body=document.getElementById('behavior-body');
+  body.outerHTML=`<div id="behavior-body">${meta}
+    ${F?domainBand(F,FIT,'fitness','sigF','histF'):''}
+    ${S?stressLedger(S):''}
+    ${rn?reporterLedger(R,d.symbol):''}
+    ${!F&&!S&&!rn?'<div style="color:var(--faint)">No harmonized screen signal for this gene.</div>':''}</div>`;
+  requestAnimationFrame(()=>{ if(F){drawSig(F,'sigF');drawHist(F,'histF');} animateStats(); wireReporterExplain(); });
+}
+
+function domainBand(b, cfg, key, sig, hist){
+  return `<div class="band ${key}">
+    <div class="band-h"><span class="name">${cfg.name}</span>
+      <span class="sub">${cfg.sub} · ${b.n} screens · median ${fmt(b.median)}</span></div>
+    <svg class="sig-svg" id="${sig}" viewBox="0 0 1000 118" preserveAspectRatio="none"></svg>
+    <div class="ends"><div class="l">${cfg.eL}<b>${cfg.eLb}</b></div><div class="r">${cfg.eR}<b>${cfg.eRb}</b></div></div>
+    <div class="stats">
+      ${stat(cfg.statK,b.n,'int')}
+      ${stat('hit rate',b.hit_rate,'pct',b.n_hits+' hits')}
+      ${stat('median position',b.median,'signed')}
+      ${stat('spread (IQR)',b.p75-b.p25,'plain')}
+    </div>
+    <div class="sec-h">Distribution across screens</div>
+    <svg class="hist-svg" id="${hist}" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+  </div>`;
+}
+function stat(k,v,kind,sub){
+  let disp;
+  if(kind==='pct') disp=`<span class="cu" data-v="${v*100}" data-kind="pct">0</span><small>%</small>`;
+  else if(kind==='signed') disp=`<span class="cu" data-v="${v}" data-kind="signed">0</span>`;
+  else if(kind==='plain') disp=`<span class="cu" data-v="${v}" data-kind="plain">0</span>`;
+  else disp=`<span class="cu" data-v="${v}" data-kind="int">0</span>`;
+  return `<div class="stat"><div class="k">${k}</div><div class="v">${disp}${sub?` <small>${sub}</small>`:''}</div></div>`;
+}
+function drawSig(b,id){
+  const svg=$('#'+id); if(!svg) return; const W=1000,pad=8,midY=64,x=p=>pad+(p+1)/2*(W-2*pad);
+  let s=`<line x1="${pad}" y1="${midY}" x2="${W-pad}" y2="${midY}" stroke="#E2E0DB"/>`;
+  s+=`<line x1="${x(0)}" y1="22" x2="${x(0)}" y2="${midY+18}" stroke="#D7D5D0" stroke-dasharray="2 3"/>`;
+  s+=`<rect x="${x(b.p25)}" y="${midY-15}" width="${x(b.p75)-x(b.p25)}" height="30" rx="4" fill="#1416180a"/>`;
+  const ticks=b.screens||b.rug.map(p=>({p}));
+  ticks.forEach(t=>{const p=t.p,xx=x(p),lbl=(t.cn||'').replace(/[<&">]/g,' ');
+    s+=`<line class="tick" x1="${xx}" y1="${midY-13}" x2="${xx}" y2="${midY+13}" stroke="${COL(p)}" stroke-width="1.4" stroke-opacity="${op(p)}">${lbl?`<title>${lbl} · ${fmt(p)}</title>`:''}</line>`;});
+  const mx=x(b.median);
+  s+=`<line x1="${mx}" y1="${midY-26}" x2="${mx}" y2="${midY+22}" stroke="#14161A" stroke-width="1.5"/>`;
+  s+=`<path d="M${mx-5} ${midY-26} L${mx+5} ${midY-26} L${mx} ${midY-19} Z" fill="#14161A"/>`;
+  s+=`<text x="${mx}" y="${midY-31}" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#14161A">median ${fmt(b.median)}</text>`;
+  svg.innerHTML=s;
+}
+function drawHist(b,id){
+  const svg=$('#'+id); if(!svg) return; const W=1000,H=200,padX=8,padB=26,padT=10;
+  const {edges,counts}=b.hist,n=counts.length,max=Math.max(...counts,1),bw=(W-2*padX)/n,gap=2,x=p=>padX+(p+1)/2*(W-2*padX);
+  let s=`<line x1="${x(0)}" y1="${padT}" x2="${x(0)}" y2="${H-padB}" stroke="#E2E0DB" stroke-dasharray="2 3"/>`;
+  counts.forEach((c,i)=>{const cen=(edges[i]+edges[i+1])/2,h=(c/max)*(H-padB-padT),bx=padX+i*bw+gap/2;
+    s+=`<rect class="bar" data-c="${c}" data-lo="${edges[i].toFixed(2)}" data-hi="${edges[i+1].toFixed(2)}" x="${bx}" y="${H-padB}" width="${bw-gap}" height="0" rx="2" fill="${COL(cen)}" fill-opacity="${op(cen)}" data-y="${H-padB-h}" data-h="${h}"></rect>`;});
+  [['−1',-1],['0',0],['+1',1]].forEach(([t,p])=>{s+=`<text x="${x(p)}" y="${H-8}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#9AA0A6">${t}</text>`;});
+  svg.innerHTML=s;
+  svg.querySelectorAll('.bar').forEach((bar,i)=>{const y=bar.dataset.y,h=bar.dataset.h;
+    if(RM){bar.setAttribute('y',y);bar.setAttribute('height',h);}
+    else{bar.style.transition='y .6s cubic-bezier(.2,.7,.2,1),height .6s cubic-bezier(.2,.7,.2,1)';bar.style.transitionDelay=(i*14)+'ms';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.setAttribute('y',y);bar.setAttribute('height',h);}));}
+    bar.addEventListener('mousemove',e=>showTip(`${bar.dataset.c} screens<br>${bar.dataset.lo} … ${bar.dataset.hi}`,e.clientX,e.clientY));
+    bar.addEventListener('mouseleave',hideTip);});
+}
+function animateStats(){
+  document.querySelectorAll('.cu').forEach(el=>{
+    const v=parseFloat(el.dataset.v),kind=el.dataset.kind;
+    const out=x=>kind==='int'?Math.round(x).toString():kind==='pct'?x.toFixed(0):kind==='signed'?(x>=0?'+':'')+x.toFixed(2):x.toFixed(2);
+    if(RM){el.textContent=out(v);return;}
+    const t0=performance.now();(function step(t){const k=Math.min(1,(t-t0)/750),e=1-Math.pow(1-k,3);
+      el.textContent=out(v*e);if(k<1)requestAnimationFrame(step);else el.textContent=out(v);})(t0);});
+}
+function stressLedger(S){
+  const L=S.ledger||[], CAP=4, TOP=5;
+  const row=r=>{
+    const arw=r.direction==='resist'?'▲ resist':r.direction==='sensitise'?'▼ sensitize':'± mixed';
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    const cnt=r.n_agree===r.n_papers ? String(r.n_papers) : `${r.n_agree}/${r.n_papers}`;
+    const facts=r.facts.map(f=>{
+      const sl=f.sign==='pos'?'resist':'sensitise', st=f.sign==='pos'?'resist':'sensitize';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)} · <span class="fs ${sl}">${st}</span>`;
+      return f.pmid?`<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`:`<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow ${r.direction}"><summary>
+        <span class="lcc">${esc(r.class)}</span>
+        <span class="lcond" title="${esc(r.condition)}">${esc(r.condition)}</span>
+        <span class="ldir ${r.direction}">${arw}</span>
+        <span class="lbar"><i style="width:${w}%"></i></span>
+        <span class="lcount">${cnt}</span>
+      </summary><div class="lfacts">${facts}</div></details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP?`<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more conditions ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`:'';
+  return `<div class="band stress" style="margin-top:26px">
+    <div class="band-h"><span class="name">Response to drugs, pathogens &amp; immunity</span>
+      <span class="sub">survival under an applied condition · ${S.n} screens · ${S.n_hits} author-called hits</span></div>
+    <div class="lkey"><b>How to read</b> — each row is one <b>specific</b> condition.
+      <span class="ldir resist">▲ resist</span> = knockout lets cells survive it <b>better</b>;
+      <span class="ldir sensitise">▼ sensitize</span> = knockout makes cells <b>more sensitive</b>.
+      The <b>number</b> = independent <b>papers</b> that found the effect (a fraction like <em>1/2</em> means papers disagreed). Click a row for the cited papers.</div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`:`<div class="lkey">No author-called modifier hits across these stress screens.</div>`}
+  </div>`;
+}
+function reporterLedger(R, sym){
+  const L=R.ledger||[], CAP=4, TOP=6;
+  const row=r=>{
+    const w=Math.min(100,Math.round(100*r.n_papers/CAP));
+    const facts=r.facts.map(f=>{
+      const ph=f.phenotype?` · <span class="rphen">${esc(f.phenotype)}</span>`:'';
+      const inner=`${esc(f.author)} · ${esc(f.cell_line)}${ph}`;
+      return f.pmid?`<a class="lfact" href="https://pubmed.ncbi.nlm.nih.gov/${esc(f.pmid)}" target="_blank" rel="noopener">${inner}</a>`:`<span class="lfact">${inner}</span>`;
+    }).join('');
+    return `<details class="lrow rep" data-symbol="${esc(sym||'')}" data-screens="${esc((r.screens||[]).join(','))}"><summary>
+        <span class="rreg">regulates</span>
+        <span class="lcond" title="${esc(r.process)}">${esc(r.process)}</span>
+        <span class="lbar rep"><i style="width:${w}%"></i></span>
+        <span class="lcount">${r.n_papers}</span>
+      </summary><div class="lfacts"><div class="rexplain" data-loaded="0"></div>${facts}</div></details>`;
+  };
+  const head=L.slice(0,TOP).map(row).join('');
+  const more=L.length>TOP?`<details class="lmore"><summary><span class="s-show">+${L.length-TOP} more processes ▾</span><span class="s-hide">show fewer ▴</span></summary>${L.slice(TOP).map(row).join('')}</details>`:'';
+  return `<div class="band reporter" style="margin-top:26px">
+    <div class="band-h"><span class="name">Reporter / marker read-outs</span>
+      <span class="sub">${R.n} screens · ${R.n_hits} regulator hits</span></div>
+    <div class="lkey"><b>How to read</b> — each row is a <b>process this gene regulates</b> (its knockout shifts a marker). Direction isn't shown (gate-dependent); the number = independent <b>papers</b>. Click a row for a grounded AI note + the cited papers.</div>
+    ${L.length?`<div class="ledger">${head}${more}</div>`:`<div class="lkey">No author-called regulator hits across these marker screens.</div>`}
+  </div>`;
+}
+function wireReporterExplain(){
+  document.querySelectorAll('.lrow.rep').forEach(row=>{
+    row.addEventListener('toggle', ()=>{
+      if(!row.open) return;
+      const box=row.querySelector('.rexplain');
+      if(!box || box.dataset.loaded!=='0') return;
+      box.dataset.loaded='1';
+      const sym=row.dataset.symbol||'', screens=row.dataset.screens||'';
+      if(!sym||!screens){ box.dataset.loaded='0'; return; }
+      box.innerHTML='<span class="rex-load">reading the paper…</span>';
+      fetch('/api/reporter_explain?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
+        .then(r=>r.json()).then(d=>{
+          if(d.error){ box.innerHTML='<span class="rex-err">'+esc(d.error)+'</span>'; return; }
+          const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
+          box.innerHTML=`<div class="rex-h"><span>AI note</span>${cites?`<span class="rex-src">cites ${cites}</span>`:''}</div><div class="rex-t">${esc(d.text)||'—'}</div>`;
+        }).catch(()=>{ box.innerHTML='<span class="rex-err">Could not reach the server.</span>'; });
+    });
+  });
+}
+
+/* co-essentiality force-directed network */
+function renderNetwork(g, svgSel, kind){
+  svgSel=svgSel||'#coesssvg'; kind=kind||'coess';
+  const svg=$(svgSel); if(!svg) return;
+  if(svg._raf) cancelAnimationFrame(svg._raf);
+  const NS='http://www.w3.org/2000/svg', W=760,H=400;
+  const nodes=g.nodes.map((n,i)=>{const a=2*Math.PI*i/g.nodes.length;
+    return {...n, x:W/2+Math.cos(a)*175+(Math.sin(i*99)%1)*15, y:H/2+Math.sin(a)*135+(Math.cos(i*77)%1)*15, vx:0, vy:0};});
+  const idx={}; nodes.forEach((n,i)=>idx[n.name]=i);
+  const edges=g.edges.filter(e=>idx[e.a]!=null && idx[e.b]!=null);
+  const adj={}; nodes.forEach(n=>adj[n.name]=new Set([n.name]));
+  edges.forEach(e=>{adj[e.a].add(e.b); adj[e.b].add(e.a);});
+  const col=l=> l==='essential'?'#1F6F8B':l==='advantageous'?'#E08A3C':l==='mixed'?'#9AA0A6':'#ffffff';
+  svg.innerHTML='';
+  const edgeTip=e=>`${e.a} — ${e.b}<br><span style="color:#E08A3C">co-essential</span> · Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}`;
+  const eEls=edges.map(e=>{const ln=document.createElementNS(NS,'line');
+    ln.setAttribute('stroke','#cfccc6'); ln.setAttribute('stroke-width',(0.5+e.score*2.2).toFixed(2));
+    ln.setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); ln.dataset.a=e.a; ln.dataset.b=e.b;
+    svg.appendChild(ln); return ln;});
+  const hitEls=edges.map((e,i)=>{const hit=document.createElementNS(NS,'line');
+    hit.setAttribute('stroke','transparent'); hit.setAttribute('stroke-width','13'); hit.style.cursor='help';
+    hit.addEventListener('mousemove',ev=>{ eEls[i].setAttribute('stroke','#14161A'); eEls[i].setAttribute('stroke-opacity','1'); showTip(edgeTip(e),ev.clientX,ev.clientY); });
+    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke','#cfccc6'); eEls[i].setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); hideTip(); });
+    svg.appendChild(hit); return hit;});
+  const nEls=nodes.map(n=>{const r=n.focus?13:9, grp=document.createElementNS(NS,'g');
+    grp.setAttribute('class','gnode'); grp.style.transition='opacity .2s';
+    let ring=null;
+    if(n.focus){ring=document.createElementNS(NS,'circle'); ring.setAttribute('r',r+5);
+      ring.setAttribute('fill','none'); ring.setAttribute('stroke','#14161A'); ring.setAttribute('stroke-width','1.5'); grp.appendChild(ring);}
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('r',r);
+    c.setAttribute('fill',col(n.lean)); c.setAttribute('stroke',n.lean?col(n.lean):'#C7C4BE'); c.setAttribute('stroke-width','1.6'); grp.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','IBM Plex Mono'); t.setAttribute('font-size','12');
+    t.setAttribute('fill',n.focus?'#14161A':'#4A4E57'); t.setAttribute('font-weight',n.focus?'600':'400'); t.textContent=n.name; grp.appendChild(t);
+    grp._n=n; grp._c=c; grp._t=t; grp._ring=ring; grp._r=r; svg.appendChild(grp);
+    grp.addEventListener('click',()=>{ if($('#q'))$('#q').value=n.name; lookup(n.name); });
+    grp.addEventListener('mouseenter',()=>hi(n.name));
+    grp.addEventListener('mouseleave',()=>hi(null));
+    return grp;});
+  function hi(name){
+    nEls.forEach(grp=>{ grp.style.opacity = (!name || adj[name].has(grp._n.name)) ? 1 : 0.16; });
+    eEls.forEach(ln=>{ const on = !name || ln.dataset.a===name || ln.dataset.b===name;
+      ln.style.opacity = on?1:0.05; ln.setAttribute('stroke', (name&&on)?'#9aa0a6':'#cfccc6'); });
+  }
+  function physics(alpha){
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      let dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y, dd=dx*dx+dy*dy||1, dist=Math.sqrt(dd), rep=9800/dd;
+      nodes[i].vx+=dx/dist*rep; nodes[i].vy+=dy/dist*rep; nodes[j].vx-=dx/dist*rep; nodes[j].vy-=dy/dist*rep;}
+    edges.forEach(e=>{const a=nodes[idx[e.a]],b=nodes[idx[e.b]];
+      let dx=b.x-a.x, dy=b.y-a.y, dist=Math.hypot(dx,dy)||1, att=(dist-118)*0.012*(0.4+e.score);
+      a.vx+=dx/dist*att; a.vy+=dy/dist*att; b.vx-=dx/dist*att; b.vy-=dy/dist*att;});
+    nodes.forEach(n=>{ n.vx+=(W/2-n.x)*0.006; n.vy+=(H/2-n.y)*0.006;
+      n.x+=Math.max(-16,Math.min(16,n.vx))*alpha; n.y+=Math.max(-16,Math.min(16,n.vy))*alpha;
+      n.vx*=0.82; n.vy*=0.82;
+      n.x=Math.max(46,Math.min(W-46,n.x)); n.y=Math.max(26,Math.min(H-30,n.y)); });
+  }
+  function paint(){
+    eEls.forEach((ln,i)=>{const a=nodes[idx[edges[i].a]],b=nodes[idx[edges[i].b]];
+      const x1=a.x.toFixed(1),y1=a.y.toFixed(1),x2=b.x.toFixed(1),y2=b.y.toFixed(1);
+      ln.setAttribute('x1',x1); ln.setAttribute('y1',y1); ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+      const hit=hitEls[i]; hit.setAttribute('x1',x1); hit.setAttribute('y1',y1); hit.setAttribute('x2',x2); hit.setAttribute('y2',y2);});
+    nEls.forEach(grp=>{const n=grp._n;
+      grp._c.setAttribute('cx',n.x.toFixed(1)); grp._c.setAttribute('cy',n.y.toFixed(1));
+      if(grp._ring){grp._ring.setAttribute('cx',n.x.toFixed(1)); grp._ring.setAttribute('cy',n.y.toFixed(1));}
+      grp._t.setAttribute('x',n.x.toFixed(1)); grp._t.setAttribute('y',(n.y+grp._r+13).toFixed(1));});
+  }
+  if(RM){ for(let i=0;i<240;i++) physics(1); paint(); return; }
+  let frame=0, swaying=false;
+  (function loop(){
+    if(frame<130){ physics(1); }
+    else{ if(!swaying){ nodes.forEach(n=>{ n.sx=n.x; n.sy=n.y; n.ph=(n.x*n.y)%6.283; }); swaying=true; }
+      const t=frame*0.014; nodes.forEach(n=>{ n.x=n.sx+Math.sin(t+n.ph)*4.5; n.y=n.sy+Math.cos(t*0.85+n.ph)*4.5; }); }
+    paint(); frame++; svg._raf=requestAnimationFrame(loop);
+  })();
+}
+async function loadCoess(sym, organism){
+  const host=document.getElementById('coess-body'); if(!host) return;
+  try{
+    const r=await fetch('/api/coessential?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
+    const g=await r.json();
+    if(!r.ok || !g.nodes || g.nodes.length<2){ hideSection('coess'); return; }
+    host.innerHTML=`<div class="src"><b>RETICLE</b> · genes whose CRISPR fitness profiles move together — data-driven, works for dark genes</div>
+      <div class="netwrap"><svg id="coesssvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="netlegend"><span><i style="background:#1F6F8B"></i>essential</span><span><i style="background:#E08A3C"></i>KO-advantageous</span><span><i style="background:#9AA0A6"></i>mixed</span>
+        <span style="color:var(--faint)">edge = correlated across fitness screens · hover for Pearson r · click a node to open it</span></div></div>`;
+    renderNetwork(g, '#coesssvg', 'coess');
+  }catch(e){ hideSection('coess'); }
+}
+async function loadContext(sym, organism){
+  const slot=document.getElementById('darkcard-slot'); if(!slot) return;
+  try{
+    const r=await fetch('/api/context?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
+    const c=await r.json();
+    if(!r.ok) return;
+    const dk=c.darkness, parts=c.string_partners||[];
+    if(!dk && !(parts&&parts.length)) return;
+    const col=dk?(dk.band==='dark'?'#6d5bbd':dk.band==='grey'?'#C98A3C':'#2F8F6B'):'#9AA0A6';
+    const lbl=dk?(dk.band==='dark'?'dark matter':dk.band==='grey'?'grey zone':'well studied'):'n/a';
+    slot.innerHTML=`<div class="darkcard">
+      ${dk?`<div class="darknum" style="color:${col}">${dk.score}<small>/10</small></div>
+      <div class="band-lbl" style="color:${col}">darkness · ${lbl}</div>
+      <div class="darkbar"><div class="darkfill" id="dfill" style="width:0;background:${col}"></div></div>
+      <div class="darkmeta">${dk.pubmed_count.toLocaleString()} papers · ${dk.go_total} GO terms</div>`:''}
+      ${parts.length?`<div class="partners"><span class="lab">STRING partners</span>${parts.slice(0,8).map(p=>`<span class="pchip2" onclick="lookup('${esc(p.partner)}')">${esc(p.partner)}</span>`).join('')}</div>`:''}
+    </div>`;
+    if(dk){ const f=document.getElementById('dfill'); requestAnimationFrame(()=>requestAnimationFrame(()=>{ f.style.width=(dk.score*10)+'%'; })); }
+  }catch(e){}
+}
+function linkifyPMIDs(text){
+  const e=String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return e.replace(/PMIDs?[:\s]*(\d{5,9})/gi,(m,id)=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${id}/" target="_blank" rel="noopener">PMID ${id}</a>`);
+}
+async function runInterpret(d){
+  const lead=document.getElementById('ai-lead'), body=document.getElementById('aibody'), me=document.getElementById('aimodel');
+  if(!lead||!body) return;
+  lead.style.display='';                       // show loading
+  try{
+    const r=await fetch('/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const j=await r.json();
+    if(!r.ok){ lead.style.display='none'; return; }   // off-VPN / unavailable → hide quietly
+    if(me) me.textContent=j.model; body.className='ai-body'; body.innerHTML=linkifyPMIDs(j.text);
+    if(j.sources && j.sources.length){
+      const s=document.createElement('div'); s.className='sources';
+      s.innerHTML='Grounded in: '+j.sources.map(x=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${x.pmid}/" target="_blank" rel="noopener" title="${(x.title||'').replace(/"/g,'')}">PMID ${x.pmid}</a>`).join(' · ');
+      const disc=lead.querySelector('.disc'); lead.insertBefore(s, disc);
+    }
+  }catch(e){ lead.style.display='none'; }
+}
+
 /* ---------- disclosure (delegated) ---------- */
 document.addEventListener('click',e=>{
   const b=e.target.closest('.more'); if(!b) return;
@@ -645,6 +1174,25 @@ initWave();
 
 const params=new URLSearchParams(location.search);
 if(params.get('gene')){ $('#q').value=params.get('gene'); if(params.get('taxid')){$('#tax').value=$('#tax2').value=params.get('taxid');} lookup(params.get('gene')); }
+
+/* ---------- global nav: mark active tab, carry the current gene across features ---------- */
+(function(){
+  const path=location.pathname, sp=new URLSearchParams(location.search);
+  const cur = /^\/(network|net)/.test(path) ? 'network'
+            : /^\/(screen)/.test(path)      ? 'screen' : 'gene';
+  const gene = sp.get('gene')||'';
+  const tax  = sp.get('taxid') || (sp.get('organism')==='mouse' ? '10090' : '9606');
+  document.querySelectorAll('.gnav-tabs a').forEach(a=>{
+    const t=a.dataset.t;
+    if(t===cur) a.classList.add('on');
+    if(gene){                                   // keep the gene when switching feature
+      a.href = t==='gene'    ? `/gene?gene=${encodeURIComponent(gene)}&taxid=${tax}`
+             : t==='network' ? `/network?gene=${encodeURIComponent(gene)}&organism=${tax==='10090'?'mouse':'human'}`
+             : '/screen';
+    }
+  });
+})();
+
 </script>
 </body>
 </html>

@@ -39,9 +39,14 @@ rng = np.random.default_rng(7)
 def load_go_bp(db):
     con = sqlite3.connect(db)
     gene_terms = defaultdict(set)
+    # Exclude "NOT involved_in"/"NOT enables" rows: those are curated evidence that the gene does
+    # NOT do this, so scoring them as positive ground truth inflates apparent recall.
+    # (substr rather than LIKE 'NOT%' to stay identical to web/app.py's _GO_POSITIVE, which avoids
+    # a literal % because psycopg2 %-formats parameterized queries.)
     for gid, tid in con.execute(
         "SELECT gg.gene_id, gg.go_id FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id "
-        "WHERE t.namespace='biological_process' AND t.is_obsolete=0"):
+        "WHERE t.namespace='biological_process' AND t.is_obsolete=0 "
+        "AND (gg.qualifier IS NULL OR substr(gg.qualifier, 1, 3) <> 'NOT')"):
         gene_terms[gid].add(tid)
     sym2gid = {s.upper(): g for g, s in con.execute("SELECT gene_id, symbol FROM kb_gene WHERE taxid=9606")}
     term_name = {t: n for t, n in con.execute("SELECT go_id, name FROM kb_go_term")}

@@ -1,0 +1,262 @@
+{
+  "_comment": "Frozen per-screen resolution for score columns whose SCORE.k_TYPE label ('Log10', 'Log10 (p-value)', 'Log10 (Corrected p-Value)') is unreliable: the SAME label covers 4 incompatible encodings across this corpus (log10(p), -log10(p), a signed -log10(p) with direction in the sign, and non-p-value magnitudes). classify_type() now routes these labels to role AMBIGUOUS_LOG instead of guessing, and harmonize_scores.py looks up the resolved semantics here by screen_id. Resolved 2026-07 via three independent forensic analyses (distribution-only, method-prior, and adversarial lenses) that cross-validated every screen with: the raw file's own HIT=YES/NO boundary (an author-supplied ground truth requiring no external assumption), a companion-column identity check (e.g. proving SCORE.2 == norm.sf(SCORE.1) to <1e-8 relative error for screens 1098/1099), and a core-essential-gene sign anchor for directional columns. All three lenses agreed on semantics for 18/20 screens; 1447/1448 are flagged needs_review because a broader essential-gene panel showed an inconsistent polarity versus their six same-paper siblings (1441-1446) — see notes. EXTENDED 2026-07 with 14 more screens hit by the SAME root cause under DIFFERENT labels ('RSA' via SIG_MAG clip(lower=0); 'RRA score' and 'MaGeCK Score' via SIG_P clip) -- each collapsed to a single distinct value. Those three labels are CORRECT for most screens, so they are not blanket-banned; instead this file is now consulted BY SCREEN_ID before any label-based classification, and each entry names its `column` explicitly. Transforms confirmed by the author's own HIT=YES/NO boundary except where noted. POLARITY of 1447/1448 was resolved 2026-07 (previously needs_review): the essential-gene anchor is simply not a valid orientation test for drug-contrast screens, and a cross-screen correlation test over all 8 siblings shows no sign inversion. See those entries.",
+  "transforms": {
+    "identity": "harmonized = x  (column is already on the correct scale/sign; do not call neglog10)",
+    "negate": "harmonized = -x  (column is log10(p); negate to get -log10(p) so bigger = more significant)",
+    "quarantine": "column is not a comparable magnitude at all; HARMONIZED_SCORE is left NaN so PERCENTILE_SCORE/ROBUST_Z_SCORE stay NULL. IS_HIT is unaffected (computed independently from the HIT column).",
+    "_lookup": "Resolution is per-SCREEN, not per-label: harmonize_scores.py checks this file by screen_id FIRST and only falls back to the SCORE.k_TYPE registry when a screen has no entry here."
+  },
+  "screens": {
+    "1": {
+      "semantics": "neglog10_p",
+      "transform": "identity",
+      "confidence": "high",
+      "evidence": "KS, 'Log10 (Corrected p-Value)'; 98.4% exact zeros, max 4.126; all 5 HIT=YES rows are the largest values (1.73-4.126); 0=not-significant, larger=more significant. sel=+1 (Positive Selection).",
+      "column": "SCORE.1"
+    },
+    "2": {
+      "semantics": "neglog10_p",
+      "transform": "identity",
+      "confidence": "high",
+      "evidence": "KS, same paper as 1 (PMID24336569). 93.9% exact zeros, max 4.423; all 3 hits are the largest values. sel=+1.",
+      "column": "SCORE.1"
+    },
+    "172": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA, 100% negative [-14.71,-0.0002]; every HIT<=-4.0005, every non-hit>=-3.9957 -> exact p<=1e-4 cutoff. Sign from existing frozen LLM override (sign=-1); do not re-derive.",
+      "column": "SCORE.1"
+    },
+    "173": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA sibling of 172 (PMID28215525). Hit cutoff exactly -4.0. Existing LLM override sign=+1 stands.",
+      "column": "SCORE.1"
+    },
+    "174": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA (PMID28215525). Hit cutoff exactly -4.0. Existing LLM override sign=-1 stands.",
+      "column": "SCORE.1"
+    },
+    "175": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA (PMID28215525). Hit cutoff exactly -4.0. Existing LLM override sign=+1 stands.",
+      "column": "SCORE.1"
+    },
+    "176": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA (PMID28215525). Hit cutoff exactly -4.0. Existing LLM override sign=-1 stands.",
+      "column": "SCORE.1"
+    },
+    "177": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "confidence": "high",
+      "evidence": "RSA (PMID28215525). Hit cutoff exactly -4.0. Existing LLM override sign=+1 stands.",
+      "column": "SCORE.1"
+    },
+    "405": {
+      "semantics": "neglog10_p",
+      "transform": "identity",
+      "confidence": "high",
+      "evidence": "RSA but sign already flipped in the deposited file (only 3/20916 negative, all exactly -1.0 = sentinel on 3 miRNA rows, HIT=NO -> set to NaN, not 0). All 1174 HIT=YES rows >=1.301=-log10(0.05); larger=more significant. Existing LLM override sign=-1 stands.",
+      "sentinel_value": -1.0,
+      "column": "SCORE.1"
+    },
+    "1098": {
+      "semantics": "not_a_pvalue",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MA-plot 'Log10' is actually a one-sided Z-score: SCORE.2 (typed p-Value) == norm.sf(SCORE.1) to <1e-7 absolute error for 100% of 1416 genes. Must bypass BOTH the p-transform and the LLM sign override entirely -- use SCORE.1 as-is. TP53/CDKN1A/ARID3A (senescence bypass) top the positive tail, confirming + = knockout advantageous on RETICLE's axis.",
+      "column": "SCORE.1"
+    },
+    "1099": {
+      "semantics": "not_a_pvalue",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "Same construction as 1098, same paper (PMID31219803): SCORE.2 == norm.sf(SCORE.1) to <1e-9 relative error. Bypass p-transform and sign override; use SCORE.1 as-is.",
+      "column": "SCORE.1"
+    },
+    "1175": {
+      "semantics": "not_a_pvalue",
+      "transform": "quarantine",
+      "confidence": "high",
+      "evidence": "ANALYSIS field states the formula: 'Ss=log10(10,000/Ranked position based on abundance)' -- a rank score, never a p-value. The 25 HIT=YES values (9.27-130.85) are on a DIFFERENT scale than the 1165 non-hit values (a smooth grid capped at exactly 4.000 = the formula's ceiling at rank 1) -- the two populations are not the same statistic, so no single continuous transform is comparable across genes. Already COVERAGE_TYPE=HIT_ONLY (FULL_SIZE_AVAILABLE=No); IS_HIT (computed independently from the HIT column) carries this screen instead.",
+      "column": "SCORE.1"
+    },
+    "1441": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK, symmetric +-6.5899 (permutation p-floor, cap value differs in the 6th decimal from sibling screens -- not an arbitrary clip). Hits at both extremes (|x|>=~3.0 = p<=1e-3). Core-essential anchor (POLR2A/RPL/RPS/PSM/PLK1) median -1.12 vs -0.19 overall -> negative=essential=matches RETICLE's axis already. Bypass selection-multiplier and any LLM override; use as-is. Clear stale [ANCHOR_FLIP]/[AMBIGUOUS_SELECTION] tags.",
+      "column": "SCORE.1"
+    },
+    "1442": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK sibling of 1441 (PMID32416067). Symmetric +-6.5899 (distinct 6th-decimal cap). Essential anchor median -1.67 to -1.69 vs -0.20 overall -> negative=essential. Use as-is.",
+      "column": "SCORE.1"
+    },
+    "1443": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK sibling (PMID32416067). Essential anchor median -1.81 to -2.16 vs -0.19 overall -> negative=essential. Use as-is.",
+      "column": "SCORE.1"
+    },
+    "1444": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK sibling (PMID32416067), 95.6% negative (strong dropout). Essential anchor median -1.83 to -1.94 vs -0.24 overall -> negative=essential. Use as-is.",
+      "column": "SCORE.1"
+    },
+    "1445": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK drug-response arm, same paper/column-family/p-floor signature as 1441-1444. Essential anchor is near-neutral as EXPECTED for a drug-vs-control contrast (essentiality cancels between arms); sign confirmed instead by a biologically coherent enriched gene set (FBXL5/ARID1A/USP14/NPRL2/NF2/KEAP1/CUL3/SPOP -- canonical resistance/tumor-suppressor genes). Use as-is.",
+      "column": "SCORE.1"
+    },
+    "1446": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK drug-response arm (PMID32416067). Same family signature. Enriched tail (CDKN1A/CSK/ARID1A/FLCN/NF2/OTUD5) is a coherent resistance/suppressor set -> positive=enriched confirmed. Use as-is.",
+      "column": "SCORE.1"
+    },
+    "1447": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK signed -log10 p, JQ1 drug-response arm (PMID32416067). POLARITY RESOLVED 2026-07 by a cross-screen test over all 8 sibling screens of this deposition (18,457 shared genes, gene-level Spearman): the 4 proliferation screens (1441-1444) correlate +0.31..+0.40 with each other and their essentials are strongly negative, establishing the deposition's convention; all 4 JQ1 screens (1445-1448) correlate ~0 with them AND ~0 with each other (+0.02..+0.06 pairwise, never negative), which is what a drug-vs-untreated contrast looks like once essentiality cancels in both arms. A genuine sign flip would have made this screen correlate NEGATIVELY with 1445/1446 — it does not. The earlier essential-gene-anchor concern is explained and dismissed: (a) 1443 is the SAME resistant line (SUM159R) in a proliferation screen and its essential anchor is the STRONGEST of the set, so the resistant background is not what perturbs the anchor; (b) the anchor is inapplicable to ANY of the 4 drug-contrast screens, and 1445/1446 — accepted at high confidence by all three independent analyses — show the same anchor behaviour as this one; (c) a ratio-based drug contrast can even invert apparent essentiality, visible here as the -0.32/-0.42 correlations between same-cell-line proliferation/drug pairs (1443 vs 1448, 1444 vs 1447). Shared-pipeline fingerprint confirms one convention: all 8 screens saturate at |6.5898|+-0.0001 (the MaGeCK permutation p-floor).",
+      "column": "SCORE.1",
+      "polarity_resolution": "cross-screen sibling correlation + shared p-floor fingerprint"
+    },
+    "1448": {
+      "semantics": "signed_logp",
+      "transform": "identity",
+      "confidence": "high",
+      "is_directional": true,
+      "evidence": "MaGeCK signed -log10 p, JQ1 drug-response arm (PMID32416067). POLARITY RESOLVED 2026-07 by a cross-screen test over all 8 sibling screens of this deposition (18,457 shared genes, gene-level Spearman): the 4 proliferation screens (1441-1444) correlate +0.31..+0.40 with each other and their essentials are strongly negative, establishing the deposition's convention; all 4 JQ1 screens (1445-1448) correlate ~0 with them AND ~0 with each other (+0.02..+0.06 pairwise, never negative), which is what a drug-vs-untreated contrast looks like once essentiality cancels in both arms. A genuine sign flip would have made this screen correlate NEGATIVELY with 1445/1446 — it does not. The earlier essential-gene-anchor concern is explained and dismissed: (a) 1443 is the SAME resistant line (SUM159R) in a proliferation screen and its essential anchor is the STRONGEST of the set, so the resistant background is not what perturbs the anchor; (b) the anchor is inapplicable to ANY of the 4 drug-contrast screens, and 1445/1446 — accepted at high confidence by all three independent analyses — show the same anchor behaviour as this one; (c) a ratio-based drug contrast can even invert apparent essentiality, visible here as the -0.32/-0.42 correlations between same-cell-line proliferation/drug pairs (1443 vs 1448, 1444 vs 1447). Shared-pipeline fingerprint confirms one convention: all 8 screens saturate at |6.5898|+-0.0001 (the MaGeCK permutation p-floor).",
+      "column": "SCORE.1",
+      "polarity_resolution": "cross-screen sibling correlation + shared p-floor fingerprint"
+    },
+    "1144": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RSA, 100% negative [-18.24,-0.0009] with 18,927 distinct values (rich signal). Typed 'RSA' -> SIG_MAG -> clip(lower=0) zeroed the ENTIRE screen. HIT anchor after negation: hit median 4.30 vs non-hit 95th pct 1.96 -> negate confirmed."
+    },
+    "1571": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RSA, 100% negative [-14.37,-0.0007], 17,861 distinct. Same SIG_MAG clip(lower=0) collapse. HIT anchor after negation: hit median 1.82 vs non-hit 95th pct 1.17 -> negate confirmed."
+    },
+    "583": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RSA, 100% negative [-15.49,0], 638 distinct (heavily quantized). Same SIG_MAG clip(lower=0) collapse. Strict HIT anchor is inconclusive BECAUSE this screen's own SIGNIFICANCE_CRITERIA is 'Score.2 (DESeq2) >= 0.5' -- the hits were called on SCORE.2, not SCORE.1 -- but SCORE.1 still separates in the right direction (hit median -1.85 vs non-hit -0.57), so negate is the correct orientation."
+    },
+    "1687": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.84 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1688": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 2.05 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1689": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.47 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1690": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.81 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1691": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.85 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1692": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.53 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1693": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.84 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1694": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.97 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1695": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 2.21 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1696": {
+      "semantics": "log10_p",
+      "transform": "negate",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "RRA score, ~97% negative (0 = p=1, not significant). Typed 'rra score' -> SIG_P -> clip(lower=1e-10)+(-log10) mapped EVERY gene to the constant 10. HIT anchor after negation: hit median 1.78 vs non-hit 95th pct ~0.4 -> negate confirmed. One of 10 sibling screens from PMID31406271 with identical encoding."
+    },
+    "1074": {
+      "semantics": "neglog10_p",
+      "transform": "identity",
+      "column": "SCORE.1",
+      "confidence": "high",
+      "evidence": "MaGeCK Score in [4.35, 26.88] -- all > 1, so not a probability. Typed 'mageck score' -> SIG_P -> clip(upper=1.0) mapped every gene to -log10(1)=0. Proof it is a significance magnitude: spearman(SCORE.1, -log10(SCORE.2 p-Value)) = 1.0000 exactly. All 183 rows are HIT=YES (COVERAGE_TYPE=HIT_ONLY), so the HIT anchor is undefined here -- the monotone identity with the screen's own p-value column is the evidence instead. Larger = more significant -> identity."
+    }
+  }
+}

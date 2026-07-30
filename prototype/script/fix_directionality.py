@@ -85,8 +85,11 @@ def recompute_rows(sid, meta):
     df, col_types = H.load_screen_df(rp, meta)
     if df is None:
         return None, None, None
-    s_raw, basis, is_dir = H.resolve_s_raw(df, col_types, (meta.get("SCREEN_TYPE") or "").strip())
-    df["HARMONIZED_SCORE"] = s_raw * perturbation_mult(meta)
+    s_raw, basis, is_dir = H.resolve_s_raw(df, col_types, (meta.get("SCREEN_TYPE") or "").strip(), sid)
+    if H.sign_is_final(basis, is_dir):
+        df["HARMONIZED_SCORE"] = s_raw  # already on the final axis — see H.sign_is_final()
+    else:
+        df["HARMONIZED_SCORE"] = s_raw * perturbation_mult(meta)
     H.add_rank_columns(df)
     df["IS_HIT"] = (df["HIT"].astype(str).str.strip().str.upper() == "YES").astype(int)
     return df, basis, is_dir

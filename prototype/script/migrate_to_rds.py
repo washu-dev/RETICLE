@@ -52,10 +52,20 @@ _PG = {"INTEGER": "integer", "INT": "integer", "BIGINT": "bigint",
 
 
 def load_env():
+    """Read .env, INCLUDING commented-out AWS_* lines.
+
+    Commenting out AWS_DB_HOST is how the web app is switched to local-sqlite mode, but this is a
+    build script whose entire purpose is to write to RDS — it must not lose its credentials just
+    because the app is currently being served locally. Non-AWS commented lines stay ignored."""
     cfg = {}
     for line in (Path(__file__).resolve().parent.parent / ".env").read_text().splitlines():
         line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
+        if line.startswith("#"):
+            stripped = line.lstrip("#").strip()
+            if not stripped.startswith("AWS_"):
+                continue
+            line = stripped
+        if line and "=" in line:
             k, v = line.split("=", 1)
             cfg[k.strip()] = v.strip()
     return cfg
