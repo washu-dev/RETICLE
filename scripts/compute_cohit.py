@@ -52,14 +52,7 @@ class CoHitCompute:
         self.conn = None
 
     def connect(self):
-        params = Config.get_psycopg2_params()
-        params["sslmode"] = "require"
-        self.conn = psycopg2.connect(**params)
-        self.conn.autocommit = False
-        cur = self.conn.cursor()
-        cur.execute("SET statement_timeout = 0")
-        cur.execute("SET work_mem = '256MB'")
-        self.conn.commit()
+        self.conn = rc.pg_connect()
         logger.info("Connected to database")
 
     def resolve(self):
@@ -108,9 +101,7 @@ class CoHitCompute:
 
     def load(self):
         cur = self.conn.cursor()
-        cur.execute("""SELECT gene_id, COUNT(DISTINCT screen_id) AS m,
-                              COUNT(DISTINCT screen_id) FILTER (WHERE hit_flag) AS h
-                       FROM screen_gene_raw WHERE version_id=%s GROUP BY gene_id""", (self.version_id,))
+        cur.execute(rc.GENE_STATS_SQL, (self.version_id,))
         stats = cur.fetchall()
         gene_ids_all = np.array([int(g) for g, _, _ in stats], dtype=np.int64)
         n_meas = np.array([int(m) for _, m, _ in stats], dtype=np.int64)

@@ -78,6 +78,40 @@ def classify_selective(n_measured, n_hits, pan_essential_rate=0.90, min_measured
 # per-gene rank + tail transform (host/numpy; feeds the GPU masked GEMMs)
 # ---------------------------------------------------------------------------
 
+def pg_connect(work_mem="64MB", statement_timeout=0):
+    """Open a psycopg2 connection for the relatedness stages with TCP keepalives
+    (so a long in-memory compute doesn't leave the connection idle long enough for
+    a NAT/firewall — or a stressed RDS — to drop it) and a modest work_mem (256MB
+    would risk OOM on a small RDS instance). autocommit off; caller commits."""
+    import psycopg2
+    from config import Config
+    params = Config.get_psycopg2_params()
+    params["sslmode"] = "require"
+    params.setdefault("keepalives", 1)
+    params.setdefault("keepalives_idle", 30)
+    params.setdefault("keepalives_interval", 10)
+    params.setdefault("keepalives_count", 5)
+    conn = psycopg2.connect(**params)
+    conn.autocommit = False
+    cur = conn.cursor()
+    cur.execute(f"SET statement_timeout = {int(statement_timeout)}")
+    cur.execute("SET work_mem = %s", (work_mem,))
+    conn.commit()
+    return conn
+
+
+# Per-gene screen/hit counts. DISTINCT is intentionally NOT used: screen_gene_raw
+# is UNIQUE(version_id, screen_id, gene_id), so per (version, gene) each screen
+# appears once and COUNT(*) == COUNT(DISTINCT screen_id) — but COUNT(*) is a plain
+# hash-aggregate instead of a distinct-sort that spills to disk for hours on a
+# small instance.
+GENE_STATS_SQL = (
+    "SELECT gene_id, COUNT(*) AS n_measured, "
+    "COUNT(*) FILTER (WHERE hit_flag) AS n_hits "
+    "FROM screen_gene_raw WHERE version_id=%s GROUP BY gene_id"
+)
+
+
 def hypergeom_sf(k, M, ngood, ndraw, chunk=5_000_000):
     """One-sided hypergeometric enrichment p = P(X >= k), computed in chunks so a
     100M-element pair vector doesn't spike scipy's internal temporaries. Returns a
