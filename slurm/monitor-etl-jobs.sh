@@ -12,8 +12,8 @@
 #   ./submit-etl-job-split.sh <version_id>  # Uses RETICLE_ACCOUNT env var
 #
 
-RETICLE_DIR="/Volumes/SD Media/projects/RETICLE"
-LOGS_DIR="$RETICLE_DIR/logs"
+RETICLE_DIR=${RETICLE_DIR}
+LOGS_DIR=${LOG_DIR}
 
 # Colors
 RED='\033[0;31m'

@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --time=03:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # CPU job. D7 co-citation. Do NOT hardcode --account; set SBATCH_ACCOUNT.
 # SBATCH_PARTITION overrides --partition. Requires ~/.pgpass.
