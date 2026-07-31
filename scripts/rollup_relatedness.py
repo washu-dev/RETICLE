@@ -34,7 +34,7 @@ import sys
 import psycopg2
 import psycopg2.extras
 
-from config import Config
+import relatedness_core as rc
 
 logger = logging.getLogger("rollup_relatedness")
 
@@ -61,13 +61,33 @@ _SCORE_SUBQUERY = """
 _TIER_EXPR = ("CASE WHEN sc.score >= %(strong)s THEN 'Strong' "
               "WHEN sc.score >= %(moderate)s THEN 'Moderate' ELSE 'Weak' END")
 
+# gene_pair_id window filter, appended to the score subquery + outer UPDATE so the
+# roll-up runs in chunks (progress bar + short transactions on a small RDS).
+_RANGE = "\n      AND gene_pair_id >= %(lo)s AND gene_pair_id < %(hi)s"
+
+_CHUNK = 250_000   # gene_pair_id window per committed batch
+
 
 def connect():
-    params = Config.get_psycopg2_params()
-    params["sslmode"] = "require"
-    conn = psycopg2.connect(**params)
-    conn.autocommit = False
-    return conn
+    return rc.pg_connect()
+
+
+def _progress(total, desc):
+    """tqdm bar if available, else a plain-text percentage line."""
+    try:
+        from tqdm import tqdm
+        return tqdm(total=total, desc=desc, unit="pair", unit_scale=True)
+    except Exception:
+        class _Bar:
+            def __init__(self):
+                self.n = 0
+            def update(self, k):
+                self.n += k
+                pct = 100 * self.n / max(total, 1)
+                print(f"\r  {desc}: {self.n:,}/{total:,} ({pct:5.1f}%)", end="", flush=True)
+            def close(self):
+                print()
+        return _Bar()
 
 
 def resolve_config(conn, version_id, config_id, label):
@@ -136,7 +156,14 @@ def main():
                 print(f"  {tier or 'NULL':10s} {n:>12,}")
             return
 
-        cur.execute(f"""
+        # Chunk by gene_pair_id: gives a progress bar and keeps each transaction
+        # short (a single UPDATE over 10M+ rows is one long transaction — risky on
+        # a small RDS). Each chunk commits independently; the roll-up is idempotent.
+        cur.execute("SELECT MIN(gene_pair_id), MAX(gene_pair_id) FROM fact_gene_pair "
+                    "WHERE version_id=%s AND config_id=%s", (args.version, config_id))
+        lo_id, hi_id = cur.fetchone()
+
+        ranged_update = f"""
             UPDATE fact_gene_pair f SET
                 evidence_channels = concat_ws(',',
                     CASE WHEN f.coess_tier   IS NOT NULL THEN 'coess'   END,
@@ -152,12 +179,21 @@ def main():
                 relatedness_score = sc.score,
                 relatedness_tier = {_TIER_EXPR},
                 is_current = TRUE
-            FROM ({_SCORE_SUBQUERY}) sc
+            FROM ({_SCORE_SUBQUERY}{_RANGE}) sc
             WHERE f.gene_pair_id = sc.gene_pair_id
               AND f.version_id = %(v)s AND f.config_id = %(c)s
-        """, params)
-        updated = cur.rowcount
-        conn.commit()
+              AND f.gene_pair_id >= %(lo)s AND f.gene_pair_id < %(hi)s
+        """
+        bar = _progress(n_pairs, "roll-up")
+        updated = 0
+        start = lo_id
+        while start is not None and start <= hi_id:
+            cur.execute(ranged_update, {**params, "lo": start, "hi": start + _CHUNK})
+            conn.commit()
+            updated += cur.rowcount
+            bar.update(cur.rowcount)
+            start += _CHUNK
+        bar.close()
 
         cur.execute("""SELECT relatedness_tier, COUNT(*),
                               round(AVG(evidence_channel_count),2)
