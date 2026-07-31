@@ -589,18 +589,27 @@ def _net_fitness_lean(genes, organism="human"):
         return {}
     org = "Mus musculus" if organism == "mouse" else "Homo sapiens"
     ph = ",".join("?" * len(genes))
-    if USE_PG:
-        rows = db_fetchall(
-            f"SELECT gene_symbol g, mean_percentile m FROM gene_fitness_lean "
-            f"WHERE organism = ? AND gene_symbol IN ({ph})", [org] + list(genes))
-    else:
-        rows = db_fetchall(
-            f"""SELECT h.GENE_SYMBOL g, AVG(h.PERCENTILE_SCORE) m FROM harmonized_scores h
-                JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
-                JOIN screen_metadata sm ON sm.SCREEN_ID = h.SCREEN_ID
-                WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain='fitness'
-                  AND sm.ORGANISM_OFFICIAL=? AND h.PERCENTILE_SCORE IS NOT NULL
-                GROUP BY h.GENE_SYMBOL""", list(genes) + [org])
+    try:
+        if USE_PG:
+            rows = db_fetchall(
+                f"SELECT gene_symbol g, mean_percentile m FROM gene_fitness_lean "
+                f"WHERE organism = ? AND gene_symbol IN ({ph})", [org] + list(genes))
+        else:
+            rows = db_fetchall(
+                f"""SELECT h.GENE_SYMBOL g, AVG(h.PERCENTILE_SCORE) m FROM harmonized_scores h
+                    JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
+                    JOIN screen_metadata sm ON sm.SCREEN_ID = h.SCREEN_ID
+                    WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain='fitness'
+                      AND sm.ORGANISM_OFFICIAL=? AND h.PERCENTILE_SCORE IS NOT NULL
+                    GROUP BY h.GENE_SYMBOL""", list(genes) + [org])
+    except Exception as e:
+        # The lean only decides node COLOUR. Letting it fail takes the whole graph down with it,
+        # which is the wrong trade — a grey graph is still the graph. This is not hypothetical:
+        # the network lives in its own sqlite mirror (reticle_net.db) while the scores live in
+        # reticle.db, so a checkout that has the first and not the second renders nothing at all
+        # rather than an uncoloured network.
+        print(f"  [net] fitness lean unavailable, nodes will be uncoloured: {e}")
+        return {}
     return {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
 

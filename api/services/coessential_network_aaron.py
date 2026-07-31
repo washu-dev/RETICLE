@@ -77,11 +77,19 @@ def _fitness_lean(genes: list[str], organism: str) -> dict[str, float]:
         return {}
     org = "Mus musculus" if organism == "mouse" else "Homo sapiens"
     ph = ",".join("?" * len(genes))
-    rows = db_fetchall(
-        f"SELECT gene_symbol g, mean_percentile m FROM gene_fitness_lean "
-        f"WHERE organism = ? AND gene_symbol IN ({ph})",
-        tuple([org] + list(genes)),
-    )
+    try:
+        rows = db_fetchall(
+            f"SELECT gene_symbol g, mean_percentile m FROM gene_fitness_lean "
+            f"WHERE organism = ? AND gene_symbol IN ({ph})",
+            tuple([org] + list(genes)),
+        )
+    except Exception:
+        # The lean only decides node COLOUR. Letting it raise takes the whole graph down with it,
+        # which is the wrong trade — an uncoloured graph is still the graph. The network and the
+        # lean also live in different places (net_edge vs the gene_fitness_lean lookup), so one
+        # can be present and populated while the other is missing or unreadable.
+        logger.warning("fitness lean unavailable; network nodes will be uncoloured", exc_info=True)
+        return {}
     return {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
 
