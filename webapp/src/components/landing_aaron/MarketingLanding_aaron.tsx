@@ -83,6 +83,32 @@ const CSS = `
   margin-inline:auto;
   padding-inline:var(--gutter);
 }
+/* ── section rhythm ────────────────────────────────────────────────────────────────────────
+   Measured before this existed: of eight sections only two had any background of their own, and
+   102 of the page's 104 accent-coloured elements were inside the hero. Everything below it —
+   2,325px of a 3,074px page — read as one undifferentiated slab.
+
+   The fix is cadence, not more hues. The palette stays monochrome-plus-one; what changes is that
+   the surface alternates deliberately (paper -> white -> paper -> paper-2 -> white) so scrolling
+   has a beat, and the one accent colour is allowed to do semantic work below the fold instead of
+   living only in the hero readout. */
+/* paper -> white -> paper-2 -> white -> paper-2 -> paper. The closing section deliberately
+   returns to the base surface: giving it paper-2 put two identical greys back to back with the
+   dark-genes section, which is the same flatness this is meant to fix, just moved down the page.
+   (No backticks in here — this block lives inside a template literal.) */
+.rxl .stats{ background:var(--paper-2); }
+.rxl .caps{ background:#fff; }
+.rxl .stats, .rxl .caps, .rxl .dark, .rxl .close{
+  border-top:1px solid var(--rule-2);
+}
+
+/* The corpus size is the number this page most wants remembered, and the dark-gene claim is its
+   emotional centre — both earn the signal colour that otherwise only marks "essential". */
+.rxl .stat .num-key{ color:var(--signal); }
+.rxl .dark blockquote em{
+  font-style:normal;
+  color:var(--signal-ink);
+}
 .rxl .sr{
   position:absolute; width:1px; height:1px; overflow:hidden;
   clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
@@ -617,7 +643,7 @@ const MARKUP = `
   <section class="stats">
     <div class="wrap">
       <div class="stat-grid rev">
-        <div class="stat"><span class="num">2,157</span><span class="lab">pooled screens, harmonized</span></div>
+        <div class="stat"><span class="num num-key">2,157</span><span class="lab">pooled screens, harmonized</span></div>
         <div class="stat"><span class="num">109,412</span><span class="lab">co-essentiality edges</span></div>
         <div class="stat"><span class="num">137,715</span><span class="lab">genes in the knowledge base</span></div>
         <div class="stat"><span class="num">1,032,303</span><span class="lab">GO annotations</span></div>
@@ -663,7 +689,7 @@ const MARKUP = `
     <div class="wrap dark-in">
       <div class="rev">
         <p class="eyebrow">Dark genes</p>
-        <blockquote>Some genes have no literature at all. They still have a neighbourhood.</blockquote>
+        <blockquote>Some genes have <em>no literature at all</em>. They still have a neighbourhood.</blockquote>
       </div>
       <div class="dark-body rev">
         <p>Networks built from published work can only describe genes people have already
