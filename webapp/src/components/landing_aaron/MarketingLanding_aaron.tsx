@@ -497,7 +497,14 @@ const CSS = `
     column-gap:clamp(36px, 4.4vw, 80px);
     width:100%; max-width:var(--wrap); margin-inline:auto;
     padding-inline:var(--gutter);
-    min-height:min(84svh, 820px);
+    /* Sized so the hero, the sticky header above it and the source marquee below it all fit in
+       one screen — the marquee is the first proof that this is built on named public data, and it
+       was landing 75px under the fold at 1440x900. Expressed as a calc rather than a tuned number
+       so it keeps holding at other viewport heights; the clamp floor stops it collapsing on short
+       windows, where scrolling is the lesser evil. */
+    --hdr-h: 70px;
+    --marquee-h: 152px;
+    min-height:clamp(460px, calc(100svh - var(--hdr-h) - var(--marquee-h)), 760px);
   }
   .rxl .hero > .wrap,
   .rxl .hero .readout .wrap{ max-width:none; margin-inline:0; padding-inline:0; }
@@ -716,17 +723,49 @@ function ensureFonts(): void {
   document.head.appendChild(link);
 }
 
-/** One screen's worth of illustrative gene scores. Seeded, so a given screen always looks the same. */
+/**
+ * Empirical log2 fold-change quantiles, MEASURED from the corpus rather than invented.
+ *
+ *   essentiality — 25 negative-selection fitness screens, 452,870 gene scores
+ *   resistance   — 25 positive-selection screens,         465,169 gene scores
+ *
+ * both filtered to SCORE_BASIS = DIR_POS(Log2FC), FULL coverage, genome-wide human libraries, so
+ * the axis label is literally what these numbers are. Percentiles at QGRID, clipped to the display
+ * range (0.04% and 2.86% of scores fall outside it respectively). Sampling is inverse-CDF through
+ * these, which reproduces the real shape instead of approximating it with a Gaussian mixture.
+ *
+ * The two shapes are genuinely different, and that difference is the point: essentiality has a
+ * tight core and a long left tail with almost no right tail (99.4th percentile is only +0.82),
+ * while a resistance screen carries BOTH — its essential genes still drop out AND its resistance
+ * genes enrich (99.4th percentile +2.41). Drawing one shape for both, as this did, made a
+ * vemurafenib screen look identical to a core-essentiality screen.
+ */
+const QGRID = [0, 1, 2, 4, 6, 9, 12, 16, 20, 25, 30, 38, 46, 54, 62, 70, 76, 82, 87, 91, 94, 96, 97.5, 98.7, 99.4, 99.8, 100];
+const QUANTILES = {
+  essentiality: [-6.0, -3.0, -2.26, -1.47, -1.04, -0.69, -0.5, -0.35, -0.26, -0.18, -0.12, -0.05, 0.01, 0.06, 0.12, 0.17, 0.22, 0.27, 0.33, 0.39, 0.45, 0.51, 0.58, 0.69, 0.82, 1.11, 3.0],
+  resistance: [-6.0, -6.0, -6.0, -5.03, -4.49, -3.98, -3.51, -2.88, -2.37, -1.88, -1.39, -0.79, -0.47, -0.26, -0.11, 0.03, 0.14, 0.27, 0.4, 0.55, 0.73, 0.93, 1.26, 1.79, 2.41, 3.0, 3.0],
+};
+
+/**
+ * `anchor` says which END of the distribution the named genes belong to. NF1 and MED12 confer
+ * vemurafenib resistance — they ENRICH — so pinning every label to the depleted tail, as this did,
+ * put them on the wrong side of the axis.
+ */
 const SCREENS = [
-  { name: 'K562 · proliferation', hits: ['RPL23A', 'POLR2A'], seed: 0x51a3 },
-  { name: 'THP-1 · IFNγ response', hits: ['JAK1', 'STAT1'], seed: 0x2e77 },
-  { name: 'A375 · vemurafenib survival', hits: ['NF1', 'MED12'], seed: 0x9c41 },
-  { name: 'HAP1 · core essentiality', hits: ['EIF3B', 'SNRPD1'], seed: 0x1b8d },
-  { name: 'Jurkat · TCR signalling', hits: ['LCK', 'ZAP70'], seed: 0x74c2 },
+  { name: 'K562 · proliferation', hits: ['RPL23A', 'POLR2A'], seed: 0x51a3,
+    dist: 'essentiality', anchor: 'depleted' },
+  { name: 'A375 · vemurafenib resistance', hits: ['NF1', 'MED12'], seed: 0x9c41,
+    dist: 'resistance', anchor: 'enriched' },
+  { name: 'HAP1 · core essentiality', hits: ['EIF3B', 'SNRPD1'], seed: 0x1b8d,
+    dist: 'essentiality', anchor: 'depleted' },
+  { name: 'THP-1 · IFNγ response', hits: ['JAK1', 'STAT1'], seed: 0x2e77,
+    dist: 'resistance', anchor: 'enriched' },
+  { name: 'RPE1 · nutlin-3 resistance', hits: ['TP53', 'CDKN1A'], seed: 0x74c2,
+    dist: 'resistance', anchor: 'enriched' },
 ];
 
-const SMIN = -4.35;
-const SMAX = 1.75;
+const SMIN = -6.0;
+const SMAX = 3.0;
 const SVGNS = 'http://www.w3.org/2000/svg';
 
 function mulberry32(a: number): () => number {
@@ -737,14 +776,6 @@ function mulberry32(a: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
-
-function gauss(rnd: () => number): number {
-  let u = 0;
-  let v = 0;
-  while (u === 0) u = rnd();
-  while (v === 0) v = rnd();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
 export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => void }) {
@@ -842,15 +873,23 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
     let swapTimer: ReturnType<typeof setTimeout> | null = null;
     let startTimer: ReturnType<typeof setTimeout> | null = null;
 
-    function scoresFor(seed: number): number[] {
+    /**
+     * Draw N scores from a measured distribution by inverse-CDF: pick u uniform, find where it
+     * lands on that archetype's percentile grid, and interpolate between the two bracketing
+     * quantiles. The shape is therefore the corpus's own, not a curve fitted to look like it.
+     */
+    function scoresFor(seed: number, dist: keyof typeof QUANTILES): number[] {
       const rnd = mulberry32(seed);
+      const q = QUANTILES[dist];
       const out: number[] = [];
       for (let k = 0; k < N; k++) {
-        const u = rnd();
-        let s: number;
-        if (u < 0.118) s = -2.3 + gauss(rnd) * 0.86;        // essential tail
-        else if (u < 0.158) s = 0.85 + gauss(rnd) * 0.42;   // enriched
-        else s = gauss(rnd) * 0.52;                         // bulk, no effect
+        const u = rnd() * 100;
+        let i = 1;
+        while (i < QGRID.length - 1 && QGRID[i] < u) i++;
+        const lo = QGRID[i - 1];
+        const hi = QGRID[i];
+        const t = hi > lo ? (u - lo) / (hi - lo) : 0;
+        const s = q[i - 1] + (q[i] - q[i - 1]) * t;
         out.push(Math.max(SMIN + 0.05, Math.min(SMAX - 0.05, s)));
       }
       // Sorted so a point keeps its identity between screens and the settle sweeps left to right.
@@ -895,7 +934,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
       gArcs.textContent = '';
       const pool: Array<[number, number, number]> = [];
       for (let i = 0; i < pts.length && pool.length < 26; i++) {
-        if (pts[i][2] <= -1.75) pool.push(pts[i]);
+        if (pts[i][2] <= -1.75) pool.push(pts[i]);   // co-dropout is a depleted-tail phenomenon
       }
       if (pool.length < 6) return;
 
@@ -927,7 +966,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
 
     function place(index: number, animateArcs: boolean): void {
       const sc = SCREENS[index];
-      const scores = scoresFor(sc.seed);
+      const scores = scoresFor(sc.seed, sc.dist as keyof typeof QUANTILES);
 
       const pad = Math.max(10, W * 0.012);
       const colW = W < 420 ? 11 : W < 900 ? 15 : 20.5;
@@ -965,7 +1004,13 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
 
       gHits.textContent = '';
       if (W >= 420) {
-        ([[3, -13], [17, -30]] as Array<[number, number]>).forEach((spec, n) => {
+        // pts is sorted ascending, so low indices are the depleted tail and high indices the
+        // enriched one. A resistance screen's named genes ENRICH; anchoring them at the depleted
+        // end put NF1 and MED12 on the wrong side of zero.
+        const at = sc.anchor === 'enriched'
+          ? [pts.length - 4, pts.length - 18]
+          : [3, 17];
+        ([[at[0], -13], [at[1], -30]] as Array<[number, number]>).forEach((spec, n) => {
           const p = pts[spec[0]];
           if (!p) return;
           const t = document.createElementNS(SVGNS, 'text');
@@ -985,7 +1030,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
 
       if (arcTimer) { clearTimeout(arcTimer); arcTimer = null; }
       gArcs.textContent = '';
-      if (!reduce && animateArcs) arcTimer = setTimeout(() => drawArcs(pts), 1750);
+      if (!reduce && animateArcs) arcTimer = setTimeout(() => drawArcs(pts), 1200);
       else if (reduce) drawArcs(pts);
     }
 
@@ -1002,7 +1047,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
     function start(): void {
       if (running || reduce) return;
       running = true;
-      timer = setInterval(advance, 7200);
+      timer = setInterval(advance, 3800);   // was 7200 — five screens is a lot to sit through
     }
     function stop(): void {
       running = false;
@@ -1020,7 +1065,7 @@ export default function MarketingLanding_aaron({ onSignIn }: { onSignIn: () => v
         root!.classList.add('anim');
         svg!.classList.add('viz-live');
         place(0, true);
-        if (!reduce) startTimer = setTimeout(start, 2600);
+        if (!reduce) startTimer = setTimeout(start, 1500);
       });
     });
 
