@@ -59,6 +59,10 @@ INTERPRET_MODEL = "claude-opus-4-7"
 # the two have different quality/cost tradeoffs and are tuned independently.
 NET_PREDICT_MODEL = "claude-opus-4-7"
 
+# Bump whenever NET_PREDICT_SYS or _net_predict_prompt changes in a way that could change the
+# answer. It is part of the prediction cache key, so a stale entry cannot outlive its prompt.
+NET_PREDICT_PROMPT_VERSION = "netpred-v1"
+
 
 def _gen_kwargs(model, max_tokens=600):
     """The Messages API REQUIRES max_tokens — omitting it is a 400, not a default.
@@ -683,15 +687,24 @@ def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
 _NET_PRED_CACHE = {}
 
 
-def _net_predict_partners(seed, tbl, context, organism, top=18):
-    """Same reciprocal-first-then-widen selection as screen_net's _partners, but returns
-    (nb, strength, reciprocal) per row so the caller doesn't need a second edges query."""
+def _net_predict_partners(seed, tbl, context, organism, top=18, reciprocal_only=True):
+    """Partners for the prediction dossier, matching the view the user is actually looking at.
+
+    `reciprocal_only` mirrors the graph's own toggle. It used to be absent, so the dossier was
+    always assembled reciprocal-first regardless of what was on screen: a user could widen the
+    graph to 29 partners, press Predict, and the model would read 2. That gap is not marginal —
+    median reciprocal degree in the shipped human network is 2 against a median union degree of
+    29, and only 135 of 5,269 genes (2.6%) have the 18 reciprocal partners this dossier is sized
+    for, against 86.7% that have 18 in the union.
+    """
     def _partners(recip):
         rec = "AND reciprocal=1 " if recip else ""
         return net_fetchall(
             f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
             f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
             f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
+    if not reciprocal_only:
+        return _partners(False), True
     rows = _partners(True)
     fellback = False
     if not rows:
@@ -819,7 +832,7 @@ def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_
     return "\n".join(lines)
 
 
-def net_predict_functions(gene, context, organism="human", top=18):
+def net_predict_functions(gene, context, organism="human", top=18, reciprocal_only=True):
     """Guilt-by-association from OUR OWN BioGRID net_edge network (not STRING/DepMap): gpt-5
     reasons over the focal gene's co-essential partners' real curated functions and proposes a
     complex/pathway/process the focal gene likely shares but is not yet annotated with."""
@@ -836,7 +849,8 @@ def net_predict_functions(gene, context, organism="human", top=18):
     if seed is None:
         return None
 
-    prows, fellback = _net_predict_partners(seed, tbl, context, organism, top=top)
+    prows, fellback = _net_predict_partners(seed, tbl, context, organism, top=top,
+                                            reciprocal_only=reciprocal_only)
     if not prows:
         return None
     partner_syms = [r["nb"] for r in prows]
@@ -888,10 +902,19 @@ def net_predict_functions(gene, context, organism="human", top=18):
                 "context_label": NET_CTX_LABELS.get(context, context), "view": view,
                 "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
                 "n_unresolved": n_unresolved, "model": None, "converges": False, "predictions": [],
-                "summary": "Fewer than two co-essential partners carry a curated function on record — "
-                           "too little evidence to ground a prediction."}
+                "no_call": True,
+                "summary": (
+                    "Fewer than two of this gene's co-essential partners carry a curated function "
+                    "on record, so no prediction was attempted."
+                    + (" This view is restricted to mutual-best partners; widening it usually "
+                       "brings in more annotated neighbours." if reciprocal_only else ""))}
 
-    cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context)
+    # Everything that changes the answer belongs in the key. It used to be (gene, organism,
+    # context) only, so switching the model or editing NET_PREDICT_SYS let a warm process keep
+    # serving the previous answer labelled with the new model's name — a reproducibility bug in
+    # the one feature whose entire pitch is auditability.
+    cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
+                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION, view)
     if cache_key in _NET_PRED_CACHE:
         return _NET_PRED_CACHE[cache_key]
 
@@ -1951,10 +1974,14 @@ class Handler(BaseHTTPRequestHandler):
             gene = (q.get("gene", [""])[0]).strip()
             organism = "mouse" if q.get("organism", ["human"])[0] == "mouse" else "human"
             context = (q.get("context", [""])[0]).strip() or ("mouse" if organism == "mouse" else "all")
+            # Same default and same parsing as /api/screen_net — the dossier must be assembled from
+            # the neighbourhood the user is looking at, not from a different one.
+            reciprocal = q.get("reciprocal", ["1"])[0] != "0"
             if not gene:
                 return self._send(400, {"error": "Missing gene."})
             try:
-                p = net_predict_functions(gene, context, organism=organism)
+                p = net_predict_functions(gene, context, organism=organism,
+                                          reciprocal_only=reciprocal)
             except Exception as e:
                 msg = str(e)
                 hint = ("  Connect the WashU network (LLM gateway is WashU-only) and retry."

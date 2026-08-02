@@ -85,6 +85,10 @@ from services.llm_client_aaron import (
 
 logger = logging.getLogger(__name__)
 
+# Bump when the prompt changes in a way that could change the answer; it is part of the
+# prediction cache key so a stale entry cannot outlive its prompt.
+NET_PREDICT_PROMPT_VERSION = "netpred-v1"
+
 
 # ─────────────────────────── caches (PER WORKER PROCESS) ────────────────────────────
 #
@@ -391,7 +395,8 @@ async def get_reporter_explain(symbol: str, screen_ids: list[str]) -> dict[str, 
 # gpt-4.1 because this is multi-step reasoning over a partner dossier, not text generation.
 
 
-def _net_predict_partners(seed: str, tbl: str, context: str, top: int = 18) -> tuple[list, bool]:
+def _net_predict_partners(seed: str, tbl: str, context: str, top: int = 18,
+                          reciprocal_only: bool = True) -> tuple[list, bool]:
     """Reciprocal-first, then widen. Returns (rows, fellback).
 
     Deliberately NOT coessential_network_aaron._neighbourhood: this endpoint needs the per-edge
@@ -405,6 +410,12 @@ def _net_predict_partners(seed: str, tbl: str, context: str, top: int = 18) -> t
             f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
             f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top))
 
+    # reciprocal_only mirrors the graph's own toggle. Without it the dossier was always
+    # assembled reciprocal-first regardless of what the user was looking at: median reciprocal
+    # degree is 2 against a median union degree of 29, so widening the graph changed the picture
+    # and not the evidence the model read.
+    if not reciprocal_only:
+        return _partners(False), True
     rows = _partners(True)
     fellback = False
     if not rows:
@@ -598,7 +609,7 @@ def _net_predict_filter(data: dict, partners: list[dict], own_bp_norm: set[str],
     return preds_out
 
 
-def _net_predict_sync(gene: str, context: str, organism: str, top: int) -> dict[str, Any] | None:
+def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciprocal_only: bool = True) -> dict[str, Any] | None:
     taxid = 10090 if organism == "mouse" else 9606
     tbl = _edge_table(organism)
 
@@ -609,7 +620,8 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int) -> dict[
     if seed is None:
         return None
 
-    prows, fellback = _net_predict_partners(seed, tbl, context, top=top)
+    prows, fellback = _net_predict_partners(seed, tbl, context, top=top,
+                                            reciprocal_only=reciprocal_only)
     if not prows:
         return None
 
@@ -672,7 +684,11 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int) -> dict[
     # Keyed on the KB gene_id when the seed resolved, else the resolved SYMBOL — heterogeneous by
     # design. `top` is deliberately NOT part of the key. Looked up AFTER all the DB work but
     # BEFORE the LLM call, exactly as in the prototype.
-    cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context)
+    # Everything that changes the answer belongs in the key. It was (gene, organism, context)
+    # only, so switching the model or editing the prompt let a warm worker keep serving the
+    # previous answer under the new model's name.
+    cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
+                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION, view)
     if cache_key in _NET_PRED_CACHE:
         return _NET_PRED_CACHE[cache_key]
 
@@ -699,17 +715,18 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int) -> dict[
     return out
 
 
-async def get_net_predict(gene: str, context: str, organism: str = "human",
-                          top: int = 18) -> dict[str, Any] | None:
+async def get_net_predict(gene: str, context: str, organism: str = "human", top: int = 18,
+                          reciprocal_only: bool = True) -> dict[str, Any] | None:
     """Guilt-by-association from RETICLE's OWN net_edge network (not STRING/DepMap).
 
     Returns None when the seed is not in the network for this context, or when it has no
     co-essential partners even after widening past reciprocal-only — the router renders both as
     the same 404. Otherwise always a 200 payload; note the short-circuit branch (fewer than two
     partners carry any curated annotation) returns model: None, converges: false, predictions: []
-    WITHOUT spending a gpt-5 call.
+    WITHOUT spending a model call.
     """
-    return await run_in_threadpool(_net_predict_sync, gene, context, organism, top)
+    return await run_in_threadpool(_net_predict_sync, gene, context, organism, top,
+                                   reciprocal_only)
 
 
 # ═══════════════════════════════ POST /api/interpret ════════════════════════════════

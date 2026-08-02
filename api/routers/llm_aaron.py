@@ -239,6 +239,7 @@ async def net_predict(
     gene: str = Query(..., min_length=1, max_length=40),
     organism: str = Query("human"),
     context: str | None = Query(None, max_length=40),
+    reciprocal: bool = Query(True),
 ) -> Any:
     """Functions the gene likely shares with its co-essential partners but is not annotated with.
 
@@ -250,10 +251,11 @@ async def net_predict(
     organism = _validate_organism(organism)
     ctx = _validate_context(context) or _default_context(organism)
     logger.info(
-        "GET /api/net_predict called with gene=%s organism=%s context=%s", gene, organism, ctx
+        "GET /api/net_predict called with gene=%s organism=%s context=%s reciprocal=%s",
+        gene, organism, ctx, reciprocal
     )
     try:
-        payload = await get_net_predict(gene, ctx, organism)
+        payload = await get_net_predict(gene, ctx, organism, reciprocal_only=reciprocal)
     except LLMUnavailable as exc:
         return _gateway_error("Function prediction unavailable: ", exc)
     except HTTPException:

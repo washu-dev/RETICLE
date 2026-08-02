@@ -62,7 +62,9 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
 .partner:hover b{color:var(--know)} .partner b{font-family:var(--mono);font-weight:500}
 .partner .r{font-family:var(--mono);font-size:11px;color:var(--eviq)}
 
-/* AI function prediction (gpt-5, over OUR OWN net_edge co-essentiality) */
+/* AI function prediction over OUR OWN net_edge co-essentiality. The model is NOT named
+   here — it is rendered from the response, so the card can never claim a model the
+   server did not call. */
 .predict-box{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
 .predbtn{width:100%;font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 12px;
   border:1px solid var(--pred);border-radius:10px;background:var(--pred-soft);color:var(--pred);
@@ -137,7 +139,7 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
   <div id="status" class="status"></div>
   <div class="panel" id="panel"></div>
 </div>
-<div class="foot">Pure BioGRID CRISPR co-essentiality · no STRING, no literature · edges pooled across all genome-wide screens per species — <b>Human</b> (1,377 screens) and <b>Mouse</b> (87 screens) live in separate networks; the mouse network is exploratory.</div>
+<div class="foot">Pure BioGRID CRISPR co-essentiality · no STRING, no literature · edges pooled across all genome-wide screens per species — <b>Human</b> (1,375 screens) and <b>Mouse</b> (87 screens) live in separate networks; the mouse network is exploratory.</div>
 
 <script>
 const LEAN_COLOR={essential:'#1F6F8B',advantageous:'#C77D31',mixed:'#8A8F98',null:'#C7CBD1'};
@@ -244,29 +246,43 @@ function renderPanel(j){
     (j.fellback?`<div class="hint" style="color:var(--eviq);margin:6px 0 0">${esc(j.focus)} has no <b>mutual-best</b> partner — showing its one-directional partners instead.</div>`:'')+
     `<div class="hint">Click a <b>gene</b> to recenter the map on it, or an <b>edge</b> to inspect the correlation. Toggle <b>reciprocal only</b> to loosen or tighten the graph.</div>`+
     `<div class="predict-box">
-       <button class="predbtn" id="predbtn" onclick="predictFn()">✳ Predict undiscovered function (gpt-5) →</button>
+       <button class="predbtn" id="predbtn" onclick="predictFn()">✳ Predict undiscovered function →</button>
        <div class="pred-note">Reasons over ${esc(j.focus)}'s co-essential partners in <b>this</b> network — RETICLE's own BioGRID data, not STRING or DepMap — to propose a shared complex/pathway/process it isn't yet annotated with.</div>
        <div id="predout"></div>
      </div>`+
     legend();
 }
 
+/* Stamps every request. The call takes 15-55s and the user can click another node while it is in
+   flight; without this, the reply for the gene they left paints under the name of the gene they
+   are now looking at. */
+let PRED_REQ = 0;
 async function predictFn(){
   const host=document.getElementById('predout'), btn=document.getElementById('predbtn');
   if(!host||!btn) return;
   const label=btn.textContent;
+  const req=++PRED_REQ, gene=FOCUS, view=RECIP;
   btn.disabled=true;
-  host.innerHTML=`<div class="pred-load"><span class="pred-dot"></span> gpt-5 is reading ${esc(FOCUS)}'s co-essential partners' known functions…</div>`;
+  host.innerHTML=`<div class="pred-load"><span class="pred-dot"></span> reading ${esc(gene)}'s co-essential partners' known functions…</div>`;
   try{
-    const r=await fetch(`/api/net_predict?gene=${encodeURIComponent(FOCUS)}&organism=${ORG}&context=${encodeURIComponent(CTX)}`);
+    /* reciprocal is sent so the dossier is built from the neighbourhood on screen. Without it the
+       model read the mutual-best set no matter what the graph showed. */
+    const r=await fetch(`/api/net_predict?gene=${encodeURIComponent(gene)}&organism=${ORG}`
+      +`&context=${encodeURIComponent(CTX)}&reciprocal=${view?1:0}`);
     const j=await r.json();
+    if(req!==PRED_REQ) return;                       // superseded — the user moved on
     if(!r.ok){ host.innerHTML=`<div class="pred-err">${esc(j.error||'Prediction failed.')}</div>`; }
-    else renderPrediction(j);
-  }catch(e){ host.innerHTML=`<div class="pred-err">Could not reach the server.</div>`; }
+    else renderPrediction(j, req);
+  }catch(e){
+    if(req!==PRED_REQ) return;
+    host.innerHTML=`<div class="pred-err">Could not reach the server.</div>`;
+  }
+  if(req!==PRED_REQ) return;
   btn.disabled=false; btn.textContent=label;
 }
 
-function renderPrediction(j){
+function renderPrediction(j, req){
+  if(req!==undefined && req!==PRED_REQ) return;      // see predictFn — do not paint a stale reply
   const host=document.getElementById('predout'); if(!host) return;
   const caption=`<div class="pred-note">${j.n_annotated_partners}/${j.n_partners} partners with known function · ${esc(j.context_label)}${j.model?` · <span style="color:var(--pred)">${esc(j.model)}</span>`:''}</div>`;
   if(!j.predictions || !j.predictions.length){
