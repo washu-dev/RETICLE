@@ -6,11 +6,15 @@
 #SBATCH --mem=8G
 #SBATCH --time=00:30:00
 #SBATCH --partition=general-cpu
-# CPU job. Populates dim_gene_paralog from the STRING alias files (D5b
-# prerequisite — buffering-candidate criterion (b)). Do NOT hardcode --account;
-# set SBATCH_ACCOUNT. SBATCH_PARTITION overrides --partition. Requires ~/.pgpass
-# and $STRING_DIR pointing at the dir holding {taxid}.protein.aliases.v12.0.txt.gz
-# (same files prototype/script/build_kb_string.py reads).
+# CPU job. Populates dim_gene_paralog from Ensembl Compara's per-organism
+# homology export (D5b prerequisite — buffering-candidate criterion (b)).
+# Do NOT hardcode --account; set SBATCH_ACCOUNT. SBATCH_PARTITION overrides
+# --partition. Requires ~/.pgpass and:
+#   $COMPARA_DIR pointing at a dir holding <organism>/Compara.<release>.
+#     protein_default.homologies.tsv.gz (mirrors ftp.ensembl.org's own layout:
+#     pub/release-<N>/tsv/ensembl-compara/homologies/<organism>/)
+#   $NCBI_DIR pointing at a dir holding gene2ensembl.gz (same file
+#     prototype/script/build_kb_identifiers.py already uses)
 #
 # Usage:  sbatch reticle-paralogs.sh <version_id> [args...]
 
@@ -34,7 +38,8 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; NC
 echo -e "${BLUE}RETICLE GENE PARALOGS (D5b prereq)${NC}"
 echo "SLURM Job ID:  $SLURM_JOB_ID"
 echo "Version ID:    $VERSION"
-echo "STRING_DIR:    ${STRING_DIR:-<unset>}"
+echo "COMPARA_DIR:   ${COMPARA_DIR:-<unset>}"
+echo "NCBI_DIR:      ${NCBI_DIR:-<unset>}"
 echo "Extra args:    ${EXTRA_ARGS[*]:-<none>}"
 echo ""
 

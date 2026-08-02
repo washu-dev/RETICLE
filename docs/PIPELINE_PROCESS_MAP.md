@@ -103,8 +103,9 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 
 ### (6a-prereq) Gene paralogs — D5b prerequisite (buffering-candidate criterion b)
 - **Schema:** migration `0017_dim_gene_paralog.sql`.
-- **Script:** `scripts/populate_gene_paralogs.py` · **SLURM:** `sbatch slurm/reticle-paralogs.sh <version>` **(CPU, needs `$STRING_DIR`)**
-- **Produces:** `dim_gene_paralog` — one row per resolved paralog pair, parsed from the STRING alias files (`{taxid}.protein.aliases.v12.0.txt.gz`, the same files `prototype/script/build_kb_string.py` reads) via their `Ensembl_EntrezGene_Paralog` source rows, which that script discards on purpose (wrong join key for its own STRING-edge use) — this is the first consumer. Both sides resolved to this version's `gene.identifier_id` (BioGRID's Entrez GeneID).
+- **Script:** `scripts/populate_gene_paralogs.py` · **SLURM:** `sbatch slurm/reticle-paralogs.sh <version>` **(CPU, needs `$COMPARA_DIR` + `$NCBI_DIR`)**
+- **Produces:** `dim_gene_paralog` — one row per resolved paralog pair, from Ensembl Compara's per-organism homology export (`Compara.<release>.protein_default.homologies.tsv.gz`, under `$COMPARA_DIR/<organism>/`, mirroring `ftp.ensembl.org`'s own `pub/release-<N>/tsv/ensembl-compara/homologies/<organism>/` layout), keeping same-species pairs typed `within_species_paralog` or `other_paralog` (excludes `gene_split`, an annotation artifact). Both sides (Ensembl gene IDs) resolved to Entrez GeneID via NCBI's `gene2ensembl.gz` (under `$NCBI_DIR` — the same file `prototype/script/build_kb_identifiers.py` already uses for this cross-reference), then to this version's internal gene_id via `gene.identifier_id`.
+  - **Revision note:** an earlier version of this script parsed STRING's protein-alias files' `Ensembl_EntrezGene_Paralog` source rows, assuming they held a paralog's Entrez GeneID directly. Verified against the real file: they don't (a sparse, differently-formatted symbol string; only 22 rows for all of human) — replaced with the Ensembl Compara source above, spot-checked against HBA1/HBA2 and SMN1/SMN2.
 - **Order:** independent of D5/D6/D7/P3; only needs `gene` populated (stage 2). Gates D5b's buffering-candidate flag.
 
 ### (6b) Co-hit  ← D6 (Channel 2)
