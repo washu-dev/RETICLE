@@ -95,6 +95,18 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 - **Prereq chain:** P1 harmonize → D2 profile → **D3 accepted config** → D5. Reads only the warehouse (no `$DATA_DIR`); organism-partitioned (never cross-organism).
 - **Note:** first build leaves `dim_gene_pair_screen` evidence rows unpopulated (`--with-evidence` is a deferred heavy pass); `relatedness_tier` is provisionally the co-ess tier until D9 rolls up all channels.
 
+### (6a) Novelty / mechanistic-divergence  ← D5b (Channel 5, additive)
+- **Script:** `scripts/compute_novelty.py` · **SLURM:** `sbatch slurm/reticle-novelty.sh <version> --config-id N` **(GPU-capable — same masked-GEMM tail-restricted Spearman as D5, run over a residualized matrix; `--cpu` fallback)**
+- **Produces:** fits a light additive expectation `E[g,i] = mu + gene_baseline + screen_baseline + context_mean` (single-pass, median-centered; params → `dim_gene_expectation_model`), residualizes, and re-runs D5's tail-restricted-Spearman machinery over the residual matrix → `fact_gene_pair.resid_*` + `novelty_score` (contrast vs `coess_rho`) + `is_antagonistic`. Separately flags `is_buffering_candidate`/`buffering_basis` from paralog pairs (`dim_gene_paralog`) where both genes are near-inert (pan-inert, free from `relatedness_core.classify_selective`) and anti-correlated across `dim_screen_context` context buckets — a hypothesis flag, never a scored edge.
+- **Prereq chain:** D5 (same matrix + novelty contrast) · P3 (`dim_screen_context`, for the context term and buffering criterion c) · gene paralogs (6a-prereq, for buffering criterion b). `dim_gene_pair_screen` residual population is deferred, same as D5's own `--with-evidence`.
+- **Order:** run after D5 + P3 + gene paralogs; independent of D6/D7/D8. Re-run D9 afterward — `resid_tier` folds into `evidence_channels` but never dilutes the base `relatedness_score` (by design).
+
+### (6a-prereq) Gene paralogs — D5b prerequisite (buffering-candidate criterion b)
+- **Schema:** migration `0017_dim_gene_paralog.sql`.
+- **Script:** `scripts/populate_gene_paralogs.py` · **SLURM:** `sbatch slurm/reticle-paralogs.sh <version>` **(CPU, needs `$STRING_DIR`)**
+- **Produces:** `dim_gene_paralog` — one row per resolved paralog pair, parsed from the STRING alias files (`{taxid}.protein.aliases.v12.0.txt.gz`, the same files `prototype/script/build_kb_string.py` reads) via their `Ensembl_EntrezGene_Paralog` source rows, which that script discards on purpose (wrong join key for its own STRING-edge use) — this is the first consumer. Both sides resolved to this version's `gene.identifier_id` (BioGRID's Entrez GeneID).
+- **Order:** independent of D5/D6/D7/P3; only needs `gene` populated (stage 2). Gates D5b's buffering-candidate flag.
+
 ### (6b) Co-hit  ← D6 (Channel 2)
 - **Script:** `scripts/compute_cohit.py` · **SLURM:** `sbatch slurm/reticle-cohit.sh <version> --config-id N`  **(CPU — exact sparse Hᵀ·H, no GPU)**
 - **Produces:** `fact_gene_pair.cohit_*` — support `n11`, Jaccard, PMI, marginals (`a_hits`/`b_hits`/`screens_total`), one-sided hypergeometric (= Fisher) p → BH-FDR, tier. Upsert composes with D5 (leaves `coess_*` intact).
@@ -102,13 +114,24 @@ warehouse → harmonization → gene-relatedness. Each stage lists the **script*
 
 ### (6c) Roll-up  ← D9 (cross-channel combine)
 - **Script:** `scripts/rollup_relatedness.py`  **(login-node, DB-only — single set-based UPDATE; no GPU/SLURM)**
-- **Produces:** the unified header on `fact_gene_pair` — `relatedness_score` (weighted, support-renormalized over present base channels; co-ess weighted highest), `relatedness_tier`, `evidence_channels` / `evidence_channel_count`, `total_support`, `min_fdr`.
-- **Runs after** any channel driver (D5/D6/…). Idempotent — re-run whenever a channel adds/updates columns (D7/D8 slot in automatically). Weights + overall cuts are config-driven (`thresholds.channel_weights`, `tier_cuts.overall`).
+- **Produces:** the unified header on `fact_gene_pair` — `relatedness_score` (weighted, support-renormalized over the four **base** channels present; co-ess weighted highest), `relatedness_tier`, `evidence_channels` / `evidence_channel_count`, `total_support`, `min_fdr`. D5b's `resid_tier`/`is_buffering_candidate` fold into `evidence_channels`/`evidence_channel_count`/`total_support`/`min_fdr` but are excluded from the `relatedness_score`/`relatedness_tier` weighted average by design (novelty stays a distinguishable facet, never dilutes a plain strong edge).
+- **Runs after** any channel driver (D5/D6/D7/D8/D5b). Idempotent — re-run whenever a channel adds/updates columns. Weights + overall cuts are config-driven (`thresholds.channel_weights`, `tier_cuts.overall`).
 
 ### (6d) Co-citation  ← D7 (Channel 3) — needs P2 first
 - **P2 populate:** `scripts/populate_publications.py` · **SLURM:** `sbatch slurm/reticle-publications.sh <version>` **(CPU, needs `$DATA_DIR`)** — reads each screen's PMID (`SOURCE_ID`) from the metadata JSON, upserts `publication`, and fills `fact_screen_gene_publication` (**hits-only** by default; `--all` for non-hits too). The ETL's `build_fact_screen_gene_publication()` is a placeholder — this replaces it.
 - **D7 compute:** `scripts/compute_cocitation.py` · **SLURM:** `sbatch slurm/reticle-cocitation.sh <version> --config-id N` **(CPU — sparse Pᵀ·P over gene×publication hit sets)** — shared-pub support, Jaccard, PMI, hypergeometric p → BH-FDR into `fact_gene_pair.cocite_*` (tiers on PMI). Upsert composes with coess/cohit.
 - **Order:** P2 → D7 → re-run D9 roll-up (folds co-citation into `relatedness_tier`/`evidence_channels`).
+
+### (6e) Screen context — P3 (feeds D8 contextual + D5b novelty channels)
+- **Schema:** migration `0016_dim_screen_context.sql` (deferred from `0014` — see its header).
+- **Script:** `scripts/populate_screen_context.py` · **SLURM:** `sbatch slurm/reticle-screen-context.sh <version>` **(CPU, needs `$DATA_DIR`; far lighter than P2 — one row per screen)**
+- **Produces:** `dim_screen_context` — one row per `(version_id, screen_id)`. Denormalizes `coverage_type`/`score_basis`/`is_directional`/`selection_type` straight from `screen_harmonization` (P1; not recomputed), and adds new extraction from the metadata JSON: `cell_line`, `cell_type`, `phenotype`, `condition` (`CONDITION_NAME`+`CONDITION_DOSAGE`), and a rule-derived `assay_domain` (fitness/stress/reporter/other from `PHENOTYPE` keywords). Builds the denormalized `context_key` (`"assay_domain|condition|cell_line"`, lowercased, missing facets omitted) that D8 groups by.
+- **Order:** run **after** P1 harmonize (reads `screen_harmonization`) — safe to run in parallel with P2/D5/D6/D7. Gates D8 and D5b.
+
+### (6f) Contextual convergence  ← D8 (Channel 4) — needs D6 + P3
+- **Script:** `scripts/compute_contextual.py` · **SLURM:** `sbatch slurm/reticle-context.sh <version> --config-id N` **(CPU — same sparse Hᵀ·H / hypergeometric math as D6, re-run once per facet-value bucket)**
+- **Produces:** stratifies co-hit by each `dim_screen_context` facet (`assay_domain`, `cell_line`, `cell_type`, `condition`, `phenotype`); for each facet a screen is bucketed by its value in that facet (buckets below `min_context_screens` dropped, largest-first capped at `--max-values-per-type`), and Jaccard/PMI/one-sided-hypergeometric are computed **within** the bucket only (bucket-local marginals, not the version's global screen count). BH-FDR is pooled per facet type (its "channel"). Writes every significant `(pair, context_type, context_value)` into `dim_gene_pair_context`, and the single best context per pair (lowest FDR) into `fact_gene_pair.context_*`. A pair found only here still gets a `fact_gene_pair` header row (upsert, like D5/D6/D7).
+- **Order:** run **after** D6 (reuses its co-hit formulas) and P3; independent of D5/D7 — re-run D9 afterward to fold `context_*` into `relatedness_tier`/`evidence_channels`.
 
 ### (7+) Gene-relatedness scorecard
 - **Design:** `design/gene_relatedness_design.md` (+ `_schema.sql`, `_architecture.drawio`, `_erd.drawio`).

@@ -3,21 +3,27 @@
 rollup_relatedness.py — D9 driver: cross-channel roll-up + evidence summary.
 
 Combines the per-channel columns each channel driver writes (D5 coess_*, D6
-cohit_*, later D7 cocite_*, D8 context_*) into the unified header fields on
+cohit_*, D7 cocite_*, D8 context_*) into the unified header fields on
 fact_gene_pair:
 
   relatedness_score      weighted, support-renormalized combination of the base
                          channels' effects (co-essentiality weighted highest)
   relatedness_tier       Strong | Moderate | Weak  (config tier_cuts.overall)
-  evidence_channels      e.g. "coess,cohit"  — which channels cleared support
+  evidence_channels      e.g. "coess,cohit,resid"  — which channels cleared support
   evidence_channel_count how many
-  total_support          coess+cohit+cocite+context support (breadth of evidence)
-  min_fdr                best (smallest) FDR across channels
+  total_support          coess+cohit+cocite+context+resid support (breadth of evidence)
+  min_fdr                best (smallest) FDR across channels (incl. resid_fdr)
 
-A channel "contributes" iff its per-channel tier is non-NULL (it cleared support
-and has an effect). Weights renormalize over the channels actually present, so a
-co-ess-only pair is scored on co-ess alone. Novelty/anti-β/buffering (Channel 5)
-are recorded elsewhere and deliberately do NOT dilute this base roll-up.
+A channel "contributes" to relatedness_score/relatedness_tier iff its per-channel
+tier is non-NULL (it cleared support and has an effect). Weights renormalize
+over the four BASE channels actually present (coess/cohit/cocite/context), so a
+co-ess-only pair is scored on co-ess alone. D5b's novelty channel (resid_tier,
+plus the is_antagonistic/is_buffering_candidate flags) is recorded alongside and
+DOES appear in evidence_channels/evidence_channel_count/total_support/min_fdr —
+design/gene_relatedness_design.md §6.7 is explicit that novelty surfaces as its
+own facet — but is deliberately excluded from the relatedness_score/tier weighted
+average so it never dilutes the base roll-up (a "novel" edge stays distinguishable
+from a plain strong one).
 
 Idempotent, set-based single UPDATE over (version_id, config_id). Login-node,
 DB-only — no GPU/SLURM. Re-run after any channel driver adds/updates columns.
@@ -169,13 +175,16 @@ def main():
                     CASE WHEN f.coess_tier   IS NOT NULL THEN 'coess'   END,
                     CASE WHEN f.cohit_tier   IS NOT NULL THEN 'cohit'   END,
                     CASE WHEN f.cocite_tier  IS NOT NULL THEN 'cocite'  END,
-                    CASE WHEN f.context_tier IS NOT NULL THEN 'context' END),
+                    CASE WHEN f.context_tier IS NOT NULL THEN 'context' END,
+                    CASE WHEN f.resid_tier   IS NOT NULL THEN 'resid'   END,
+                    CASE WHEN f.is_buffering_candidate THEN 'buffering' END),
                 evidence_channel_count =
                     (f.coess_tier IS NOT NULL)::int + (f.cohit_tier IS NOT NULL)::int
-                  + (f.cocite_tier IS NOT NULL)::int + (f.context_tier IS NOT NULL)::int,
+                  + (f.cocite_tier IS NOT NULL)::int + (f.context_tier IS NOT NULL)::int
+                  + (f.resid_tier IS NOT NULL)::int + COALESCE(f.is_buffering_candidate, FALSE)::int,
                 total_support = COALESCE(f.coess_support,0) + COALESCE(f.cohit_support,0)
-                  + COALESCE(f.cocite_support,0) + COALESCE(f.context_support,0),
-                min_fdr = LEAST(f.coess_fdr, f.cohit_fdr, f.cocite_fdr, f.context_best_fdr),
+                  + COALESCE(f.cocite_support,0) + COALESCE(f.context_support,0) + COALESCE(f.resid_support,0),
+                min_fdr = LEAST(f.coess_fdr, f.cohit_fdr, f.cocite_fdr, f.context_best_fdr, f.resid_fdr),
                 relatedness_score = sc.score,
                 relatedness_tier = {_TIER_EXPR},
                 is_current = TRUE
