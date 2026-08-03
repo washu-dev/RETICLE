@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RETICLE — System Documentation</title>
+<style>
+:root{
+  --bg:#fbfcfd; --panel:#ffffff; --ink:#1b2733; --muted:#5b6b7a; --faint:#8595a4;
+  --line:#e4e9ee; --line2:#eef2f5; --accent:#1f6feb; --accent-weak:#e8f0fe;
+  --rds:#7a3ff2; --rds-bg:#f2ecfe; --local:#0f9d76; --local-bg:#e6f7f1;
+  --warn:#b4690e; --warn-bg:#fbf1de; --code-bg:#f5f7f9; --code-ink:#243b53;
+  --live:#0f9d76; --legacy:#8595a4; --pipe:#1f6feb; --notwired:#b4690e;
+  --ess:#1F6F8B; --adv:#C77D31;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d1117; --panel:#141a22; --ink:#e6edf3; --muted:#9aa7b4; --faint:#6b7a89;
+  --line:#232c37; --line2:#1b222b; --accent:#589bff; --accent-weak:#16263f;
+  --rds:#b48cff; --rds-bg:#241a3a; --local:#3fd39e; --local-bg:#123329;
+  --warn:#e0a44a; --warn-bg:#332612; --code-bg:#0f151d; --code-ink:#c9d6e2;
+  --live:#3fd39e; --legacy:#6b7a89; --pipe:#589bff; --notwired:#e0a44a;
+  --ess:#4aa3c4; --adv:#e0a44a;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --panel:#141a22; --ink:#e6edf3; --muted:#9aa7b4; --faint:#6b7a89;
+  --line:#232c37; --line2:#1b222b; --accent:#589bff; --accent-weak:#16263f;
+  --rds:#b48cff; --rds-bg:#241a3a; --local:#3fd39e; --local-bg:#123329;
+  --warn:#e0a44a; --warn-bg:#332612; --code-bg:#0f151d; --code-ink:#c9d6e2;
+  --live:#3fd39e; --legacy:#6b7a89; --pipe:#589bff; --notwired:#e0a44a;
+  --ess:#4aa3c4; --adv:#e0a44a;
+}
+:root[data-theme="light"]{
+  --bg:#fbfcfd; --panel:#ffffff; --ink:#1b2733; --muted:#5b6b7a; --faint:#8595a4;
+  --line:#e4e9ee; --line2:#eef2f5; --accent:#1f6feb; --accent-weak:#e8f0fe;
+  --rds:#7a3ff2; --rds-bg:#f2ecfe; --local:#0f9d76; --local-bg:#e6f7f1;
+  --warn:#b4690e; --warn-bg:#fbf1de; --code-bg:#f5f7f9; --code-ink:#243b53;
+  --live:#0f9d76; --legacy:#8595a4; --pipe:#1f6feb; --notwired:#b4690e;
+  --ess:#1F6F8B; --adv:#C77D31;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.layout{display:grid;grid-template-columns:274px minmax(0,1fr);gap:0;max-width:1320px;margin:0 auto}
+aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  border-right:1px solid var(--line);padding:22px 15px 40px;background:var(--panel)}
+aside .brand{font-weight:800;font-size:17px;letter-spacing:.03em;margin:2px 0 1px 8px}
+aside .brand span{color:var(--accent)}
+aside .tag{font-size:10.5px;color:var(--faint);margin:0 0 8px 8px;text-transform:uppercase;letter-spacing:.11em}
+aside nav a{display:block;color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:7px;
+  font-size:13px;border-left:2px solid transparent}
+aside nav a:hover{background:var(--accent-weak);color:var(--ink)}
+aside nav a.sub{padding-left:20px;font-size:12.5px;color:var(--faint)}
+aside nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);
+  margin:15px 0 3px 8px;font-weight:700}
+.themebtn{margin:6px 8px 12px;padding:5px 10px;font-size:12px;border:1px solid var(--line);
+  background:transparent;color:var(--muted);border-radius:7px;cursor:pointer}
+main{padding:42px 52px 120px;min-width:0}
+section{margin:0 0 40px;scroll-margin-top:16px}
+h1{font-size:31px;line-height:1.15;margin:0 0 8px;letter-spacing:-.015em}
+h2{font-size:23px;margin:46px 0 8px;padding-top:10px;letter-spacing:-.01em;border-top:1px solid var(--line)}
+h2:first-of-type{border-top:none}
+h3{font-size:17px;margin:24px 0 6px}
+h4{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:18px 0 6px}
+p{margin:9px 0}
+a{color:var(--accent)}
+.lede{font-size:16.5px;color:var(--muted);line-height:1.66;max-width:74ch}
+code{font-family:var(--mono);font-size:.85em;background:var(--code-bg);color:var(--code-ink);
+  padding:1.5px 5px;border-radius:5px;border:1px solid var(--line2)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:13px 15px;
+  overflow-x:auto;margin:11px 0}
+pre code{background:none;border:none;padding:0;font-size:12.3px;line-height:1.55;color:var(--code-ink)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  padding:2px 9px;border-radius:20px;vertical-align:middle;font-family:var(--sans);white-space:nowrap;
+  text-transform:uppercase;letter-spacing:.03em}
+.b-rds{color:var(--rds);background:var(--rds-bg)}
+.b-local{color:var(--local);background:var(--local-bg)}
+.b-live{color:#fff;background:var(--live)}
+.b-legacy{color:#fff;background:var(--legacy)}
+.b-pipe{color:#fff;background:var(--pipe)}
+.b-notwired{color:#fff;background:var(--notwired)}
+.b-warn{color:var(--warn);background:var(--warn-bg)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+.feature{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2px 22px 20px;margin:20px 0 26px;
+  box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.fhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:18px 0 0}
+.fhead h3{margin:0;font-size:18px}
+.fhead .ep{font-family:var(--mono);font-size:12px;color:var(--accent);background:var(--accent-weak);
+  padding:1px 7px;border-radius:5px}
+.note{border-left:3px solid var(--accent);background:var(--accent-weak);padding:10px 14px;border-radius:0 8px 8px 0;margin:13px 0;font-size:14px}
+.note.warn{border-color:var(--warn);background:var(--warn-bg)}
+.note b{color:var(--ink)}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:3px 14px;margin:10px 0;font-size:14px}
+.kv dt{color:var(--faint);font-size:12px;padding-top:2px}
+.kv dd{margin:0}
+.tw{overflow-x:auto;margin:13px 0;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+th{background:var(--code-bg);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tbody tr:last-child td{border-bottom:none}
+td code{white-space:nowrap;font-size:11.5px}
+.mono-cell{font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.num{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;white-space:nowrap}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;margin:16px 0;overflow-x:auto}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+figcaption{font-size:12px;color:var(--faint);text-align:center;margin:4px 0 6px}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+ul.tight{margin:8px 0;padding-left:20px}
+ul.tight li{margin:3px 0}
+footer{color:var(--faint);font-size:12.5px;border-top:1px solid var(--line);padding-top:16px;margin-top:36px}
+.leg{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline}
+@media (max-width:880px){
+  .layout{grid-template-columns:1fr}
+  aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  main{padding:26px 18px 80px}
+  .kv{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside>
+  <div class="brand">RETI<span>CLE</span></div>
+  <div class="tag">System Documentation</div>
+  <button class="themebtn" onclick="(function(){var r=document.documentElement;var d=(r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))==='dark';r.setAttribute('data-theme',d?'light':'dark')})()">◐ theme</button>
+  <nav>
+    <a href="#intro">Overview</a>
+    <a href="#architecture">Architecture &amp; data flow</a>
+    <a href="#backend">Serving backend</a>
+    <a href="#dbref">Database reference</a>
+    <div class="grp">Explore page · index.html</div>
+    <a class="sub" href="#f-gene">Gene profile</a>
+    <a class="sub" href="#f-networks">Interaction networks</a>
+    <a class="sub" href="#f-similarity">Screen similarity</a>
+    <a class="sub" href="#f-context">External enrichment &amp; darkness</a>
+    <a class="sub" href="#f-interpret">AI interpretation</a>
+    <div class="grp">Gene Wiki page · gene.html</div>
+    <a class="sub" href="#f-wiki">Gene wiki (RAG)</a>
+    <a class="sub" href="#f-structure">3D structure</a>
+    <a class="sub" href="#f-distribution">Score distribution</a>
+    <a class="sub" href="#f-prediction">Function prediction</a>
+    <a class="sub" href="#f-screenanalysis">Screen analysis (AI)</a>
+    <div class="grp">Network page · network.html</div>
+    <a class="sub" href="#f-network">Co-essentiality network</a>
+    <div class="grp">Data pipelines</div>
+    <a class="sub" href="#p-harmonization">Harmonization</a>
+    <a class="sub" href="#p-strat">Domains &amp; directionality</a>
+    <a class="sub" href="#p-fisher">Fisher co-hit channel</a>
+    <div class="grp">Reference</div>
+    <a class="sub" href="#endpoints">Endpoint map</a>
+    <a class="sub" href="#scripts">Build scripts</a>
+  </nav>
+</aside>
+<main>
+
+<!-- ===================== OVERVIEW ===================== -->
+<section id="intro">
+  <h1>RETICLE</h1>
+  <p class="lede">RETICLE is a functional-genomics platform that <b>harmonizes the world's published CRISPR
+  screens</b> (BioGRID ORCS) onto one comparable axis, then mines them to surface gene biology that isn't
+  yet in the reference databases — a gene's phenotype fingerprint, the screens most like a given screen,
+  data-driven gene–gene co-essentiality connections, and predicted-but-undiscovered gene functions — each
+  cross-referenced against an offline multi-source knowledge base.</p>
+
+  <div class="note"><b>Design thesis.</b> The point is <i>discovery</i>, not re-confirmation. If every
+  connection RETICLE surfaced could already be looked up in STRING or GO, the work would be pointless — so
+  the network channels are built purely from screen data and deliberately <i>allowed to disagree</i> with
+  the curated databases, which are used only as an independent yardstick, never as an input to the edges.</p>
+
+  <h3>What ships today</h3>
+  <p>One Python <code>http.server</code> (<code>web/app.py</code>) serves three cross-linked pages. A shared
+  top nav carries the current gene between them via <code>?gene=</code>/<code>?organism=</code> URL params.
+  All 14 API endpoints are live and each belongs to exactly one page.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Page</th><th>Route(s)</th><th>Purpose</th><th>Endpoints it calls</th></tr></thead>
+    <tbody>
+      <tr><td><b>Explore</b><br><span class="mono-cell">index.html</span></td>
+          <td><code>/</code> <code>/index.html</code></td>
+          <td>Gene phenotype profile across all screens; two inline interaction graphs; similar-screens panel; AI reading.</td>
+          <td class="mono-cell">/api/gene · /api/context · /api/network · /api/coessential · /api/screen_similar · /api/reporter_explain · POST /api/interpret</td></tr>
+      <tr><td><b>Gene Wiki</b><br><span class="mono-cell">gene.html</span></td>
+          <td><code>/gene</code> <code>/wiki</code></td>
+          <td>Deep single-gene reference: knowledge base, 3D structure, in-screen distribution, predicted functions, AI screen synthesis.</td>
+          <td class="mono-cell">/api/gene_wiki · /api/gene_structure · /api/gene_screen_distribution · /api/gene_predictions · /api/screen_analysis</td></tr>
+      <tr><td><b>Network</b><br><span class="mono-cell">network.html</span></td>
+          <td><code>/network</code> <code>/net</code></td>
+          <td>The flagship context-resolved co-essentiality graph explorer (Cytoscape), human &amp; mouse.</td>
+          <td class="mono-cell">/api/net_contexts · /api/screen_net</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:13px;color:var(--faint)">Verified against <code>web/app.py</code> <code>do_GET</code>/<code>do_POST</code> and the three HTML files; every endpoint→page binding was confirmed by line-level grep. This document was regenerated from the code — where a code comment is stale, the doc follows the code and flags the comment.</p>
+</section>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section id="architecture">
+  <h2>Architecture &amp; data flow</h2>
+  <p>RETICLE is built in two halves: an <b>offline build pipeline</b> (the <code>script/</code> directory) that
+  transforms raw public data into query-ready tables, and an <b>online serving layer</b> (<code>web/app.py</code>)
+  that reads those tables. Nothing is computed from raw screens at request time — every heavy aggregate is
+  precomputed into a table or matrix.</p>
+
+  <figure class="diagram">
+  <svg viewBox="0 0 1000 430" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" font-size="12.5">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="var(--faint)"/>
+      </marker>
+    </defs>
+    <!-- sources -->
+    <rect x="12" y="20" width="150" height="118" rx="9" fill="var(--code-bg)" stroke="var(--line)"/>
+    <text x="87" y="40" text-anchor="middle" font-weight="700" fill="var(--ink)">Public sources</text>
+    <text x="87" y="60" text-anchor="middle" fill="var(--muted)">BioGRID ORCS</text>
+    <text x="87" y="78" text-anchor="middle" fill="var(--muted)">NCBI · UniProt</text>
+    <text x="87" y="96" text-anchor="middle" fill="var(--muted)">STRING · GO</text>
+    <text x="87" y="114" text-anchor="middle" fill="var(--muted)">PubMed · DepMap</text>
+    <text x="87" y="132" text-anchor="middle" fill="var(--muted)">Reactome</text>
+
+    <!-- build pipeline -->
+    <rect x="200" y="12" width="250" height="200" rx="9" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="325" y="28" text-anchor="middle" font-weight="700" fill="var(--faint)">OFFLINE BUILD · script/</text>
+    <rect x="214" y="38" width="222" height="30" rx="6" fill="var(--accent-weak)" stroke="var(--accent)"/>
+    <text x="325" y="57" text-anchor="middle" fill="var(--ink)">harmonize_scores.py</text>
+    <rect x="214" y="74" width="222" height="30" rx="6" fill="var(--accent-weak)" stroke="var(--accent)"/>
+    <text x="325" y="93" text-anchor="middle" fill="var(--ink)">classify / directionality</text>
+    <rect x="214" y="110" width="222" height="30" rx="6" fill="var(--accent-weak)" stroke="var(--accent)"/>
+    <text x="325" y="129" text-anchor="middle" fill="var(--ink)">compute_coessential · hit_only</text>
+    <rect x="214" y="146" width="222" height="30" rx="6" fill="var(--accent-weak)" stroke="var(--accent)"/>
+    <text x="325" y="165" text-anchor="middle" fill="var(--ink)">build_kb_* (12) · matrices</text>
+    <rect x="214" y="182" width="222" height="24" rx="6" fill="var(--accent-weak)" stroke="var(--accent)"/>
+    <text x="325" y="199" text-anchor="middle" fill="var(--ink)">migrate_to_rds · build_gene_fitness_lean</text>
+
+    <!-- stores -->
+    <rect x="486" y="22" width="210" height="184" rx="9" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+    <text x="591" y="38" text-anchor="middle" font-weight="700" fill="var(--faint)">STORES</text>
+    <rect x="500" y="48" width="182" height="66" rx="7" fill="var(--local-bg)" stroke="var(--local)"/>
+    <text x="591" y="66" text-anchor="middle" font-weight="700" fill="var(--local)">local sqlite (processed_data/)</text>
+    <text x="591" y="83" text-anchor="middle" fill="var(--muted)">reticle_master · kb</text>
+    <text x="591" y="99" text-anchor="middle" fill="var(--muted)">reticle_net(_mouse) · *.npz</text>
+    <rect x="500" y="124" width="182" height="66" rx="7" fill="var(--rds-bg)" stroke="var(--rds)"/>
+    <text x="591" y="142" text-anchor="middle" font-weight="700" fill="var(--rds)">AWS RDS Postgres</text>
+    <text x="591" y="159" text-anchor="middle" fill="var(--muted)">reticle_biogrid</text>
+    <text x="591" y="175" text-anchor="middle" fill="var(--muted)">schema reticle.* (29 tbl)</text>
+
+    <!-- app -->
+    <rect x="732" y="48" width="150" height="140" rx="9" fill="var(--code-bg)" stroke="var(--line)"/>
+    <text x="807" y="70" text-anchor="middle" font-weight="700" fill="var(--ink)">web/app.py</text>
+    <text x="807" y="88" text-anchor="middle" fill="var(--muted)">USE_PG switch</text>
+    <text x="807" y="105" text-anchor="middle" fill="var(--muted)">pool · fetch helpers</text>
+    <text x="807" y="122" text-anchor="middle" fill="var(--muted)">14 endpoints</text>
+    <line x1="748" y1="135" x2="866" y2="135" stroke="var(--line)"/>
+    <text x="807" y="153" text-anchor="middle" fill="var(--ess)" font-weight="700">3 pages</text>
+    <text x="807" y="170" text-anchor="middle" fill="var(--muted)">Explore·Wiki·Network</text>
+
+    <!-- external live -->
+    <rect x="732" y="212" width="150" height="52" rx="9" fill="var(--code-bg)" stroke="var(--line)"/>
+    <text x="807" y="232" text-anchor="middle" font-weight="700" fill="var(--ink)">Live APIs</text>
+    <text x="807" y="250" text-anchor="middle" fill="var(--muted)">AlphaFold·PDBe·WashU LLM</text>
+
+    <!-- arrows -->
+    <line x1="164" y1="79" x2="210" y2="79" stroke="var(--faint)" marker-end="url(#ar)"/>
+    <line x1="452" y1="110" x2="496" y2="110" stroke="var(--faint)" marker-end="url(#ar)"/>
+    <line x1="698" y1="120" x2="740" y2="120" stroke="var(--faint)" marker-end="url(#ar)"/>
+    <line x1="807" y1="188" x2="807" y2="210" stroke="var(--faint)" marker-end="url(#ar)"/>
+    <text x="726" y="112" text-anchor="middle" font-size="10" fill="var(--faint)">reads</text>
+  </svg>
+  <figcaption>Raw sources → offline build scripts → dual stores (local sqlite + RDS) → serving app → 3 pages.
+  Structure &amp; 3D-model lookups and LLM readings are the only request-time calls to live external services.</figcaption>
+  </figure>
+
+  <p>The same SQL runs against both stores: queries use <code>?</code> placeholders, translated to <code>%s</code>
+  for Postgres. Which store answers depends on one environment variable and, for a few hot paths, on whether the
+  local file is present — detailed next.</p>
+</section>
+
+<!-- ===================== BACKEND ===================== -->
+<section id="backend">
+  <h2>Serving backend</h2>
+  <p>Every read handler in <code>web/app.py</code> reaches a database through one of four fetch helpers. The
+  backend is chosen by a single switch and, for three helpers, a local-file preference.</p>
+
+  <h4>The switch</h4>
+  <pre><code>USE_PG = bool(_ENV.get("AWS_DB_HOST"))            # app.py:83  — presence of AWS_DB_HOST in .env is the only switch
+_PG_PARAMS = dict(host=…, dbname="reticle_biogrid",
+                  options="-c search_path=reticle,public")   # search_path baked in at connect time</code></pre>
+  <p>In the current checkout <code>.env</code> sets <code>AWS_DB_HOST</code>, so <code>USE_PG</code> is
+  <b>true</b> and <code>db_fetchall</code> goes to RDS. But all five local <code>.db</code> files also exist, so
+  the local-preferred helpers still read local sqlite — <b>a single page request can mix RDS and local reads.</b></p>
+
+  <h4>Connection pool</h4>
+  <p>The server is a <code>ThreadingHTTPServer</code> — it spawns a fresh thread per request and discards it, so a
+  thread-local connection is never reused and would pay the ~1.6&nbsp;s RDS connect on every request. Instead a
+  process-wide pool is shared across threads:</p>
+  <pre><code>_pg_pool = ThreadedConnectionPool(4, 12, **_PG_PARAMS)   # app.py:123  minconn=4 warm, maxconn=12
+# db_fetchall: getconn → autocommit → RealDictCursor → execute(sql.replace("?","%s")) → putconn
+#              retries once, dropping a stale connection with putconn(con, close=True)</code></pre>
+  <p>The pool is warmed at startup (a <code>SELECT 1</code> in <code>main()</code>) so the first user request is
+  already fast. <span style="color:var(--faint)">(An in-code docstring at app.py:111 still says "2 warm
+  connections"; the effective <code>minconn</code> is 4.)</span></p>
+
+  <h4>The four fetch helpers &amp; their routing</h4>
+  <div class="tw"><table>
+    <thead><tr><th>Helper</th><th>Backend rule</th><th>Serves</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-cell">db_fetchall</td>
+          <td><span class="badge b-rds">RDS</span> when USE_PG, else <span class="badge b-local">local</span> reticle_master.db</td>
+          <td>Gene profile, screen similarity, reporter/interpret metadata — the main path.</td></tr>
+      <tr><td class="mono-cell">net_fetchall</td>
+          <td><span class="badge b-rds">RDS</span> <code>reticle.net_edge(_mouse)</code> when USE_PG, else <span class="badge b-local">local</span> reticle_net(_mouse).db</td>
+          <td>Co-essentiality network (screen_net, net_contexts).</td></tr>
+      <tr><td class="mono-cell">kb_fetchall</td>
+          <td><span class="badge b-local">local</span> kb.db <i>preferred</i>; <span class="badge b-rds">RDS</span> <code>reticle.kb_*</code> only when <code>USE_PG and not exists(kb.db)</code></td>
+          <td>Gene wiki, predictions, screen analysis.</td></tr>
+      <tr><td class="mono-cell">_local_scores_fetch</td>
+          <td><span class="badge b-local">local</span> reticle_master.db <i>preferred</i> (≈50× faster for per-screen scans); <span class="badge b-rds">RDS</span> only if the file is absent</td>
+          <td>In-screen score distribution &amp; top-screen ranking.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Why the split.</b> <code>_local_scores_fetch</code> and <code>kb_fetchall</code> prefer
+  local because their queries are heavy per-screen / multi-join scans that a remote round-trip makes 15–50× slower;
+  RDS is the correct primary only for the small, indexed lookups. <code>_net_edge_table()</code> returns
+  <code>net_edge_mouse</code> only on RDS+mouse — the local mouse file stores the same table under the name
+  <code>net_edge</code> in a separate file.</p>
+</section>
+
+<!-- ===================== DATABASE REFERENCE ===================== -->
+<section id="dbref">
+  <h2>Database reference</h2>
+  <p>The "addresses" every feature depends on. RETICLE keeps two parallel copies of most data: local sqlite in
+  <code>processed_data/</code> (built by the scripts) and the team AWS RDS Postgres <code>reticle_biogrid</code>,
+  schema <code>reticle</code>.</p>
+
+  <h3>Local stores <span class="badge b-local">processed_data/</span></h3>
+  <div class="tw"><table>
+    <thead><tr><th>File</th><th class="num">Size</th><th>Holds</th><th>Used by</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-cell">reticle_master.db</td><td class="num">2.4 GB</td>
+          <td><code>harmonized_scores</code> (~28.2M), <code>screen_metadata</code>, <code>screen_metadata_curated</code> (2,157 each)</td>
+          <td>Gene profile, distribution, network build, harmonization output</td></tr>
+      <tr><td class="mono-cell">kb.db</td><td class="num">560 MB</td>
+          <td>14 <code>kb_*</code> knowledge-base tables (NCBI/UniProt/STRING/GO/PubMed/DepMap/Reactome/BioGRID)</td>
+          <td>Gene wiki, predictions, screen analysis</td></tr>
+      <tr><td class="mono-cell">reticle_net.db</td><td class="num">64 MB</td>
+          <td><code>net_edge</code> (human co-essentiality), <code>net_screen</code> (screen taxonomy), <code>hit_only_connection</code> (Fisher)</td>
+          <td>Network viewer (human), network build inputs</td></tr>
+      <tr><td class="mono-cell">reticle_net_mouse.db</td><td class="num">20 MB</td>
+          <td><code>net_edge</code> (mouse, exploratory), <code>hit_only_connection</code> (mouse)</td>
+          <td>Network viewer (mouse)</td></tr>
+      <tr><td class="mono-cell">external_cache.db</td><td class="num">0.3 MB</td>
+          <td>Cached NCBI/PubMed/GO/STRING responses for enrichment + darkness</td>
+          <td><code>external_sources.py</code> (not routed through the fetch helpers)</td></tr>
+      <tr><td class="mono-cell">coess_9606.npz / coess_10090.npz</td><td class="num">61 / 1.2 MB</td>
+          <td>Dense gene×gene co-essentiality matrix + lean vector (pooled)</td>
+          <td><code>/api/coessential</code> inline network on Explore</td></tr>
+      <tr><td class="mono-cell">screens_9606_fitness_full.npz</td><td class="num">60 MB</td>
+          <td>19,136 genes × 962 screens fitness matrix</td>
+          <td><b>Orphaned</b> — only the screen-similarity migration script reads it; the app no longer does</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>RDS schema <span class="badge b-rds">reticle_biogrid · reticle.*</span></h3>
+  <div class="tw"><table>
+    <thead><tr><th>Table</th><th class="num">Rows</th><th>Role</th><th>Read by</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-cell">harmonized_scores</td><td class="num">28.2M</td><td>Per-(gene,screen) harmonized/percentile/robust-z/hit</td><td>gene profile, network build</td></tr>
+      <tr><td class="mono-cell">screen_metadata</td><td class="num">2,157</td><td>Per-screen metadata + coverage/directionality provenance</td><td>every gene/screen query</td></tr>
+      <tr><td class="mono-cell">screen_metadata_curated</td><td class="num">2,157</td><td>assay_domain + condition facets (stratification)</td><td>gene profile, network coloring</td></tr>
+      <tr><td class="mono-cell">gene_fitness_lean</td><td class="num">53,670</td><td>Precomputed per-gene mean fitness percentile → node color</td><td>screen_net (RDS)</td></tr>
+      <tr><td class="mono-cell">net_edge</td><td class="num">109,031</td><td>Human co-essentiality edges (Pearson channel)</td><td>screen_net, net_contexts</td></tr>
+      <tr><td class="mono-cell">net_edge_mouse</td><td class="num">82,977</td><td>Mouse co-essentiality edges (exploratory)</td><td>screen_net (mouse)</td></tr>
+      <tr><td class="mono-cell">net_screen</td><td class="num">1,952</td><td>Human screen taxonomy (FULL + n_genes gate)</td><td>network build only</td></tr>
+      <tr><td class="mono-cell">screen_similarity</td><td class="num">789,432</td><td>Precomputed screen-pair Pearson r + overlap</td><td>screen_similar</td></tr>
+      <tr><td class="mono-cell">screen_sim_meta</td><td class="num">962</td><td>Per-screen labels + pmid for the similarity pool</td><td>screen_similar</td></tr>
+      <tr><td class="mono-cell">hit_only_connection</td><td class="num">417,924</td><td>Fisher co-hit edges (human)</td><td><span class="badge b-notwired">not wired</span></td></tr>
+      <tr><td class="mono-cell">hit_only_connection_mouse</td><td class="num">162,118</td><td>Fisher co-hit edges (mouse)</td><td><span class="badge b-notwired">not wired</span></td></tr>
+      <tr><td class="mono-cell">stress_facts / stress_consensus</td><td class="num">357,424</td><td>Per-condition stress ledgers (materialized)</td><td>stress pipeline</td></tr>
+      <tr><td class="mono-cell">kb_gene · kb_gene_alias</td><td class="num">138K · 401K</td><td>Identity backbone + symbol/alias resolution</td><td>gene wiki, all kb</td></tr>
+      <tr><td class="mono-cell">kb_gene_go · kb_go_term · kb_go_parent</td><td class="num">1.0M · 48K · 58K</td><td>GO annotations + term dictionary + hierarchy</td><td>gene wiki, prediction</td></tr>
+      <tr><td class="mono-cell">kb_string_edge</td><td class="num">913K</td><td>STRING edges (7 evidence channels)</td><td>wiki network, prediction</td></tr>
+      <tr><td class="mono-cell">kb_gene_pubmed</td><td class="num">3.5M</td><td>gene↔PMID links (no abstracts)</td><td>gene wiki literature count</td></tr>
+      <tr><td class="mono-cell">kb_gene_pathway</td><td class="num">79K</td><td>Reactome leaf pathways</td><td>gene wiki</td></tr>
+      <tr><td class="mono-cell">kb_gene_ortholog</td><td class="num">34K</td><td>Human↔mouse orthologs</td><td>gene wiki</td></tr>
+      <tr><td class="mono-cell">kb_gene_dependency · kb_model</td><td class="num">18K · 2.1K</td><td>DepMap Chronos summary + cell-line metadata</td><td>gene wiki DepMap block</td></tr>
+      <tr><td class="mono-cell">kb_coessential</td><td class="num">537K</td><td>DepMap co-essential partners (precomputed)</td><td>function prediction</td></tr>
+      <tr><td class="mono-cell">kb_screen · kb_screen_hit</td><td class="num">2.2K · 1.9M</td><td>BioGRID screen metadata + HIT=YES rows</td><td>gene wiki screens, screen analysis</td></tr>
+      <tr><td class="mono-cell">external_cache</td><td class="num">—</td><td>enrichment cache mirror</td><td>external enrichment</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>Provenance caveat.</b> <code>migrate_to_rds.py</code> only loads
+  <code>harmonized_scores</code> + the two metadata tables; <code>migrate_screen_similarity.py</code> and
+  <code>build_gene_fitness_lean.py</code> load their own tables. <b>No committed script loads
+  <code>net_edge</code>, <code>net_edge_mouse</code>, or the <code>hit_only_connection*</code> tables to RDS</b> —
+  yet RDS holds them (row counts above are live). They were synced out-of-band in a prior session. If you rebuild
+  those networks, re-syncing RDS is a manual step.</p>
+</section>
+
+<!-- ============================================================= -->
+<!-- ===================== EXPLORE PAGE ===================== -->
+<!-- ============================================================= -->
+<section id="explore-page">
+  <h2>Explore page <span style="font-size:14px;color:var(--faint);font-weight:400">· index.html</span></h2>
+  <p>The landing page. A gene search box drives a phenotype profile; below it, two interaction graphs, a
+  similar-screens panel, and an on-demand AI reading.</p>
+
+  <!-- Gene profile -->
+  <div class="feature" id="f-gene">
+    <div class="fhead"><h3>Gene profile</h3><span class="ep">GET /api/gene</span><span class="badge b-live">live</span></div>
+    <p><code>gene_payload()</code> resolves a gene across every screen it appears in and splits its rows into
+    <b>fitness / stress / reporter</b> ledgers by <code>assay_domain</code> — three domains that must never be
+    pooled together because they measure different things.</p>
+    <h4>Logic</h4>
+    <ul class="tight">
+      <li><b>Resolve &amp; fetch</b> — case variants of the symbol (no ortholog mapping); one SELECT joins
+      <code>harmonized_scores</code> + <code>screen_metadata</code> + <code>screen_metadata_curated</code>,
+      <code>WHERE PERCENTILE_SCORE IS NOT NULL</code>. If a symbol exists in two species, keep the
+      better-represented one (<code>max</code> by row count).</li>
+      <li><b>Bucket</b> by <code>assay_domain</code>; uncurated screens default to <code>other</code>, folded into reporter.</li>
+      <li><b>Fitness</b> (<code>domain_block</code>, pooled axis): n, hit rate, median/mean/quartiles, a 26-bin
+      histogram over [−1,1], and top-10 most-essential / most-advantageous screens. <b>lean</b> =
+      <code>essential</code> if median &lt; −0.15, <code>advantageous</code> if &gt; +0.15, else <code>mixed</code>.</li>
+      <li><b>Stress</b> (<code>stress_ledger</code>): per-condition, direction counted <i>per PubMed paper</i> (not
+      per screen) as a majority sign of the harmonized score → <code>resist</code> / <code>sensitise</code> / <code>mixed</code>.</li>
+      <li><b>Reporter</b> (<code>reporter_ledger</code>): "gene regulates {process}" facts from hit rows,
+      controls dropped, <b>direction deliberately omitted</b> (gate-dependent and unreliable).</li>
+    </ul>
+    <div class="pill-row"><span class="badge b-rds">RDS reticle</span><span class="badge b-local">local reticle_master.db</span>
+      &nbsp;<span class="mono-cell">harmonized_scores · screen_metadata · screen_metadata_curated</span></div>
+    <div class="note">Consumed by <code>index.html</code> (the Explore page), <b>not</b> gene.html — the two pages
+    use disjoint endpoints. Query param is <code>symbol</code>.</div>
+  </div>
+
+  <!-- Networks -->
+  <div class="feature" id="f-networks">
+    <div class="fhead"><h3>Interaction networks (two inline graphs)</h3><span class="ep">GET /api/network</span><span class="ep">GET /api/coessential</span><span class="badge b-live">live</span></div>
+    <p>Explore renders <b>two different</b> small graphs side by side. Neither is the flagship network on the
+    Network page — they are lighter, single-view siblings.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Endpoint</th><th>What the edges are</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">/api/network</td>
+            <td>STRING functional-interaction subnetwork (the gene + partners), <b>nodes recolored by CRISPR
+            fitness lean</b> (fitness screens only)</td>
+            <td><span class="badge b-local">kb.db</span>/<span class="badge b-rds">RDS</span> <code>kb_string_edge</code> + <code>harmonized_scores</code></td></tr>
+        <tr><td class="mono-cell">/api/coessential</td>
+            <td>Pooled co-essentiality: cosine ≡ Pearson <code>r = R @ R[qi]</code> over full percentile
+            profiles, seed + top-14 by <code>r ≥ 0.25</code>, with partner–partner edges</td>
+            <td><span class="badge b-local">local only</span> <code>coess_{taxid}.npz</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="note warn"><b>Cloud gap.</b> <code>/api/coessential</code> reads a dense matrix from
+    <code>processed_data/coess_9606.npz</code> (loaded into memory once). That <code>.npz</code> is
+    <b>local-only — it is not on RDS</b>, so this graph will not render on a pure-cloud deploy without the file.
+    It is built by <code>build_coessential_matrix.py</code>, a path entirely separate from the flagship
+    <code>net_edge</code> build.</p>
+  </div>
+
+  <!-- Screen similarity -->
+  <div class="feature" id="f-similarity">
+    <div class="fhead"><h3>Screen similarity</h3><span class="ep">GET /api/screen_similar</span><span class="badge b-live">live</span></div>
+    <p>Given a query fitness screen, returns other human genome-wide fitness screens whose gene-level profile
+    resembles it — ranked by <b>pairwise-complete Pearson r on PC1-removed values</b>, scored as a z ("σ") against
+    the query's own background.</p>
+    <h4>Algorithm (precomputed offline into RDS)</h4>
+    <ul class="tight">
+      <li><b>PC1 removal</b> — the pan-essentiality axis carries 44.5% of variance and its gene loading correlates
+      0.998 with mean percentile; leaving it in makes <i>any</i> two fitness screens correlate ≈0.35 before
+      biology, so it is projected out via SVD before correlating.</li>
+      <li><b>All-pairs pairwise-complete Pearson by mask algebra</b> — each pair uses only genes both screens
+      measured: <code>n=mask·mask</code>, <code>Sxy=Zmᵀ·Zm</code>, standard r formula. Pairs with
+      <code>overlap &lt; 2000</code> shared genes are dropped (noise-dominated).</li>
+      <li><b>Background z</b> at query time — <code>z = (r − mean_r) / sd_r</code> over the neighbour set:
+      "is this screen <i>more</i> alike than the ≈0.35 baseline?" This σ is what the UI foregrounds.</li>
+      <li><b>same_study</b> flag (shared PubMed id) + an <code>exclude same study</code> toggle, because the top
+      matches are often the same publication (an unfixed batch confound).</li>
+    </ul>
+    <div class="pill-row"><span class="badge b-rds">RDS only</span>
+      <span class="mono-cell">screen_similarity (789K) · screen_sim_meta (962)</span></div>
+    <div class="note">Rebuilt off the old 60 MB in-memory <code>.npz</code> (deleted from the app) into RDS by
+    <code>migrate_screen_similarity.py</code>. Ranking is by raw <code>r</code>; background mean/sd are computed
+    <i>before</i> the same-study filter, so the σ column is unaffected by the toggle.</div>
+  </div>
+
+  <!-- Context / darkness -->
+  <div class="feature" id="f-context">
+    <div class="fhead"><h3>External enrichment &amp; "darkness"</h3><span class="ep">GET /api/context</span><span class="badge b-live">live</span></div>
+    <p><code>ex.enrich(symbol, taxid)</code> (from <code>script/external_sources.py</code>) returns a live-fetched,
+    cached bundle: NCBI annotation, STRING partners, and a <b>darkness score</b> quantifying how under-studied a
+    gene is.</p>
+    <h4>Darkness formula</h4>
+    <pre><code>dark_pub = clamp01(1 − log10(pubs+1)/log10(1000))    # ≥1000 PubMed papers → 0
+dark_go  = clamp01(1 − log10(go+1)/log10(50))       # ≥50 specific GO terms → 0
+score    = round(10 · (0.6·dark_pub + 0.4·dark_go), 1)
+band     = "dark" if score≥6.5 else "grey" if score≥3.5 else "bright"</code></pre>
+    <div class="pill-row"><span class="badge b-local">external_cache.db</span> &nbsp;live NCBI · PubMed · GO · STRING</div>
+    <div class="note">Darkness is <b>not</b> part of the <code>gene_wiki</code> KB payload — it is a separate live
+    enrichment call, surfaced on Explore via <code>/api/context</code> and reused server-side by the AI endpoints.</div>
+  </div>
+
+  <!-- AI interpretation -->
+  <div class="feature" id="f-interpret">
+    <div class="fhead"><h3>AI interpretation</h3><span class="ep">POST /api/interpret</span><span class="ep">GET /api/reporter_explain</span><span class="badge b-live">live</span></div>
+    <p>Two LLM endpoints turn a gene's RETICLE signal + RAG-retrieved external evidence into grounded prose.
+    (A third, <code>/api/screen_analysis</code>, lives on the Gene Wiki page.)</p>
+    <div class="kv">
+      <dt>Model</dt><dd><code>gpt-4.1</code> (<code>INTERPRET_MODEL</code>) via the <b>WashU OpenAI-compatible gateway</b> — <i>not</i> the Anthropic API.</dd>
+      <dt>Transport</dt><dd>OAuth2 client-credentials against Azure AD → bearer token; retries 429/5xx with backoff.</dd>
+      <dt>RAG</dt><dd><code>interpret</code>: up to 5 PubMed abstracts + enrichment. <code>reporter_explain</code>: first 6 screens, 8 STRING partners, abstracts.</dd>
+      <dt>Guardrail</dt><dd>Prompts forbid asserting screen direction; stress facts are never pooled.</dd>
+    </div>
+    <div class="pill-row"><span class="badge b-rds">RDS</span> <span class="mono-cell">screen_metadata(_curated)</span> &nbsp;+ live gateway</div>
+    <div class="note warn"><b>Network-gated.</b> The gateway is WashU-only; off-VPN every call returns 403, which
+    all three routes convert to HTTP 502 with a "connect the WashU network" hint.</div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ===================== GENE WIKI PAGE ===================== -->
+<!-- ============================================================= -->
+<section id="wiki-page">
+  <h2>Gene Wiki page <span style="font-size:14px;color:var(--faint);font-weight:400">· gene.html</span></h2>
+  <p>A deep single-gene reference built almost entirely from the offline knowledge base — deterministic
+  retrieval, joined on Entrez GeneID.</p>
+
+  <!-- Gene wiki -->
+  <div class="feature" id="f-wiki">
+    <div class="fhead"><h3>Gene wiki (multi-source RAG)</h3><span class="ep">GET /api/gene_wiki</span><span class="badge b-live">live</span></div>
+    <p><code>gene_wiki()</code> assembles ~11 KB queries into one payload. <b>No LLM</b> — pure retrieval.</p>
+    <h4>Resolution &amp; assembly</h4>
+    <ul class="tight">
+      <li><b>Resolve</b> (<code>_kb_resolve</code>): digits → <code>kb_gene.gene_id</code>; else
+      <code>kb_gene_alias</code> exact then <code>LOWER()</code>-case, symbol-type aliases first. So "p53" or a
+      retired GeneID still lands on current TP53.</li>
+      <li><b>identity</b> (kb_gene) · <b>aliases/orthologs</b> · <b>UniProt</b> function/location/disease (inline
+      PubMed cites stripped for display by <code>_clean_uniprot</code>) · <b>GO</b> ≤8 non-obsolete terms per
+      namespace · <b>STRING</b> top-12 partners + a real sub-network · <b>DepMap</b> dependency class ·
+      <b>screens</b> (kb_screen_hit grouped by phenotype) · <b>pathways</b> (Reactome) · <b>literature</b> (PMID count).</li>
+    </ul>
+    <div class="pill-row"><span class="badge b-local">kb.db preferred</span><span class="badge b-rds">RDS reticle.kb_* fallback</span></div>
+    <p style="font-size:13px;color:var(--muted)">Sources behind the tables: NCBI gene_info/gene2go/gene2pubmed,
+    UniProt Swiss-Prot, STRING (clean channels), GO OBO, Reactome, DepMap Chronos, BioGRID ORCS. The dialect-split
+    aggregate (<code>STRING_AGG</code> on Postgres vs <code>GROUP_CONCAT</code> on sqlite) is the one place the SQL
+    differs between backends.</p>
+  </div>
+
+  <!-- Structure -->
+  <div class="feature" id="f-structure">
+    <div class="fhead"><h3>3D structure</h3><span class="ep">GET /api/gene_structure</span><span class="badge b-live">live</span></div>
+    <p>Resolves the gene's <code>uniprot_acc</code> from <code>kb_gene</code>, then makes <b>live HTTP calls</b>
+    to the AlphaFold prediction API (picks the <code>AF-{acc}-F1</code> entry, reads <code>pdbUrl</code> +
+    <code>latestVersion</code> — never hardcodes a filename) and PDBe <code>best_structures</code> (top-6
+    experimental PDBs). Results cached in-process only.</p>
+    <div class="pill-row"><span class="badge b-local">kb_gene (uniprot_acc)</span> &nbsp;+ live AlphaFold · PDBe</div>
+  </div>
+
+  <!-- Distribution -->
+  <div class="feature" id="f-distribution">
+    <div class="fhead"><h3>In-screen score distribution</h3><span class="ep">GET /api/gene_screen_distribution</span><span class="badge b-live">live</span></div>
+    <p>Shows where the focal gene sits within the full distribution of every gene measured in the same screen,
+    over its strongest FULL-coverage screens, with a toggle among the three stored normalizations.</p>
+    <ul class="tight">
+      <li><b>Score toggle</b> (<code>score</code> param): <code>native</code>→HARMONIZED_SCORE,
+      <code>percentile</code>→PERCENTILE_SCORE (default), <code>robustz</code>→ROBUST_Z_SCORE.</li>
+      <li><b>Screen ranking</b>: strongest FULL screens by absolute effect —
+      <code>ORDER BY ABS(PERCENTILE_SCORE) DESC, IS_HIT DESC, ABS(ROBUST_Z_SCORE) DESC</code> (replaced an old
+      <code>ASC</code> tautology that always opened "1st percentile").</li>
+      <li><b>Midrank ties</b>: <code>below = n_below + 0.5·n_tied</code> — the standard fractional rank, correct on
+      p-value-clipped screens where thousands of genes tie.</li>
+    </ul>
+    <div class="pill-row"><span class="badge b-local">local reticle_master.db (≈50× faster)</span></div>
+  </div>
+
+  <!-- Prediction -->
+  <div class="feature" id="f-prediction">
+    <div class="fhead"><h3>Function prediction (undiscovered functions)</h3><span class="ep">GET /api/gene_predictions</span><span class="badge b-live">live</span></div>
+    <p>Predicts a gene's <b>undiscovered GO Biological-Process functions</b> by guilt-by-association — pooling
+    votes from two annotation-independent neighbour layers, then keeping only terms the gene itself lacks.</p>
+    <h4>Two neighbour layers, normalized then term-voted</h4>
+    <ul class="tight">
+      <li><b>STRING clean channels</b> (<code>_string_clean_neighbours</code>): recombine only
+      neighborhood/fusion/cooccurence/coexpression/experimental via <code>p*=1−c/1000</code>, <code>clean=1−p</code>.
+      <b>Deliberately excludes STRING's <code>database</code> + <code>textmining</code> channels</b> — those encode
+      curated GO/pathway knowledge and would make the prediction circular.</li>
+      <li><b>CRISPR co-essentiality</b> (<code>kb_coessential</code>, orthogonal to STRING). Optional: silently
+      degrades to STRING-only if the table is unbuilt.</li>
+      <li>Each layer normalized to its own max, merged additively; a term is a candidate only if
+      <code>5 ≤ term_size ≤ 300</code>, ≥2 supporting neighbours, and the gene lacks it. Score = sum of neighbour
+      weights. Confidence high/moderate/tentative from #layers and #supporters.</li>
+    </ul>
+    <div class="pill-row"><span class="badge b-local">kb.db</span><span class="badge b-rds">RDS reticle</span>
+      <span class="mono-cell">kb_string_edge · kb_coessential · kb_gene_go · kb_go_term · kb_gene(_alias)</span></div>
+    <div class="note"><b>Non-circularity</b> is the whole point and is validated offline by a leave-one-out AUROC
+    backtest (<code>predict_backtest.py</code>, not on the serving path): dropping the annotation-derived channels
+    still recovers held-out functions above a random null.</div>
+  </div>
+
+  <!-- Screen analysis -->
+  <div class="feature" id="f-screenanalysis">
+    <div class="fhead"><h3>Screen analysis (AI)</h3><span class="ep">GET /api/screen_analysis</span><span class="badge b-live">live</span></div>
+    <p>The one LLM feature on this page. Reads <b>only</b> the gene's <code>kb_screen_hit</code> rows, groups them
+    by phenotype (top conditions/cells), and asks <code>gpt-4.1</code> for a per-phenotype interpretation under a
+    strict no-directionality boundary. Cached per gene.</p>
+    <div class="pill-row"><span class="badge b-local">kb.db</span> <span class="mono-cell">kb_screen_hit · kb_screen</span> &nbsp;+ WashU gateway</div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ===================== NETWORK PAGE ===================== -->
+<!-- ============================================================= -->
+<section id="network-page">
+  <h2>Network page <span style="font-size:14px;color:var(--faint);font-weight:400">· network.html</span></h2>
+
+  <div class="feature" id="f-network">
+    <div class="fhead"><h3>Context-resolved co-essentiality network</h3><span class="ep">GET /api/screen_net</span><span class="ep">GET /api/net_contexts</span><span class="badge b-live">live · flagship</span></div>
+    <p>The flagship gene–gene network. Two genes are edged when their <b>signed within-screen percentile profiles
+    correlate</b> across genome-wide screens — a purely data-driven co-essentiality signal. Served as a per-gene
+    clustered neighborhood (seed + partners + partner–partner edges) colored by fitness lean, in a Cytoscape viewer.</p>
+
+    <h4>Serve</h4>
+    <ul class="tight">
+      <li><b>Partners</b> (<code>screen_net</code>): top-18 by edge strength, <b>reciprocal-first-then-fallback</b> —
+      mutual-best partners if any exist, otherwise widen to one-directional and flag <code>fellback</code> (≈60%
+      of genes have no reciprocal partner, so asking only for reciprocal blanked most of the network).</li>
+      <li><b>Node color</b> (<code>_net_fitness_lean</code>): mean fitness percentile per gene →
+      <span class="leg" style="background:var(--ess)"></span><b>essential</b> (&lt;−0.15) /
+      <span class="leg" style="background:var(--adv)"></span><b>advantageous</b> (&gt;+0.15) / mixed. Served from
+      the precomputed <code>gene_fitness_lean</code> table (was a 92 s live aggregate; now 0.06 s).</li>
+      <li><b>Contexts</b>: human = <code>all</code> (pooled), mouse = <code>mouse</code>. An organism toggle
+      switches tables; the mouse view is explicitly labeled exploratory.</li>
+    </ul>
+
+    <h4>Build (offline, <code>compute_coessential.py</code>)</h4>
+    <ol class="tight">
+      <li><b>Genome-wide gate</b>: only screens with <code>coverage_type='FULL' AND n_genes ≥ 15000</code>
+      (from <code>net_screen</code>) — FULL alone is <i>not</i> genome-wide.</li>
+      <li><b>Node gates</b>: <code>hit_count ≥ 5</code> AND measured in <code>≥ 50%</code> of screens AND
+      <code>hit_rate ≥ 0.02</code>.</li>
+      <li><b>Estimator</b> (<code>zscore</code>): impute row-mean → center → <b>project out PC1</b>
+      (the pan-essential axis; its loading correlates 0.888 with hit rate; removing it lifted CORUM precision
+      42.8%→59.1%) → L2-normalize, so <code>Z·Zᵀ</code> is Pearson.</li>
+      <li><b>Edges</b>: top-25 partners with <code>support ≥ 20</code> and <code>r ≥ 0.15</code>; the final
+      threshold is set by a within-screen-shuffle null at FDR ≤ 0.05.</li>
+      <li>Written to <code>net_edge</code> as <code>(gene_a, gene_b, context='all', channel='coessential',
+      strength, support, reciprocal)</code>.</li>
+    </ol>
+    <div class="pill-row"><span class="badge b-rds">RDS net_edge (109K) · net_edge_mouse (83K) · gene_fitness_lean</span>
+      <span class="badge b-local">local reticle_net(_mouse).db</span></div>
+    <div class="note"><b>Three distinct "co-essentiality" artifacts exist — don't confuse them:</b>
+    <code>net_edge</code> (this, the PC1-removed thresholded flagship, on the Network page);
+    <code>coess_{taxid}.npz</code> (dense pooled cosine, on Explore's <code>/api/coessential</code>); and the
+    Fisher <code>hit_only_connection</code> (below, not wired). The mouse build uses a reduced algorithm (no PC1,
+    <code>min-screens 40</code>) and is throwaway/exploratory.</div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ===================== DATA PIPELINES ===================== -->
+<!-- ============================================================= -->
+<section id="pipelines">
+  <h2>Data pipelines <span style="font-size:14px;color:var(--faint);font-weight:400">· offline, no UI</span></h2>
+
+  <!-- Harmonization -->
+  <div class="feature" id="p-harmonization">
+    <div class="fhead"><h3>Harmonization</h3><span class="ep">harmonize_scores.py</span><span class="badge b-pipe">pipeline</span></div>
+    <p>The numeric foundation. Converts heterogeneous BioGRID-ORCS score columns onto <b>four stored scores</b>,
+    writing <code>harmonized_scores</code> + <code>screen_metadata</code> (rebuilt from scratch each run).</p>
+    <div class="tw"><table>
+      <thead><tr><th>Column</th><th>Definition</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">HARMONIZED_SCORE</td><td><code>s_raw · perturbation_mult</code> on one biological axis: <b>+ = knockout advantageous/enriched, − = essential/depletes</b>. CRISPRa/activation screens are sign-flipped (<code>mult=−1</code>). <code>s_raw</code> priority: directional pair &gt; single directional column &gt; significance×selection-sign. A frozen LLM directionality override wins when present.</td></tr>
+        <tr><td class="mono-cell">PERCENTILE_SCORE</td><td><b>Rank-normalized within each screen</b> to [−1,1]: <code>2·(rank/max_rank)−1</code> over measured genes only. This is the cross-screen-comparable axis everything downstream uses.</td></tr>
+        <tr><td class="mono-cell">ROBUST_Z_SCORE</td><td><code>(v − median) / (MAD·1.4826)</code>, std fallback when MAD=0.</td></tr>
+        <tr><td class="mono-cell">IS_HIT</td><td><code>1</code> iff the screen's <code>HIT</code> field is "YES".</td></tr>
+      </tbody>
+    </table></div>
+    <p><b><code>COVERAGE_TYPE</code></b> = <code>HIT_ONLY</code> if the full score set isn't available, else
+    <code>FULL</code> — the data-availability flag the genome-wide gate later refines with an <code>n_genes</code> cut.</p>
+    <div class="pill-row"><span class="badge b-local">writes reticle_master.db</span> · RDS copy loaded separately by <code>migrate_to_rds.py</code></div>
+  </div>
+
+  <!-- Stratification -->
+  <div class="feature" id="p-strat">
+    <div class="fhead"><h3>Assay-domain stratification &amp; directionality</h3><span class="ep">screen_metadata_curated</span><span class="badge b-pipe">pipeline</span></div>
+    <p>Two independent "direction" concepts, often confused — kept in different columns by different scripts.</p>
+    <h4>(a) Assay domain — which pool a screen belongs to</h4>
+    <p>A rule-first, LLM-fallback pipeline tags every screen <code>fitness</code> / <code>stress</code> /
+    <code>reporter</code> / <code>other</code>, plus three condition facets, into
+    <code>screen_metadata_curated</code>. Initial tag is keyed off BioGRID <code>PHENOTYPE</code>; deterministic
+    facet rules (from <code>EXPERIMENTAL_SETUP</code>/condition text) refine it; the long tail is resolved by an
+    LLM at confidence ≥ 0.7. The app pools/correlates only <i>within</i> a domain — this is what stops a
+    conditional-stress screen from diluting the clean fitness essentiality axis.</p>
+    <h4>(b) Directionality — the sign of the phenotype</h4>
+    <p>For screens harmonization couldn't sign, <code>directionality_mapper.py</code> asks an LLM to place them on
+    the unified LoF axis (+1 advantageous, −1 essential), frozen into <code>directionality_overrides.json</code>
+    (auto=71, needs_review=29, binary_only=11). <code>apply_directionality.py</code> / <code>fix_directionality.py</code>
+    then re-sign <code>harmonized_scores</code>, with an <b>essential-gene anchor</b>: a panel of core-essential
+    genes (POLR2A, RPL3, PSMA1, …) must land on the negative end in a viability knockout screen, else the sign is
+    rejected/flipped.</p>
+    <div class="note">This realizes the memory rule <i>"LLM assigns directionality on ambiguous screens, not
+    control_comparison; frozen overrides.json + essential-gene anchor."</i> The essential anchor in
+    <code>fix_directionality.py</code> runs over <b>fitness KO screens only</b> — stress is explicitly excluded.</div>
+  </div>
+
+  <!-- Fisher -->
+  <div class="feature" id="p-fisher">
+    <div class="fhead"><h3>Fisher co-hit channel (Channel 2)</h3><span class="ep">compute_hit_only.py</span><span class="badge b-notwired">built · not wired</span></div>
+    <p>An alternative connection channel: instead of correlating continuous profiles, it tests whether two genes
+    are <b>called hits together</b> more often than their individual hit rates predict — a one-sided Fisher /
+    hypergeometric upper-tail test.</p>
+    <pre><code>n  = M·Mᵀ   # co-measured screens (Fisher population)     — np.rint required:
+a  = H·Hᵀ   # co-hit overlap                                  float matmul drifts off
+ri = H·Mᵀ ; rj = M·Hᵀ   # each gene's hits in the other's screens   integers → hypergeom
+p  = hypergeom.sf(a−1, n, ri, rj)          # then BH-FDR ≤ 0.05        returns NaN silently</code></pre>
+    <p><b>Why Fisher not Pearson:</b> range restriction kills Pearson variance on hit-saturated genes
+    (PSMB5/PSMB4 <code>r</code> 0.667→0.046 vs Fisher <code>p</code>=8.8e-250), and Fisher folds evidence volume
+    into the p-value so no support floor is needed.</p>
+    <div class="pill-row"><span class="badge b-local">reticle_net(_mouse).db</span><span class="badge b-rds">RDS (present, no build script)</span>
+      <span class="mono-cell">hit_only_connection 418K · mouse 162K</span></div>
+    <div class="note warn"><b>Status: built, not wired.</b> No endpoint or page reads
+    <code>hit_only_connection</code> (grep <code>hit_only</code> across <code>web/</code> = 0). <code>/api/coessential</code>
+    serves the unrelated npz channel, not this table. Wiring it into a UI is an open task.</div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- ===================== REFERENCE ===================== -->
+<!-- ============================================================= -->
+<section id="endpoints">
+  <h2>Endpoint map</h2>
+  <p>All 14 endpoints, their handler, backing store, and page. Verified line-by-line against
+  <code>web/app.py</code> and the HTML.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Endpoint</th><th>Handler</th><th>Store</th><th>Page</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-cell">GET /api/gene</td><td class="mono-cell">gene_payload</td><td><span class="badge b-rds">RDS</span>/<span class="badge b-local">local</span></td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/context</td><td class="mono-cell">ex.enrich</td><td>live + cache</td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/network</td><td class="mono-cell">network_payload</td><td>kb_string_edge + scores</td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/coessential</td><td class="mono-cell">coessential_network</td><td><span class="badge b-local">coess_*.npz (local only)</span></td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/screen_similar</td><td class="mono-cell">screen_similar</td><td><span class="badge b-rds">RDS screen_similarity</span></td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/reporter_explain</td><td class="mono-cell">reporter_explain</td><td>RDS + LLM</td><td>Explore</td></tr>
+      <tr><td class="mono-cell">POST /api/interpret</td><td class="mono-cell">interpret</td><td>enrichment + LLM</td><td>Explore</td></tr>
+      <tr><td class="mono-cell">GET /api/gene_wiki</td><td class="mono-cell">gene_wiki</td><td><span class="badge b-local">kb.db</span>/<span class="badge b-rds">RDS</span></td><td>Gene Wiki</td></tr>
+      <tr><td class="mono-cell">GET /api/gene_structure</td><td class="mono-cell">gene_structure</td><td>kb_gene + live AlphaFold/PDBe</td><td>Gene Wiki</td></tr>
+      <tr><td class="mono-cell">GET /api/gene_screen_distribution</td><td class="mono-cell">gene_screen_distribution</td><td><span class="badge b-local">local reticle_master.db</span></td><td>Gene Wiki</td></tr>
+      <tr><td class="mono-cell">GET /api/gene_predictions</td><td class="mono-cell">predict_functions</td><td><span class="badge b-local">kb.db</span>/<span class="badge b-rds">RDS</span></td><td>Gene Wiki</td></tr>
+      <tr><td class="mono-cell">GET /api/screen_analysis</td><td class="mono-cell">screen_analysis</td><td>kb.db + LLM</td><td>Gene Wiki</td></tr>
+      <tr><td class="mono-cell">GET /api/net_contexts</td><td class="mono-cell">net_contexts</td><td><span class="badge b-rds">RDS</span>/<span class="badge b-local">local</span></td><td>Network</td></tr>
+      <tr><td class="mono-cell">GET /api/screen_net</td><td class="mono-cell">screen_net</td><td><span class="badge b-rds">net_edge</span>/<span class="badge b-local">local</span></td><td>Network</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="scripts">
+  <h2>Build scripts</h2>
+  <p>The offline pipeline. Rough build order: harmonize → curate/direction → knowledge base → networks/matrices → RDS migration.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Script</th><th>Produces</th></tr></thead>
+    <tbody>
+      <tr><td class="mono-cell">harmonize_scores.py</td><td>reticle_master.db: harmonized_scores, screen_metadata</td></tr>
+      <tr><td class="mono-cell">llm_metadata_extractor · classify_conditions(_llm) · merge_facets · apply_facets</td><td>screen_metadata_curated (assay_domain + facets)</td></tr>
+      <tr><td class="mono-cell">directionality_mapper · apply_directionality · fix_directionality</td><td>directionality_overrides.json → re-signed harmonized_scores</td></tr>
+      <tr><td class="mono-cell">build_kb_gene · _identifiers · _go · _string · _uniprot · _pubmed_links · _pathways · _summary · _screens · _depmap · _coessential</td><td>kb.db (14 kb_* tables)</td></tr>
+      <tr><td class="mono-cell">build_net_context</td><td>reticle_net.db: net_screen (screen taxonomy)</td></tr>
+      <tr><td class="mono-cell">compute_coessential · explore_mouse_coessential</td><td>net_edge (human) · net_edge (mouse) — the flagship network</td></tr>
+      <tr><td class="mono-cell">build_coessential_matrix</td><td>coess_{taxid}.npz (dense matrix for /api/coessential)</td></tr>
+      <tr><td class="mono-cell">compute_hit_only · explore_mouse_hit_only</td><td>hit_only_connection (Fisher channel, not wired)</td></tr>
+      <tr><td class="mono-cell">build_gene_fitness_lean</td><td>RDS gene_fitness_lean (node-color lookup)</td></tr>
+      <tr><td class="mono-cell">migrate_to_rds · migrate_screen_similarity · migrate_stress_facts_to_rds</td><td>RDS reticle.* tables</td></tr>
+      <tr><td class="mono-cell">predict_backtest · validate_complexes · validate_harmonization</td><td>Offline validation (AUROC, CORUM) — not on serving path</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  RETICLE system documentation · regenerated from source (<code>web/app.py</code>, <code>script/*</code>, the
+  three HTML pages) and the live RDS <code>reticle</code> schema. Every algorithm, threshold, table, and endpoint
+  in this document was extracted from and cross-checked against the code. Where a code comment disagrees with the
+  code, the document follows the code and notes it.
+</footer>
+</main>
+</div>
+</body>
+</html>

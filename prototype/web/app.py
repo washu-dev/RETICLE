@@ -20,6 +20,7 @@ import json
 import re
 import sqlite3
 import sys
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -35,21 +36,45 @@ import external_sources as ex  # noqa: E402  (NCBI / PubMed / GO / STRING + dark
 PORT = 8000
 DB = str(paths.DB)
 KB_DB = str(paths.PROCESSED_DATA / "kb.db")      # the gene-wiki knowledge base (6 sources)
+NET_DB = str(paths.PROCESSED_DATA / "reticle_net.db")  # human co-essentiality network
+NET_DB_MOUSE = str(paths.PROCESSED_DATA / "reticle_net_mouse.db")  # mouse network (separate db — 1,656 symbols collide with human)
+
+
+def _net_db(organism):
+    return NET_DB_MOUSE if organism == "mouse" else NET_DB
 INDEX_HTML = HERE / "index.html"
-GENE_HTML = HERE / "gene.html"
+GENE_HTML = HERE / "gene.html"          # unified Gene tab (gene-level query + wiki)
+SCREEN_HTML = HERE / "screen.html"      # Screen tab (screen-wide similarity query)
+NETWORK_HTML = HERE / "network.html"
 ORG2TAX = {"Homo sapiens": 9606, "Mus musculus": 10090}
 
-# The "advanced / more expensive" model for the AI reading.
-INTERPRET_MODEL = "gpt-4.1"   # fast, capable, non-reasoning — used ONLY for the CRISPR-screen analysis
+# Model for the grounded text syntheses (screen analysis, reporter explanation, the AI reading).
+# The WashU gateway moved to Anthropic Messages in July 2026; gpt-4.1 and gpt-5 no longer exist
+# there (404), and of the Claude models this API key can reach — opus-4-7 and haiku-4-5 — opus is
+# the one chosen here. haiku is ~7x cheaper per token if the shared budget ever gets tight.
+INTERPRET_MODEL = "claude-opus-4-7"
+
+# The Network tab's function prediction reasons over a partner dossier rather than summarising, so
+# it gets the strongest available model. Same name as INTERPRET_MODEL today; kept separate because
+# the two have different quality/cost tradeoffs and are tuned independently.
+NET_PREDICT_MODEL = "claude-opus-4-7"
+
+# Bump whenever NET_PREDICT_SYS or _net_predict_prompt changes in a way that could change the
+# answer. It is part of the prediction cache key, so a stale entry cannot outlive its prompt.
+NET_PREDICT_PROMPT_VERSION = "netpred-v1"
 
 
-def _gen_kwargs(model):
-    """gpt-5 / o-series are reasoning models: they reject `max_tokens` and a custom
-    temperature, and need headroom for reasoning tokens (else the visible answer is
-    empty). Everything else uses the classic params."""
-    if model.startswith(("gpt-5", "o1", "o3", "o4")):
-        return {"max_completion_tokens": 3000}
-    return {"temperature": 0.3, "max_tokens": 600}
+def _gen_kwargs(model, max_tokens=600):
+    """The Messages API REQUIRES max_tokens — omitting it is a 400, not a default.
+
+    600 covers the ~200-word syntheses; net_predict passes more because its JSON payload of
+    predictions plus rationales is longer, and a reply truncated at the limit comes back as
+    unparseable JSON rather than as an error.
+
+    No `temperature`: claude-opus-4-7 rejects it outright ("`temperature` is deprecated for this
+    model", HTTP 400). The old gpt-5 branch here existed for the same class of reason.
+    """
+    return {"max_tokens": max_tokens}
 
 HIST_BINS = 26  # over [-1, 1]
 
@@ -75,7 +100,10 @@ _ENV = _load_env()
 USE_PG = bool(_ENV.get("AWS_DB_HOST"))
 _PG_PARAMS = (dict(host=_ENV.get("AWS_DB_HOST"), port=_ENV.get("AWS_DB_PORT", "5432"),
                    user=_ENV.get("AWS_DB_USER"), password=_ENV.get("AWS_DB_PASSWORD"),
-                   dbname=_ENV.get("AWS_DB_NAME"), connect_timeout=15) if USE_PG else None)
+                   dbname=_ENV.get("AWS_DB_NAME"), connect_timeout=15,
+                   # set search_path at connect time (via libpq options) so pooled connections
+                   # need no per-checkout `SET` round-trip.
+                   options="-c search_path=reticle,public") if USE_PG else None)
 
 
 class _Row(dict):
@@ -88,9 +116,65 @@ class _Row(dict):
             return dict.__getitem__(self, k.lower())
 
 
+_pg_pool = None
+_pg_pool_lock = threading.Lock()
+
+
+def _pg_get_pool():
+    """A process-wide connection pool shared across request threads.
+
+    The server is a ThreadingHTTPServer, which spawns a FRESH thread per request and discards it
+    — so a thread-local connection is never reused across requests and every request paid the full
+    ~1.6s RDS connect (worse under I/O load). A shared ThreadedConnectionPool fixes that: 2 warm
+    connections are opened up front and checked out/in per query, so the connect cost is paid once
+    at startup, not once per request. minconn keeps the demo warm; maxconn caps fan-out so a burst
+    can't exhaust RDS. search_path is baked into the connection via libpq `options`, so no per-query
+    SET is needed. Pool getconn/putconn are internally locked and safe to call from many threads."""
+    global _pg_pool
+    if _pg_pool is None:
+        with _pg_pool_lock:
+            if _pg_pool is None:
+                from psycopg2.pool import ThreadedConnectionPool
+                # minconn=4 warm connections cover a realistic demo's concurrency (1-3 users) without
+                # opening a fresh one mid-request; maxconn=12 caps fan-out so a burst can't overrun RDS.
+                _pg_pool = ThreadedConnectionPool(4, 12, **_PG_PARAMS)
+    return _pg_pool
+
+
 def db_fetchall(sql, params=()):
     """Run a SELECT against the configured backend; rows allow case-insensitive
     dict access (`?` placeholders work for both — translated to %s for Postgres)."""
+    if USE_PG:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        pool = _pg_get_pool()
+        for attempt in (0, 1):                      # a pooled conn can go stale — discard & retry once
+            con = pool.getconn()
+            try:
+                con.autocommit = True               # SELECT-only; never leave an idle transaction
+                cur = con.cursor(cursor_factory=RealDictCursor)
+                cur.execute(sql.replace("?", "%s"), params)
+                rows = [_Row(r) for r in cur.fetchall()]
+                cur.close()
+                pool.putconn(con)                   # return healthy connection to the pool
+                return rows
+            except psycopg2.Error:
+                try:
+                    pool.putconn(con, close=True)   # drop the broken one; pool opens a fresh one next
+                except Exception:
+                    pass
+                if attempt:
+                    raise
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+    try:
+        return con.execute(sql, params).fetchall()
+    finally:
+        con.close()
+
+
+def _db_fetchall_unpooled(sql, params=()):
+    """(kept for reference — the original connect-per-query path)"""
     if USE_PG:
         import psycopg2
         from psycopg2.extras import RealDictCursor
@@ -352,7 +436,7 @@ def network_payload(symbol, taxid):
             WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain = 'fitness'
               AND h.PERCENTILE_SCORE IS NOT NULL
             GROUP BY h.GENE_SYMBOL""", nodes)
-    med = {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
+    mean_pct = {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
     def lean(m):
         if m is None:
@@ -360,8 +444,9 @@ def network_payload(symbol, taxid):
         return "essential" if m < -0.15 else "advantageous" if m > 0.15 else "mixed"
 
     focus = next((n for n in nodes if n.upper() == symbol.upper()), symbol)
-    out = [{"name": n, "median": round(med[n], 3) if n in med else None,
-            "lean": lean(med.get(n)), "focus": (n == focus)} for n in nodes]
+    # field is `mean_percentile`, not `median` — the SQL above is AVG(). The old name said median.
+    out = [{"name": n, "mean_percentile": round(mean_pct[n], 3) if n in mean_pct else None,
+            "lean": lean(mean_pct.get(n)), "focus": (n == focus)} for n in nodes]
     return {"focus": focus, "nodes": out, "edges": net.get("edges", [])}
 
 
@@ -444,28 +529,558 @@ def coessential_network(symbol, taxid, top=14, r_min=0.25):
 
 
 # ---------------------------------------------------------------------------
-# Screen-vs-screen similarity — Homo sapiens · fitness · genome-wide (FULL).
-# Correlation is WEIGHTED by each screen's extremeness so the informative tail
-# genes dominate and the ~random middle is down-weighted (see the math doc).
-# Computed on demand for one query screen vs all others — no giant pair table.
+# CONTEXT-RESOLVED co-essentiality network (reticle_net.db, built by
+# script/compute_coessential.py). Pure BioGRID CRISPR, no STRING/literature.
+# Nodes = hit-active genes; edges = within-context co-essentiality; each edge is
+# tagged with its context and a `reciprocal` (mutual-best) flag. This is the
+# flagship gene-gene network — the same pair can relate differently per context.
 # ---------------------------------------------------------------------------
-_SCRMAT = None
+NET_CTX_LABELS = {
+    "all": "All screens · pooled",
+    "mouse": "All mouse screens · pooled",
+    "domain:fitness": "Fitness · generic proliferation",
+    "DDR·genotoxic": "DNA damage · genotoxic",
+}
 
 
-def _load_screen_matrix():
-    global _SCRMAT
-    if _SCRMAT is not None:
-        return _SCRMAT
-    p = paths.PROCESSED_DATA / "screens_9606_fitness_full.npz"
-    if not p.exists():
-        _SCRMAT = False
-        return False
-    z = np.load(p, allow_pickle=True)
-    screens = [str(s) for s in z["screens"]]
-    _SCRMAT = {"M": z["M"].astype(np.float32), "genes": [str(g) for g in z["genes"]],
-               "screens": screens, "sidx": {s: i for i, s in enumerate(screens)},
-               "meta": z["meta"]}
-    return _SCRMAT
+def _net_edge_table(organism):
+    """Table name for the co-essentiality edges. Local sqlite keeps human/mouse in SEPARATE
+    db files (same table name); RDS keeps both in one reticle schema, so mouse is suffixed."""
+    return "net_edge_mouse" if (USE_PG and organism == "mouse") else "net_edge"
+
+
+def net_fetchall(sql, params=(), organism="human"):
+    # cloud (USE_PG): read the network from RDS reticle schema — same connection/search_path as
+    # db_fetchall; the caller has already put the right table name (net_edge / net_edge_mouse)
+    # into the SQL. local: read the organism-specific sqlite mirror. => not local-dependent.
+    if USE_PG:
+        return db_fetchall(sql, params)
+    con = sqlite3.connect(_net_db(organism))
+    con.row_factory = sqlite3.Row
+    try:
+        return con.execute(sql, params).fetchall()
+    finally:
+        con.close()
+
+
+def net_contexts(organism="human"):
+    """Available network contexts, edge counts, node counts."""
+    tbl = _net_edge_table(organism)
+    out = []
+    for r in net_fetchall(
+        f"SELECT context, COUNT(*) n, SUM(reciprocal) nr FROM {tbl} "
+        f"WHERE channel='coessential' GROUP BY context ORDER BY n DESC", organism=organism):
+        nodes = net_fetchall(
+            f"SELECT COUNT(*) c FROM (SELECT gene_a FROM {tbl} WHERE context=? "
+            f"UNION SELECT gene_b FROM {tbl} WHERE context=?)", (r["context"], r["context"]),
+            organism=organism)[0]["c"]
+        out.append({"value": r["context"], "label": NET_CTX_LABELS.get(r["context"], r["context"]),
+                    "n_edges": r["n"], "n_reciprocal": int(r["nr"] or 0), "n_nodes": nodes})
+    return out
+
+
+def _net_fitness_lean(genes, organism="human"):
+    """mean fitness percentile per gene → essential / mixed / advantageous node colouring.
+
+    Served from the precomputed reticle.gene_fitness_lean (one row per gene x organism). This used
+    to aggregate over harmonized_scores at request time: even with a MATERIALIZED CTE and a correct
+    index-scan plan it pulls ~24k rows out of a 28M-row table, which measured 92s once the RDS
+    buffer cache went cold (EXPLAIN: 22,423 block reads, 83.6s of shared-read I/O — the plan was
+    optimal, the disk was the wall). It is a fixed aggregate over fixed data, so it belongs in a
+    tiny lookup table, not in the request path. Falls back to the live aggregate on sqlite, where
+    the local file makes it cheap and the precomputed table does not exist."""
+    if not genes:
+        return {}
+    org = "Mus musculus" if organism == "mouse" else "Homo sapiens"
+    ph = ",".join("?" * len(genes))
+    try:
+        if USE_PG:
+            rows = db_fetchall(
+                f"SELECT gene_symbol g, mean_percentile m FROM gene_fitness_lean "
+                f"WHERE organism = ? AND gene_symbol IN ({ph})", [org] + list(genes))
+        else:
+            rows = db_fetchall(
+                f"""SELECT h.GENE_SYMBOL g, AVG(h.PERCENTILE_SCORE) m FROM harmonized_scores h
+                    JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
+                    JOIN screen_metadata sm ON sm.SCREEN_ID = h.SCREEN_ID
+                    WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain='fitness'
+                      AND sm.ORGANISM_OFFICIAL=? AND h.PERCENTILE_SCORE IS NOT NULL
+                    GROUP BY h.GENE_SYMBOL""", list(genes) + [org])
+    except Exception as e:
+        # The lean only decides node COLOUR. Letting it fail takes the whole graph down with it,
+        # which is the wrong trade — a grey graph is still the graph. This is not hypothetical:
+        # the network lives in its own sqlite mirror (reticle_net.db) while the scores live in
+        # reticle.db, so a checkout that has the first and not the second renders nothing at all
+        # rather than an uncoloured network.
+        print(f"  [net] fitness lean unavailable, nodes will be uncoloured: {e}")
+        return {}
+    return {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
+
+
+def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
+    """One gene's context neighborhood as a clustered graph: seed + its top partners
+    + the partner-partner edges among them (so it reads as modules, not a star)."""
+    from collections import Counter
+    tbl = _net_edge_table(organism)
+    g = gene.strip()
+    seed = None
+    for v in dict.fromkeys([g, g.upper(), g.capitalize()]):
+        if net_fetchall(f"SELECT 1 FROM {tbl} WHERE context=? AND (gene_a=? OR gene_b=?) LIMIT 1",
+                        (context, v, v), organism=organism):
+            seed = v
+            break
+    if seed is None:
+        return None
+    # Mutual-best is the clean view but only 40% of genes HAVE a reciprocal partner — asking for
+    # it first and silently returning nothing rendered an empty graph for 59.7% of the network.
+    # Try reciprocal, fall back to one-directional, and tell the UI which view it actually got.
+    def _partners(recip):
+        rec = "AND reciprocal=1 " if recip else ""
+        return rec, net_fetchall(
+            f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength "
+            f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
+            f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
+
+    rec, rows = _partners(reciprocal_only)
+    fellback = False
+    if not rows and reciprocal_only:                 # no mutual-best partner → widen, don't blank
+        rec, rows = _partners(False)
+        fellback, reciprocal_only = True, False
+    if not rows:
+        return None
+    nodeset = [seed] + [r["nb"] for r in rows]
+    nsi = set(nodeset)
+    ph = ",".join("?" * len(nodeset))
+    erows = net_fetchall(
+        f"SELECT gene_a, gene_b, strength, reciprocal FROM {tbl} "
+        f"WHERE context=? AND channel='coessential' AND gene_a IN ({ph}) AND gene_b IN ({ph}) {rec}",
+        [context] + nodeset + nodeset, organism=organism)
+    lean = _net_fitness_lean(nodeset, organism=organism)
+
+    def lab(m):
+        return None if m is None else ("essential" if m < -0.15 else "advantageous" if m > 0.15 else "mixed")
+
+    deg, edges = Counter(), []
+    for e in erows:
+        a, b = e["gene_a"], e["gene_b"]
+        if a in nsi and b in nsi and a != b:
+            edges.append({"source": a, "target": b, "strength": round(e["strength"], 3),
+                          "reciprocal": int(e["reciprocal"])})
+            deg[a] += 1; deg[b] += 1
+    # `mean_percentile`, not median: _net_fitness_lean averages (AVG / precomputed mean_percentile).
+    nodes = [{"id": n, "label": n, "focus": (n == seed), "lean": lab(lean.get(n)),
+              "mean_percentile": round(lean[n], 3) if n in lean else None, "degree": deg.get(n, 0)}
+             for n in nodeset]
+    return {"focus": seed, "context": context, "context_label": NET_CTX_LABELS.get(context, context),
+            "reciprocal_only": reciprocal_only, "fellback": fellback,
+            "nodes": nodes, "edges": edges}
+
+
+# ---------------------------------------------------------------------------
+# Predict a gene's UNDISCOVERED function from RETICLE's OWN BioGRID co-essentiality
+# network (net_edge) — distinct from predict_functions() above, which reasons over
+# EXTERNAL STRING + DepMap co-essentiality. This is the one that answers "what does
+# OUR network, that nobody else has, let us discover?" gpt-5 reasons over the focal
+# gene's net_edge partners' real curated annotations (GO / Reactome / UniProt) and
+# proposes a shared complex/pathway/process the focal gene is not yet annotated with.
+# ---------------------------------------------------------------------------
+_NET_PRED_CACHE = {}
+
+
+def _net_predict_partners(seed, tbl, context, organism, top=18, reciprocal_only=True):
+    """Partners for the prediction dossier, matching the view the user is actually looking at.
+
+    `reciprocal_only` mirrors the graph's own toggle. It used to be absent, so the dossier was
+    always assembled reciprocal-first regardless of what was on screen: a user could widen the
+    graph to 29 partners, press Predict, and the model would read 2. That gap is not marginal —
+    median reciprocal degree in the shipped human network is 2 against a median union degree of
+    29, and only 135 of 5,269 genes (2.6%) have the 18 reciprocal partners this dossier is sized
+    for, against 86.7% that have 18 in the union.
+    """
+    def _partners(recip):
+        rec = "AND reciprocal=1 " if recip else ""
+        return net_fetchall(
+            f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
+            f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
+            f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
+    if not reciprocal_only:
+        return _partners(False), True
+    rows = _partners(True)
+    fellback = False
+    if not rows:
+        rows = _partners(False)
+        fellback = True
+    return rows, fellback
+
+
+def _net_predict_go_bp(gene_ids, cap=8):
+    """gene_id -> [GO biological-process name, ...] (non-obsolete), capped per gene."""
+    if not gene_ids:
+        return {}
+    ph = ",".join("?" * len(gene_ids))
+    out = {}
+    for row in kb_fetchall(
+        f"SELECT gg.gene_id gid, t.name name FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id "
+        f"WHERE gg.gene_id IN ({ph}) AND t.namespace='biological_process' AND t.is_obsolete=0 "
+        f"{_GO_POSITIVE} ORDER BY gg.gene_id", list(gene_ids)):
+        lst = out.setdefault(row["gid"], [])
+        if len(lst) < cap and row["name"] not in lst:
+            lst.append(row["name"])
+    return out
+
+
+def _net_predict_pathways(gene_ids, cap=5):
+    """gene_id -> [Reactome pathway name, ...], capped per gene."""
+    if not gene_ids:
+        return {}
+    ph = ",".join("?" * len(gene_ids))
+    out = {}
+    for row in kb_fetchall(
+        f"SELECT gene_id gid, name FROM kb_gene_pathway WHERE gene_id IN ({ph}) ORDER BY gene_id", list(gene_ids)):
+        lst = out.setdefault(row["gid"], [])
+        if len(lst) < cap and row["name"] not in lst:
+            lst.append(row["name"])
+    return out
+
+
+def _net_predict_oneliner(gene_ids, cap_chars=220):
+    """gene_id -> a short cleaned curated-function sentence (UniProt first, else NCBI description)."""
+    if not gene_ids:
+        return {}
+    ph = ",".join("?" * len(gene_ids))
+    out = {}
+    for row in kb_fetchall(
+        f"SELECT gene_id gid, uniprot_function, description FROM kb_gene WHERE gene_id IN ({ph})", list(gene_ids)):
+        text, _ = _clean_uniprot(row["uniprot_function"])
+        text = text or row["description"]
+        if text:
+            out[row["gid"]] = (text[:cap_chars] + "…") if len(text) > cap_chars else text
+    return out
+
+
+NET_PREDICT_SYS = """You are a functional-genomics analyst working inside RETICLE. A FOCAL gene was mapped in \
+RETICLE's OWN CRISPR co-essentiality network — edges are correlations between genes' knockout-fitness profiles \
+across pooled BioGRID screens. Genes whose knockout-fitness profiles correlate tend to act in the SAME protein \
+complex, the SAME pathway, or the SAME biological process. That co-essentiality relationship is your ONLY \
+inference license.
+
+You are given (1) the focal gene's strongest co-essential PARTNERS, each with its real curated annotations — \
+GO biological-process terms, Reactome pathways, a one-line curated function, and its own knockout-fitness lean \
+— and (2) the focal gene's OWN known functions, listed separately.
+
+TASK: Decide whether the partners CONVERGE on a specific, named protein complex, pathway, or biological process. \
+If they do, predict the focal gene's membership or role in it.
+
+STRICT RULES (a broken rule makes that prediction useless — omit it instead):
+1. Ground every prediction ONLY in the partner annotations given below. Invent no gene, complex, pathway, or \
+term that is not present in the partner evidence. Use NO outside knowledge about any gene, including the focal \
+gene — reason only from what is written below.
+2. NOVELTY IS THE POINT: never predict anything already listed in the focal gene's KNOWN FUNCTION block, or an \
+obvious synonym of it. If a convergence merely restates something the focal gene is already annotated with, \
+drop it.
+3. Every prediction MUST be supported by at least TWO named partners (exact symbols from the list below). More \
+converging partners, and higher co-essentiality r, mean higher confidence — but you do not need to compute a \
+confidence score yourself, just name the supporting partners honestly.
+4. Prefer the single most specific, defensible claim: a named complex beats a named pathway beats a vague \
+process. Return 0-5 predictions — a short list of strong claims, not a long list of speculative ones.
+5. If the partners do NOT converge on anything coherent, return an empty predictions list and say so plainly in \
+"summary". Do not manufacture a guess to fill the list.
+6. Never assert directionality, sign, or epistasis (no "activates", "represses", "required for", "sensitizes") \
+— co-essentiality is undirected. Say the focal gene "likely participates in" or "is a candidate component of" \
+the shared process.
+
+Return ONLY a single JSON object of this exact shape, no prose, no markdown fences:
+{"converges": true|false,
+ "predictions": [{"prediction": "<specific complex/pathway/process name>",
+                   "type": "complex"|"pathway"|"process",
+                   "supporting_partners": ["<SYMBOL>", "<SYMBOL>", ...],
+                   "rationale": "<1-2 sentences, grounded only in the partner annotations above>"}],
+ "summary": "<one sentence overall — or why nothing converged>"}"""
+
+
+def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_fn, partners):
+    """partners: list of dicts {sym, strength, reciprocal, lean, go, pw, fn} in strength-desc order."""
+    def esc_join(xs):
+        return "; ".join(xs) if xs else "(none on record)"
+    lines = [
+        f"FOCAL GENE: {sym} ({organism}) — co-essentiality context: {context_label} · view: {view}",
+        "",
+        f"KNOWN FUNCTION of {sym}  (do NOT predict any of these — this is the novelty-exclusion list):",
+        f"  GO biological-process: {esc_join(own_bp)}",
+        f"  Reactome pathways: {esc_join(own_pw)}",
+        f"  Curated function: {own_fn or '(poorly characterized — no curated summary on record)'}",
+        "",
+        "CO-ESSENTIAL PARTNERS (your evidence — each is a REAL curated annotation set; "
+        "r = knockout-fitness profile correlation, ⇄ = mutual-best):",
+    ]
+    any_annotated = False
+    for p in partners:
+        has_evidence = bool(p["go"] or p["pw"] or p["fn"])
+        if not has_evidence:
+            continue
+        any_annotated = True
+        tag = f"r={p['strength']:.2f}{' ⇄' if p['reciprocal'] else ''}"
+        lean_txt = f", fitness: {p['lean']}" if p["lean"] else ""
+        lines.append(f"### {p['sym']}  ({tag}{lean_txt})")
+        lines.append(f"  GO biological-process: {esc_join(p['go'])}")
+        lines.append(f"  Reactome pathways: {esc_join(p['pw'])}")
+        lines.append(f"  Curated function: {p['fn'] or '(none)'}")
+    if not any_annotated:
+        lines.append("(no partner carries any curated annotation)")
+    lines += ["", f"Now: identify the complex/pathway/process these partners converge on, and predict {sym}'s "
+                  f"role in it — obeying the novelty rule. Return the JSON object now."]
+    return "\n".join(lines)
+
+
+def net_predict_functions(gene, context, organism="human", top=18, reciprocal_only=True):
+    """Guilt-by-association from OUR OWN BioGRID net_edge network (not STRING/DepMap): gpt-5
+    reasons over the focal gene's co-essential partners' real curated functions and proposes a
+    complex/pathway/process the focal gene likely shares but is not yet annotated with."""
+    from llm_client import WashULLMClient
+    taxid = 10090 if organism == "mouse" else 9606
+    tbl = _net_edge_table(organism)
+    g = gene.strip()
+    seed = None
+    for v in dict.fromkeys([g, g.upper(), g.capitalize()]):
+        if net_fetchall(f"SELECT 1 FROM {tbl} WHERE context=? AND (gene_a=? OR gene_b=?) LIMIT 1",
+                        (context, v, v), organism=organism):
+            seed = v
+            break
+    if seed is None:
+        return None
+
+    prows, fellback = _net_predict_partners(seed, tbl, context, organism, top=top,
+                                            reciprocal_only=reciprocal_only)
+    if not prows:
+        return None
+    partner_syms = [r["nb"] for r in prows]
+    partner_meta = {r["nb"]: {"strength": round(r["strength"], 3), "reciprocal": bool(r["reciprocal"])}
+                     for r in prows}
+
+    seed_r = _kb_resolve(seed, taxid)
+    resolved = {}   # symbol -> gene_id, for partners that exist in the KB
+    for sym in partner_syms:
+        r = _kb_resolve(sym, taxid)
+        if r:
+            resolved[sym] = r["gene_id"]
+    n_unresolved = len(partner_syms) - len(resolved)
+
+    lean = _net_fitness_lean([seed] + partner_syms, organism=organism)
+
+    def lean_label(m):
+        return None if m is None else ("essential" if m < -0.15 else "advantageous" if m > 0.15 else "mixed")
+
+    all_gids = list(resolved.values()) + ([seed_r["gene_id"]] if seed_r else [])
+    go_by_gid = _net_predict_go_bp(all_gids)
+    pw_by_gid = _net_predict_pathways(all_gids)
+    fn_by_gid = _net_predict_oneliner(all_gids)
+
+    own_bp, own_pw, own_fn = [], [], None
+    if seed_r:
+        own_bp = go_by_gid.get(seed_r["gene_id"], [])
+        own_pw = pw_by_gid.get(seed_r["gene_id"], [])
+        own_fn = fn_by_gid.get(seed_r["gene_id"])
+    own_bp_norm = {t.strip().lower() for t in own_bp}
+    own_pw_norm = {t.strip().lower() for t in own_pw}
+
+    partners = []
+    for sym in partner_syms:
+        gid = resolved.get(sym)
+        partners.append({
+            "sym": sym, "strength": partner_meta[sym]["strength"], "reciprocal": partner_meta[sym]["reciprocal"],
+            "lean": lean_label(lean.get(sym)),
+            "go": go_by_gid.get(gid, []) if gid else [],
+            "pw": pw_by_gid.get(gid, []) if gid else [],
+            "fn": fn_by_gid.get(gid) if gid else None,
+        })
+    n_annotated = sum(1 for p in partners if p["go"] or p["pw"] or p["fn"])
+    view = "one-directional" if fellback else "reciprocal"
+
+    if n_annotated < 2:
+        # Too little evidence to ground anything — don't spend a gpt-5 call on it.
+        return {"found": True, "symbol": seed, "organism": organism, "context": context,
+                "context_label": NET_CTX_LABELS.get(context, context), "view": view,
+                "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
+                "n_unresolved": n_unresolved, "model": None, "converges": False, "predictions": [],
+                "no_call": True,
+                "summary": (
+                    "Fewer than two of this gene's co-essential partners carry a curated function "
+                    "on record, so no prediction was attempted."
+                    + (" This view is restricted to mutual-best partners; widening it usually "
+                       "brings in more annotated neighbours." if reciprocal_only else ""))}
+
+    # Everything that changes the answer belongs in the key. It used to be (gene, organism,
+    # context) only, so switching the model or editing NET_PREDICT_SYS let a warm process keep
+    # serving the previous answer labelled with the new model's name — a reproducibility bug in
+    # the one feature whose entire pitch is auditability.
+    cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
+                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION, view)
+    if cache_key in _NET_PRED_CACHE:
+        return _NET_PRED_CACHE[cache_key]
+
+    prompt = _net_predict_prompt(seed, organism, NET_CTX_LABELS.get(context, context), view,
+                                  own_bp, own_pw, own_fn, partners)
+    client = WashULLMClient(model=NET_PREDICT_MODEL)
+    data = client.chat_json([{"role": "system", "content": NET_PREDICT_SYS},
+                              {"role": "user", "content": prompt}], **_gen_kwargs(NET_PREDICT_MODEL, max_tokens=3000))
+
+    partner_by_sym = {p["sym"]: p for p in partners}
+    preds_out = []
+    for pred in (data.get("predictions") or []):
+        name = (pred.get("prediction") or "").strip()
+        if not name:
+            continue
+        norm = name.lower().strip()
+        if norm in own_bp_norm or norm in own_pw_norm:
+            continue                                    # server-side novelty re-check, not model-trusted
+        cited = [s for s in (pred.get("supporting_partners") or []) if s in partner_by_sym]
+        cited = list(dict.fromkeys(cited))               # dedupe, keep order
+        if len(cited) < 2:
+            continue                                     # hallucinated/insufficient support — drop, don't trust
+        supporters = [{"symbol": s, "strength": partner_by_sym[s]["strength"],
+                       "reciprocal": partner_by_sym[s]["reciprocal"]} for s in cited]
+        supporters.sort(key=lambda x: -x["strength"])
+        strengths = [s["strength"] for s in supporters]
+        n_recip = sum(1 for s in supporters if s["reciprocal"])
+        confidence = ("high" if len(supporters) >= 3 or (len(supporters) == 2 and n_recip == 2)
+                      else "moderate")
+        convergence = (f"{len(supporters)} partners · r {min(strengths):.2f}–{max(strengths):.2f}"
+                       + (f" · {n_recip} mutual-best" if n_recip else ""))
+        preds_out.append({
+            "prediction": name, "type": pred.get("type") if pred.get("type") in ("complex", "pathway", "process") else "process",
+            "confidence": confidence, "convergence": convergence,
+            "rationale": (pred.get("rationale") or "").strip(), "supporting_partners": supporters,
+        })
+
+    out = {"found": True, "symbol": seed, "organism": organism, "context": context,
+           "context_label": NET_CTX_LABELS.get(context, context), "view": view,
+           "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
+           "n_unresolved": n_unresolved, "model": client.model,
+           "converges": bool(preds_out), "predictions": preds_out,
+           "summary": (data.get("summary") or "").strip()}
+    if preds_out:
+        _NET_PRED_CACHE[cache_key] = out
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Per-gene in-screen score distribution — the focal gene's position vs the full
+# distribution of every gene measured in the same screen, over its strongest
+# FULL screens. Toggle among the 3 stored normalizations of the one native score.
+# ---------------------------------------------------------------------------
+_DIST_COL = {"native": "HARMONIZED_SCORE", "percentile": "PERCENTILE_SCORE", "robustz": "ROBUST_Z_SCORE"}
+
+
+def _local_scores_fetch(sql, params=()):
+    """The distribution/ranking queries do heavy per-screen scans (~20k rows) — served from
+    the LOCAL sqlite mirror, ~50x faster than a remote RDS round-trip for this shape (0.3s vs
+    15s). Falls back to db_fetchall only if the local file is absent (e.g. a pure-cloud deploy)."""
+    import os
+    if os.path.exists(DB):
+        con = sqlite3.connect(DB)
+        con.row_factory = sqlite3.Row
+        try:
+            return con.execute(sql, params).fetchall()
+        finally:
+            con.close()
+    return db_fetchall(sql, params)
+
+
+def _score_method_label(sb):
+    """SCORE_BASIS like 'DIR_POS(Log2FC)' -> 'Log2FC' (strip provenance decoration)."""
+    if not sb:
+        return "native score"
+    a, b = sb.find("("), sb.rfind(")")
+    return sb[a + 1:b].strip() if (a != -1 and b > a) else sb.strip()
+
+
+def _histogram(vals, focal, nbins=40, bounded=None):
+    """Pure-python histogram; clip range to 1st–99th pct for readability (or fixed `bounded`)."""
+    xs = sorted(vals)
+    n = len(xs)
+    if bounded:
+        lo, hi = bounded
+    else:
+        lo, hi = xs[max(0, int(0.01 * n))], xs[min(n - 1, int(0.99 * n))]
+    if hi <= lo:
+        lo, hi = xs[0], xs[-1]
+    if hi <= lo:
+        hi = lo + 1.0
+    width = (hi - lo) / nbins
+    counts = [0] * nbins
+    for v in xs:
+        counts[min(nbins - 1, max(0, int((v - lo) / width)))] += 1
+    fb = min(nbins - 1, max(0, int((focal - lo) / width)))
+    return {"bins": [{"x0": round(lo + i * width, 4), "c": counts[i]} for i in range(nbins)],
+            "lo": round(lo, 4), "hi": round(hi, 4), "width": round(width, 6), "focal_bin": fb, "nbins": nbins}
+
+
+def gene_screen_distribution(gene, taxid=9606, screen=None, score="percentile", top=12):
+    """A gene's position within a screen vs the full in-screen distribution of all genes,
+    for the gene's strongest FULL screens. score in {native, percentile, robustz}."""
+    org = "Mus musculus" if str(taxid) == "10090" else "Homo sapiens"
+    variants = resolve_symbol_variants(gene)
+    ph = ",".join("?" * len(variants))
+    # Rank a gene's screens by ABSOLUTE effect, not by most-negative percentile. The old
+    # `ORDER BY PERCENTILE_SCORE ASC` was a tautology — it picked the screen where the gene ranks
+    # most depleted, so the panel always opened "1st percentile", and a gene's ENRICHED
+    # (positive-selection) screens were structurally unreachable in the dropdown.
+    trows = _local_scores_fetch(
+        f"""SELECT h.SCREEN_ID sid, h.GENE_SYMBOL sym, h.HARMONIZED_SCORE harm,
+                   h.PERCENTILE_SCORE pct, h.ROBUST_Z_SCORE rz, h.IS_HIT hit,
+                   m.CELL_LINE cell, m.PHENOTYPE pheno, m.SCORE_BASIS basis
+            FROM harmonized_scores h JOIN screen_metadata m ON m.SCREEN_ID = h.SCREEN_ID
+            WHERE h.GENE_SYMBOL IN ({ph}) AND m.ORGANISM_OFFICIAL = ? AND m.COVERAGE_TYPE = 'FULL'
+                  AND h.PERCENTILE_SCORE IS NOT NULL
+            ORDER BY ABS(h.PERCENTILE_SCORE) DESC, h.IS_HIT DESC, ABS(h.ROBUST_Z_SCORE) DESC
+            LIMIT ?""", variants + [org, top])
+    if not trows:
+        return None
+    seed = trows[0]["sym"]
+    screens = [{"sid": r["sid"],
+                "label": (r["cell"] or "?") + ((" · " + r["pheno"]) if r["pheno"] else ""),
+                "method": _score_method_label(r["basis"]),
+                "pct": round(r["pct"], 3), "hit": int(r["hit"] or 0)} for r in trows]
+    sids = {r["sid"] for r in trows}
+    sid = screen if screen in sids else trows[0]["sid"]
+    srow = next(r for r in trows if r["sid"] == sid)
+
+    col = _DIST_COL.get(score, "PERCENTILE_SCORE")
+    drows = _local_scores_fetch(
+        f"SELECT {col} v FROM harmonized_scores WHERE SCREEN_ID = ? AND {col} IS NOT NULL", (sid,))
+    vals = [r["v"] for r in drows]
+    if len(vals) < 5:
+        return None
+    focal = srow["harm"] if score == "native" else srow["rz"] if score == "robustz" else srow["pct"]
+    focal = 0.0 if focal is None else focal
+    hist = _histogram(vals, focal, bounded=(-1.0, 1.0) if score == "percentile" else None)
+    # MIDRANK for ties: strict `v < focal` reported 0 on the tie-saturated screens (p-value-clipped
+    # ones where a third of the genome sits on the same floor value), making the caption false.
+    # Ties count half, which is the standard fractional-rank definition.
+    n_below = sum(1 for v in vals if v < focal)
+    n_tied = sum(1 for v in vals if v == focal)
+    below = n_below + 0.5 * n_tied
+    return {
+        "focus": seed, "taxid": taxid, "screen": sid, "score": score, "screens": screens,
+        "screen_meta": {"label": next(s["label"] for s in screens if s["sid"] == sid),
+                        "method": _score_method_label(srow["basis"]), "coverage": "FULL"},
+        "dist": hist,
+        "focal": {"value": round(focal, 4), "bin": hist["focal_bin"], "n_genes": len(vals),
+                  "pct_in_screen": round(below / len(vals), 4), "n_tied": n_tied,
+                  "direction": "depleted" if focal < 0 else "enriched" if focal > 0 else "neutral",
+                  "is_hit": int(srow["hit"] or 0)},
+    }
+
+
+# ---------------------------------------------------------------------------
+# Screen-vs-screen similarity — Homo sapiens · fitness · genome-wide (FULL).
+# Pairwise-complete Pearson on PC1-removed percentiles, precomputed for all screen pairs
+# and served as an indexed lookup. The old |a|*|b| weighting was removed: weighting by
+# the values being correlated is selection on the outcome and inflated r by ~0.17.
+# ---------------------------------------------------------------------------
+# Served from reticle.screen_similarity (precomputed by script/migrate_screen_similarity.py).
+# The former in-memory 57MB .npz + per-request SVD is gone: it made this the one feature that
+# 404'd on a cloud deploy, and the matrix duplicated harmonized_scores, which is already on RDS.
 
 
 def _screen_label(meta_row, sid):
@@ -474,51 +1089,68 @@ def _screen_label(meta_row, sid):
             "pmid": str(pmid) or "", "n_genes": int(ngenes) if str(ngenes).isdigit() else None}
 
 
-def screen_similar(screen_id, limit=50, offset=0, min_overlap=200):
-    d = _load_screen_matrix()
-    if not d:
-        return None
-    qi = d["sidx"].get(str(screen_id).strip())
-    if qi is None:
-        return None
-    M, screens, meta = d["M"], d["screens"], d["meta"]
-    q = M[:, qi]
-    qmask = ~np.isnan(q)
+def screen_similar(screen_id, limit=50, offset=0, min_overlap=2000, exclude_same_study=False):
+    """Screens whose gene-level fitness profile resembles the query's.
 
+    Three deliberate choices, each measured on this matrix:
+      * PLAIN pairwise-complete Pearson, on the PC1-removed values. The previous version ranked by
+        a "weighted" Pearson with w = |a|*|b|. That weight is a function of the very values being
+        correlated — selection on the outcome — and it inflated r by ~0.17 (0.695 -> 0.869 on a
+        real pair) by up-weighting exactly the pan-essential genes every fitness screen shares.
+      * Z AGAINST THIS QUERY'S OWN BACKGROUND. A raw r is unreadable here: any two human fitness
+        screens correlate ~0.35 for free. z = (r - mean_r) / sd_r over the whole comparable pool
+        answers the question the user actually has — "is this MORE alike than usual?".
+      * min_overlap 2,000 (was 200): 200 shared genes out of ~19k is a noise-dominated estimate.
+
+    KNOWN, UNFIXED — batch/study effect dominates and is NOT removed by any of the above: for a
+    Behan-2019 query, 50/50 of the top hits were that same publication, and after excluding it the
+    next 9/10 were a single other publication. Same study = same library, protocol, batch and
+    analysis, which is a real technical similarity. `same_study` is therefore returned per row and
+    `exclude_same_study` is offered, so the caller can see and control the confound rather than
+    mistake it for biology. Even the best cross-study match sits only ~1.2 sd above background.
+    """
+    sid = str(screen_id).strip()
+    # Served from reticle.screen_similarity on RDS — precomputed by script/migrate_screen_similarity.py
+    # with the PC1 removal and pairwise-complete definition above. Replaces the old 57MB local .npz
+    # (which made this the one feature that 404'd on a cloud deploy) and the per-request SVD.
+    qm = db_fetchall("SELECT screen_id, author, cell_line, pmid, n_genes FROM screen_sim_meta "
+                     "WHERE screen_id = ?", (sid,))
+    if not qm:
+        return None
+    qrow = qm[0]
+    qpmid = str(qrow["pmid"] or "")
+    raw = db_fetchall(
+        """SELECT s.screen_b sb, s.r, s.overlap, m.author, m.cell_line, m.pmid, m.n_genes
+           FROM screen_similarity s JOIN screen_sim_meta m ON m.screen_id = s.screen_b
+           WHERE s.screen_a = ? AND s.overlap >= ?""", (sid, int(min_overlap)))
     rows = []
-    for j in range(M.shape[1]):
-        if j == qi:
-            continue
-        b = M[:, j]
-        m = qmask & ~np.isnan(b)
-        n = int(m.sum())
-        if n < min_overlap:
-            continue
-        a, c = q[m], b[m]
-        # plain Pearson on percentile
-        am, cm = a.mean(), c.mean()
-        va = ((a - am) ** 2).mean(); vc = ((c - cm) ** 2).mean()
-        plain = float(((a - am) * (c - cm)).mean() / np.sqrt(va * vc)) if va > 0 and vc > 0 else None
-        # weighted Pearson — weight = |a|*|b| (both extreme -> high weight)
-        w = np.abs(a) * np.abs(c)
-        sw = w.sum()
-        if sw > 0:
-            aw = np.average(a, weights=w); cw = np.average(c, weights=w)
-            cov = np.average((a - aw) * (c - cw), weights=w)
-            vaw = np.average((a - aw) ** 2, weights=w); vcw = np.average((c - cw) ** 2, weights=w)
-            weighted = float(cov / np.sqrt(vaw * vcw)) if vaw > 0 and vcw > 0 else None
-        else:
-            weighted = None
-        if weighted is None:
-            continue
-        lab = _screen_label(meta[j], screens[j])
-        rows.append({"screen_id": screens[j], "weighted": round(weighted, 3),
-                     "plain": round(plain, 3) if plain is not None else None,
-                     "overlap": n, **lab})
-    rows.sort(key=lambda r: -r["weighted"])
+    for x in raw:
+        pm = str(x["pmid"] or "")
+        rows.append({"screen_id": x["sb"], "r": round(float(x["r"]), 3), "overlap": int(x["overlap"]),
+                     "same_study": bool(pm and pm == qpmid),
+                     "author": str(x["author"] or "—"), "cell_line": str(x["cell_line"] or "—"),
+                     "pmid": pm, "n_genes": int(x["n_genes"]) if x["n_genes"] is not None else None})
+
+    # background = this query's correlation with the whole comparable pool
+    if rows:
+        allr = np.array([x["r"] for x in rows], dtype=np.float64)
+        mu, sd = float(allr.mean()), float(allr.std())
+        for x in rows:
+            x["z"] = round((x["r"] - mu) / sd, 2) if sd > 0 else 0.0
+    else:
+        mu = sd = 0.0
+
+    n_same = sum(1 for x in rows if x["same_study"])
+    if exclude_same_study:
+        rows = [x for x in rows if not x["same_study"]]
+    rows.sort(key=lambda x: -x["r"])
     offset = max(0, int(offset)); limit = max(1, int(limit))
-    return {"query": {"screen_id": screens[qi], **_screen_label(meta[qi], screens[qi])},
-            "n_pool": M.shape[1], "n_total": len(rows), "offset": offset,
+    return {"query": {"screen_id": sid, "author": str(qrow["author"] or "—"),
+                      "cell_line": str(qrow["cell_line"] or "—"), "pmid": qpmid,
+                      "n_genes": int(qrow["n_genes"]) if qrow["n_genes"] is not None else None},
+            "n_pool": len(raw) + 1, "n_total": len(rows), "offset": offset,
+            "background": {"mean_r": round(mu, 3), "sd_r": round(sd, 3)},
+            "n_same_study": n_same, "exclude_same_study": bool(exclude_same_study),
             "results": rows[offset:offset + limit]}
 
 
@@ -682,7 +1314,34 @@ def reporter_explain(symbol, screen_ids):
 # Deterministic facts only; the AI synthesis is a separate grounded layer.
 # ---------------------------------------------------------------------------
 
+def _kb_on_pg():
+    """True when the KB will be served from RDS (no local mirror). Callers that need
+    dialect-specific SQL (e.g. GROUP_CONCAT vs STRING_AGG) must branch on this."""
+    import os
+    return USE_PG and not os.path.exists(KB_DB)
+
+
+# GO annotations carry a qualifier; "NOT involved_in" / "NOT enables" mean the curator
+# established the gene does NOT do this. Those rows must never be read as positive evidence
+# (kb.db holds ~2.3k of them). Append this to any query that treats a GO row as "gene does X".
+# The one place we deliberately do NOT filter is the novelty-exclusion set in predict_functions:
+# there, a NOT annotation is a contraindication and should also suppress the prediction.
+#
+# substr() rather than `NOT LIKE 'NOT%'`: on the Postgres path db_fetchall hands the SQL to psycopg2
+# with bound parameters, and psycopg2 %-formats the query — a LITERAL '%' is then read as a format
+# specifier and raises "IndexError: tuple index out of range". kb reads normally hit the local
+# sqlite mirror (where % is harmless), so this only bites a deploy with no local kb.db. Every
+# negative qualifier is 'NOT <relation>' and no positive one starts with NOT, so this is exactly
+# equivalent and %-free.
+_GO_POSITIVE = "AND (gg.qualifier IS NULL OR substr(gg.qualifier, 1, 3) <> 'NOT')"
+
+
 def kb_fetchall(sql, params=()):
+    """Gene-wiki knowledge base. Prefers the local kb.db mirror (fast: no per-query network
+    round-trip, and gene_wiki issues ~11 of these), falls back to the RDS reticle schema when
+    the file is absent — so a cloud deploy with no local mirror still serves the wiki."""
+    if _kb_on_pg():
+        return db_fetchall(sql, params)
     con = sqlite3.connect(KB_DB)
     con.row_factory = sqlite3.Row
     try:
@@ -712,12 +1371,15 @@ def _kb_resolve(gene, taxid):
     if gene.isdigit():
         r = kb_fetchall("SELECT gene_id, symbol, taxid FROM kb_gene WHERE gene_id=?", (int(gene),))
         return r[0] if r else None
-    for extra in ("", "COLLATE NOCASE"):
+    # exact match first, then case-insensitive. LOWER() works on BOTH sqlite and Postgres —
+    # the old `COLLATE NOCASE` is sqlite-only and hard-failed (HTTP 500) on a cloud deploy.
+    for ci in (False, True):
+        col, val = ("LOWER(a.alias)", gene.lower()) if ci else ("a.alias", gene)
         r = kb_fetchall(
             f"""SELECT g.gene_id, g.symbol, g.taxid FROM kb_gene_alias a
                 JOIN kb_gene g ON g.gene_id = a.gene_id
-                WHERE a.alias = ? {extra} AND a.taxid = ?
-                ORDER BY (a.alias_type='symbol') DESC LIMIT 1""", (gene, taxid))
+                WHERE {col} = ? AND a.taxid = ?
+                ORDER BY (a.alias_type='symbol') DESC LIMIT 1""", (val, taxid))
         if r:
             return r[0]
     return None
@@ -751,8 +1413,9 @@ def gene_wiki(gene, taxid=9606):
     go = {}
     for ns in ("molecular_function", "biological_process", "cellular_component"):
         go[ns] = [x["name"] for x in kb_fetchall(
-            """SELECT DISTINCT t.name FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id
-               WHERE gg.gene_id=? AND t.namespace=? AND t.is_obsolete=0 LIMIT 8""", (gid, ns))]
+            f"""SELECT DISTINCT t.name FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id
+               WHERE gg.gene_id=? AND t.namespace=? AND t.is_obsolete=0
+               {_GO_POSITIVE} LIMIT 8""", (gid, ns))]
 
     part_rows = kb_fetchall(
         """SELECT g2.gene_id gid, g2.symbol sym, e.combined_score sc FROM kb_string_edge e
@@ -787,8 +1450,11 @@ def gene_wiki(gene, taxid=9606):
 
     n_scr = kb_fetchall("SELECT COUNT(*) n FROM kb_screen_hit WHERE gene_id=?", (gid,))[0]["n"]
     by_phen = []
+    # GROUP_CONCAT is sqlite-only; Postgres spells it STRING_AGG (explicit separator).
+    _agg = ("STRING_AGG(DISTINCT s.condition_name, ',')" if _kb_on_pg()
+            else "GROUP_CONCAT(DISTINCT s.condition_name)")
     for row in kb_fetchall(
-        """SELECT s.phenotype, COUNT(*) c, GROUP_CONCAT(DISTINCT s.condition_name) conds
+        f"""SELECT s.phenotype, COUNT(*) c, {_agg} conds
            FROM kb_screen_hit h JOIN kb_screen s ON s.screen_id=h.screen_id
            WHERE h.gene_id=? GROUP BY s.phenotype ORDER BY c DESC""", (gid,)):
         conds = [x for x in (row["conds"] or "").split(",") if x and x != "None"]
@@ -900,7 +1566,9 @@ def screen_analysis(gene, taxid=9606):
     data = client.chat_json(
         [{"role": "system", "content": SCREEN_SYS},
          {"role": "user", "content": _screen_prompt(w)}],
-        temperature=0.3, max_tokens=1200)
+        # 4000, not the 1200 this prompt used against gpt-4.1: Claude writes longer
+        # per-phenotype insights, and a JSON reply cut off at the limit is unparseable.
+        max_tokens=4000)   # no temperature: claude-opus-4-7 rejects it (see _gen_kwargs)
     items = [{"phenotype": x.get("phenotype"), "insight": (x.get("insight") or "").strip()}
              for x in (data.get("by_phenotype") or []) if x.get("phenotype") and x.get("insight")]
     out = {"found": True, "symbol": sym, "model": client.model,
@@ -992,7 +1660,8 @@ def _bp_meta():
     if _BP_SIZE is None:
         _BP_SIZE = {r["go_id"]: r["c"] for r in kb_fetchall(
             "SELECT gg.go_id, COUNT(*) c FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id "
-            "WHERE t.namespace='biological_process' AND t.is_obsolete=0 GROUP BY gg.go_id")}
+            "WHERE t.namespace='biological_process' AND t.is_obsolete=0 "
+            f"{_GO_POSITIVE} GROUP BY gg.go_id")}
         _BP_NAME = {r["go_id"]: r["name"] for r in kb_fetchall(
             "SELECT go_id, name FROM kb_go_term WHERE namespace='biological_process'")}
     return _BP_SIZE, _BP_NAME
@@ -1043,6 +1712,9 @@ def predict_functions(gene, taxid=9606, top=8):
     if not neigh:
         return {"found": True, "symbol": sym, "n_neighbours": 0, "predictions": []}
 
+    # Terms we will NOT predict. Deliberately NOT filtered by _GO_POSITIVE: a "NOT involved_in"
+    # row is curated evidence AGAINST the gene doing this, so it should suppress the prediction
+    # just as a positive annotation does. (Every other GO read in this file excludes NOT rows.)
     own = {row["go_id"] for row in kb_fetchall(
         "SELECT gg.go_id FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id "
         "WHERE gg.gene_id=? AND t.namespace='biological_process'", (gid,))}
@@ -1052,7 +1724,8 @@ def predict_functions(gene, taxid=9606, top=8):
     supporters = defaultdict(set)                     # set → one vote per gene (kb_gene_go repeats per evidence code)
     for row in kb_fetchall(
         f"SELECT gg.gene_id gid, gg.go_id term FROM kb_gene_go gg JOIN kb_go_term t ON t.go_id=gg.go_id "
-        f"WHERE gg.gene_id IN ({ph}) AND t.namespace='biological_process' AND t.is_obsolete=0", nb_ids):
+        f"WHERE gg.gene_id IN ({ph}) AND t.namespace='biological_process' AND t.is_obsolete=0 "
+        f"{_GO_POSITIVE}", nb_ids):
         supporters[row["term"]].add(row["gid"])
 
     cands = []
@@ -1112,10 +1785,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         u = urlparse(self.path)
-        if u.path in ("/", "/index.html"):
-            return self._send(200, INDEX_HTML.read_bytes(), "text/html; charset=utf-8")
-        if u.path in ("/gene", "/gene.html", "/wiki"):
+        # Unified Gene tab is the landing page: gene-level phenotype query + gene wiki merged.
+        if u.path in ("/", "/index.html", "/gene", "/gene.html", "/wiki"):
             return self._send(200, GENE_HTML.read_bytes(), "text/html; charset=utf-8")
+        # Screen tab: the screen-wide similarity query, split out of the old Explore page.
+        if u.path in ("/screen", "/screens", "/screen.html"):
+            return self._send(200, SCREEN_HTML.read_bytes(), "text/html; charset=utf-8")
+        if u.path in ("/network", "/network.html", "/net"):
+            return self._send(200, NETWORK_HTML.read_bytes(), "text/html; charset=utf-8")
         if u.path == "/api/gene_wiki":
             q = parse_qs(u.query)
             gene = (q.get("gene", [""])[0]).strip()
@@ -1145,6 +1822,26 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, gene_structure(gene, taxid))
             except Exception as e:
                 return self._send(502, {"error": f"Structure lookup failed: {e}"})
+        if u.path == "/api/gene_screen_distribution":
+            q = parse_qs(u.query)
+            gene = (q.get("gene", [""])[0]).strip()
+            try:
+                taxid = int(q.get("taxid", ["9606"])[0] or 9606)
+            except ValueError:
+                taxid = 9606
+            screen = (q.get("screen", [""])[0]).strip() or None
+            score = (q.get("score", ["percentile"])[0]).strip()
+            if score not in _DIST_COL:
+                score = "percentile"
+            if not gene:
+                return self._send(400, {"error": "Missing gene."})
+            try:
+                p = gene_screen_distribution(gene, taxid, screen=screen, score=score)
+            except Exception as e:
+                return self._send(500, {"error": f"Distribution failed: {e}"})
+            if p is None:
+                return self._send(404, {"error": f"No FULL-screen distribution for “{gene}”."})
+            return self._send(200, p)
         if u.path == "/api/gene_predictions":
             q = parse_qs(u.query)
             gene = (q.get("gene", [""])[0]).strip()
@@ -1229,7 +1926,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 limit = min(200, max(1, int(q.get("limit", ["50"])[0])))
                 offset = max(0, int(q.get("offset", ["0"])[0]))
-                p = screen_similar(sid, limit=limit, offset=offset)
+                excl = q.get("exclude_same_study", ["0"])[0] not in ("0", "", "false")
+                p = screen_similar(sid, limit=limit, offset=offset, exclude_same_study=excl)
             except Exception as e:
                 return self._send(500, {"error": f"Screen similarity failed: {e}"})
             if p is None:
@@ -1248,6 +1946,53 @@ class Handler(BaseHTTPRequestHandler):
                 hint = ("  Connect the WashU network (gateway is WashU-only) and retry."
                         if "403" in msg or "Forbidden" in msg else "")
                 return self._send(502, {"error": f"Explanation unavailable: {msg}{hint}"})
+        if u.path == "/api/net_contexts":
+            q = parse_qs(u.query)
+            organism = "mouse" if q.get("organism", ["human"])[0] == "mouse" else "human"
+            try:
+                return self._send(200, {"contexts": net_contexts(organism=organism)})
+            except Exception as e:
+                return self._send(500, {"error": f"Context list failed: {e}"})
+        if u.path == "/api/screen_net":
+            q = parse_qs(u.query)
+            gene = (q.get("gene", [""])[0]).strip()
+            organism = "mouse" if q.get("organism", ["human"])[0] == "mouse" else "human"
+            context = (q.get("context", [""])[0]).strip() or ("mouse" if organism == "mouse" else "all")
+            reciprocal = q.get("reciprocal", ["1"])[0] != "0"
+            if not gene:
+                return self._send(400, {"error": "Missing gene."})
+            try:
+                p = screen_net(gene, context, reciprocal_only=reciprocal, organism=organism)
+            except Exception as e:
+                return self._send(500, {"error": f"Network failed: {e}"})
+            if p is None:
+                return self._send(404, {"error": f"“{gene}” has no {'reciprocal ' if reciprocal else ''}"
+                                                 f"edges in this context — it may not be hit-active here."})
+            return self._send(200, p)
+        if u.path == "/api/net_predict":
+            q = parse_qs(u.query)
+            gene = (q.get("gene", [""])[0]).strip()
+            organism = "mouse" if q.get("organism", ["human"])[0] == "mouse" else "human"
+            context = (q.get("context", [""])[0]).strip() or ("mouse" if organism == "mouse" else "all")
+            # Same default and same parsing as /api/screen_net — the dossier must be assembled from
+            # the neighbourhood the user is looking at, not from a different one.
+            reciprocal = q.get("reciprocal", ["1"])[0] != "0"
+            if not gene:
+                return self._send(400, {"error": "Missing gene."})
+            try:
+                p = net_predict_functions(gene, context, organism=organism,
+                                          reciprocal_only=reciprocal)
+            except Exception as e:
+                msg = str(e)
+                hint = ("  Connect the WashU network (LLM gateway is WashU-only) and retry."
+                        if "403" in msg or "Forbidden" in msg else
+                        "  The WashU LLM gateway has reached its spend limit — ask the team to top it up."
+                        if "402" in msg or "spend amount" in msg else "")
+                return self._send(502, {"error": f"Function prediction unavailable: {msg}{hint}"})
+            if p is None:
+                return self._send(404, {"error": f"“{gene}” has no co-essential partners in this "
+                                                 f"context to reason from."})
+            return self._send(200, p)
         self._send(404, {"error": "Not found"})
 
     def do_POST(self):
@@ -1269,6 +2014,12 @@ def main():
     print(f"RETICLE Gene Explorer  →  http://localhost:{PORT}")
     print(f"  DB: {DB}")
     print(f"  interpretation model: {INTERPRET_MODEL}\n")
+    if USE_PG:                                   # open the pool now so the first user request is warm
+        try:
+            db_fetchall("SELECT 1")
+            print("  RDS pool warmed (4 connections)\n")
+        except Exception as e:
+            print(f"  (RDS warm-up skipped: {e})\n")
     ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
 
 

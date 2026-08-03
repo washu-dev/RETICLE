@@ -79,13 +79,24 @@ describe("App (signed out)", () => {
     mock.instance.loginRedirect.mockClear();
   });
 
-  it("shows the Login landing page", async () => {
+  // Signed-out visitors now land on the public marketing page and reach the SSO card from its CTA,
+  // rather than being dropped straight onto the login prompt.
+  it("shows the marketing landing page", async () => {
     render(<App />);
+    expect(
+      await screen.findByText(/AI-powered bioinformatics/i),
+    ).toBeTruthy();
+  });
+
+  it("shows the Login landing page after Sign in is clicked", async () => {
+    render(<App />);
+    fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
     expect(await screen.findByText("Login")).toBeTruthy();
   });
 
   it("starts SSO login when Login is clicked", async () => {
     render(<App />);
+    fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
     fireEvent.click(await screen.findByText("Login"));
     await waitFor(() => expect(mock.instance.loginRedirect).toHaveBeenCalled());
   });

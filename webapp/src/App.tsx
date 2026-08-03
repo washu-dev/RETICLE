@@ -6,6 +6,8 @@ import UploadPage from './components/UploadPage';
 import LoadingAnalysis from './components/LoadingAnalysis';
 import DashboardView from './components/shell/DashboardView';
 import ExplorerPage from './components/explorer/ExplorerPage';
+import ReticlePage_aaron from './components/reticle_aaron/ReticlePage_aaron';
+import MarketingLanding_aaron from './components/landing_aaron/MarketingLanding_aaron';
 import StickyControls from './components/StickyControls';
 import type { QueryResponse } from './services/reticleApi';
 import { initAuth, type User } from './services/auth';
@@ -40,6 +42,10 @@ export default function App() {
     return () => { cancelled = true; };
   }, []);
 
+  // Signed-out visitors get the public marketing page first and reach the SSO card from its CTA,
+  // rather than being dropped straight onto a login prompt.
+  const [wantsLogin, setWantsLogin] = useState(false);
+
   const [screen, setScreen] = useState('landing');
   const [genes, setGenes] = useState<any>(null);
   const [analysisOptions, setAnalysisOptions] = useState<any>(null);
@@ -47,6 +53,7 @@ export default function App() {
 
   const handleStart = () => setScreen('upload');
   const handleExplore = () => setScreen('explorer');
+  const handleWiki = () => setScreen('wiki');
 
   const handleAnalyze = (parsedGenes: any, options: any) => {
     setGenes(parsedGenes);
@@ -84,14 +91,33 @@ export default function App() {
     );
   }
 
-  // Not signed in → the SSO login landing page (single "Login" button).
-  if (authState === 'out') return <LoginLanding />;
+  // Not signed in → the public marketing page, then the SSO login card on request.
+  if (authState === 'out') {
+    if (!wantsLogin) return <MarketingLanding_aaron onSignIn={() => setWantsLogin(true)} />;
+    return (
+      <>
+        <LoginLanding />
+        {/* Rendered here rather than inside LoginLanding so that component stays untouched. */}
+        <button
+          onClick={() => setWantsLogin(false)}
+          style={{
+            position: 'fixed', top: 20, left: 20, zIndex: 20,
+            padding: '8px 16px', borderRadius: 8,
+            background: 'var(--bg-3)', color: 'var(--text-2)',
+            fontSize: '0.85rem', fontWeight: 500,
+          }}
+        >← Back</button>
+      </>
+    );
+  }
 
   let screenEl: ReactNode = null;
   if (screen === 'landing') {
-    screenEl = <LandingPage onStart={handleStart} onExplore={handleExplore} />;
+    screenEl = <LandingPage onStart={handleStart} onExplore={handleExplore} onWiki={handleWiki} />;
   } else if (screen === 'explorer') {
     screenEl = <ExplorerPage onBack={handleHome} />;
+  } else if (screen === 'wiki') {
+    screenEl = <ReticlePage_aaron onBack={handleHome} />;
   } else if (screen === 'upload') {
     screenEl = <UploadPage onAnalyze={handleAnalyze} />;
   } else if (screen === 'loading') {

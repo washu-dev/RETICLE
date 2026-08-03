@@ -73,6 +73,12 @@ logger = logging.getLogger(__name__)
 PIPE_DELIMITER = '|'
 TEMP_DIR = Config.STAGING_OUTPUT_DIR
 
+# Screens per batch for the pair load and the fact build. Both operate over tens
+# of millions of screen_gene_raw rows; batching by screen and committing per batch
+# keeps each statement small, makes progress resumable, and avoids the 4h+ wall
+# clock that a single monolithic statement hit on the human load (version 7).
+SCREEN_BATCH_SIZE = 50
+
 
 class CPUTransformPhase:
     """CPU-based ETL transformation phase - CSV to production tables."""
@@ -102,6 +108,14 @@ class CPUTransformPhase:
             # Connect to database
             self.conn = psycopg2.connect(**Config.get_psycopg2_params())
             logger.info("✓ Connected to database")
+
+            # Long, set-based aggregate/join statements must not be capped, and the
+            # 26M-row GROUP BYs/joins want more memory than the default.
+            cur0 = self.conn.cursor()
+            cur0.execute("SET statement_timeout = 0")
+            cur0.execute("SET work_mem = '256MB'")
+            cur0.execute("SET maintenance_work_mem = '512MB'")
+            self.conn.commit()
 
             # Create run record
             self._create_run_record()
@@ -355,9 +369,12 @@ class CPUTransformPhase:
 
             logger.info(f"  Total unique genes: {len(genes_dict):,}")
 
-            # Prepare gene data (assume organism is mus_musculus for now)
+            # Organism from the version record (do NOT hardcode — this loader is
+            # used for both mus_musculus and homo_sapiens).
+            organism = self._get_organism() or 'unknown'
+            logger.info(f"  Organism: {organism}")
             genes = [
-                (self.version_id, identifier_id, gene_symbol, 'mus_musculus', True)
+                (self.version_id, identifier_id, gene_symbol, organism, True)
                 for identifier_id, gene_symbol in genes_dict.items()
             ]
 
@@ -383,8 +400,36 @@ class CPUTransformPhase:
             logger.error(f"Failed to load genes: {e}")
             return False
 
+    # CSV column order (from gpu_etl_dedup_only.py):
+    #   version_id | src_screen_id | biogrid_screen_id | identifier_id | gene_symbol
+    #   | official_symbol | hit_flag | score_1..5 | tsv_filename | tsv_row_number
+    PAIRS_INSERT_SQL = """
+        INSERT INTO screen_gene_raw
+            (version_id, run_id, screen_id, gene_id, biogrid_screen_id, identifier_id,
+             hit_flag, score_1, score_2, score_3, score_4, score_5, raw_score, is_current)
+        SELECT tp.version_id, %s, s.screen_id, g.gene_id, tp.biogrid_screen_id, tp.identifier_id,
+               (lower(coalesce(tp.hit_flag, '')) = 'true'),
+               tp.score_1, tp.score_2, tp.score_3, tp.score_4, tp.score_5,
+               COALESCE(tp.score_1, 0), TRUE
+        FROM tmp_pairs tp
+        JOIN screen s ON s.version_id = tp.version_id
+                     AND s.biogrid_screen_id = tp.biogrid_screen_id
+        JOIN gene   g ON g.version_id = tp.version_id
+                     AND g.identifier_id = tp.identifier_id
+        WHERE s.screen_id = ANY(%s)
+        ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
+            hit_flag = EXCLUDED.hit_flag, raw_score = EXCLUDED.raw_score, is_current = TRUE
+    """
+
     def _load_pairs_csv(self) -> bool:
-        """Load screen-gene pairs from CSV to production screen_gene_raw table with checkpoint resumption."""
+        """Load screen-gene pairs into screen_gene_raw.
+
+        Bulk-COPYs the deduped CSV into a temp table, then resolves surrogate keys
+        with a set-based INSERT ... SELECT JOIN, batched by screen (commit per
+        batch). This replaces a row-by-row execute_batch loop that took 3h+ and was
+        killed at the wall-clock. Resumable: screens already present in
+        screen_gene_raw for this version are skipped.
+        """
         logger.info("Loading screen-gene pairs to production table...")
 
         csv_file = TEMP_DIR / f'staging_screen_gene_v{self.version_id}.csv'
@@ -393,167 +438,138 @@ class CPUTransformPhase:
             return False
 
         try:
-            cursor = self.conn.cursor()
+            cur = self.conn.cursor()
 
-            # Check for checkpoint (resumable pipeline)
-            resume_from = self._get_checkpoint('pairs')
-            if resume_from > 0:
-                logger.info(f"  Resuming from row {resume_from:,} (checkpoint found)")
-
-            # Count rows
-            with open(csv_file, 'r', encoding='utf-8') as f:
-                total_rows = sum(1 for _ in f)
-
-            logger.info(f"  Total pairs: {total_rows:,}")
-
-            # Pre-load screen and gene IDs into memory (avoid N+1 queries)
-            logger.info("  Loading screen/gene ID lookups into memory...")
-            cursor.execute("""
-                SELECT version_id, biogrid_screen_id, screen_id
-                FROM screen WHERE is_current = TRUE
+            # 1. Bulk-load the CSV into a session temp table (no ON COMMIT DROP, so it
+            #    survives the per-batch commits; dropped explicitly at the end).
+            cur.execute("""
+                CREATE TEMP TABLE IF NOT EXISTS tmp_pairs (
+                    version_id INT, src_screen_id INT, biogrid_screen_id VARCHAR(100),
+                    identifier_id VARCHAR(250), gene_symbol TEXT, official_symbol TEXT,
+                    hit_flag TEXT, score_1 NUMERIC, score_2 NUMERIC, score_3 NUMERIC,
+                    score_4 NUMERIC, score_5 NUMERIC, tsv_filename TEXT, tsv_row_number INT
+                )
             """)
-            screens_dict = {
-                (row[0], row[1]): row[2]
-                for row in cursor.fetchall()
-            }
-
-            cursor.execute("""
-                SELECT version_id, identifier_id, gene_id
-                FROM gene WHERE is_current = TRUE
-            """)
-            genes_dict = {
-                (row[0], row[1]): row[2]
-                for row in cursor.fetchall()
-            }
-
-            logger.info(f"  Loaded {len(screens_dict):,} screens, {len(genes_dict):,} genes into memory")
-
-            # Read pairs from CSV and insert
+            cur.execute("TRUNCATE tmp_pairs")
+            logger.info("  COPYing deduped pairs CSV into temp table...")
             with open(csv_file, 'r', encoding='utf-8') as f:
-                reader = csv.reader(f, delimiter=PIPE_DELIMITER)
-
-                if TQDM_AVAILABLE:
-                    pbar = tqdm(total=total_rows, desc='  Loading pairs', unit=' rows', ncols=80, unit_scale=True)
-
-                pairs_batch = []
-                row_num = 0
-
-                for row in reader:
-                    # Skip rows before checkpoint
-                    if row_num < resume_from:
-                        row_num += 1
-                        if TQDM_AVAILABLE:
-                            pbar.update(1)
-                        continue
-
-                    if len(row) >= 13:  # Full row needed
-                        version_id = int(row[0])
-                        biogrid_screen_id = row[2]
-                        identifier_id = row[3]
-                        hit_flag = row[6].lower() == 'true' if row[6] else False
-                        score_1 = float(row[7]) if row[7] else None
-
-                        # Look up IDs from pre-loaded dicts (instant, no DB queries)
-                        screen_id = screens_dict.get((version_id, biogrid_screen_id))
-                        gene_id = genes_dict.get((version_id, identifier_id))
-
-                        if screen_id and gene_id:
-                            pairs_batch.append((
-                                version_id, self.run_id, screen_id, gene_id,
-                                biogrid_screen_id, identifier_id,
-                                hit_flag, score_1, score_1, True
-                            ))
-
-                            # Batch insert every 5000 rows
-                            if len(pairs_batch) >= 5000:
-                                psycopg2.extras.execute_batch(cursor, """
-                                    INSERT INTO screen_gene_raw
-                                    (version_id, run_id, screen_id, gene_id, biogrid_screen_id, identifier_id,
-                                     hit_flag, score_1, raw_score, is_current)
-                                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                                    ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
-                                        hit_flag = EXCLUDED.hit_flag, is_current = TRUE
-                                """, pairs_batch)
-                                self.conn.commit()
-
-                                # Update checkpoint every 5000 rows
-                                self._update_checkpoint('pairs', row_num)
-
-                                pairs_batch = []
-
-                    if TQDM_AVAILABLE:
-                        pbar.update(1)
-                    row_num += 1
-
-                # Insert remaining
-                if pairs_batch:
-                    psycopg2.extras.execute_batch(cursor, """
-                        INSERT INTO screen_gene_raw
-                        (version_id, run_id, screen_id, gene_id, biogrid_screen_id, identifier_id,
-                         hit_flag, score_1, raw_score, is_current)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
-                            hit_flag = EXCLUDED.hit_flag, is_current = TRUE
-                    """, pairs_batch)
-
-                if TQDM_AVAILABLE:
-                    pbar.close()
-
+                cur.copy_expert(
+                    "COPY tmp_pairs FROM STDIN WITH (FORMAT text, DELIMITER '|', NULL '')", f)
+            cur.execute("SELECT COUNT(*) FROM tmp_pairs")
+            staged = cur.fetchone()[0]
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_tmp_pairs_bsid ON tmp_pairs (biogrid_screen_id)")
             self.conn.commit()
-            self._update_checkpoint('pairs', row_num)
+            logger.info(f"  Staged {staged:,} pairs; resolving surrogate keys in screen batches...")
 
-            # Count inserted rows
-            cursor.execute("SELECT COUNT(*) FROM screen_gene_raw WHERE version_id = %s AND run_id = %s",
-                          (self.version_id, self.run_id))
-            pair_count = cursor.fetchone()[0]
-            self.stats['pairs_loaded'] = pair_count
+            # 2. Resume: skip screens already loaded into screen_gene_raw.
+            all_screens = self._screen_ids()
+            cur.execute("SELECT DISTINCT screen_id FROM screen_gene_raw WHERE version_id = %s",
+                        (self.version_id,))
+            done = {r[0] for r in cur.fetchall()}
+            todo = [s for s in all_screens if s not in done]
+            logger.info(f"  {len(all_screens)} screens, {len(done)} already loaded, "
+                        f"{len(todo)} to process, batch_size={SCREEN_BATCH_SIZE}")
 
-            logger.info(f"✓ Loaded {pair_count:,} pairs to production table")
+            total = 0
+            n_batches = (len(todo) + SCREEN_BATCH_SIZE - 1) // SCREEN_BATCH_SIZE
+            for i in range(0, len(todo), SCREEN_BATCH_SIZE):
+                batch = todo[i:i + SCREEN_BATCH_SIZE]
+                t0 = time.time()
+                cur.execute(self.PAIRS_INSERT_SQL, (self.run_id, batch))
+                self.conn.commit()
+                total += cur.rowcount
+                logger.info(f"  pairs batch {i // SCREEN_BATCH_SIZE + 1}/{n_batches}: "
+                            f"+{cur.rowcount:,} rows (cumulative {total:,}, {time.time() - t0:.1f}s)")
+
+            cur.execute("DROP TABLE IF EXISTS tmp_pairs")
+            self.conn.commit()
+
+            cur.execute("SELECT COUNT(*) FROM screen_gene_raw WHERE version_id = %s", (self.version_id,))
+            self.stats['pairs_loaded'] = cur.fetchone()[0]
+            self._update_checkpoint('pairs', self.stats['pairs_loaded'])
+            logger.info(f"✓ Loaded {self.stats['pairs_loaded']:,} pairs to production table")
             return True
 
         except Exception as e:
             self.conn.rollback()
-            self._update_checkpoint('pairs', row_num, str(e))
-            logger.error(f"Failed to load pairs: {e}")
+            self._update_checkpoint('pairs', 0, str(e))
+            logger.error(f"Failed to load pairs: {e}", exc_info=True)
             return False
 
+    def _get_organism(self):
+        cur = self.conn.cursor()
+        cur.execute("SELECT organism FROM data_load_version WHERE version_id = %s", (self.version_id,))
+        row = cur.fetchone()
+        return row[0] if row else None
+
+    def _screen_ids(self):
+        cur = self.conn.cursor()
+        cur.execute("SELECT screen_id FROM screen WHERE version_id = %s ORDER BY screen_id",
+                    (self.version_id,))
+        return [r[0] for r in cur.fetchall()]
+
+    # SELECT body of build_fact_screen_gene, filtered to a batch of screen_ids and
+    # committed per batch (the monolithic function over 26M rows exceeded the wall
+    # clock on version 7).
+    FACT_BATCH_SQL = """
+        INSERT INTO fact_screen_gene
+            (version_id, run_id, screen_id, gene_id, hit_count, hit_percentage,
+             avg_raw_score, total_publications, condition_count, is_current)
+        SELECT %s, %s, sgr.screen_id, sgr.gene_id,
+               COUNT(CASE WHEN sgr.hit_flag THEN 1 END)::INT,
+               ROUND(100.0 * COUNT(CASE WHEN sgr.hit_flag THEN 1 END)
+                     / NULLIF(COUNT(*), 0), 2)::NUMERIC,
+               AVG(sgr.raw_score)::NUMERIC, 0, 1, TRUE
+        FROM screen_gene_raw sgr
+        WHERE sgr.version_id = %s AND sgr.screen_id = ANY(%s)
+        GROUP BY sgr.screen_id, sgr.gene_id
+        ON CONFLICT (version_id, screen_id, gene_id) DO UPDATE SET
+            hit_count = EXCLUDED.hit_count, hit_percentage = EXCLUDED.hit_percentage,
+            avg_raw_score = EXCLUDED.avg_raw_score, is_current = TRUE
+    """
+
     def _build_aggregates(self) -> bool:
-        """Build fact and dimension tables via stored procedures."""
+        """Build fact (batched by screen) and dimension (whole) tables."""
         logger.info("Building fact and dimension tables...")
 
-        # Check if already completed
-        resume_from = self._get_checkpoint('aggregates')
-        if resume_from > 0:
-            logger.info("  Aggregates already built (checkpoint found)")
-            self.stats['aggregates_built'] = True
-            return True
-
         try:
-            cursor = self.conn.cursor()
+            cur = self.conn.cursor()
 
-            # Call stored procedures to build aggregates
-            steps = [
-                'build_fact_screen_gene',
-                'build_dim_screen',
-                'build_dim_gene',
-            ]
+            # Fact: batched by screen, resumable (skip screens already in fact).
+            all_screens = self._screen_ids()
+            cur.execute("SELECT DISTINCT screen_id FROM fact_screen_gene WHERE version_id = %s",
+                        (self.version_id,))
+            done = {r[0] for r in cur.fetchall()}
+            todo = [s for s in all_screens if s not in done]
+            logger.info(f"  fact: {len(all_screens)} screens, {len(done)} done, {len(todo)} to build")
+            n_batches = (len(todo) + SCREEN_BATCH_SIZE - 1) // SCREEN_BATCH_SIZE
+            for i in range(0, len(todo), SCREEN_BATCH_SIZE):
+                batch = todo[i:i + SCREEN_BATCH_SIZE]
+                t0 = time.time()
+                cur.execute(self.FACT_BATCH_SQL,
+                            (self.version_id, self.run_id, self.version_id, batch))
+                self.conn.commit()
+                logger.info(f"  fact batch {i // SCREEN_BATCH_SIZE + 1}/{n_batches}: "
+                            f"+{cur.rowcount:,} rows ({time.time() - t0:.1f}s)")
 
-            for step_name in steps:
-                logger.info(f"  Running: {step_name}...")
-                cursor.execute(f"SELECT {step_name}(%s, %s)", (self.run_id, self.version_id))
-                cursor.fetchone()
+            # Dimensions are light (one row per screen / per gene) — call whole.
+            for fn in ('build_dim_screen', 'build_dim_gene'):
+                logger.info(f"  Running: {fn}...")
+                t0 = time.time()
+                cur.execute(f"SELECT {fn}(%s, %s)", (self.run_id, self.version_id))
+                cur.fetchone()
+                self.conn.commit()
+                logger.info(f"  -> {fn} ({time.time() - t0:.1f}s)")
 
-            self.conn.commit()
             self.stats['aggregates_built'] = True
             self._update_checkpoint('aggregates', 1)
-
             logger.info("✓ Aggregates built successfully")
             return True
 
         except Exception as e:
             self.conn.rollback()
             self._update_checkpoint('aggregates', 0, str(e))
-            logger.error(f"Failed to build aggregates: {e}")
+            logger.error(f"Failed to build aggregates: {e}", exc_info=True)
             return False
 
     def _mark_run_failed(self, error_msg: str) -> None:

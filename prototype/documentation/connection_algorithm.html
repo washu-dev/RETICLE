@@ -1,0 +1,375 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RETICLE — 连接算法是怎么写的</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FCFCFB;--ink:#14161A;--ink2:#3A3D44;--muted:#6B7280;--faint:#9AA0A6;
+  --line:#E8E6E1;--line2:#F1EFEA;--card:#FFFFFF;
+  --know:#1F6F8B;--eviq:#C77D31;--pred:#7C5CBF;
+  --know-soft:#1F6F8B14;--eviq-soft:#C77D3114;--pred-soft:#7C5CBF14;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Noto Sans SC","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.8;font-size:16px}
+.wrap{display:flex;max-width:1180px;margin:0 auto}
+nav.toc{width:216px;flex:0 0 216px;position:sticky;top:0;height:100vh;overflow-y:auto;padding:34px 14px 40px;border-right:1px solid var(--line)}
+nav .brand{font-family:var(--serif);font-weight:600;font-size:18px}
+nav .brand b{color:var(--know)}
+nav .brand s{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);text-decoration:none;margin-top:3px}
+nav .grp{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:22px 8px 8px}
+nav a{display:block;color:var(--muted);text-decoration:none;font-size:13.5px;padding:5px 10px;border-left:2px solid var(--line);transition:.15s}
+nav a:hover{color:var(--ink)}
+nav a.on{color:var(--know);border-left-color:var(--know);font-weight:500}
+main{flex:1;min-width:0;padding:52px 60px 130px;max-width:820px}
+@media(max-width:900px){nav.toc{display:none}main{padding:32px 20px 80px}}
+
+h1{font-family:var(--serif);font-weight:600;font-size:38px;letter-spacing:-.01em;line-height:1.15;margin:0 0 14px}
+.lead{font-size:18px;color:var(--ink2);max-width:64ch}
+h2{font-family:var(--serif);font-weight:500;font-size:27px;margin:0 0 6px;letter-spacing:-.01em}
+.stepnum{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--know);font-weight:500}
+section{margin:64px 0;scroll-margin-top:24px}
+p{color:var(--ink2);margin:14px 0}
+b,strong{color:var(--ink);font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:var(--line2);padding:1.5px 6px;border-radius:5px;color:#155568}
+.hr{height:1px;background:var(--line);border:0;margin:0}
+
+.hero{padding:6px 0 8px;border-bottom:1.5px solid var(--ink);margin-bottom:8px}
+.analogy{background:var(--know-soft);border-left:3px solid var(--know);border-radius:0 10px 10px 0;padding:16px 20px;margin:22px 0;font-size:15.5px}
+.analogy b{color:var(--know)}
+.one{font-family:var(--serif);font-size:21px;line-height:1.5;color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin:20px 0;background:var(--card);box-shadow:0 10px 30px -18px rgba(0,0,0,.12)}
+
+.prob,.sol{border-radius:10px;padding:13px 18px;margin:16px 0;font-size:15px}
+.prob{background:var(--eviq-soft);border-left:3px solid var(--eviq)}
+.prob b{color:var(--eviq)}
+.sol{background:#1F6F8B0e;border-left:3px solid var(--know)}
+.sol b{color:var(--know)}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:2px 8px;border-radius:20px;vertical-align:2px}
+.tag.p{background:var(--eviq-soft);color:var(--eviq)} .tag.s{background:var(--know-soft);color:var(--know)}
+
+figure{margin:26px 0;text-align:center}
+figcaption{font-size:13px;color:var(--muted);margin-top:10px;font-family:var(--mono);letter-spacing:.01em}
+svg{max-width:100%;height:auto}
+
+.example{border:1px dashed var(--line2);border-radius:12px;padding:20px 22px;margin:22px 0;background:#fff}
+.example h4{margin:0 0 4px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pred)}
+table.mat{border-collapse:collapse;font-family:var(--mono);font-size:13px;margin:14px auto}
+table.mat td,table.mat th{border:1px solid var(--line);padding:7px 12px;text-align:center;min-width:52px}
+table.mat th{color:var(--muted);font-weight:500;background:var(--line2)}
+table.mat td.g{text-align:left;color:var(--ink);font-weight:600;background:var(--line2)}
+.res{font-family:var(--mono);font-size:14px;margin-top:10px}
+.res .hi{color:var(--know);font-weight:600} .res .lo{color:var(--faint)}
+
+.mono-note{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:var(--line2);border-radius:8px;padding:12px 16px;margin:16px 0;line-height:1.7}
+.roads{border:1px solid var(--line);border-radius:14px;padding:6px 24px 20px;margin:26px 0;background:var(--card)}
+.roads h3{font-family:var(--serif);font-weight:500;font-size:20px}
+.roads .row{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line2);font-size:14.5px}
+.roads .row:first-of-type{border-top:0}
+.roads .x{color:var(--eviq);font-weight:700;font-family:var(--mono);flex:0 0 auto}
+.foot{color:var(--faint);font-family:var(--mono);font-size:12px;margin-top:70px;border-top:1px solid var(--line);padding-top:18px}
+.kbd{font-family:var(--mono);font-size:.9em;color:var(--know)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="toc">
+  <div class="brand"><b>RETICLE</b><s>connection algorithm</s></div>
+  <div class="grp">核心</div>
+  <a href="#idea">一句话</a>
+  <div class="grp">一步步</div>
+  <a href="#s1">1 · 原料:一个数</a>
+  <a href="#s2">2 · 基因指纹</a>
+  <a href="#s3">3 · 连接 = 指纹像</a>
+  <a href="#s4">4 · 分 context</a>
+  <a href="#s5">5 · 谁能当节点</a>
+  <a href="#s6">6 · 治 hub</a>
+  <a href="#s7">7 · 存哪些边</a>
+  <a href="#s8">8 · 怎么验证</a>
+  <div class="grp">附</div>
+  <a href="#roads">试过但放弃的</a>
+  <a href="#flow">全流程</a>
+</nav>
+
+<main>
+<div class="hero">
+  <h1>RETICLE 的连接算法<br>是怎么写的</h1>
+</div>
+<p class="lead">从头到尾讲清楚:我们怎么<b>只用 CRISPR 筛选数据</b>,判断两个基因之间该不该连一条线 —— 不查任何文献、GO、STRING 或数据库。这一页假设你什么都不知道,一步一步来。</p>
+
+<div class="analogy">
+  🔌 <b>先记住一个类比。</b> 每个 CRISPR 筛选就像给细胞做一次"压力测试":逐个敲掉每个基因,看细胞有多受影响。把一个基因敲掉细胞就活不下去 → 这个基因在这次测试里"很重要"。<b>如果两个基因在一次又一次测试里,重要程度总是一起高、一起低,那它们多半在同一条"电路"上 —— 干同一件事。</b> 我们要找的就是这种"同电路"的基因。唯一的讲究:只拿同一类的测试来比。
+</div>
+
+<section id="idea">
+  <div class="one">
+    两个基因之间连一条线 —— 当且仅当:在<b>同一种生物学情境</b>下的一批筛选里,敲掉它们各自造成的影响<b>步调一致地起伏</b>。这个"一致"直接从数据里量出来,不借助任何外部知识。
+  </div>
+</section>
+
+<hr class="hr">
+
+<!-- 1 -->
+<section id="s1">
+  <div class="stepnum">STEP 1</div>
+  <h2>原料:每个「基因 × 筛选」一个数</h2>
+  <p>整个算法只吃一张表 —— <code>harmonized_scores</code>,2820 万行。它把每一次「在某个筛选里敲掉某个基因」压缩成<b>一个数</b>,叫 <b>percentile score</b>,范围 −1 到 +1:</p>
+  <figure>
+    <svg viewBox="0 0 620 96" width="620">
+      <defs><linearGradient id="rul" x1="0" x2="1"><stop offset="0" stop-color="#1F6F8B"/><stop offset="0.5" stop-color="#EDEBE6"/><stop offset="1" stop-color="#C77D31"/></linearGradient></defs>
+      <rect x="30" y="30" width="560" height="18" rx="9" fill="url(#rul)"/>
+      <line x1="310" y1="26" x2="310" y2="52" stroke="#14161A" stroke-width="1.5"/>
+      <text x="30" y="72" font-family="IBM Plex Mono" font-size="12" fill="#1F6F8B">−1</text>
+      <text x="30" y="88" font-family="Noto Sans SC" font-size="11" fill="#6B7280">敲掉→细胞死</text>
+      <text x="30" y="20" font-family="Noto Sans SC" font-size="11.5" fill="#155568" font-weight="600">最必需</text>
+      <text x="286" y="72" font-family="IBM Plex Mono" font-size="12" fill="#6B7280">0</text>
+      <text x="278" y="88" font-family="Noto Sans SC" font-size="11" fill="#6B7280">没影响</text>
+      <text x="560" y="72" font-family="IBM Plex Mono" font-size="12" fill="#C77D31">+1</text>
+      <text x="524" y="88" font-family="Noto Sans SC" font-size="11" fill="#6B7280">敲掉→细胞更旺</text>
+      <text x="512" y="20" font-family="Noto Sans SC" font-size="11.5" fill="#9c5f22" font-weight="600">有利</text>
+    </svg>
+    <figcaption>percentile score:这个基因的敲除效果,在这次筛选的所有基因里排在什么位置(带符号、已在筛选内部归一化)</figcaption>
+  </figure>
+  <p>为什么是"排位"而不是原始数值?因为不同实验室用的打分方法五花八门(MaGeCK、CasTLE、Log2FC…),数值大小根本不能直接比。<b>但"排在最前面 5%"这种相对位置,任何筛选之间都可比。</b>这一步把杂乱的原始分数,统一成了一把公共的尺子。这张表就是我们的<b>唯一真相</b> —— 后面每一步都从它推出来。</p>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="stepnum">STEP 2</div>
+  <h2>基因的「指纹」:它横跨很多筛选的一整行</h2>
+  <p>把这张表想象成一个大网格:<b>行 = 基因,列 = 筛选,格子 = 那个 percentile 数</b>。那么每个基因就是<b>一整行</b> —— 它在几百上千次筛选里各自表现如何。这一行,就是这个基因的<b>行为指纹</b>。</p>
+  <figure>
+    <svg viewBox="0 0 560 210" width="560">
+      <!-- column headers -->
+      <g font-family="IBM Plex Mono" font-size="10.5" fill="#6B7280" text-anchor="middle">
+        <text x="150" y="24">筛1</text><text x="210" y="24">筛2</text><text x="270" y="24">筛3</text><text x="330" y="24">筛4</text><text x="390" y="24">筛5</text><text x="450" y="24">筛6</text>
+      </g>
+      <!-- rows -->
+      <g font-family="IBM Plex Mono" font-size="12">
+        <!-- FANCA highlighted -->
+        <rect x="118" y="34" width="368" height="30" fill="#1F6F8B10" stroke="#1F6F8B" stroke-width="1.5" rx="4"/>
+        <text x="30" y="54" fill="#14161A" font-weight="600">FANCA</text>
+        <g>
+          <rect x="124" y="38" width="52" height="22" rx="3" fill="#1F6F8B"/><rect x="184" y="38" width="52" height="22" rx="3" fill="#8fbccb"/><rect x="244" y="38" width="52" height="22" rx="3" fill="#2f83a0"/><rect x="304" y="38" width="52" height="22" rx="3" fill="#b9d5df"/><rect x="364" y="38" width="52" height="22" rx="3" fill="#3f8ea8"/><rect x="424" y="38" width="52" height="22" rx="3" fill="#a9cbd7"/>
+        </g>
+        <!-- other rows faint -->
+        <text x="30" y="94" fill="#9AA0A6">RPL13</text>
+        <g opacity=".8"><rect x="124" y="78" width="52" height="22" rx="3" fill="#2f83a0"/><rect x="184" y="78" width="52" height="22" rx="3" fill="#3f8ea8"/><rect x="244" y="78" width="52" height="22" rx="3" fill="#2f83a0"/><rect x="304" y="78" width="52" height="22" rx="3" fill="#357f9c"/><rect x="364" y="78" width="52" height="22" rx="3" fill="#2f83a0"/><rect x="424" y="78" width="52" height="22" rx="3" fill="#3f8ea8"/></g>
+        <text x="30" y="134" fill="#9AA0A6">MYC</text>
+        <g opacity=".8"><rect x="124" y="118" width="52" height="22" rx="3" fill="#e7c9a6"/><rect x="184" y="118" width="52" height="22" rx="3" fill="#edebe6"/><rect x="244" y="118" width="52" height="22" rx="3" fill="#d79f5f"/><rect x="304" y="118" width="52" height="22" rx="3" fill="#edebe6"/><rect x="364" y="118" width="52" height="22" rx="3" fill="#e7c9a6"/><rect x="424" y="118" width="52" height="22" rx="3" fill="#edebe6"/></g>
+        <text x="30" y="174" fill="#9AA0A6">…</text>
+        <g opacity=".5"><rect x="124" y="158" width="52" height="22" rx="3" fill="#edebe6"/><rect x="184" y="158" width="52" height="22" rx="3" fill="#c9d9e0"/><rect x="244" y="158" width="52" height="22" rx="3" fill="#edebe6"/><rect x="304" y="158" width="52" height="22" rx="3" fill="#e7c9a6"/><rect x="364" y="158" width="52" height="22" rx="3" fill="#edebe6"/><rect x="424" y="158" width="52" height="22" rx="3" fill="#c9d9e0"/></g>
+      </g>
+      <text x="150" y="200" font-family="Noto Sans SC" font-size="11.5" fill="#1F6F8B">← FANCA 的这一整行 = 它的指纹</text>
+    </svg>
+    <figcaption>蓝 = 敲了就死(必需),橙 = 敲了更旺,浅 = 没影响。一行就是一个基因的指纹</figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="stepnum">STEP 3 · 核心</div>
+  <h2>连接 = 两个基因的指纹「像不像」</h2>
+  <p>这是整个算法的心脏,其实非常朴素:<b>把两个基因的指纹叠在一起,看它们是不是一起起、一起伏。</b>是,就连一条线;不是,就不连。量这个"像不像"的工具,叫<b>相关系数(correlation)</b>,记作 <span class="kbd">r</span>,从 −1 到 +1,越接近 +1 越像。</p>
+
+  <div class="example">
+    <h4>一个真·算得出来的小例子</h4>
+    <p style="margin:6px 0 0">假设在「DNA 损伤」这一类的 5 次筛选里,三个基因的 percentile 是这样(数越负 = 越必需):</p>
+    <table class="mat">
+      <tr><th>基因</th><th>筛1</th><th>筛2</th><th>筛3</th><th>筛4</th><th>筛5</th></tr>
+      <tr><td class="g">FANCA</td><td>−0.9</td><td>−0.3</td><td>−0.8</td><td>−0.2</td><td>−0.7</td></tr>
+      <tr><td class="g">FANCB</td><td>−0.8</td><td>−0.4</td><td>−0.9</td><td>−0.1</td><td>−0.6</td></tr>
+      <tr><td class="g" style="color:var(--faint)">TUBB</td><td>−0.7</td><td>−0.8</td><td>−0.2</td><td>−0.3</td><td>−0.9</td></tr>
+    </table>
+    <p style="margin:6px 0 0;font-size:14.5px">看 <b>FANCA</b> 和 <b>FANCB</b>:筛1、筛3、筛5 一起深深往下掉,筛2、筛4 一起抬起来 —— <b>步调完全一致</b>。而 <b>TUBB</b> 呢?它<b>也常常必需</b>(细胞骨架离不开它),但它的高低起伏走的是<b>自己的节奏</b>,和 FANCA 对不上。</p>
+    <div class="res">→ FANCA — FANCB:<span class="hi">r ≈ +0.94</span> ✅ 连线　　FANCA — TUBB:<span class="lo">r ≈ +0.10</span> ✗ 不连</div>
+  </div>
+
+  <p>这个例子藏着一个<b>关键直觉</b>:相关系数会先<b>减掉每个基因自己的平均水平</b>(叫"中心化"),再问 —— "当 FANCA 比它自己的常态<b>更</b>必需时,FANCB 是不是也比它自己的常态更必需?" 所以:</p>
+  <p style="padding-left:18px;border-left:3px solid var(--line)">TUBB 虽然"也一直很必需",但它<b>按自己的节奏起伏</b>,和 FANCA 的涨落对不上 → 不算连接。<b>"都很必需" ≠ "有连接";要的是"一起变化"。</b>(至于核糖体那种"哪儿都同样必需、几乎不起伏"的 hub 基因,是另一个更麻烦的坑 —— 留到第 6 步。)</p>
+
+  <figure>
+    <svg viewBox="0 0 560 180" width="560">
+      <g font-family="Noto Sans SC" font-size="12">
+        <text x="20" y="20" fill="#1F6F8B" font-weight="600">FANCA 与 FANCB —— 一起起伏(连)</text>
+        <text x="330" y="20" fill="#9AA0A6" font-weight="600">FANCA 与 TUBB —— 对不上(不连)</text>
+      </g>
+      <!-- left: two tracking lines -->
+      <g transform="translate(20,40)">
+        <polyline points="0,90 60,20 120,80 180,10 240,60" fill="none" stroke="#1F6F8B" stroke-width="2.5"/>
+        <polyline points="0,78 60,30 120,92 180,4 240,52" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="1 0"/>
+        <g fill="#1F6F8B"><circle cx="0" cy="90" r="3"/><circle cx="60" cy="20" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="180" cy="10" r="3"/><circle cx="240" cy="60" r="3"/></g>
+        <g fill="#7c3aed"><circle cx="0" cy="78" r="3"/><circle cx="60" cy="30" r="3"/><circle cx="120" cy="92" r="3"/><circle cx="180" cy="4" r="3"/><circle cx="240" cy="52" r="3"/></g>
+      </g>
+      <!-- right: one wiggly one flat -->
+      <g transform="translate(320,40)">
+        <polyline points="0,90 60,20 120,80 180,10 240,60" fill="none" stroke="#1F6F8B" stroke-width="2.5"/>
+        <polyline points="0,67 60,79 120,10 180,21 240,90" fill="none" stroke="#9AA0A6" stroke-width="2.5"/>
+        <g fill="#1F6F8B"><circle cx="0" cy="90" r="3"/><circle cx="60" cy="20" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="180" cy="10" r="3"/><circle cx="240" cy="60" r="3"/></g>
+        <g fill="#9AA0A6"><circle cx="0" cy="67" r="3"/><circle cx="60" cy="79" r="3"/><circle cx="120" cy="10" r="3"/><circle cx="180" cy="21" r="3"/><circle cx="240" cy="90" r="3"/></g>
+      </g>
+    </svg>
+    <figcaption>连线看的是「形状一不一样」,不是「谁高谁低」</figcaption>
+  </figure>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="stepnum">STEP 4</div>
+  <h2>陷阱一:不同「情境」的筛选不能混着比</h2>
+  <div class="prob"><b>问题。</b> 一次"普通增殖"筛选和一次"顺铂(DNA 毒)"筛选,量的是<b>完全不同</b>的生物学。如果把所有筛选一锅端算相关性,会出两种坏事:① 只在特定情境下才有的关系被<b>稀释</b>掉;② 那些"什么情况下都必需"的基因(核糖体之类)因为处处都掉,<b>假装</b>跟谁都相关。</div>
+  <div class="sol"><b>解法:让「情境(context)」成为连接的坐标。</b> 我们先给每个筛选贴标签(<code>build_net_context.py</code>):是增殖类、还是某种压力;如果是药物筛选,就归到它的<b>作用机制桶</b>里(<code>drug_mechanism.py</code>:顺铂、依托泊苷、喜树碱… → 都进「DNA·genotoxic」桶)。然后<b>只在同一个 context 内部算相关性</b>。</div>
+  <p>所以同一对基因,可以在不同 context 里有<b>不同</b>的边 —— "A 和 B 在 DNA 损伤下相关"是一条独立的事实。这就是我们相对 STRING 的根本差异:STRING 给你一条静态的线,我们给你<b>一条带情境的线</b>。</p>
+  <figure>
+    <svg viewBox="0 0 560 150" width="560">
+      <g font-family="IBM Plex Mono" font-size="11" fill="#9AA0A6"><text x="20" y="20">一堆混在一起的筛选:</text></g>
+      <g><circle cx="40" cy="45" r="7" fill="#1F6F8B"/><circle cx="70" cy="52" r="7" fill="#C77D31"/><circle cx="100" cy="42" r="7" fill="#1F6F8B"/><circle cx="130" cy="55" r="7" fill="#C77D31"/><circle cx="160" cy="44" r="7" fill="#7c3aed"/><circle cx="190" cy="50" r="7" fill="#1F6F8B"/><circle cx="220" cy="46" r="7" fill="#C77D31"/></g>
+      <text x="250" y="50" font-family="Noto Sans SC" font-size="20" fill="#9AA0A6">→</text>
+      <!-- bins -->
+      <g font-family="Noto Sans SC" font-size="11.5">
+        <rect x="290" y="26" width="80" height="46" rx="8" fill="#1F6F8B10" stroke="#1F6F8B"/><text x="300" y="20" fill="#1F6F8B">增殖</text>
+        <circle cx="312" cy="49" r="7" fill="#1F6F8B"/><circle cx="335" cy="49" r="7" fill="#1F6F8B"/><circle cx="358" cy="49" r="7" fill="#1F6F8B"/>
+        <rect x="386" y="26" width="90" height="46" rx="8" fill="#C77D3110" stroke="#C77D31"/><text x="396" y="20" fill="#C77D31">DNA 损伤</text>
+        <circle cx="410" cy="49" r="7" fill="#C77D31"/><circle cx="433" cy="49" r="7" fill="#C77D31"/><circle cx="456" cy="49" r="7" fill="#C77D31"/>
+        <rect x="492" y="26" width="56" height="46" rx="8" fill="#7c3aed10" stroke="#7c3aed"/><text x="500" y="20" fill="#7c3aed">…</text>
+        <circle cx="520" cy="49" r="7" fill="#7c3aed"/>
+      </g>
+      <text x="290" y="105" font-family="Noto Sans SC" font-size="13" fill="#3A3D44">先按情境分桶,<tspan fill="#1F6F8B" font-weight="600">在每个桶内部</tspan>各算各的连接。</text>
+      <text x="290" y="128" font-family="Noto Sans SC" font-size="12.5" fill="#6B7280">同一个 FANCD2:在「增殖」里只有 <tspan fill="#3A3D44" font-weight="600">4</tspan> 个互选伙伴;</text>
+      <text x="290" y="146" font-family="Noto Sans SC" font-size="12.5" fill="#6B7280">换到「DNA 损伤」就有 <tspan fill="#1F6F8B" font-weight="600">19</tspan> 个 —— 整个修复模块亮起来。</text>
+    </svg>
+    <figcaption>换个 context,FANCD2 的互选邻居从 4 个变成 19 个的 Fanconi/DNA 修复模块 —— 情境决定了连接</figcaption>
+  </figure>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="stepnum">STEP 5</div>
+  <h2>陷阱二:谁有资格当「节点」</h2>
+  <div class="prob"><b>问题。</b> 一次筛选里,真正"有反应"的基因(hit)只占约 <b>7%</b>,剩下 93% 都挤在中间当噪声。一个<b>从来不是 hit</b> 的基因,它的指纹基本是随机抖动 —— 对它我们没有任何证据,而它那条不稳定的指纹还会和别人假相关,污染整张图。</div>
+  <div class="sol"><b>解法:只有「有信号」的基因才当节点。</b> 一个基因要进入某个 context 的网络,必须在这个 context 里<b>至少当过 5 次 hit</b>。这一刀砍掉了约一半的基因(大多是 lincRNA、未表征的"孤儿"基因),留下的才是真正在这个情境里有戏的。</p></div>
+  <p>这一步看着简单,却是我们踩过坑才学到的:早期版本让所有基因都当节点,结果核糖体基因的"top 伙伴"全是一堆没人研究过的孤儿基因 —— 因为它们的指纹太不稳定,数学上一放大就假装很像。<b>把没信号的基因挡在门外,图立刻就干净了。</b></p>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="stepnum">STEP 6</div>
+  <h2>陷阱三:「万人迷」hub 基因跟谁都像</h2>
+  <div class="prob"><b>问题。</b> 有些基因(核糖体、蛋白酶体)是<b>细胞活着就离不开</b>的。在增殖筛选里它们处处都掉,于是会和<b>一大票</b>不相干的必需基因都算出中等相关 —— 一个核糖体基因可能"连"到蛋白酶体、剪接体…… 把网络糊成一团。</div>
+  <div class="sol"><b>解法:reciprocal-rank(互为首选)。</b> 对每个基因,先取它相关性最高的 top-25 个伙伴。然后规定:一条边只有在<b>「你在我的 top-25 里,同时我也在你的 top-25 里」</b>时,才标记为 <span class="kbd">reciprocal</span>(默认展示的干净视图)。</div>
+  <p>为什么有效?一个 hub 会指向很多人,但那些人各自的"最佳伙伴"是他们<b>自己</b>的复合体成员,轮不到这个 hub —— 所以 hub 那些泛泛的连接<b>不是双向的</b>,被自动筛掉。而真正一对功能伙伴(FANCA↔FANCB)彼此都是对方的首选,双向,留下。<b>全程不查任何外部知识,纯靠数据自己的排名。</b></p>
+  <figure>
+    <svg viewBox="0 0 560 190" width="560">
+      <!-- hub center -->
+      <g font-family="IBM Plex Mono" font-size="11">
+        <circle cx="140" cy="95" r="26" fill="#6B7280" stroke="#3A3D44" stroke-width="2"/><text x="140" y="99" text-anchor="middle" fill="#fff" font-size="10">RPL13</text>
+        <!-- one-directional arrows out (dashed, dropped) -->
+        <g stroke="#C77D31" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)">
+          <line x1="164" y1="80" x2="250" y2="40"/><line x1="166" y1="95" x2="255" y2="95"/><line x1="164" y1="112" x2="250" y2="150"/>
+        </g>
+        <circle cx="262" cy="36" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="262" y="40" text-anchor="middle" fill="#9c5f22" font-size="9">PSMB5</text>
+        <circle cx="268" cy="95" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="268" y="99" text-anchor="middle" fill="#9c5f22" font-size="9">SF3B1</text>
+        <circle cx="262" cy="154" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="262" y="158" text-anchor="middle" fill="#9c5f22" font-size="9">POLR2</text>
+      </g>
+      <!-- reciprocal pair -->
+      <g font-family="IBM Plex Mono" font-size="10">
+        <circle cx="410" cy="70" r="20" fill="#1F6F8B" stroke="#155568" stroke-width="2"/><text x="410" y="74" text-anchor="middle" fill="#fff">FANCA</text>
+        <circle cx="410" cy="150" r="20" fill="#1F6F8B" stroke="#155568" stroke-width="2"/><text x="410" y="154" text-anchor="middle" fill="#fff">FANCB</text>
+        <line x1="410" y1="92" x2="410" y2="128" stroke="#1F6F8B" stroke-width="3.5"/>
+        <text x="422" y="114" fill="#1F6F8B" font-size="15">⇄</text>
+      </g>
+      <defs><marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#C77D31"/></marker></defs>
+      <text x="150" y="185" font-family="Noto Sans SC" font-size="12" fill="#C77D31">虚线 = 单向,hub 泛连 → 丢掉</text>
+      <text x="360" y="185" font-family="Noto Sans SC" font-size="12" fill="#1F6F8B">实线 = 双向互选 → 留下</text>
+    </svg>
+    <figcaption>只有「互为首选」的边算数 —— hub 的泛泛之交筛不进来</figcaption>
+  </figure>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="stepnum">STEP 7</div>
+  <h2>收尾:到底存哪些边</h2>
+  <p>把前面的规矩合起来,对每个基因,在每个 context 里:</p>
+  <div class="mono-note">
+    · 只用<b>全基因组(FULL)</b>筛选 —— 只测了少数 hit 的筛选没法算相关<br>
+    · 相关性至少 <span class="kbd">r ≥ 0.15</span>,且两基因<b>共同被测过 ≥ 20 次</b>(support,防止靠运气拍出的高相关)<br>
+    · 取每个基因的 <b>top-25</b> 伙伴<br>
+    · 存进 <code>net_edge</code>:<span class="kbd">(基因A, 基因B, context, 相关强度, support, reciprocal)</span>
+  </div>
+  <p>注意最后一行:<b>同一对基因可以有多条边</b>,每条挂在不同 context 上。这就是"多重边、情境分辨"的网络 —— 也是网页上你切换 context 时,连线会整个重排的原因。</p>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <div class="stepnum">STEP 8</div>
+  <h2>怎么知道这套是对的?</h2>
+  <p>光算出来还不够 —— 得证明这些线<b>对应真的生物学</b>。我们拿 <b>CORUM</b> 当"标准答案":这是一本人工整理的<b>蛋白复合体</b>名录(哪些基因真的物理上组装在一起干活),2626 个复合体。</p>
+  <div class="sol"><b>检验。</b> 同一个复合体里的基因对,相关性应该<b>系统性地高于</b>不同复合体的基因对。用一个叫 <b>AUROC</b> 的分数衡量:0.5 = 瞎猜,1.0 = 完美。</div>
+  <figure>
+    <svg viewBox="0 0 560 90" width="500">
+      <line x1="30" y1="45" x2="530" y2="45" stroke="#E8E6E1" stroke-width="10" stroke-linecap="round"/>
+      <line x1="30" y1="45" x2="370" y2="45" stroke="#1F6F8B" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="30" cy="45" r="3" fill="#6B7280"/><text x="20" y="30" font-family="IBM Plex Mono" font-size="11" fill="#6B7280">0.5</text><text x="8" y="72" font-family="Noto Sans SC" font-size="10.5" fill="#9AA0A6">瞎猜</text>
+      <circle cx="370" cy="45" r="6" fill="#1F6F8B"/><text x="352" y="30" font-family="IBM Plex Mono" font-size="13" fill="#1F6F8B" font-weight="600">0.68</text><text x="330" y="72" font-family="Noto Sans SC" font-size="10.5" fill="#1F6F8B">我们在这</text>
+      <circle cx="530" cy="45" r="3" fill="#6B7280"/><text x="516" y="30" font-family="IBM Plex Mono" font-size="11" fill="#6B7280">1.0</text><text x="508" y="72" font-family="Noto Sans SC" font-size="10.5" fill="#9AA0A6">完美</text>
+    </svg>
+    <figcaption>AUROC 0.68 —— 明显有真信号(这还是个诚实的下界:CORUM 只收录了一小部分真实关系)</figcaption>
+  </figure>
+  <p>更漂亮的是<b>情境特异性</b>那一枪(这个可以在网页上亲眼验证):同一个 <b>FANCD2</b>,在"普通增殖"context 里只有 <b>4</b> 个互选伙伴;一换到"DNA 损伤"context,就变成 <b>19</b> 个 —— 而且是完整的 Fanconi / DNA 修复模块(FANCA、FANCB、FANCC、FANCE、FANCI、RAD9A、RAD17、XRCC2、ESCO1、HELQ…)。同一对基因在不同情境下连不连、连成什么样,是不一样的。这不是巧合 —— 它正是这套算法存在的理由:<b>关系是有情境的,分对了 context 才看得清。</b></p>
+</section>
+
+<hr class="hr">
+
+<!-- roads not taken -->
+<section id="roads">
+  <div class="roads">
+    <h3>🧭 我们试过、但用数据证伪后放弃的</h3>
+    <p style="color:var(--muted);font-size:14px;margin:2px 0 8px">每一个"更聪明"的想法都实测过。它们都没通过,所以最终算法是<b>简单的那一版</b> —— 这些选择是挣来的,不是拍脑袋。</p>
+    <div class="row"><span class="x">✗</span><div><b>Hit-anchoring(只在 hit 的筛选上算相关)</b> —— 教授的直觉,听着很对。实测 AUROC <b>掉</b> 0.09:稀疏的 hit 让锚点大多是"一边有信号一边没有",反而稀释真信号;而且核心必需基因被卡在极端值上,没了方差,相关性塌成噪声。</div></div>
+    <div class="row"><span class="x">✗</span><div><b>CLR / 主成分去噪(hub 控制的"高级"做法)</b> —— 全基因组一跑就崩:它把边灌给了背景极低的孤儿基因,把真复合体伙伴反而挤下去。<b>简单的 reciprocal-rank 才是对的。</b></div></div>
+    <div class="row"><span class="x">✗</span><div><b>拿 STRING 验证</b> —— STRING 本身是靠文献 + 共现建的。用"文献网络"去验证"纯 CRISPR 网络",验证环就脏了。所以我们只用 <b>CORUM 复合体(生化事实)</b>当答案。</div></div>
+  </div>
+</section>
+
+<!-- flow -->
+<section id="flow">
+  <h2>全流程,一张图</h2>
+  <figure>
+    <svg viewBox="0 0 560 340" width="440">
+      <g font-family="Noto Sans SC" font-size="13">
+        <g><rect x="150" y="10" width="260" height="40" rx="9" fill="#fff" stroke="#E8E6E1"/><text x="280" y="30" text-anchor="middle" fill="#14161A" font-weight="600">harmonized_scores</text><text x="280" y="45" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#6B7280">2820万行 · 每格一个 percentile</text></g>
+        <line x1="280" y1="50" x2="280" y2="66" stroke="#9AA0A6" stroke-width="1.5" marker-end="url(#a2)"/>
+        <g><rect x="150" y="68" width="260" height="38" rx="9" fill="#1F6F8B10" stroke="#1F6F8B"/><text x="280" y="92" text-anchor="middle" fill="#155568" font-weight="600">① 按 context 分桶</text></g>
+        <line x1="280" y1="106" x2="280" y2="122" stroke="#9AA0A6" stroke-width="1.5" marker-end="url(#a2)"/>
+        <g><rect x="150" y="124" width="260" height="38" rx="9" fill="#1F6F8B10" stroke="#1F6F8B"/><text x="280" y="148" text-anchor="middle" fill="#155568" font-weight="600">② 只留 hit-active 基因当节点</text></g>
+        <line x1="280" y1="162" x2="280" y2="178" stroke="#9AA0A6" stroke-width="1.5" marker-end="url(#a2)"/>
+        <g><rect x="150" y="180" width="260" height="38" rx="9" fill="#1F6F8B10" stroke="#1F6F8B"/><text x="280" y="204" text-anchor="middle" fill="#155568" font-weight="600">③ 算指纹相关性 r</text></g>
+        <line x1="280" y1="218" x2="280" y2="234" stroke="#9AA0A6" stroke-width="1.5" marker-end="url(#a2)"/>
+        <g><rect x="150" y="236" width="260" height="38" rx="9" fill="#1F6F8B10" stroke="#1F6F8B"/><text x="280" y="260" text-anchor="middle" fill="#155568" font-weight="600">④ top-25 + support + reciprocal</text></g>
+        <line x1="280" y1="274" x2="280" y2="290" stroke="#9AA0A6" stroke-width="1.5" marker-end="url(#a2)"/>
+        <g><rect x="150" y="292" width="260" height="40" rx="9" fill="#14161A"/><text x="280" y="312" text-anchor="middle" fill="#fff" font-weight="600">net_edge — 情境分辨的基因网络</text><text x="280" y="327" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#C7CBD1">CORUM 验证 AUROC 0.68</text></g>
+      </g>
+      <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,0 L4,7 L8,0" fill="none" stroke="#9AA0A6" stroke-width="1.5"/></marker></defs>
+    </svg>
+    <figcaption>从一张 2820 万行的表,到一张能查询、能按情境切换的基因网络</figcaption>
+  </figure>
+  <p style="text-align:center;color:var(--muted);font-size:14px">对应代码:<code>drug_mechanism.py</code> · <code>build_net_context.py</code> · <code>compute_coessential.py</code> · <code>validate_complexes.py</code></p>
+</section>
+
+<div class="foot">RETICLE · 纯 BioGRID CRISPR 共必需性网络 · 无 STRING / 无文献 / 情境分辨 · 本页为算法说明</div>
+</main>
+</div>
+
+<script>
+const links=[...document.querySelectorAll('nav a')];
+const secs=links.map(a=>document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href').slice(1)===e.target.id));}});},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

@@ -33,7 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import paths
-from llm_client import WashULLMClient, _extract_json_block
+from llm_client import MODEL_BEST, WashULLMClient, _extract_json_block
 
 NEEDS_LLM_CSV = paths.PROCESSED_DATA / "facets_needs_llm.csv"
 OUT_PATH = paths.PROCESSED_DATA / "condition_facets_llm.json"
@@ -141,7 +141,7 @@ def status_of(dec):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="gpt-4o")
+    ap.add_argument("--model", default=MODEL_BEST)
     ap.add_argument("--limit", type=int, default=0, help="只处理前 N 个(冒烟测试)")
     ap.add_argument("--dry-run", action="store_true", help="打印一个 prompt,不调用")
     args = ap.parse_args()
@@ -179,9 +179,9 @@ def main():
             {"role": "user", "content": build_prompt(sid, bio)},
         ]
         try:
-            resp = client.complete(messages, temperature=0, max_tokens=350,
+            resp = client.complete(messages, max_tokens=350,
                                     response_format={"type": "json_object"})
-            raw = resp["choices"][0]["message"]["content"]
+            raw = client.text_of(resp)
             dec = parse(raw)
         except Exception as e:
             print(f"  ! screen {sid} LLM error: {e}")

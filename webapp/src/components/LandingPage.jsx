@@ -32,7 +32,7 @@ const FEATURES = [
   },
 ];
 
-export default function LandingPage({ onStart, onExplore }) {
+export default function LandingPage({ onStart, onExplore, onWiki }) {
   const [hovered, setHovered] = useState(null);
 
   const navBtn = {
@@ -57,6 +57,7 @@ export default function LandingPage({ onStart, onExplore }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onExplore} style={navBtn}>Gene Explorer</button>
+          <button onClick={onWiki} style={navBtn}>Gene Wiki</button>
           <button style={navBtn}>Documentation</button>
           <button
             onClick={onStart}

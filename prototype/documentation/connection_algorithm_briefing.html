@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETICLE Co-essentiality Network</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});"></script>
+<style>
+:root{
+  --paper:#FCFCFB;--ink:#14161A;--ink2:#3A3D44;--muted:#6B7280;--faint:#9AA0A6;
+  --line:#E2E0DA;--line2:#EFEDE8;--card:#FFFFFF;
+  --know:#1F6F8B;--eviq:#C77D31;--pred:#7C5CBF;--bad:#B4483C;
+  --know-soft:#1F6F8B12;--eviq-soft:#C77D3112;--pred-soft:#7C5CBF12;--bad-soft:#B4483C10;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"SF Mono",ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:14.5px}
+main{max-width:840px;margin:0 auto;padding:44px 56px 90px}
+a{color:var(--know)}
+code{font-family:var(--mono);font-size:.87em;background:var(--line2);padding:1.5px 6px;border-radius:5px;color:#155568}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--know);font-weight:600}
+h1{font-family:var(--serif);font-weight:700;font-size:31px;margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:15px;max-width:66ch;margin:0 0 4px}
+.tldr{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:2px;padding:16px 20px;margin:20px 0 8px;font-size:14.5px}
+.tldr b.k{color:var(--know)}
+
+h2{font-family:var(--serif);font-weight:700;font-size:20px;margin:34px 0 4px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);page-break-after:avoid}
+h3{font-family:var(--sans);font-weight:700;font-size:14.5px;margin:20px 0 4px;color:var(--ink);page-break-after:avoid}
+p{margin:9px 0}
+.step{margin:22px 0}
+.step-lab{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:700;color:#fff;background:var(--ink);padding:2px 9px;border-radius:3px;margin-bottom:7px}
+
+/* math block */
+.math{background:var(--know-soft);border:1px solid #1F6F8B30;border-radius:8px;padding:16px 20px;margin:12px 0;overflow-x:auto;page-break-inside:avoid}
+.math .katex-display{margin:2px 0}
+.math .katex{font-size:1.06em}
+.math .note{font-family:var(--sans);font-size:12.5px;color:var(--ink2);margin-top:10px;padding-top:9px;border-top:1px dashed #1F6F8B30}
+
+/* glossary term chip, inline */
+.term{border-bottom:1.5px dotted var(--pred);cursor:default}
+.gloss{background:var(--pred-soft);border:1px solid #7C5CBF30;border-radius:8px;padding:5px 14px;margin:10px 0;font-size:13px}
+.gloss b{color:var(--pred)}
+
+.prob,.sol{border-radius:6px;padding:10px 16px;margin:10px 0;font-size:13.8px}
+.prob{background:var(--eviq-soft);border-left:3px solid var(--eviq)}
+.prob b{color:var(--eviq)}
+.sol{background:var(--know-soft);border-left:3px solid var(--know)}
+.sol b{color:var(--know)}
+
+figure{margin:16px 0;text-align:center;page-break-inside:avoid}
+figcaption{font-size:12px;color:var(--muted);margin-top:7px;font-style:italic}
+svg{max-width:100%;height:auto}
+
+.example{border:1px dashed var(--line);border-radius:8px;padding:14px 18px;margin:14px 0;background:var(--card);page-break-inside:avoid}
+.example h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pred)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+table.mat{width:auto;margin:10px auto;font-family:var(--mono)}
+th,td{border:1px solid var(--line);padding:6px 11px;text-align:left}
+th{background:var(--line2);font-weight:700;color:var(--ink2);font-size:12px}
+table.mat th,table.mat td{text-align:center}
+td.g{font-weight:700;background:var(--line2)}
+.res{font-family:var(--mono);font-size:13px;margin-top:8px}
+.res .hi{color:var(--know);font-weight:700}.res .lo{color:var(--faint)}
+
+.roads .row{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.roads .row:first-child{border-top:0}
+.x{color:var(--bad);font-weight:800;font-family:var(--mono);flex:0 0 16px}
+
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 13px;text-align:center}
+.stat b{display:block;font-size:19px;font-family:var(--mono);color:var(--know)}
+.stat span{font-size:11px;color:var(--muted)}
+
+table.gloss-t{font-size:12.8px}
+table.gloss-t td:first-child{font-family:var(--mono);font-weight:700;white-space:nowrap;color:var(--pred)}
+.foot{color:var(--faint);font-family:var(--mono);font-size:10.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
+
+@media print{
+  main{max-width:100%;padding:0 8mm}
+  a{color:inherit;text-decoration:none}
+  .example,figure,.math,.gloss,.prob,.sol,.statgrid{page-break-inside:avoid}
+  h2{page-break-before:auto}
+}
+</style>
+</head>
+<body>
+<main>
+
+<div class="kicker">Internal pre-read</div>
+<h1>RETICLE Co-essentiality Network</h1>
+<p class="sub">A gene–gene functional network built <b>purely from BioGRID CRISPR screens</b> — no literature, no GO, no STRING. This version spells out the actual math at every step and defines every acronym on first use, so it should be readable with a biology background alone, no prior exposure to this pipeline needed.</p>
+
+<div class="tldr">Two genes are connected when knocking each one out perturbs cells the <b class="k">same way</b> across BioGRID's ~1,700 published CRISPR screens, pooled together. Every number below is computed by a short, <b class="k">fully deterministic</b> pipeline (fixed-seed only, no LLM at compute time) straight from one table of screen measurements. Validated by recovery of independently-known protein complexes (CORUM), which it does <b class="k">better</b> than any single screen-type alone.</p>
+
+<hr>
+
+<!-- ================= 1 ================= -->
+<section class="step">
+<h2>1 · The data — one harmonized table</h2>
+<p>The only upstream data source is <span class="term">BioGRID ORCS</span>, a public archive of published CRISPR screen results. Different labs score their screens with different statistics — <code>MaGeCK</code>, <code>CasTLE</code>, <code>Log2FC</code>, <code>STARS</code> — whose raw numbers aren't on the same scale and can't be compared directly. RETICLE's harmonization layer (<code>harmonize_scores.py</code>, upstream of this document) fixes that by converting every score to a <b>rank within its own screen</b>:</p>
+<div class="math">
+  \[ \text{PERCENTILE\_SCORE}(g,s) \;=\; \frac{2\,\operatorname{rank}(g,s)}{\operatorname{max\_rank}(s)} \;-\; 1 \]
+  <div class="note">where <code>rank(g,s)</code> is gene <i>g</i>'s rank (average rank if tied) among all genes with a valid score in screen <i>s</i>, 0-indexed. This maps every screen onto the same <b>[−1, +1]</b> scale regardless of the original statistic — only relative position within a screen matters, never the raw magnitude.</div>
+</div>
+<figure>
+<svg viewBox="0 0 620 92" width="560">
+  <defs><linearGradient id="rul" x1="0" x2="1"><stop offset="0" stop-color="#1F6F8B"/><stop offset="0.5" stop-color="#EDEBE6"/><stop offset="1" stop-color="#C77D31"/></linearGradient></defs>
+  <rect x="30" y="26" width="560" height="16" rx="8" fill="url(#rul)"/>
+  <line x1="310" y1="22" x2="310" y2="46" stroke="#14161A" stroke-width="1.3"/>
+  <text x="30" y="65" font-family="SF Mono, monospace" font-size="12" fill="#1F6F8B">−1</text>
+  <text x="30" y="80" font-family="-apple-system" font-size="10.5" fill="#6B7280">knockout kills the cell (essential)</text>
+  <text x="278" y="65" font-family="SF Mono, monospace" font-size="12" fill="#6B7280">0</text>
+  <text x="255" y="80" font-family="-apple-system" font-size="10.5" fill="#6B7280">no effect</text>
+  <text x="560" y="65" font-family="SF Mono, monospace" font-size="12" fill="#C77D31">+1</text>
+  <text x="470" y="80" font-family="-apple-system" font-size="10.5" fill="#6B7280">knockout helps the cell grow</text>
+</svg>
+<figcaption>PERCENTILE_SCORE: a gene's rank position within one screen, mapped to [−1,+1]</figcaption>
+</figure>
+<div class="gloss"><b>hit / <code>IS_HIT</code></b> — a 0/1 flag the original screen's authors assigned: 1 means <i>they</i> judged this gene's effect to be statistically significant in their own analysis (their own p-value/FDR cutoff), not something RETICLE computes. Across the whole dataset, hits are rare: <b>6.7%</b> of all (gene, screen) pairs. The other 93% is the "noisy middle" — small, inconsistent effects.</div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="step">
+<h2>2 · A gene's "fingerprint"</h2>
+<p>Lay the data out as a grid — rows = genes, columns = screens, each cell = that gene's <code>PERCENTILE_SCORE</code> in that screen. One gene's <b>entire row</b> — its scores across every screen it was measured in — is its <b>fingerprint</b>: a numeric summary of how that gene behaves under many different perturbations.</p>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="step">
+<h2>3 · The core rule — connection = fingerprints that co-vary</h2>
+<p>Two genes are connected when their fingerprints <b>rise and fall together</b>. The tool for measuring "rise and fall together" is the <span class="term">Pearson correlation coefficient</span>, <code>r</code> — a standard statistic, not something specific to this project:</p>
+<div class="math">
+  \[ r(i,j) \;=\; \frac{\displaystyle\sum_{s}\,(x_{i,s}-\bar{x}_i)\,(x_{j,s}-\bar{x}_j)}{\sqrt{\displaystyle\sum_{s}(x_{i,s}-\bar{x}_i)^2 \;\cdot\; \sum_{s}(x_{j,s}-\bar{x}_j)^2}} \]
+  <div class="note">\(x_{i,s}\) = gene <i>i</i>'s PERCENTILE_SCORE in screen <i>s</i>; \(\bar{x}_i\) = gene <i>i</i>'s own average across the screens being compared. <code>r</code> ranges −1 (perfectly opposite) to +1 (perfectly together); 0 = no relationship. <b>Implementation note:</b> a gene isn't measured in every screen, so missing entries are filled with that gene's own mean \(\bar{x}_i\) before the sums are taken — a value equal to the mean contributes exactly zero to the \((x-\bar{x})\) terms, so an unmeasured screen simply drops out of the comparison rather than pulling the correlation either way.</div>
+</div>
+<p>Subtracting each gene's own average (<b>centering</b>) is what makes this work: the question becomes <i>"when gene A is more essential than ITS OWN typical level, is gene B also more essential than ITS OWN typical level?"</i> — not "are both genes essential." That distinction matters:</p>
+
+<div class="example">
+<h4>Worked example</h4>
+<p style="margin:2px 0 8px">Percentile scores across 5 screens (more negative = more essential in that screen):</p>
+<table class="mat">
+<tr><th>gene</th><th>screen 1</th><th>screen 2</th><th>screen 3</th><th>screen 4</th><th>screen 5</th></tr>
+<tr><td class="g">FANCA</td><td>−0.9</td><td>−0.3</td><td>−0.8</td><td>−0.2</td><td>−0.7</td></tr>
+<tr><td class="g">FANCB</td><td>−0.8</td><td>−0.4</td><td>−0.9</td><td>−0.1</td><td>−0.6</td></tr>
+<tr><td class="g" style="color:var(--faint)">TUBB</td><td>−0.7</td><td>−0.8</td><td>−0.2</td><td>−0.3</td><td>−0.9</td></tr>
+</table>
+<p style="margin:6px 0 0;font-size:13.5px">FANCA and FANCB dip and rise <b>on the same screens</b> (1,3,5 down · 2,4 up). TUBB is <i>also</i> essential on average (cells need their cytoskeleton), but it dips and rises on <b>different screens</b> — a real gene, just not correlated with FANCA here.</p>
+<div class="res">r(FANCA, FANCB) = <span class="hi">+0.94</span> → edge kept &nbsp;&nbsp;&nbsp; r(FANCA, TUBB) = <span class="lo">+0.10</span> → no edge</div>
+</div>
+
+<figure>
+<svg viewBox="0 0 560 180" width="520">
+<g font-family="-apple-system" font-size="12">
+<text x="20" y="20" fill="#1F6F8B" font-weight="700">FANCA &amp; FANCB — track together (edge)</text>
+<text x="330" y="20" fill="#9AA0A6" font-weight="700">FANCA &amp; TUBB — don't track (no edge)</text>
+</g>
+<g transform="translate(20,40)">
+<polyline points="0,90 60,20 120,80 180,10 240,60" fill="none" stroke="#1F6F8B" stroke-width="2.5"/>
+<polyline points="0,78 60,30 120,92 180,4 240,52" fill="none" stroke="#7c3aed" stroke-width="2.5"/>
+<g fill="#1F6F8B"><circle cx="0" cy="90" r="3"/><circle cx="60" cy="20" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="180" cy="10" r="3"/><circle cx="240" cy="60" r="3"/></g>
+<g fill="#7c3aed"><circle cx="0" cy="78" r="3"/><circle cx="60" cy="30" r="3"/><circle cx="120" cy="92" r="3"/><circle cx="180" cy="4" r="3"/><circle cx="240" cy="52" r="3"/></g>
+</g>
+<g transform="translate(320,40)">
+<polyline points="0,90 60,20 120,80 180,10 240,60" fill="none" stroke="#1F6F8B" stroke-width="2.5"/>
+<polyline points="0,67 60,79 120,10 180,21 240,90" fill="none" stroke="#9AA0A6" stroke-width="2.5"/>
+<g fill="#1F6F8B"><circle cx="0" cy="90" r="3"/><circle cx="60" cy="20" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="180" cy="10" r="3"/><circle cx="240" cy="60" r="3"/></g>
+<g fill="#9AA0A6"><circle cx="0" cy="67" r="3"/><circle cx="60" cy="79" r="3"/><circle cx="120" cy="10" r="3"/><circle cx="180" cy="21" r="3"/><circle cx="240" cy="90" r="3"/></g>
+</g>
+</svg>
+<figcaption>the correlation compares <i>shape</i> (which screens spike), not <i>overall level</i></figcaption>
+</figure>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="step">
+<h2>4 · Pooling every screen (and what that trades off)</h2>
+<p>We compute one correlation per gene pair over <b>every</b> FULL screen at once — all ~1,700 human screens, spanning fitness, stress, drug-response and reporter assays. This is the standard co-essentiality approach (e.g. DepMap): more screens = more statistical power, and constitutive complexes (ribosome, proteasome, spliceosome…) surface regardless of what any single screen happened to be measuring. On the CORUM benchmark (§9) the pooled network scores <b>higher</b> than any single screen-type computed on its own.</p>
+<div class="prob"><b>The honest tradeoff.</b> Pooling answers <i>"are these genes constitutive partners?"</i> It deliberately <b>averages away</b> relationships that exist only under one condition — on a hand-checked set of pairs that are strong under DNA-damage yet flat in plain fitness, computing edges within a single context recovered roughly <b>2× more</b> of them than the pool. So this version is the <b>constitutive backbone</b>; a context-resolved layer (edges recomputed within one assay type or drug mechanism) is a deliberate future add-on, noted in §<i>Status</i>.</div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="step">
+<h2>5 · Pitfall #1 — which genes even qualify as nodes</h2>
+<div class="prob"><b>Problem.</b> Only ~6.7% of (gene, screen) rows are hits. A gene <i>never</i> called a hit has a flat, noisy fingerprint — no evidence it does anything. And a gene measured in only a handful of screens gives an unstable correlation (its normalization rests on too few points). Both can spuriously correlate with anything.</div>
+<div class="sol"><b>Fix — two floors.</b> A gene is a node only if it was a hit in ≥ 5 screens <b>and</b> was measured in ≥ 100 screens:</div>
+<div class="math">\[ \sum_{s} \text{IS\_HIT}(g,s) \;\ge\; 5 \qquad\text{and}\qquad \#\{\, s : g \text{ measured in } s \,\} \;\ge\; 100 \]</div>
+<p>The hit floor drops genes with no phenotype anywhere (mostly lincRNA / uncharacterized); the measurement floor drops sparsely-measured genes whose correlation would be unstable. Together they leave ~19,000 well-evidenced genes. (Pooling helps here too: the median node is now measured in ~1,380 of the ~1,700 screens, so almost every gene clears the floor comfortably.)</p>
+</section>
+
+<!-- ================= 6 ================= -->
+<section class="step">
+<h2>6 · Pitfall #2 — "hub" genes that correlate with everyone</h2>
+<div class="prob"><b>Problem.</b> Pan-essential genes (ribosome, proteasome subunits) drop out in nearly every proliferation screen, so they end up moderately correlated with a large number of unrelated essential genes — smearing the graph into one big blob.</div>
+<div class="sol"><b>Fix — reciprocal-rank.</b> For gene <i>i</i>, define its <b>top-25</b> as the 25 partners with the highest <code>r(i,j)</code>, subject to two floors:</div>
+<div class="math">
+  \[ \begin{aligned}
+  \text{top25}(i) \;&=\; \bigl\{\, j \;:\; r(i,j)\ \text{among the 25 largest},\ \ r(i,j)\ge 0.15,\ \ \text{support}(i,j)\ge 20 \,\bigr\} \\[2pt]
+  \text{reciprocal}(i,j) \;&=\; 1 \quad\Longleftrightarrow\quad j \in \text{top25}(i)\ \ \wedge\ \ i \in \text{top25}(j)
+  \end{aligned} \]
+  <div class="note">\(\text{support}(i,j)\) = number of screens where <i>both</i> genes have a PERCENTILE_SCORE; it guards against a high correlation computed over too few shared screens (noise). An edge with only \(j\in\text{top25}(i)\) but not the reverse is kept in the data, just flagged non-reciprocal.</div>
+</div>
+<p>Why this works: a hub points to many genes, but <i>those genes'</i> own top-25 is dominated by their real, specific complex-mates — the hub rarely makes it back into their list. A true functional pair (FANCA↔FANCB) is each other's best match in both directions and survives. This uses no external annotation — only the ranking that falls out of the data itself.</p>
+<figure>
+<svg viewBox="0 0 560 222" width="520">
+<g font-family="SF Mono, monospace" font-size="11">
+<circle cx="140" cy="95" r="26" fill="#6B7280" stroke="#3A3D44" stroke-width="2"/><text x="140" y="99" text-anchor="middle" fill="#fff" font-size="10">RPL13</text>
+<g stroke="#C77D31" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)">
+<line x1="164" y1="80" x2="250" y2="40"/><line x1="166" y1="95" x2="255" y2="95"/><line x1="164" y1="112" x2="250" y2="150"/>
+</g>
+<circle cx="262" cy="36" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="262" y="40" text-anchor="middle" fill="#9c5f22" font-size="9">PSMB5</text>
+<circle cx="268" cy="95" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="268" y="99" text-anchor="middle" fill="#9c5f22" font-size="9">SF3B1</text>
+<circle cx="262" cy="154" r="16" fill="#C77D3120" stroke="#C77D31"/><text x="262" y="158" text-anchor="middle" fill="#9c5f22" font-size="9">POLR2</text>
+</g>
+<g font-family="SF Mono, monospace" font-size="10">
+<circle cx="410" cy="70" r="20" fill="#1F6F8B" stroke="#155568" stroke-width="2"/><text x="410" y="74" text-anchor="middle" fill="#fff">FANCA</text>
+<circle cx="410" cy="150" r="20" fill="#1F6F8B" stroke="#155568" stroke-width="2"/><text x="410" y="154" text-anchor="middle" fill="#fff">FANCB</text>
+<line x1="410" y1="92" x2="410" y2="128" stroke="#1F6F8B" stroke-width="3.5"/>
+<text x="422" y="114" fill="#1F6F8B" font-size="15">⇄</text>
+</g>
+<defs><marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#C77D31"/></marker></defs>
+<text x="280" y="192" text-anchor="middle" font-family="-apple-system" font-size="12" fill="#C77D31">dashed = one-directional, hub's non-specific reach → dropped</text>
+<text x="280" y="212" text-anchor="middle" font-family="-apple-system" font-size="12" fill="#1F6F8B">solid = mutual top-25 → kept</text>
+</svg>
+<figcaption>only mutually-preferred edges survive as the default "reciprocal" view</figcaption>
+</figure>
+</section>
+
+<!-- ================= 7 ================= -->
+<section class="step">
+<h2>7 · The noise threshold, and what gets stored</h2>
+<div class="prob"><b>Problem.</b> Pure noise still produces a correlation, of typical size <span class="katex-inline">\(|r|\approx 1/\sqrt{\#\text{screens}}\)</span>. Picking a cutoff by eye is arbitrary — set it too low and the edge list fills with coincidences (this bites hardest when few screens are pooled).</div>
+<div class="sol"><b>Fix — a shuffle null.</b> We build a null by shuffling values <i>among each screen's measured genes</i> (destroys cross-screen co-movement, preserves every gene's coverage/support and each screen's distribution — the correlation you'd see from noise alone), then raise the threshold to the lowest r at which the reciprocal-edge FDR — (null edges above the cut) / (real edges above the cut) — drops to ≤ 5%. Over the full ~1,700-screen pool the noise floor is tiny (<span class="katex-inline">\(\approx 0.024\)</span>), so the threshold lands just above the 0.15 floor, at <b>r ≥ 0.16</b>. The shuffle uses a fixed seed → reproducible. (The fewer screens you pool, the more this matters — it's what would keep a future per-context layer honest.)</div>
+<p>Restricting to genome-wide (<span class="term"><code>FULL</code></span>) screens — where every gene got a score, unlike <span class="term"><code>HIT_ONLY</code></span> screens that only report hits and can't support a correlation — each surviving edge is written to <code>net_edge</code> with columns <code>(gene_a, gene_b, r, support, reciprocal)</code>.</p>
+</section>
+
+<hr>
+
+<!-- ================= rejected ================= -->
+<section class="step">
+<h2>8 · Design choices tested and rejected</h2>
+<p style="color:var(--muted);font-size:13px">Every "smarter" alternative below was measured against the CORUM benchmark (§9) before this method was chosen — the simple version won on the numbers, not by default.</p>
+<div class="roads">
+<div class="row"><span class="x">✗</span><div><b>Hit-anchoring</b> (correlate only over screens where at least one gene is a hit) — AUROC dropped 0.07–0.10. With hits this sparse, the "anchor" screens are mostly one-gene-hit / other-gene-mid, which dilutes rather than sharpens the signal; core-essential pairs also lose variance once restricted to their most extreme screens.</div></div>
+<div class="row"><span class="x">✗</span><div><b>CLR / top-PC removal</b> (the standard DepMap-style hub correction — normalize each gene's correlations against a background distribution) — hurts AUROC genome-wide: it inflates correlations to low-background "loner" genes (uncharacterized genes with almost no true partners) and demotes real complex-mates. Reciprocal-rank on the raw correlation outperforms it here.</div></div>
+</div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section class="step">
+<h2>9 · Validation</h2>
+<div class="gloss"><b><span class="term">CORUM</span></b> — a manually-curated public database of experimentally-verified human protein complexes (i.e. which proteins physically assemble together to do a job). It is <b>independent</b> of this pipeline and not derived from literature co-occurrence the way STRING is, so it's a clean ground truth to test against.</div>
+<p><b>Question:</b> do gene pairs from the <i>same</i> CORUM complex get a higher correlation than pairs from <i>different</i> complexes? Measured with <span class="term">AUROC</span> (Area Under the ROC Curve):</p>
+<div class="math">
+  \[ \text{AUROC} \;=\; P\bigl(\, r(\text{same-complex pair}) \,>\, r(\text{different-complex pair}) \,\bigr) \]
+  <div class="note">0.5 = the two groups are indistinguishable (chance); 1.0 = every same-complex pair outranks every different-complex pair.</div>
+</div>
+<div class="statgrid">
+  <div class="stat"><b>0.717</b><span>CORUM AUROC (pooled)</span></div>
+  <div class="stat"><b>2,626</b><span>CORUM complexes tested (3–60 subunits)</span></div>
+  <div class="stat"><b>7.2M</b><span>gene pairs scored</span></div>
+  <div class="stat"><b>18,999</b><span>genes in the network</span></div>
+</div>
+<p style="font-size:13px;color:var(--muted)">Comfortably above the 0.5 chance line, and <i>higher</i> than any single screen-type computed alone (fitness-only 0.684, DNA-damage-only 0.661) — pooling wins for constitutive complexes. Honestly a floor, too: CORUM documents only a fraction of all real functional relationships, so some "false positives" here are likely true, just uncatalogued.</p>
+
+<h3>Clean recovery of known complexes</h3>
+<p>Each hub gene's strongest reciprocal partners land squarely in its real complex:</p>
+<table>
+<tr><td><b>RPL13</b> (ribosome)</td><td>RPL3, RPL7, RPL11, RPL4, RPL34, IMP3 — all ribosomal</td></tr>
+<tr><td><b>PSMB5</b> (proteasome)</td><td>PSMB4, PSMA5, UFD1 — proteasome / ubiquitin</td></tr>
+<tr><td><b>MED1</b> (Mediator)</td><td>MED9, MED7</td></tr>
+<tr><td><b>FANCD2</b> (Fanconi anemia)</td><td>FANCA, FANCB, FANCC, FANCE, FANCL, UBE2T — the Fanconi core</td></tr>
+</table>
+<p>Pooling ~1,700 <i>diverse</i> screens gives enough resolving power to <b>separate</b> ribosome from proteasome — two machines that co-drop together in any single fitness screen and blur into one blob there.</p>
+</section>
+
+<!-- ================= principles ================= -->
+<section class="step">
+<h2>10 · Design principles</h2>
+<p><b>Pure CRISPR.</b> No PubMed, no <span class="term">GO</span> (Gene Ontology — a standard functional-annotation database), no <span class="term">STRING</span> (a widely-used protein network built substantially from literature co-occurrence and database annotation) enters edge computation. This is the deliberate point of differentiation from literature-derived networks, and it's also why CORUM (biochemistry, not literature attention) is the right validation set.</p>
+<p><b>Constitutive by design.</b> Edges are pooled across all ~1,700 screens — this surfaces genes that partner <i>constitutively</i> and gives the most statistical power. Relationships specific to a single condition are intentionally averaged out here; recovering them is the job of the planned context-resolved add-on layer.</p>
+<p><b>Observations are truth; edges are derived.</b> Nothing is stored that can't be recomputed from the raw <code>harmonized_scores</code> table with full provenance back to specific screens.</p>
+<p><b>Deterministic and auditable.</b> No LLM anywhere in edge computation; the only randomness is a <b>fixed-seed</b> permutation used to set the noise threshold — so identical input still produces byte-identical output, and every edge traces to specific <code>(screen, gene, percentile)</code> rows.</p>
+</section>
+
+<hr>
+<section class="step">
+<h2>Status &amp; what's next</h2>
+<table>
+<tr><th>Network</th><td><code>all</code> (pooled): 1,745 FULL human screens · 18,999 nodes · 445,617 edges (17,337 reciprocal), threshold r≥0.16</td></tr>
+<tr><th>Interface</th><td>interactive web viewer — search a gene, reciprocal-only filter, click to recenter</td></tr>
+<tr><th>Scope</th><td>human only (v1)</td></tr>
+</table>
+<p style="font-size:13.5px"><b>Next:</b> add a co-hit channel (Fisher's exact test) for <code>HIT_ONLY</code> screens, which have no denominator for a correlation; and a <b>context-resolved layer</b> — edges recomputed within one assay type or drug mechanism — to recover the condition-specific relationships the pool averages out (§4).</p>
+</section>
+
+<section class="step">
+<h3>Glossary — every non-obvious term used above</h3>
+<table class="gloss-t">
+<tr><td>BioGRID / ORCS</td><td>Public archive of published CRISPR screen datasets — the sole upstream data source.</td></tr>
+<tr><td>Screen</td><td>One CRISPR knockout experiment: every gene knocked out (or a large subset), effect on cells measured.</td></tr>
+<tr><td>MaGeCK / CasTLE / Log2FC / STARS</td><td>Different statistical methods labs use to score a screen; not comparable across labs on raw scale, hence the rank-based PERCENTILE_SCORE.</td></tr>
+<tr><td>Hit / <code>IS_HIT</code></td><td>The original screen authors' own call that a gene's effect was significant — inherited from the source data, not computed by me.</td></tr>
+<tr><td><code>FULL</code> vs <code>HIT_ONLY</code> screen</td><td><code>FULL</code> = every gene got a score (needed for correlation); <code>HIT_ONLY</code> = only significant hits were reported, no non-hit baseline.</td></tr>
+<tr><td>Pearson correlation (r)</td><td>Standard statistic for how closely two numeric sequences move together, from −1 to +1.</td></tr>
+<tr><td>Support</td><td>Number of screens where both genes in a pair were actually measured together.</td></tr>
+<tr><td>Reciprocal-rank</td><td>An edge kept only when each gene is among the other's top correlated partners — the hub-control mechanism.</td></tr>
+<tr><td>CORUM</td><td>Curated database of experimentally-verified protein complexes, used only for validation, never for building edges.</td></tr>
+<tr><td>AUROC</td><td>Area Under the ROC Curve — probability a random true pair scores higher than a random false pair; 0.5 = chance, 1.0 = perfect.</td></tr>
+<tr><td>GO (Gene Ontology)</td><td>A standard controlled vocabulary / database of gene functions, curated substantially from literature.</td></tr>
+<tr><td>STRING</td><td>A widely-used gene/protein network built from literature co-occurrence, databases, and experiments combined — the "literature-based" comparison point for this project.</td></tr>
+<tr><td>FDR</td><td>False Discovery Rate — a statistical correction applied when testing many hypotheses (e.g. many gene pairs) at once, to control spurious findings.</td></tr>
+</table>
+</section>
+
+<div class="foot">RETICLE · pure-BioGRID-CRISPR co-essentiality network · no STRING / no literature / context-resolved · code: drug_mechanism.py · build_net_context.py · compute_coessential.py · validate_complexes.py</div>
+</main>
+</body>
+</html>
