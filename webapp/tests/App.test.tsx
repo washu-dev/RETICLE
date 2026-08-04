@@ -42,13 +42,12 @@ describe("App (signed in)", () => {
     mock.state.account = signedInAccount;
   });
 
-  // The home page leads with a gene search rather than a headline and a "Launch app" button —
-  // everyone reaching it has already signed in and arrives holding either a symbol or a list.
-  // These assertions follow that, and are written against the two entry points rather than the
-  // copy around them, so a wording change does not read as a regression.
+  // The home page is now one box: a mode chip (gene | screen), a "+" for a ranked gene list, and
+  // a type-ahead. These target the CONTROLS — role, label, placeholder — rather than the sentence
+  // around them, so re-wording the page does not read as a regression.
   it("renders without crashing", async () => {
     render(<App />);
-    await screen.findByPlaceholderText(/gene symbol/i);
+    await screen.findByRole("textbox");
   });
 
   it("shows RETICLE branding on the home page", async () => {
@@ -60,31 +59,34 @@ describe("App (signed in)", () => {
     expect(marks.length).toBeGreaterThan(0);
   });
 
-  it("offers the gene-list route as well as the gene search", async () => {
+  it("offers both search modes from the chip", async () => {
     render(<App />);
-    expect(await screen.findByText(/Analyse a ranked gene list/i)).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { expanded: false }));
+    const items = await screen.findAllByRole("menuitem");
+    // Matched on the leading label, not the accessible name: each item's name also carries its
+    // blurb, and the Gene blurb ends "...what the screens say", which /Screen/i happily matches.
+    expect(items.map((i) => i.textContent?.split(/(?=[A-Z][a-z]+ )/)[0])).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^Gene/), expect.stringMatching(/^Screen/)]),
+    );
   });
 
   it("navigates into a sub-flow and back via the sticky Home control", async () => {
     render(<App />);
-    // Enter a sub-flow from the home page.
-    fireEvent.click(await screen.findByText(/Analyse a ranked gene list/i));
+    // The "+" is the ranked-gene-list route.
+    fireEvent.click(await screen.findByLabelText(/Analyse a ranked gene list/i));
     // The sticky Home control is only shown off the home page.
     fireEvent.click(await screen.findByText("Home"));
-    // Home returns us to the main page.
-    expect(await screen.findByPlaceholderText(/gene symbol/i)).toBeTruthy();
+    expect(await screen.findByRole("textbox")).toBeTruthy();
   });
 
   it("carries a typed gene into the wiki instead of making the user retype it", async () => {
     render(<App />);
-    const box = await screen.findByPlaceholderText(/gene symbol/i);
+    const box = await screen.findByRole("textbox");
     fireEvent.change(box, { target: { value: "FANCD2" } });
-    fireEvent.click(screen.getByText(/Open gene wiki/i));
-    // Leaving the home page is the observable part here; the vendored bundle owns what happens
-    // next and does not run under jsdom.
-    await waitFor(() =>
-      expect(screen.queryByPlaceholderText(/gene symbol/i)).toBeNull(),
-    );
+    fireEvent.click(screen.getByLabelText("Search"));
+    // Leaving the home page is the observable part; the vendored bundle owns what happens next
+    // and does not run under jsdom.
+    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
   });
 });
 

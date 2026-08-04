@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { API_BASE_URL } from '../../config/env';
 import {
   ensureEditorialFonts,
   EDITORIAL_TOKENS,
@@ -6,333 +7,368 @@ import {
 } from './editorialTheme_aaron';
 
 /**
- * The signed-in home.
+ * The signed-in home: one box, and nothing else.
  *
- * WHAT IT REPLACED AND WHY. The previous home led with a headline, a pair of buttons and a row of
- * round-number statistics — the shape a marketing page takes. But nobody reaching this screen needs
- * to be sold the product: they already signed in. They arrive holding one of exactly two things,
- * a gene symbol or a ranked list from their own screen, and the old page made both of them click
- * into a feature and search AGAIN once they got there.
+ * WHAT IT REPLACED. First a marketing-shaped page — headline, buttons, four round numbers — aimed
+ * at someone who had already signed in. Then a version of this that led with a gene search but
+ * still carried a statistics rule and four destination cards under it. Both were answering a
+ * question nobody arriving here is asking. A researcher reaching this screen holds exactly one of
+ * three things: a gene symbol, a screen they remember, or a ranked list from their own bench. So
+ * the page is the box that takes all three, and the destinations are reached by using it.
  *
- * So the search box IS the hero. Type FANCD2, press return, land in the gene wiki. The gene wiki
- * therefore gets no card of its own — it is the primary action — and the four cards are the other
- * four places to be. That is also why there is no "Launch app" button: this IS the app.
+ *   the mode chip     gene | screen — which index the box searches
+ *   the + button      the third case: bring a ranked gene list of your own
+ *   the type-ahead    what makes the box worth having, see below
  *
- * Every number on this page was counted, not estimated. Sources are named beside each one.
+ * THE TYPE-AHEAD IS THE POINT. Typing "PO" answers POLR2A, POLR2B, POLR2E, POLD1 — not POC1A and
+ * POC1B-DUSP6, which is what alphabetical order gives and what makes most gene boxes useless.
+ * That ranking took two signals and a build step; script/build_gene_search.py carries the
+ * reasoning and the measurements. Screens are matched on what people remember them by — cell line,
+ * drug, phenotype, first author — with the punctuation BioGRID writes and nobody types ("K562"
+ * against a stored "K-562") normalised away.
  */
 
-/* Counted 2026-08-04 against the shipped corpus, not rounded for effect:
-     2,157   distinct SCREEN_ID in harmonized_scores
-    28.2M    rows in harmonized_scores (28,237,649)
-   109,412   edges in net_edge, context 'all' (5,269 genes, 9,905 of them mutual-best)
-     46.4%   CORUM same-complex precision of the top evidence tier, against a 0.615% baseline —
-             script/exp_evidence_tiers.py */
-const STATS = [
-  { n: '2,157', k: 'CRISPR screens harmonized' },
-  { n: '28.2M', k: 'gene–screen measurements' },
-  { n: '109,412', k: 'co-essentiality edges' },
-  { n: '46.4%', k: 'top-tier edges recover a known complex' },
-];
+type Mode = 'gene' | 'screen';
+type Organism = 'human' | 'mouse';
 
-type Dest = { key: string; tab?: 'screen' | 'network'; title: string; body: string; note: string; accent: string };
+interface GeneHit { symbol: string; name: string; matched: string | null; n_hits: number }
+interface ScreenHit {
+  screen_id: string; cell_line: string; condition: string;
+  phenotype: string; author: string; n_hits: number;
+}
+type Hit = GeneHit | ScreenHit;
 
-const DESTS: Dest[] = [
-  {
-    key: 'network',
-    tab: 'network',
-    title: 'Network',
-    body:
-      'A gene’s co-essential partners, every edge graded on two independent channels — profile ' +
-      'correlation across all screens, and co-hit enrichment across only the screens where both ' +
-      'genes were called hits. Then ask the network for a function the gene is not annotated with.',
-    note: 'Top-tier edges recover a known CORUM complex 46.4% of the time · 0.6% for a random pair',
-    accent: 'var(--know)',
-  },
-  {
-    key: 'screens',
-    tab: 'screen',
-    title: 'Screens',
-    body:
-      'Start from one screen instead of one gene: find the screens whose hit sets most resemble ' +
-      'it, with the overlap and the study behind each one.',
-    note: '1,952 screens with curated cell line, modality and condition',
-    accent: 'var(--eviq)',
-  },
-  {
-    key: 'upload',
-    title: 'Analyse a gene list',
-    body:
-      'Bring a ranked list from your own screen. It is cross-referenced against the whole corpus ' +
-      'to separate what is already known from what nobody has looked at yet.',
-    note: 'Directionality-aware · dark-matter prioritised',
-    accent: 'var(--pred)',
-  },
-  {
-    key: 'explorer',
-    title: 'Explorer',
-    body:
-      'The interactive single-gene view: perturbation footprint, context breakdown and an inline ' +
-      'association graph you can pull on.',
-    note: 'Companion to the gene wiki',
-    // ink, not muted: a grey marker beside three coloured ones reads as "disabled", and this is a
-    // working page. It is neutral because it carries no evidence class, not because it is lesser.
-    accent: 'var(--ink2)',
-  },
-];
+const isGene = (h: Hit): h is GeneHit => 'symbol' in h;
 
 const CSS = `
 .rxhome{
   ${EDITORIAL_TOKENS}
   min-height:100vh; background:${PAPER_GROUND};
   color:var(--ink); font-family:var(--sans); line-height:1.5;
+  display:flex; flex-direction:column;
 }
 .rxhome *{box-sizing:border-box}
-.rxhome .bar{
-  display:flex; align-items:center; gap:14px; padding:14px clamp(20px,4vw,44px);
-  border-bottom:1px solid var(--line); background:#FFFFFFcc; backdrop-filter:blur(8px);
-  position:sticky; top:0; z-index:5;
+.rxhome .stage{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:24px clamp(20px,5vw,48px) 96px; gap:26px;
 }
-.rxhome .mark{font-family:var(--serif); font-weight:500; font-size:21px; letter-spacing:-.01em}
+.rxhome .mark{
+  font-family:var(--serif); font-weight:500; font-size:clamp(34px,5vw,46px); letter-spacing:-.02em;
+  margin:0; color:var(--ink);
+}
 .rxhome .mark b{color:var(--know); font-weight:600}
-.rxhome .beta{
-  font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
-  color:var(--faint); margin-left:8px; vertical-align:3px;
+.rxhome .mark span{
+  font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--faint); margin-left:11px; vertical-align:9px;
 }
-.rxhome .grow{flex:1}
-.rxhome .ghost{
-  font-family:var(--sans); font-size:12.5px; color:var(--muted); background:transparent;
-  border:1px solid var(--line); border-radius:9px; padding:7px 13px; cursor:pointer; transition:.16s;
-}
-.rxhome .ghost:hover{border-color:var(--know); color:var(--know)}
 
-.rxhome .wrap{max-width:1080px; margin:0 auto; padding:0 clamp(20px,4vw,44px)}
-
-/* ── hero ─────────────────────────────────────────────────────────────── */
-.rxhome .hero{padding:clamp(56px,8vw,96px) 0 clamp(30px,4vw,44px)}
-/* 19ch, not 15: at 15 the line broke as "Two thousand / screens, one gene at a / time." and left
-   "time." alone on its own line. Two lines, no orphan. */
-.rxhome h1{
-  font-family:var(--serif); font-weight:400; letter-spacing:-.022em; line-height:1.06;
-  font-size:clamp(34px,5.4vw,58px); margin:0 0 16px; max-width:19ch;
-}
-.rxhome h1 em{font-style:normal; color:var(--know)}
-.rxhome .sub{font-size:15px; color:var(--ink2); max-width:56ch; margin:0 0 30px; line-height:1.62}
-
-/* the search IS the hero — an instrument field, not a marketing input */
-.rxhome form{
-  display:flex; align-items:center; gap:10px; max-width:560px;
-  border:1px solid var(--line); border-radius:14px; background:var(--card); padding:5px 5px 5px 16px;
+/* ── the box ─────────────────────────────────────────────────────────── */
+.rxhome .boxwrap{position:relative; width:100%; max-width:660px}
+.rxhome .box{
+  display:flex; align-items:center; gap:8px; padding:7px 7px 7px 8px;
+  border:1px solid var(--line); border-radius:16px; background:var(--card);
+  box-shadow:0 1px 2px #14161A08, 0 10px 34px -20px #14161A29;
   transition:border-color .18s, box-shadow .18s;
 }
-.rxhome form:focus-within{border-color:var(--know); box-shadow:0 0 0 4px var(--know-soft)}
-.rxhome form input{
+.rxhome .boxwrap.open .box{border-radius:16px 16px 0 0}
+.rxhome .box:focus-within{border-color:var(--know); box-shadow:0 0 0 4px var(--know-soft)}
+.rxhome .plus{
+  flex:0 0 auto; width:34px; height:34px; border-radius:10px; border:1px solid transparent;
+  background:transparent; color:var(--muted); font-size:19px; line-height:1; cursor:pointer;
+  transition:.15s;
+}
+.rxhome .plus:hover{background:var(--line2); color:var(--ink); border-color:var(--line)}
+.rxhome .box input{
   flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink);
-  font-family:var(--mono); font-size:16px; letter-spacing:.02em; padding:12px 0;
+  font-family:var(--mono); font-size:15.5px; letter-spacing:.015em; padding:10px 4px;
 }
-.rxhome form input::placeholder{font-family:var(--sans); letter-spacing:0; color:var(--faint)}
-.rxhome form button{
-  flex:0 0 auto; border:0; border-radius:10px; background:var(--ink); color:#fff;
-  font-family:var(--sans); font-size:13.5px; font-weight:500; padding:11px 18px; cursor:pointer;
-  transition:background .16s;
+.rxhome .box input::placeholder{font-family:var(--sans); letter-spacing:0; color:var(--faint)}
+.rxhome .chip{
+  flex:0 0 auto; display:flex; align-items:center; gap:6px; cursor:pointer;
+  border:1px solid var(--line); border-radius:11px; background:var(--paper);
+  font-family:var(--sans); font-size:12.5px; color:var(--ink2); padding:7px 11px; transition:.15s;
 }
-.rxhome form button:hover{background:var(--know)}
-.rxhome .org{display:flex; align-items:center; gap:7px; margin:13px 0 0}
-.rxhome .org button{
+.rxhome .chip:hover{border-color:var(--know); color:var(--know)}
+.rxhome .chip i{font-style:normal; font-size:9px; color:var(--faint)}
+.rxhome .send{
+  flex:0 0 auto; width:36px; height:36px; border:0; border-radius:11px; cursor:pointer;
+  background:var(--ink); color:#fff; font-size:15px; transition:background .16s;
+}
+.rxhome .send:hover{background:var(--know)}
+.rxhome .send:disabled{background:var(--line); color:var(--faint); cursor:default}
+
+/* ── the mode menu ───────────────────────────────────────────────────── */
+.rxhome .menu{
+  position:absolute; right:52px; top:calc(100% + 6px); z-index:20; min-width:210px;
+  background:var(--card); border:1px solid var(--line); border-radius:13px; padding:5px;
+  box-shadow:0 16px 42px -18px #14161A3d;
+}
+.rxhome .menu button{
+  display:block; width:100%; text-align:left; border:0; background:none; cursor:pointer;
+  border-radius:9px; padding:9px 11px; font-family:var(--sans); font-size:13px; color:var(--ink);
+}
+.rxhome .menu button:hover{background:var(--line2)}
+.rxhome .menu button.on{background:var(--know-soft); color:var(--know); font-weight:500}
+.rxhome .menu button small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:2px}
+.rxhome .menu button.on small{color:var(--know); opacity:.75}
+
+/* ── suggestions ─────────────────────────────────────────────────────── */
+.rxhome .drop{
+  position:absolute; left:0; right:0; top:100%; z-index:15;
+  background:var(--card); border:1px solid var(--know); border-top:0;
+  border-radius:0 0 16px 16px; overflow:hidden;
+  box-shadow:0 18px 44px -22px #14161A3d;
+}
+.rxhome .drop .row{
+  display:flex; align-items:baseline; gap:10px; width:100%; text-align:left;
+  border:0; background:none; cursor:pointer; padding:10px 15px; font-family:inherit;
+  border-top:1px solid var(--line2);
+}
+.rxhome .drop .row:first-child{border-top:0}
+.rxhome .drop .row.sel{background:var(--know-soft)}
+.rxhome .drop .row b{
+  font-family:var(--mono); font-size:13.5px; font-weight:500; color:var(--ink); flex:0 0 auto;
+}
+.rxhome .drop .row .why{font-family:var(--mono); font-size:10px; color:var(--eviq); flex:0 0 auto}
+.rxhome .drop .row span{
+  font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.rxhome .drop .row em{
+  font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--faint);
+  margin-left:auto; flex:0 0 auto; padding-left:10px;
+}
+.rxhome .hint{
+  font-size:12.5px; color:var(--muted); text-align:center; margin:0;
+}
+.rxhome .hint button{
+  border:0; background:none; padding:0; cursor:pointer; color:var(--know); font:inherit;
+  text-decoration:underline; text-underline-offset:3px;
+}
+.rxhome .hint button:hover{color:var(--ink)}
+.rxhome .orgs{display:flex; gap:7px; justify-content:center}
+.rxhome .orgs button{
   font-family:var(--sans); font-size:12px; padding:4px 12px; border-radius:16px;
   border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; transition:.15s;
 }
-.rxhome .org button.on{background:var(--ink); border-color:var(--ink); color:#fff; font-weight:500}
-.rxhome .alt{font-size:13.5px; color:var(--muted); margin:24px 0 0}
-.rxhome .alt button{
-  border:0; background:none; padding:0; cursor:pointer; color:var(--know);
-  font-family:inherit; font-size:inherit; text-decoration:underline; text-underline-offset:3px;
-}
-.rxhome .alt button:hover{color:var(--ink)}
-
-/* ── the counted rule ─────────────────────────────────────────────────── */
-.rxhome .stats{
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:clamp(34px,5vw,56px);
-}
-.rxhome .stat{padding:22px 0 20px; border-left:1px solid var(--line2)}
-.rxhome .stat:first-child{border-left:0}
-.rxhome .stat:not(:first-child){padding-left:22px}
-.rxhome .stat b{
-  display:block; font-family:var(--mono); font-size:23px; font-weight:500; color:var(--ink);
-  letter-spacing:-.01em;
-}
-.rxhome .stat span{display:block; font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45}
-
-/* ── destinations ─────────────────────────────────────────────────────── */
-.rxhome .eyebrow{
-  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--faint); margin:clamp(48px,6vw,72px) 0 18px;
-}
-/* 380px min, so four cards land as 2x2 rather than 3+1 — a lone card on its own row reads as an
-   afterthought, and the extra width gives each description a sane measure instead of five words
-   per line. */
-.rxhome .grid{
-  display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
-  padding-bottom:clamp(56px,8vw,96px);
-}
-.rxhome .dest{
-  text-align:left; background:var(--card); border:1px solid var(--line); border-radius:15px;
-  padding:22px 22px 20px; cursor:pointer; font-family:inherit;
-  display:flex; flex-direction:column; gap:9px;
-  transition:border-color .18s, transform .18s, box-shadow .18s;
-}
-.rxhome .dest:hover{
-  border-color:var(--know); transform:translateY(-2px);
-  box-shadow:0 10px 30px -16px #14161A2e;
-}
-.rxhome .dest:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
-.rxhome .dest h3{
-  font-family:var(--serif); font-weight:500; font-size:19px; margin:0; letter-spacing:-.01em;
-  display:flex; align-items:center; gap:9px;
-}
-.rxhome .dest h3 i{
-  width:7px; height:7px; border-radius:2px; flex:0 0 auto; font-style:normal; margin-top:1px;
-}
-.rxhome .dest h3 span{margin-left:auto; color:var(--faint); font-family:var(--sans); font-size:15px;
-  transition:transform .18s, color .18s}
-.rxhome .dest:hover h3 span{transform:translateX(3px); color:var(--know)}
-.rxhome .dest p{font-size:13px; color:var(--ink2); line-height:1.6; margin:0}
-.rxhome .dest .note{
-  font-family:var(--mono); font-size:10.5px; color:var(--muted); line-height:1.5;
-  margin-top:auto; padding-top:11px; border-top:1px solid var(--line2);
-}
+.rxhome .orgs button.on{background:var(--ink); border-color:var(--ink); color:#fff; font-weight:500}
 .rxhome .foot{
-  border-top:1px solid var(--line); padding:16px clamp(20px,4vw,44px);
-  font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--faint);
-  background:var(--card);
+  flex:0 0 auto; padding:14px clamp(20px,5vw,48px); text-align:center;
+  font-family:var(--mono); font-size:10px; letter-spacing:.05em; color:var(--faint);
 }
-/* Below ~560px the button and the field fight for the same row and the field loses — the
-   placeholder was clipped to "gene symbol — e.g" with the input a few characters wide. Stack them:
-   the search is this page's whole point and it does not get to be the thing that breaks first. */
+.rxhome .foot button{
+  border:0; background:none; padding:0; cursor:pointer; font:inherit; color:var(--faint);
+  text-decoration:underline; text-underline-offset:3px;
+}
+.rxhome .foot button:hover{color:var(--know)}
 @media(max-width:560px){
-  .rxhome form{flex-direction:column; align-items:stretch; padding:6px; gap:6px}
-  .rxhome form input{padding:12px 10px}
-  .rxhome form button{width:100%; padding:12px 18px}
-  /* The divider and indent separate stats sitting SIDE BY SIDE. Once they stack they become a
-     stray rule down the left and a hanging indent on everything but the first. */
-  .rxhome .stat{border-left:0; padding:16px 0 14px; border-top:1px solid var(--line2)}
-  .rxhome .stat:first-child{border-top:0}
-  .rxhome .stat:not(:first-child){padding-left:0}
+  .rxhome .chip span{display:none}
+  .rxhome .menu{right:8px; left:8px}
 }
 @media(prefers-reduced-motion:reduce){.rxhome *{transition:none!important}}
 `;
 
-// No sign-out control here on purpose: StickyControls already floats Home + Logout over every
-// authenticated screen, and a second one on this page would be the same action twice.
+const MODES: { key: Mode; label: string; blurb: string; placeholder: string }[] = [
+  { key: 'gene', label: 'Gene', blurb: 'Everything on record, plus what the screens say',
+    placeholder: 'Search a gene — try PO' },
+  { key: 'screen', label: 'Screen', blurb: 'Find a screen by cell line, drug or author',
+    placeholder: 'Search a screen — cell line, drug, author or id' },
+];
+
 export default function HomeLanding_aaron({
   onOpenGene,
-  onOpenTab,
+  onOpenScreen,
   onStart,
   onExplore,
 }: {
-  onOpenGene: (gene: string, organism: 'human' | 'mouse') => void;
-  onOpenTab: (tab: 'gene' | 'screen' | 'network') => void;
+  onOpenGene: (gene: string, organism: Organism) => void;
+  onOpenScreen: (screenId: string) => void;
   onStart: () => void;
+  /** The Explorer has no card and no mode — stripping the page to one box left it with nowhere to
+   *  be. It keeps a footer link rather than being dropped: it is a working page someone else owns,
+   *  and quietly making it unreachable is not the same decision as retiring it. */
   onExplore: () => void;
 }) {
-  const [gene, setGene] = useState('');
-  const [organism, setOrganism] = useState<'human' | 'mouse'>('human');
+  const [mode, setMode] = useState<Mode>('gene');
+  const [organism, setOrganism] = useState<Organism>('human');
+  const [q, setQ] = useState('');
+  const [hits, setHits] = useState<Hit[]>([]);
+  const [sel, setSel] = useState(0);
+  const [menu, setMenu] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   ensureEditorialFonts();
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const sym = gene.trim();
-    // An empty box opens the wiki anyway rather than doing nothing — a dead-feeling button on the
-    // one control this page is built around is worse than landing a step early.
-    if (sym) onOpenGene(sym, organism);
-    else onOpenTab('gene');
+  const meta = MODES.find((m) => m.key === mode)!;
+
+  /* Every keystroke stamps its request. Suggestions come back out of order often enough on a slow
+     link that without this the list can settle on the answer to a prefix the user has already
+     typed past. */
+  const reqRef = useRef(0);
+  useEffect(() => {
+    const term = q.trim();
+    if (!term) { setHits([]); return; }
+    const req = ++reqRef.current;
+    const t = setTimeout(() => {
+      const path = mode === 'gene' ? 'gene_suggest' : 'screen_suggest';
+      fetch(`${API_BASE_URL}/api/${path}?q=${encodeURIComponent(term)}&organism=${organism}&limit=8`)
+        .then((r) => r.json())
+        .then((d) => { if (req === reqRef.current) { setHits(d.items || []); setSel(0); } })
+        .catch(() => { if (req === reqRef.current) setHits([]); });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [q, mode, organism]);
+
+  // Close the mode menu on an outside click. The suggestion list is left alone — it closes when
+  // the query empties or something is chosen, which is what a person expects from a search box.
+  useEffect(() => {
+    if (!menu) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setMenu(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [menu]);
+
+  const choose = useCallback((h: Hit) => {
+    setHits([]);
+    if (isGene(h)) { setQ(h.symbol); onOpenGene(h.symbol, organism); }
+    else { setQ(h.screen_id); onOpenScreen(h.screen_id); }
+  }, [organism, onOpenGene, onOpenScreen]);
+
+  const submit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    // Enter with the list open takes the highlighted row; otherwise it takes the box verbatim, so
+    // someone who knows the exact symbol never has to wait for a suggestion to catch up.
+    if (hits.length && hits[sel]) return choose(hits[sel]);
+    const term = q.trim();
+    if (!term) return;
+    if (mode === 'gene') onOpenGene(term, organism);
+    else onOpenScreen(term.replace(/\D/g, ''));
   };
 
-  const go = (d: Dest) => {
-    if (d.tab) onOpenTab(d.tab);
-    else if (d.key === 'upload') onStart();
-    else onExplore();
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!hits.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSel((s) => (s + 1) % hits.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSel((s) => (s - 1 + hits.length) % hits.length); }
+    else if (e.key === 'Escape') { setHits([]); }
   };
 
   return (
     <div className="rxhome">
       <style>{CSS}</style>
 
-      <div className="bar">
-        <span className="mark">
-          RETI<b>C</b>LE<span className="beta">beta</span>
-        </span>
-        <div className="grow" />
-      </div>
+      <div className="stage">
+        <h1 className="mark">RETI<b>C</b>LE<span>beta</span></h1>
 
-      <div className="wrap">
-        <section className="hero">
-          <h1>Two thousand screens, <em>one gene at a time</em>.</h1>
-          <p className="sub">
-            Every published CRISPR screen we could harmonize, in one place — so a gene nobody has
-            written a paper about still has evidence you can read.
-          </p>
+        <div className={`boxwrap${hits.length ? ' open' : ''}`} ref={wrapRef}>
+          <form className="box" onSubmit={submit}>
+            <button
+              type="button"
+              className="plus"
+              onClick={onStart}
+              title="Analyse a ranked gene list from your own screen"
+              aria-label="Analyse a ranked gene list"
+            >+</button>
 
-          <form onSubmit={submit}>
             <input
-              value={gene}
-              onChange={(e) => setGene(e.target.value)}
-              placeholder="gene symbol — e.g. FANCD2"
-              aria-label="Gene symbol"
+              ref={inputRef}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={onKey}
+              placeholder={meta.placeholder}
+              aria-label={meta.placeholder}
               autoComplete="off"
               spellCheck={false}
+              autoFocus
             />
-            <button type="submit">Open gene wiki →</button>
+
+            <button
+              type="button"
+              className="chip"
+              onClick={() => setMenu((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={menu}
+            >
+              <span>{meta.label}</span><i>▾</i>
+            </button>
+
+            <button className="send" type="submit" disabled={!q.trim()} aria-label="Search">→</button>
           </form>
 
-          <div className="org">
-            {(['human', 'mouse'] as const).map((o) => (
-              <button
-                key={o}
-                className={o === organism ? 'on' : ''}
-                onClick={() => setOrganism(o)}
-                aria-pressed={o === organism}
-              >
-                {o === 'human' ? 'Human' : 'Mouse'}
-              </button>
-            ))}
-          </div>
-
-          <p className="alt">
-            Working from a screen result instead?{' '}
-            <button onClick={onStart}>Analyse a ranked gene list →</button>
-          </p>
-        </section>
-
-        <div className="stats">
-          {STATS.map((s) => (
-            <div className="stat" key={s.k}>
-              <b>{s.n}</b>
-              <span>{s.k}</span>
+          {menu && (
+            <div className="menu" role="menu">
+              {MODES.map((m) => (
+                <button
+                  key={m.key}
+                  role="menuitem"
+                  className={m.key === mode ? 'on' : ''}
+                  onClick={() => { setMode(m.key); setMenu(false); setHits([]); inputRef.current?.focus(); }}
+                >
+                  {m.label}
+                  <small>{m.blurb}</small>
+                </button>
+              ))}
             </div>
+          )}
+
+          {!!hits.length && (
+            <div className="drop" role="listbox">
+              {hits.map((h, i) => (
+                <button
+                  key={isGene(h) ? h.symbol : h.screen_id}
+                  role="option"
+                  aria-selected={i === sel}
+                  className={`row${i === sel ? ' sel' : ''}`}
+                  onMouseEnter={() => setSel(i)}
+                  onClick={() => choose(h)}
+                >
+                  {isGene(h) ? (
+                    <>
+                      <b>{h.symbol}</b>
+                      {/* Say WHY a row is here when the reason is not the text they typed. */}
+                      {h.matched && <span className="why">via {h.matched}</span>}
+                      <span>{h.name}</span>
+                      {h.n_hits > 0 && <em>{h.n_hits.toLocaleString()} screens</em>}
+                    </>
+                  ) : (
+                    <>
+                      <b>{h.screen_id}</b>
+                      <span>
+                        {[h.cell_line, h.condition || h.phenotype, h.author]
+                          .filter(Boolean).join(' · ')}
+                      </span>
+                      {h.n_hits > 0 && <em>{Number(h.n_hits).toLocaleString()} hits</em>}
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Shown in BOTH modes. Screens are species-specific too — 1,952 human against 205 mouse —
+            and both suggesters filter on it, so hiding the control in screen mode meant someone who
+            had picked Mouse kept searching mouse screens with nothing on screen saying so. */}
+        <div className="orgs">
+          {(['human', 'mouse'] as const).map((o) => (
+            <button
+              key={o}
+              className={o === organism ? 'on' : ''}
+              onClick={() => setOrganism(o)}
+              aria-pressed={o === organism}
+            >{o === 'human' ? 'Human' : 'Mouse'}</button>
           ))}
         </div>
 
-        <div className="eyebrow">Where to go</div>
-        <div className="grid">
-          {DESTS.map((d) => (
-            <button className="dest" key={d.key} onClick={() => go(d)}>
-              <h3>
-                <i style={{ background: d.accent }} />
-                {d.title}
-                <span aria-hidden="true">→</span>
-              </h3>
-              <p>{d.body}</p>
-              <div className="note">{d.note}</div>
-            </button>
-          ))}
-        </div>
+        <p className="hint">
+          or <button onClick={onStart}>bring a ranked gene list from your own screen →</button>
+        </p>
       </div>
 
       <div className="foot">
-        WashU DI² · Weidenbaum / IFNγ Macrophage Program · pure BioGRID ORCS CRISPR data — no
-        literature mining
+        2,157 harmonized CRISPR screens · pure BioGRID ORCS — no literature mining ·{' '}
+        <button onClick={onExplore}>Explorer</button>
       </div>
     </div>
   );

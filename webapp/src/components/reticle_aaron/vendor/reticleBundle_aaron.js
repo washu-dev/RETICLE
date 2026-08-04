@@ -1943,12 +1943,12 @@ export function mountReticle(host, apiBase, opts) {
   /* Drive the page that is mounted to a specific gene. Used by the cross-page links above and by
      the host app, which lets the signed-in home page hand a symbol straight to the wiki instead of
      making the user type it a second time on arrival.
-     Each page names its own entry point: the wiki calls it lookup(), the network calls it jump().
-     Both take a symbol. load() is last and only as a fallback — it takes no argument on the network
-     page, so preferring it would land on the previous gene. */
+     Which entry point each page exposes is spelled out at the call below. */
   function openGene(sym, organism) {
     if (!sym) return;
-    const box = byId(root, 'q');
+    // The wiki and network pages name their box #q; the screen page names its own #qs. Fill
+    // whichever is present so the value the host handed over is visible, not just acted on.
+    const box = byId(root, 'q') || byId(root, 'qs');
     if (box) box.value = sym;
     /* The wiki reads its species from a #tax select at call time, so setting it before lookup() is
        what makes a mouse symbol resolve as mouse. The network page instead keeps species in a
@@ -1960,7 +1960,11 @@ export function mountReticle(host, apiBase, opts) {
       const tax = byId(root, 'tax');
       if (tax) tax.value = organism === 'mouse' ? '10090' : '9606';
     }
-    const go = window.lookup || window.jump || window.load;
+    // Each page names its own entry point and only one of these exists at a time: the wiki has
+    // lookup(), the network has jump(), the screen page has findSimilar(). All three take the
+    // thing the box holds. load() is last and only as a fallback — it takes no argument on the
+    // network page, so preferring it would land on the previous gene.
+    const go = window.lookup || window.jump || window.findSimilar || window.load;
     if (typeof go === 'function') { try { go(sym); } catch (err) { /* page shows its own error */ } }
   }
 

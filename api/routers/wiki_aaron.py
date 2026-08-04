@@ -7,6 +7,8 @@ distinct Gene-Wiki page and are kept apart so the two workstreams do not collide
 Like explorer.py, responses keep the prototype's payload shape verbatim (snake_case) so the ported
 frontend consumes them unchanged.
 
+  GET /api/gene_suggest              — type-ahead over gene symbols and their retired aliases
+  GET /api/screen_suggest            — type-ahead over screens by cell line, drug, author or id
   GET /api/gene_wiki                 — the full knowledge-base record for one gene
   GET /api/gene_screen_distribution  — where the gene sits inside a screen's own distribution
   GET /api/gene_predictions          — guilt-by-association GO predictions (deterministic, no LLM)
@@ -23,7 +25,9 @@ from services.gene_wiki_aaron import (
     get_gene_predictions,
     get_gene_screen_distribution,
     get_gene_structure,
+    get_gene_suggest,
     get_gene_wiki,
+    get_screen_suggest,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,6 +55,52 @@ def _validate_symbol(symbol: str) -> str:
 
 def _validate_taxid(taxid: int) -> int:
     return taxid if taxid in _TAXIDS else 9606
+
+
+# Deliberately looser than _SYMBOL_RE: this fires on every keystroke of a partial word, and a
+# rejected prefix would make the box feel broken mid-type. Anything outside the set is dropped
+# rather than refused, so the query is always something safe and the user always gets an answer.
+_SUGGEST_STRIP = re.compile(r"[^A-Za-z0-9 ._@:+/-]")
+
+
+def _suggest_query(q: str) -> str:
+    return _SUGGEST_STRIP.sub("", q or "").strip()[:40]
+
+
+@router.get("/gene_suggest")
+async def gene_suggest(
+    q: str = Query("", max_length=64),
+    taxid: int = Query(9606),
+    organism: str | None = Query(None, max_length=8),
+    limit: int = Query(8, ge=1, le=25),
+) -> Any:
+    """Type-ahead for the search box's gene mode.
+
+    Always 200, never 404: an empty list is the right answer to a prefix nothing matches yet, and
+    the caller is a box the user is still typing into.
+    """
+    if organism == "mouse":
+        taxid = 10090
+    taxid = _validate_taxid(taxid)
+    term = _suggest_query(q)
+    return {"query": term, "taxid": taxid,
+            "items": await get_gene_suggest(term, taxid, limit) if term else []}
+
+
+@router.get("/screen_suggest")
+async def screen_suggest(
+    q: str = Query("", max_length=64),
+    taxid: int = Query(9606),
+    organism: str | None = Query(None, max_length=8),
+    limit: int = Query(8, ge=1, le=25),
+) -> Any:
+    """Type-ahead for the search box's screen mode. Same always-200 contract as gene_suggest."""
+    if organism == "mouse":
+        taxid = 10090
+    taxid = _validate_taxid(taxid)
+    term = _suggest_query(q)
+    return {"query": term, "taxid": taxid,
+            "items": await get_screen_suggest(term, taxid, limit) if term else []}
 
 
 @router.get("/gene_wiki")

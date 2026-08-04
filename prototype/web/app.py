@@ -1664,6 +1664,102 @@ def _clean_uniprot(text):
     return (clean or None), n
 
 
+# ---------------------------------------------------------------------------
+# TYPE-AHEAD for the search box. Two suggesters, one per mode.
+# ---------------------------------------------------------------------------
+def gene_suggest(q, taxid=9606, limit=8):
+    """Ranked gene suggestions for a typed prefix.
+
+    Reads gene_search, built by script/build_gene_search.py — see that file for why the ranking
+    needed both a screen-hit count and a paper count rather than either alone (short version:
+    hits alone put TP53RK above TP53, papers alone put PON1 above POLR2A).
+
+    Two rules the ORDER BY encodes, both learned by getting them wrong first:
+
+      canonical symbols BEFORE aliases. Ranked purely by score, "FANC" answered BRCA1, BRCA2,
+      RAD51 — every one a legitimate alias hit (FANCS is BRCA1, FANCD1 is BRCA2) and every one
+      wrong, because a person typing FANC wants the FANC genes. Aliases rescue a retired name;
+      they are not a queue-jump for a famous gene.
+
+      an exact match wins outright only if it is a CANONICAL symbol. Otherwise typing "PO" put
+      PRB4 first, because some gene carries "PO" as a literal alias.
+
+    De-duplicates by symbol: one gene with three matching aliases was filling three of eight slots
+    with itself. Over-fetches to leave room for that.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    term = q.upper()
+    limit = max(1, min(int(limit), 25))
+    try:
+        rows = kb_fetchall(
+            "SELECT symbol, term, is_alias, n_hits, name FROM gene_search "
+            "WHERE taxid = ? AND term LIKE ? "
+            "ORDER BY (term = ? AND is_alias = 0) DESC, is_alias, rank DESC, LENGTH(term), term "
+            "LIMIT ?", (taxid, term + "%", term, limit * 5))
+    except Exception as e:
+        # The table is newer than the rest of the KB, so a deploy can legitimately predate it.
+        # A search box that silently offers nothing is better than one that 500s under the cursor.
+        print(f"  [suggest] gene_search unavailable: {e}")
+        return []
+    out, seen = [], set()
+    for r in rows:
+        sym = r["symbol"]
+        if sym in seen:
+            continue
+        seen.add(sym)
+        out.append({"symbol": sym, "name": r["name"] or "",
+                    "matched": r["term"] if r["is_alias"] else None,
+                    "n_hits": r["n_hits"]})
+        if len(out) >= limit:
+            break
+    return out
+
+
+def screen_suggest(q, taxid=9606, limit=8):
+    """Ranked screen suggestions. kb_screen is 2,157 rows, so this needs no precomputed table —
+    a scan across the few fields a person would actually type is already sub-10ms.
+
+    Matches what someone remembers a screen BY: the cell line, the condition, the phenotype, the
+    first author, or the BioGRID id itself. Ranked by hit count as a stand-in for "a screen with
+    something in it", since a screen with three hits is rarely the one being looked for.
+
+    TWO THINGS THE RAW COLUMNS GET WRONG, both fixed here rather than in the data:
+
+      BioGRID punctuates its cell lines — K-562, HL-60, A-375, HCT 116 — and nobody types them
+      that way. "K562" matched zero of 1,952 human screens. Both sides are stripped of hyphens and
+      spaces before comparing, which is doable in plain SQL and so works on sqlite and Postgres
+      alike.
+
+      number_of_hits is stored as TEXT, so ORDER BY put '5' above '1345'. Cast it.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    like = f"%{q.lower()}%"
+    squashed = f"%{''.join(c for c in q.lower() if c.isalnum())}%"
+    limit = max(1, min(int(limit), 25))
+    sq = "REPLACE(REPLACE(LOWER({}), '-', ''), ' ', '')"
+    try:
+        rows = kb_fetchall(
+            "SELECT screen_id, cell_line, condition_name, phenotype, author, pmid, "
+            "       screen_type, number_of_hits "
+            "FROM kb_screen WHERE taxid = ? AND ("
+            f"     {sq.format('cell_line')} LIKE ? OR LOWER(condition_name) LIKE ? "
+            "  OR LOWER(phenotype) LIKE ? OR LOWER(author) LIKE ? "
+            "  OR CAST(screen_id AS TEXT) LIKE ?) "
+            "ORDER BY CAST(number_of_hits AS INTEGER) DESC LIMIT ?",
+            (taxid, squashed, like, like, like, f"{q}%", limit))
+    except Exception as e:
+        print(f"  [suggest] screen search unavailable: {e}")
+        return []
+    return [{"screen_id": str(r["screen_id"]),
+             "cell_line": r["cell_line"] or "", "condition": r["condition_name"] or "",
+             "phenotype": r["phenotype"] or "", "author": r["author"] or "",
+             "pmid": r["pmid"], "n_hits": r["number_of_hits"]} for r in rows]
+
+
 def _kb_resolve(gene, taxid):
     """symbol / alias / retired-id / GeneID  ->  (gene_id, symbol, taxid)."""
     if gene.isdigit():
@@ -2091,6 +2187,30 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, SCREEN_HTML.read_bytes(), "text/html; charset=utf-8")
         if u.path in ("/network", "/network.html", "/net"):
             return self._send(200, NETWORK_HTML.read_bytes(), "text/html; charset=utf-8")
+        # Type-ahead. Fires on every keystroke, so it never raises and never 404s — an empty list
+        # is the correct answer to "nothing matches yet", and a failing suggester must not be able
+        # to make the box itself feel broken.
+        if u.path in ("/api/gene_suggest", "/api/screen_suggest"):
+            q = parse_qs(u.query)
+            term = (q.get("q", [""])[0]).strip()
+            try:
+                taxid = int(q.get("taxid", ["9606"])[0] or 9606)
+            except ValueError:
+                taxid = 9606
+            if q.get("organism", [""])[0] == "mouse":
+                taxid = 10090
+            try:
+                limit = int(q.get("limit", ["8"])[0] or 8)
+            except ValueError:
+                limit = 8
+            fn = gene_suggest if u.path.endswith("gene_suggest") else screen_suggest
+            try:
+                items = fn(term, taxid, limit)
+            except Exception as e:
+                print(f"  [suggest] {u.path} failed: {e}")
+                items = []
+            return self._send(200, {"query": term, "taxid": taxid, "items": items})
+
         if u.path == "/api/gene_wiki":
             q = parse_qs(u.query)
             gene = (q.get("gene", [""])[0]).strip()

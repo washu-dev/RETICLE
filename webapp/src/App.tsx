@@ -129,7 +129,7 @@ export default function App() {
     screenEl = (
       <HomeLanding_aaron
         onOpenGene={(gene, organism) => openReticle('gene', gene, organism)}
-        onOpenTab={(tab) => openReticle(tab)}
+        onOpenScreen={(screenId) => openReticle('screen', screenId)}
         onStart={handleStart}
         onExplore={handleExplore}
       />
