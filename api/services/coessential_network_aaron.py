@@ -93,6 +93,172 @@ def _fitness_lean(genes: list[str], organism: str) -> dict[str, float]:
     return {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
 
+# ---------------------------------------------------------------------------------------------
+# EVIDENCE TIERS — what separates a real edge from a coincidence.
+#
+# The graph used to draw every edge identically, with thickness keyed on |r|. Three near-orthogonal
+# statements about a pair exist in the data and the request path read one:
+#
+#   channel 1  net_edge.strength / .reciprocal   percentile-profile correlation over ALL screens
+#   channel 2  hit_only_connection               Fisher co-hit enrichment over ONLY the screens
+#                                                where both genes were CALLED HITS — the cells
+#                                                channel 1 dilutes away. 417,924 human rows,
+#                                                never read by any endpoint before now.
+#   Jaccard    computed from the edge list       do the two genes share third parties?
+#
+# prototype/script/exp_evidence_tiers.py measures all four against CORUM same-complex membership,
+# over the 11,954 drawn edges whose BOTH endpoints are CORUM-annotated (baseline 0.615%):
+#
+#     reciprocal AND co-hit     862 edges   7.2%    46.4% precision    75x chance
+#     reciprocal only         1,578        13.2%    22.4%              36x
+#     co-hit only             1,062         8.9%    17.7%              29x
+#     neither                 8,452        70.7%     4.9%               8x
+#
+# A 9.5x spread, and seven of every ten drawn edges are in the bottom cell — rendered identically to
+# the top cell. |r| is deliberately NOT part of the tier: it is the weakest dimension (AUROC 0.6361
+# against 0.6991 for reciprocal) and non-monotone where it matters, its top decile scoring 17.3%
+# against the second decile's 20.9%. Concordance is deliberately not a filter either (AUROC 0.5347).
+# ---------------------------------------------------------------------------------------------
+TIER_LABEL: dict[int, str] = {
+    1: "both channels",
+    2: "mutual-best",
+    3: "co-hit only",
+    4: "correlation only",
+}
+
+# Organisms whose co-hit table could not be read. reticle.hit_only_connection is newer than the rest
+# of the schema — migrate_net_to_rds.py only started carrying it alongside this feature — so a
+# deployment can legitimately be running against a database that predates it.
+_COHIT_UNAVAILABLE: set[str] = set()
+
+
+def cohit_table(organism: str) -> str:
+    """Channel 2's table. Mirrors _edge_table: one schema for both species on RDS, so mouse is
+    suffixed. The name comes from a fixed set — never from user input."""
+    return "hit_only_connection_mouse" if organism == "mouse" else "hit_only_connection"
+
+
+def cohit_available(organism: str) -> bool:
+    return organism not in _COHIT_UNAVAILABLE
+
+
+def cohit_among(genes: list[str], organism: str) -> dict[tuple[str, str], dict[str, Any]]:
+    """{(a, b) ordered a<=b: {co_hit, fold, q_value, concordance, support}} for the co-hit pairs
+    among `genes`. Absent from the dict means no significant co-hit: the table is BH-FDR filtered at
+    build time, so presence IS significance.
+
+    hit_only_connection stores ONE DIRECTION per pair — FANCA->FANCD2 is a row and the reverse is
+    not — so every lookup has to agree on an ordering or it silently misses half the table. Both
+    endpoints are inside `genes`, so a symmetric IN/IN predicate catches whichever way it was
+    stored.
+
+    Returns {} rather than raising when the table is missing. A graph whose tiers collapse to
+    channel 1 is still a graph; a 500 is not. The failure is latched per organism so one missing
+    table does not mean one failed query per request forever.
+    """
+    if not genes or organism in _COHIT_UNAVAILABLE:
+        return {}
+    tbl = cohit_table(organism)
+    ph = ",".join("?" * len(genes))
+    try:
+        rows = db_fetchall(
+            f"SELECT gene_a, gene_b, co_hit, fold, q_value, concordance, support FROM {tbl} "
+            f"WHERE gene_a IN ({ph}) AND gene_b IN ({ph})",
+            tuple(list(genes) + list(genes)),
+        )
+    except Exception:
+        _COHIT_UNAVAILABLE.add(organism)
+        logger.warning(
+            "co-hit channel unavailable for %s; edges will be graded on channel 1 alone",
+            organism,
+            exc_info=True,
+        )
+        return {}
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    for r in rows:
+        a, b = r["gene_a"], r["gene_b"]
+        out[(a, b) if a <= b else (b, a)] = {
+            "co_hit": int(r["co_hit"]),
+            "fold": round(float(r["fold"]), 2),
+            "q_value": float(r["q_value"]),
+            "concordance": round(float(r["concordance"]), 3),
+            "support": int(r["support"]),
+        }
+    return out
+
+
+def edge_tier(reciprocal: bool, has_cohit: bool) -> int:
+    """1 both channels · 2 mutual-best only · 3 co-hit only · 4 neither. Ordered by MEASURED CORUM
+    precision (46.4 / 22.4 / 17.7 / 4.9%), which is why mutual-best-only outranks co-hit-only rather
+    than the other way round."""
+    if reciprocal and has_cohit:
+        return 1
+    if reciprocal:
+        return 2
+    return 3 if has_cohit else 4
+
+
+def _neighbour_sets(genes: list[str], tbl: str, context: str) -> dict[str, set[str]]:
+    """gene -> its channel-1 partners in this context, over the WHOLE network.
+
+    Deliberately not restricted to the displayed subgraph: Jaccard measured inside the subgraph is
+    circular, because every node is there precisely because it is the seed's partner. The measured
+    lift comes from full-network neighbourhoods.
+    """
+    if not genes:
+        return {}
+    ph = ",".join("?" * len(genes))
+    try:
+        rows = db_fetchall(
+            f"SELECT gene_a, gene_b FROM {tbl} WHERE context=? AND channel='coessential' "
+            f"AND (gene_a IN ({ph}) OR gene_b IN ({ph}))",
+            tuple([context] + list(genes) + list(genes)),
+        )
+    except Exception:
+        logger.warning("neighbourhood Jaccard unavailable", exc_info=True)
+        return {}
+    want = set(genes)
+    nb: dict[str, set[str]] = {g: set() for g in genes}
+    for r in rows:
+        a, b = r["gene_a"], r["gene_b"]
+        if a in want:
+            nb[a].add(b)
+        if b in want:
+            nb[b].add(a)
+    return nb
+
+
+def _jaccard(nb: dict[str, set[str]], a: str, b: str) -> float | None:
+    """|N(a) & N(b)| / |N(a) | N(b)|, excluding a and b themselves so a plain A-B edge cannot
+    inflate their own coherence. None when either neighbourhood is unknown."""
+    na, nbs = nb.get(a), nb.get(b)
+    if na is None or nbs is None:
+        return None
+    left = na - {a, b}
+    right = nbs - {a, b}
+    union = left | right
+    return round(len(left & right) / len(union), 3) if union else 0.0
+
+
+def _annotate_edges(
+    edges: list[dict[str, Any]], context: str, organism: str, tbl: str
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Attach cohit / jaccard / tier / tier_label to each edge, and return a tier histogram."""
+    genes = sorted({g for e in edges for g in (e["source"], e["target"])})
+    ch = cohit_among(genes, organism)
+    nb = _neighbour_sets(genes, tbl, context)
+    hist: dict[int, int] = {}
+    for e in edges:
+        a, b = e["source"], e["target"]
+        c = ch.get((a, b) if a <= b else (b, a))
+        e["cohit"] = c
+        e["jaccard"] = _jaccard(nb, a, b)
+        e["tier"] = edge_tier(bool(e["reciprocal"]), c is not None)
+        e["tier_label"] = TIER_LABEL[e["tier"]]
+        hist[e["tier"]] = hist.get(e["tier"], 0) + 1
+    return edges, {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)}
+
+
 def _resolve_seed(gene: str, tbl: str, context: str) -> str | None:
     """net_edge is keyed by gene SYMBOL, so try the casings BioGRID actually uses."""
     seen: list[str] = []
@@ -209,6 +375,13 @@ async def get_screen_net(
             degree[a] = degree.get(a, 0) + 1
             degree[b] = degree.get(b, 0) + 1
 
+    # Second channel + neighbourhood coherence. In the reciprocal view `erows` is already
+    # filtered to reciprocal=1, so every edge lands in tier 1 or 2 and the tier only reports
+    # whether channel 2 agrees. The full four-tier spread appears once the user widens the view —
+    # exactly where they most need to know which of the newly drawn edges is worth anything,
+    # given 70.7% of all drawn edges sit in the 4.9%-precision bottom tier.
+    edges, tiers = _annotate_edges(edges, ctx, organism, tbl)
+
     nodes = [
         {
             "id": n,
@@ -229,17 +402,24 @@ async def get_screen_net(
         "fellback": fellback,
         "nodes": nodes,
         "edges": edges,
+        "tiers": tiers,
+        "cohit_available": cohit_available(organism),
     }
 
 
 async def get_coessential(
     symbol: str, organism: str = "human", top: int = 14
 ) -> dict[str, Any] | None:
-    """The Explore page's inline co-essentiality graph.
+    """The gene wiki's inline co-essentiality graph.
 
     Same net_edge source as get_screen_net (see the module docstring for why the old local .npz was
-    retired), but returns the prototype's ORIGINAL payload shape so the existing Explore frontend
-    needs no change: nodes[].name/lean/focus and edges[].a/b/r/score.
+    retired), and the prototype's ORIGINAL payload shape is preserved — nodes[].name/lean/focus and
+    edges[].a/b/r/score — so nothing downstream breaks.
+
+    ADDED: `tier` on every edge, `direct` (does it touch the focal gene), and a `tiers` histogram
+    over the direct ones. The wiki draws only the direct edges — 14 lines instead of 57 — but keeps
+    the partner-partner set because its force simulation needs them: they are what pulls a complex
+    into a clump, so dropping them server-side would flatten the picture into a bare radial star.
     """
     tbl = _edge_table(organism)
     ctx = _default_context(organism)
@@ -249,33 +429,50 @@ async def get_coessential(
         return None
 
     # Reciprocal-preferred like the Network page: the mutual-best view is markedly cleaner
-    # (32.9% vs 8.9% CORUM same-complex precision on the shipped edge set).
-    rows, _fellback, clause = _neighbourhood(seed, tbl, ctx, True, top)
+    # (46.4% vs 4.9% CORUM same-complex precision between the top and bottom evidence tiers).
+    rows, _fellback, _clause = _neighbourhood(seed, tbl, ctx, True, top)
     if not rows:
         return None
 
     partners = [r["nb"] for r in rows]
     members = [seed] + partners
     ph = ",".join("?" * len(members))
+    # No reciprocal clause here, deliberately: an edge the view will not DRAW still has to be
+    # fetched, because it carries the tier and it shapes the layout.
     erows = db_fetchall(
-        f"SELECT gene_a, gene_b, strength FROM {tbl} "
+        f"SELECT gene_a, gene_b, strength, reciprocal FROM {tbl} "
         f"WHERE context=? AND channel='coessential' "
-        f"AND gene_a IN ({ph}) AND gene_b IN ({ph}) {clause}",
+        f"AND gene_a IN ({ph}) AND gene_b IN ({ph})",
         tuple([ctx] + members + members),
     )
+    ch = cohit_among(members, organism)
     lean = _fitness_lean(members, organism)
 
     nodes = [{"name": n, "lean": _lean_label(lean.get(n)), "focus": n == seed} for n in members]
     mset = set(members)
     edges = []
+    hist: dict[int, int] = {}
     for e in erows:
         a, b = e["gene_a"], e["gene_b"]
-        if a in mset and b in mset and a != b:
-            r = round(float(e["strength"]), 3)
-            edges.append({"a": a, "b": b, "r": r, "score": r})
+        if a not in mset or b not in mset or a == b:
+            continue
+        tier = edge_tier(bool(e["reciprocal"]), ((a, b) if a <= b else (b, a)) in ch)
+        direct = seed in (a, b)
+        r = round(float(e["strength"]), 3)
+        edges.append({"a": a, "b": b, "r": r, "score": r, "tier": tier, "direct": direct})
+        if direct:
+            hist[tier] = hist.get(tier, 0) + 1
 
     n_screens = db_fetchall(
         "SELECT COUNT(*) c FROM net_screen WHERE coverage_type='FULL' AND n_genes >= 15000"
     )[0]["c"] if organism != "mouse" else None
 
-    return {"symbol": seed, "nodes": nodes, "edges": edges, "n_screens": n_screens}
+    return {
+        "symbol": seed,
+        "nodes": nodes,
+        "edges": edges,
+        "n_screens": n_screens,
+        "context_label": NET_CTX_LABELS.get(ctx, ctx),
+        "tiers": {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)},
+        "cohit_available": cohit_available(organism),
+    }

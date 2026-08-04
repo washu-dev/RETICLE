@@ -67,6 +67,8 @@ from services.coessential_network_aaron import (
     _fitness_lean,
     _lean_label,
     _resolve_seed,
+    cohit_among,
+    edge_tier,
 )
 from services.db_service import db_fetchall
 from services.external_sources import TAXID as ORG2TAX
@@ -395,33 +397,48 @@ async def get_reporter_explain(symbol: str, screen_ids: list[str]) -> dict[str, 
 # gpt-4.1 because this is multi-step reasoning over a partner dossier, not text generation.
 
 
-def _net_predict_partners(seed: str, tbl: str, context: str, top: int = 18,
-                          reciprocal_only: bool = True) -> tuple[list, bool]:
-    """Reciprocal-first, then widen. Returns (rows, fellback).
+def _net_predict_partners(seed: str, tbl: str, context: str, organism: str,
+                          top: int = 18) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """The dossier: ALWAYS the union top-`top`, each partner graded by evidence tier against the seed.
 
     Deliberately NOT coessential_network_aaron._neighbourhood: this endpoint needs the per-edge
-    `reciprocal` flag (the ⇄ tag in the prompt, the supporters payload, and the confidence rule),
-    and that helper's SELECT list does not carry it.
-    """
-    def _partners(recip: bool) -> list:
-        rec = "AND reciprocal=1 " if recip else ""  # trailing space, else 'reciprocal=1ORDER BY'
-        return db_fetchall(
-            f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
-            f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
-            f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top))
+    `reciprocal` flag (the ⇄ tag in the prompt, the supporters payload, and the tier), and that
+    helper's SELECT list does not carry it.
 
-    # reciprocal_only mirrors the graph's own toggle. Without it the dossier was always
-    # assembled reciprocal-first regardless of what the user was looking at: median reciprocal
-    # degree is 2 against a median union degree of 29, so widening the graph changed the picture
-    # and not the evidence the model read.
-    if not reciprocal_only:
-        return _partners(False), True
-    rows = _partners(True)
-    fellback = False
+    This no longer mirrors the graph's reciprocal-only toggle, which REVERSES an earlier fix, so the
+    reasoning matters. The original bug was that the dossier was assembled reciprocal-first no matter
+    what was on screen — widen the graph to 29 partners, press Predict, and the model silently read 2.
+    The fix made the dossier follow the toggle. That closed the honesty gap but kept the real damage:
+    the toggle is a DISPLAY choice, and letting it decide what evidence the model reads means the 812
+    of 5,269 human genes (15.4%) with exactly one reciprocal partner trip the "fewer than two
+    annotated partners" early return every single time and can NEVER produce a prediction, while ~29
+    one-directional partners sit unread. Median reciprocal degree is 2 against a median union degree
+    of 29; only 2.6% of genes have the 18 reciprocal partners this dossier is sized for, against 86.7%
+    in the union.
+
+    So: read the union always, grade every partner, and REPORT the difference rather than hiding it
+    (the original bug) or obeying it (the first fix). Two wanted side effects — the dossier is now
+    reproducible across users regardless of their display state, which is why `view` no longer belongs
+    in the cache key; and a partner arriving through the widened window is not treated as equal to a
+    mutual-best one, because it carries its tier.
+    """
+    rows = db_fetchall(
+        f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
+        f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) "
+        f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top))
     if not rows:
-        rows = _partners(False)
-        fellback = True
-    return rows, fellback
+        return [], {}
+    ch = cohit_among([seed] + [r["nb"] for r in rows], organism)
+    out: list[dict[str, Any]] = []
+    hist: dict[int, int] = {}
+    for r in rows:
+        nb = r["nb"]
+        c = ch.get((seed, nb) if seed <= nb else (nb, seed))
+        tier = edge_tier(bool(r["reciprocal"]), c is not None)
+        hist[tier] = hist.get(tier, 0) + 1
+        out.append({"nb": nb, "strength": r["strength"], "reciprocal": int(r["reciprocal"]),
+                    "tier": tier, "cohit_fold": c["fold"] if c else None})
+    return out, {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)}
 
 
 def _net_predict_go_bp(gene_ids: list[int], cap: int = 8) -> dict[int, list[str]]:
@@ -500,9 +517,14 @@ gene — reason only from what is written below.
 2. NOVELTY IS THE POINT: never predict anything already listed in the focal gene's KNOWN FUNCTION block, or an \
 obvious synonym of it. If a convergence merely restates something the focal gene is already annotated with, \
 drop it.
-3. Every prediction MUST be supported by at least TWO named partners (exact symbols from the list below). More \
-converging partners, and higher co-essentiality r, mean higher confidence — but you do not need to compute a \
-confidence score yourself, just name the supporting partners honestly.
+3. Every prediction MUST name the partners that support it (exact symbols from the list below). Name ALL of them \
+and ONLY the ones that genuinely carry the claim — a partner you list is a partner a human will check. Two or \
+more is the normal case; ONE is acceptable only when that single partner's evidence tier is [T1]. Do not pad the \
+list to reach a count, and do not compute a confidence score yourself.
+3b. EVIDENCE TIERS are marked on each partner below and they are measured, not decorative. Against CORUM \
+same-complex membership: [T1] 46.4% · [T2] 22.4% · [T3] 17.7% · [T4] 4.9%, where a random annotated pair is 0.6%. \
+A claim carried by two [T1] partners is worth far more than one carried by four [T4] partners. Weigh them \
+accordingly, and prefer convergences that the higher-tier partners agree on.
 4. Prefer the single most specific, defensible claim: a named complex beats a named pathway beats a vague \
 process. Return 0-5 predictions — a short list of strong claims, not a long list of speculative ones.
 5. If the partners do NOT converge on anything coherent, return an empty predictions list and say so plainly in \
@@ -557,56 +579,115 @@ def _net_predict_prompt(sym: str, organism: str, context_label: str, view: str,
 
 
 def _net_predict_filter(data: dict, partners: list[dict], own_bp_norm: set[str],
-                        own_pw_norm: set[str]) -> list[dict]:
+                        own_pw_norm: set[str]) -> tuple[list[dict], int]:
     """The anti-hallucination layer — the part that makes this a prediction feature rather than a
-    generation feature. Every step is load-bearing and the ORDER matters:
+    generation feature. Every check still runs at full strength; what changed is that a failed check
+    now returns a VERDICT instead of deleting the prediction.
 
-      1. drop nameless predictions;
-      2. NOVELTY RE-CHECK — drop anything that exact-matches (strip + lower) one of the focal
-         gene's own GO biological-process terms or Reactome pathways. The system prompt asks for
-         novelty; the model is NOT trusted to comply. Exact match only, no fuzzy/synonym matching,
-         and the sets are capped at the same 8 GO + 5 Reactome the model was shown;
-      3. drop cited "supporting partners" that are not real co-essential partners, i.e. symbols the
-         model invented. partner_by_sym covers ALL partners, including unannotated ones that were
-         skipped from the prompt, so citing one of those still counts;
-      4. dedupe, preserving the model's order;
-      5. require >= 2 survivors — applied AFTER step 3, so a prediction citing three partners of
-         which two were invented is discarded.
+    Three things were wrong with deleting:
+      * this layer is the product's whole claim to being auditable, and it fired in the dark. Nobody
+        could show it had ever caught anything, which is indistinguishable from it not working;
+      * the ">= 2 supporters" rule COUNTS HEADS where it should WEIGH EVIDENCE. One [T1] supporter
+        recovers a CORUM complex 46.4% of the time; two [T4] supporters, 4.9% each. The old rule
+        dropped the first and kept the second;
+      * a request to show users material below the top confidence band is unanswerable while the
+        weaker material never leaves the server.
 
-    Predictions are returned in the model's original order (no re-sorting); only each prediction's
-    own supporters are sorted, by strength descending.
+    The checks, in order — order still matters:
+      1. drop nameless predictions (the only remaining hard drop: there is nothing to label);
+      2. CITATION CHECK — a cited symbol that is not an ANNOTATED partner is unverifiable. Note this
+         is stricter than it used to be: partner_by_sym now covers only the partners the model was
+         actually SHOWN. An unannotated partner contributes no annotation to reason from, so a
+         citation of one cannot be evidence for anything — it is a name the model produced without
+         having read a thing about it, which is the definition this check exists to catch;
+      3. dedupe, preserving the model's order;
+      4. NOVELTY RE-CHECK — exact match (strip + lower) against the focal gene's own GO
+         biological-process terms and Reactome pathways. The system prompt asks for novelty; the
+         model is NOT trusted to comply. Exact match only, no fuzzy/synonym matching, over the same
+         8 GO + 5 Reactome the model was shown;
+      5. WEIGH the survivors into a verdict rather than counting them.
+
+    Returns (predictions, n_unverifiable_citations). Predictions keep the model's original order; only
+    each prediction's own supporters are sorted, best tier first then strength descending.
     """
-    partner_by_sym = {p["sym"]: p for p in partners}
+    partner_by_sym = {p["sym"]: p for p in partners if p["go"] or p["pw"] or p["fn"]}
     preds_out = []
+    n_ghost = 0
     for pred in (data.get("predictions") or []):
         name = (pred.get("prediction") or "").strip()
         if not name:
             continue
-        norm = name.lower().strip()
-        if norm in own_bp_norm or norm in own_pw_norm:
-            continue
-        cited = [s for s in (pred.get("supporting_partners") or []) if s in partner_by_sym]
-        cited = list(dict.fromkeys(cited))
-        if len(cited) < 2:
-            continue
+        raw = list(dict.fromkeys(s for s in (pred.get("supporting_partners") or [])
+                                 if isinstance(s, str) and s.strip()))
+        cited = [s for s in raw if s in partner_by_sym]
+        ghosts = [s for s in raw if s not in partner_by_sym]
+        n_ghost += len(ghosts)
         supporters = [{"symbol": s, "strength": partner_by_sym[s]["strength"],
-                       "reciprocal": partner_by_sym[s]["reciprocal"]} for s in cited]
-        supporters.sort(key=lambda x: -x["strength"])  # stable: ties keep the model's cited order
+                       "reciprocal": partner_by_sym[s]["reciprocal"],
+                       "tier": partner_by_sym[s]["tier"],
+                       "cohit_fold": partner_by_sym[s]["cohit_fold"]} for s in cited]
+        # stable: ties keep the model's cited order
+        supporters.sort(key=lambda x: (x["tier"], -x["strength"]))
+        best_tier = min((s["tier"] for s in supporters), default=4)
+        n_strong = sum(1 for s in supporters if s["tier"] <= 2)
+
+        if name.lower().strip() in own_bp_norm or name.lower().strip() in own_pw_norm:
+            verdict = "rejected:not-novel"
+        elif not supporters:
+            verdict = "rejected:no-verifiable-support"
+        elif len(supporters) == 1:
+            # Weight, not headcount. A lone [T1] supporter is a stronger statement than a pair of
+            # [T4]s, so it is promoted rather than demoted — the one place the old rule was not
+            # merely blunt but backwards.
+            verdict = "verified" if best_tier == 1 else "single-supporter"
+        else:
+            verdict = "verified"
+
         strengths = [s["strength"] for s in supporters]
         n_recip = sum(1 for s in supporters if s["reciprocal"])
-        confidence = ("high" if len(supporters) >= 3 or (len(supporters) == 2 and n_recip == 2)
-                      else "moderate")
+        confidence = ("high" if n_strong >= 2 or (best_tier == 1 and len(supporters) >= 2)
+                      else "moderate" if best_tier <= 3
+                      else "low")
         # separators are U+00B7 MIDDLE DOT and the range dash is U+2013 EN DASH — rendered literally
-        convergence = (f"{len(supporters)} partners · r {min(strengths):.2f}–{max(strengths):.2f}"
-                       + (f" · {n_recip} mutual-best" if n_recip else ""))
+        convergence = ((f"{len(supporters)} partner{'' if len(supporters) == 1 else 's'} · "
+                        f"r {min(strengths):.2f}–{max(strengths):.2f}"
+                        + (f" · {n_recip} mutual-best" if n_recip else "")
+                        + f" · best tier T{best_tier}") if supporters else "no verifiable support")
         preds_out.append({
             "prediction": name,
             # membership test runs on the raw value: a missing key or anything else -> "process"
             "type": pred.get("type") if pred.get("type") in ("complex", "pathway", "process") else "process",
+            "verdict": verdict, "evidence_tier": best_tier if supporters else None,
             "confidence": confidence, "convergence": convergence,
             "rationale": (pred.get("rationale") or "").strip(), "supporting_partners": supporters,
+            "unverifiable_citations": ghosts,
         })
-    return preds_out
+    return preds_out, n_ghost
+
+
+def _assemble_partners(partner_syms: list[str], partner_meta: dict[str, dict[str, Any]],
+                       resolved: dict[str, int], lean: dict[str, float],
+                       go_by_gid: dict[int, list[str]], pw_by_gid: dict[int, list[str]],
+                       fn_by_gid: dict[int, str]) -> list[dict[str, Any]]:
+    """One dict per partner, carrying both its network evidence (strength / reciprocal / tier /
+    co-hit fold) and its curated annotations. A partner that did not resolve to a KB gene_id keeps
+    empty annotations rather than being dropped — it still exists in the network, it just cannot
+    contribute evidence, and _net_predict_filter treats that distinction as load-bearing."""
+    out = []
+    for sym in partner_syms:
+        gid = resolved.get(sym)
+        out.append({
+            "sym": sym,
+            "strength": partner_meta[sym]["strength"],
+            "reciprocal": partner_meta[sym]["reciprocal"],
+            "tier": partner_meta[sym]["tier"],
+            "cohit_fold": partner_meta[sym]["cohit_fold"],
+            "lean": _lean_label(lean.get(sym)),
+            "go": go_by_gid.get(gid, []) if gid else [],
+            "pw": pw_by_gid.get(gid, []) if gid else [],
+            "fn": fn_by_gid.get(gid) if gid else None,
+        })
+    return out
 
 
 def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciprocal_only: bool = True) -> dict[str, Any] | None:
@@ -620,8 +701,7 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     if seed is None:
         return None
 
-    prows, fellback = _net_predict_partners(seed, tbl, context, top=top,
-                                            reciprocal_only=reciprocal_only)
+    prows, partner_tiers = _net_predict_partners(seed, tbl, context, organism, top=top)
     if not prows:
         return None
 
@@ -629,7 +709,12 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     # float()/bool() before round(): psycopg2 returns numerics as Decimal, and round() keeps a
     # Decimal — which breaks both the f"{...:.2f}" prompt tags and FastAPI's JSON encoder.
     partner_meta = {r["nb"]: {"strength": round(float(r["strength"]), 3),
-                              "reciprocal": bool(r["reciprocal"])} for r in prows}
+                              "reciprocal": bool(r["reciprocal"]),
+                              "tier": int(r["tier"]),
+                              "cohit_fold": r["cohit_fold"]} for r in prows}
+    # How much of this dossier the caller's graph filter was hiding. Reported, never acted on: the
+    # model reads the union either way (see _net_predict_partners).
+    n_beyond_view = sum(1 for r in prows if not r["reciprocal"]) if reciprocal_only else 0
 
     seed_r = _kb_resolve(seed, taxid)
     resolved: dict[str, int] = {}  # symbol -> gene_id, for partners that exist in the KB
@@ -656,30 +741,26 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     own_bp_norm = {t.strip().lower() for t in own_bp}
     own_pw_norm = {t.strip().lower() for t in own_pw}
 
-    partners = []
-    for sym in partner_syms:
-        gid = resolved.get(sym)
-        partners.append({
-            "sym": sym,
-            "strength": partner_meta[sym]["strength"],
-            "reciprocal": partner_meta[sym]["reciprocal"],
-            "lean": _lean_label(lean.get(sym)),
-            "go": go_by_gid.get(gid, []) if gid else [],
-            "pw": pw_by_gid.get(gid, []) if gid else [],
-            "fn": fn_by_gid.get(gid) if gid else None,
-        })
+    partners = _assemble_partners(partner_syms, partner_meta, resolved, lean,
+                                  go_by_gid, pw_by_gid, fn_by_gid)
     n_annotated = sum(1 for p in partners if p["go"] or p["pw"] or p["fn"])
-    view = "one-directional" if fellback else "reciprocal"
+    view = "union"  # always, now — see _net_predict_partners
 
     if n_annotated < 2:
-        # Too little evidence to ground anything — don't spend a gpt-5 call on it. This branch
-        # neither reads nor writes the cache and never constructs a client, hence model: None.
+        # Genuinely nothing to reason over — don't spend an LLM call on it. This branch neither reads
+        # nor writes the cache and never constructs a client, hence model: None. The message is now a
+        # real annotation-coverage statement: the dossier already read the full union, so the old
+        # "widen the view" advice would be a lie — there is no wider view left.
         return {"found": True, "symbol": seed, "organism": organism, "context": context,
                 "context_label": NET_CTX_LABELS.get(context, context), "view": view,
                 "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
-                "n_unresolved": n_unresolved, "model": None, "converges": False, "predictions": [],
-                "summary": "Fewer than two co-essential partners carry a curated function on record — "
-                           "too little evidence to ground a prediction."}
+                "n_unresolved": n_unresolved, "partner_tiers": partner_tiers,
+                "n_beyond_view": n_beyond_view, "model": None, "converges": False,
+                "predictions": [], "no_call": True,
+                "summary": f"Only {n_annotated} of this gene's {len(partner_syms)} co-essential "
+                           "partners carries a curated function on record, so no prediction was "
+                           "attempted. This is an annotation-coverage limit, not a filter — the "
+                           "dossier already reads every partner, mutual-best or not."}
 
     # Keyed on the KB gene_id when the seed resolved, else the resolved SYMBOL — heterogeneous by
     # design. `top` is deliberately NOT part of the key. Looked up AFTER all the DB work but
@@ -687,8 +768,11 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     # Everything that changes the answer belongs in the key. It was (gene, organism, context)
     # only, so switching the model or editing the prompt let a warm worker keep serving the
     # previous answer under the new model's name.
+    # `view` used to be in the key and no longer needs to be: the dossier is the union regardless of
+    # the caller's display state, which is itself the point — two users on the same gene now get the
+    # same answer.
     cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
-                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION, view)
+                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION)
     if cache_key in _NET_PRED_CACHE:
         return _NET_PRED_CACHE[cache_key]
 
@@ -700,15 +784,23 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     data = client.chat_json([{"role": "system", "content": NET_PREDICT_SYS},
                              {"role": "user", "content": prompt}], **gen_kwargs(NET_PREDICT_MODEL, max_tokens=3000))
 
-    preds_out = _net_predict_filter(data, partners, own_bp_norm, own_pw_norm)
+    preds_out, n_ghost = _net_predict_filter(data, partners, own_bp_norm, own_pw_norm)
+    tally: dict[str, int] = {"verified": 0, "single-supporter": 0,
+                             "rejected:not-novel": 0, "rejected:no-verifiable-support": 0}
+    for p in preds_out:
+        tally[p["verdict"]] = tally.get(p["verdict"], 0) + 1
 
     out = {"found": True, "symbol": seed, "organism": organism, "context": context,
            "context_label": NET_CTX_LABELS.get(context, context), "view": view,
            "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
-           "n_unresolved": n_unresolved, "model": client.model,
-           # `converges` is derived SERVER-SIDE from the surviving predictions; the model's own
-           # top-level "converges" field is read by nobody.
-           "converges": bool(preds_out), "predictions": preds_out,
+           "n_unresolved": n_unresolved, "partner_tiers": partner_tiers,
+           "n_beyond_view": n_beyond_view, "model": client.model,
+           # `converges` is derived SERVER-SIDE and stays the STRICT reading — the model's own
+           # top-level "converges" is read by nobody, and the headline renders from this, so
+           # loosening it to include single-supporter would restate a hunch as a finding.
+           "converges": any(p["verdict"] == "verified" for p in preds_out),
+           "predictions": preds_out, "verdicts": tally,
+           "n_unverifiable_citations": n_ghost,
            "summary": (data.get("summary") or "").strip()}
     if preds_out:
         _cache_put(_NET_PRED_CACHE, cache_key, out)  # a run that converged on nothing is not cached
@@ -720,10 +812,12 @@ async def get_net_predict(gene: str, context: str, organism: str = "human", top:
     """Guilt-by-association from RETICLE's OWN net_edge network (not STRING/DepMap).
 
     Returns None when the seed is not in the network for this context, or when it has no
-    co-essential partners even after widening past reciprocal-only — the router renders both as
-    the same 404. Otherwise always a 200 payload; note the short-circuit branch (fewer than two
-    partners carry any curated annotation) returns model: None, converges: false, predictions: []
-    WITHOUT spending a model call.
+    co-essential partners at all — the router renders both as the same 404. Otherwise always a 200
+    payload; note the short-circuit branch (fewer than two partners carry any curated annotation)
+    returns model: None, converges: false, predictions: [] WITHOUT spending a model call.
+
+    `reciprocal_only` is the caller's DISPLAY state. It no longer selects the dossier — that is
+    always the tier-graded union — and only feeds the reported `n_beyond_view`.
     """
     return await run_in_threadpool(_net_predict_sync, gene, context, organism, top,
                                    reciprocal_only)
