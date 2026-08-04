@@ -36,16 +36,27 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
 .pill:hover{border-color:var(--know)}
 .pill.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
 .toggle{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink2);cursor:pointer;user-select:none}
+.toggle:has(input:disabled){opacity:.4;cursor:default}
+.ppn{font-family:var(--mono);font-size:11px;color:var(--faint)}
 .toggle input{accent-color:var(--know);width:15px;height:15px}
 .grow{flex:1}
 
 /* main split */
-.wrap{display:flex;height:calc(100vh - 108px)}
+/* Height is set by fitWrap() at runtime, not here. It used to be calc(100vh - 108px), which broke
+   the moment the control bar gained an Evidence group and wrapped to two rows. A flex column on
+   <body> does not fix it either: vendored into the React app this page lives inside a shadow root
+   with an extra host div between .rx-body and .wrap, so the column never reaches this element and
+   it grew to 1045px inside an 865px box. Measuring from the viewport is the one approach that is
+   identical in both mountings. */
+.wrap{display:flex;min-height:320px}
+/* A faint centre light under the dot grid. The graph is fitted and centred now, so the canvas has
+   a subject; the gradient gives it somewhere to sit instead of floating on flat paper. */
 #cy{flex:1;background:
-   radial-gradient(circle at 1px 1px, var(--line2) 1px, transparent 0) 0 0/22px 22px, var(--paper)}
-.panel{width:290px;border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:20px}
-.panel h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:0 0 3px}
-.panel .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+   radial-gradient(circle at 1px 1px, var(--line2) 1px, transparent 0) 0 0/22px 22px,
+   radial-gradient(ellipse at 50% 46%, #FFFFFF 0%, #FBFBF9 55%, #F5F4F0 100%)}
+.panel{width:298px;flex:0 0 auto;border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:20px}
+.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
+.panel .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:2px}
 .kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line2)}
 .kv span:first-child{color:var(--muted)}
 .kv b{font-weight:600;font-family:var(--mono)}
@@ -54,9 +65,37 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
 .t-mix{background:#6B72801a;color:var(--muted)} .t-unk{background:#9AA0A614;color:var(--faint)}
 .legend{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
 .legrow{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink2);margin:8px 0}
+
+/* evidence tier — the graded readout that replaced "one line, thickness = r" */
+.tier-head{padding:9px 0 9px 11px;margin:12px 0 2px;background:var(--line2);border-radius:0 6px 6px 0}
+.tier-name{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink)}
+.tier-prec{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.tier-base{color:var(--faint)}
+/* the evidence lane — a gel read top-down, strongest band first */
+/* 240px, not the 196 this started at. A one-line band needs ~26px, and at 196 BOTH of the small
+   tiers hit that floor — 17 edges and 8 edges rendered the same height, which is the one thing a
+   proportional device must never do. At 240 only the genuinely tiny tier is floored. */
+.lane{display:flex;flex-direction:column;gap:2px;height:240px;border-radius:5px;overflow:hidden}
+.band{position:relative;display:flex;align-items:center;gap:8px;padding:0 10px;min-height:26px;
+  cursor:default;overflow:hidden;transition:filter .18s,opacity .18s}
+.band:hover{filter:brightness(1.09)}
+.band.off{opacity:.2}
+.band b{font-family:var(--mono);font-size:12px;font-weight:600;min-width:22px}
+.band span{font-size:11.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band em{font-family:var(--mono);font-size:10px;font-style:normal;margin-left:auto;opacity:.8}
+/* co-hit-only carries the same hue as mutual-best because they are worth nearly the same; the
+   hatch is what says "the OTHER channel", echoing the dashed line it stands for on the graph. */
+.band .hatch{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(-45deg,#FFFFFF00 0 5px,#FFFFFF24 5px 10px)}
+
+/* the load caption — names the tier currently landing, then retires */
+.cap{position:absolute;left:24px;bottom:20px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);opacity:0;transition:opacity .35s;pointer-events:none}
+.cap.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.cap{display:none}}
 .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid}
 .hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}
-.foot{font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:8px 22px;border-top:1px solid var(--line);letter-spacing:.03em;background:var(--card)}
+.foot{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:8px 22px;border-top:1px solid var(--line);letter-spacing:.03em;background:var(--card)}
 .status{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;color:var(--muted)}
 .partner{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line2);cursor:pointer}
 .partner:hover b{color:var(--know)} .partner b{font-family:var(--mono);font-weight:500}
@@ -93,6 +132,29 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
   padding:2px 8px;color:var(--muted);cursor:pointer;background:var(--card);transition:.15s}
 .pc-chip:hover{border-color:var(--know);color:var(--know)}
 .pc-chip b{font-weight:500}
+/* supporter chips carry the tier they were graded at — the number a reviewer will ask about */
+.pc-chip i{font-style:normal;font-size:9px;letter-spacing:.03em;margin-right:5px;padding:0 3px;
+  border-radius:3px;background:var(--line2);color:var(--muted)}
+.pc-chip.t1 i{background:#2E475620;color:#2E4756}
+.pc-chip.t2 i,.pc-chip.t3 i{background:#6E879420;color:#55707E}
+
+/* verdicts — a failed check is now shown, not deleted */
+.pc-verdict{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;padding:1px 7px;border-radius:10px;margin-left:auto}
+.pc-verdict.v-ok{background:var(--know-soft);color:var(--know)}
+.pc-verdict.v-weak{background:var(--eviq-soft);color:var(--eviq)}
+.pc-verdict.v-rej{background:#8A8F9818;color:var(--muted)}
+.pred-card.rejected{background:transparent;border-style:dashed}
+.pred-card.rejected .pc-name{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.pred-card.rejected .pc-rat{color:var(--faint)}
+.pc-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px;padding-left:9px;
+  border-left:2px solid var(--line)}
+.pc-ghost{font-family:var(--mono);font-size:10px;color:var(--eviq);margin-top:7px}
+.pred-filter{display:flex;align-items:center;gap:10px;margin-top:11px;font-size:11.5px;color:var(--muted)}
+.pred-filter .pf-btn{margin-left:auto;font-family:var(--sans);font-size:11px;border:1px solid var(--line);
+  background:var(--card);color:var(--muted);border-radius:9px;padding:3px 10px;cursor:pointer;transition:.15s}
+.pred-filter .pf-btn:hover{border-color:var(--know);color:var(--know)}
+.pred-audit{font-size:11.5px;color:var(--eviq);line-height:1.5;margin-top:10px;padding-left:9px;
+  border-left:2px solid var(--eviq)}
 /* ---------- global feature nav (shared: index / gene / network) ---------- */
 .gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;
   background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}
@@ -130,13 +192,21 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
   </div>
   <span class="ctl-lab" style="margin-left:16px">Context</span>
   <div id="ctxpills" style="display:flex;gap:8px"></div>
+  <span class="ctl-lab" style="margin-left:16px">Evidence</span>
+  <div id="tierpills" style="display:flex;gap:8px">
+    <button class="pill" data-floor="1" onclick="setTierFloor(1)" title="Both channels agree — 46.4% of these recover a known complex">Both channels</button>
+    <button class="pill" data-floor="3" onclick="setTierFloor(3)" title="At least one channel beyond a bare correlation — 17.7–46.4%">Any second signal</button>
+    <button class="pill on" data-floor="4" onclick="setTierFloor(4)" title="Every edge, including correlation-only — the bottom tier recovers a complex 4.9% of the time">All edges</button>
+  </div>
   <div class="grow"></div>
+  <label class="toggle" title="Edges between two partners, neither of which is the focal gene. They are what make the neighbourhood read as a complex rather than a list — but they are also most of the ink."><input type="checkbox" id="pp"> between partners <span class="ppn" id="ppn"></span></label>
   <label class="toggle"><input type="checkbox" id="recip" checked> reciprocal only <span style="color:var(--faint)">(mutual-best)</span></label>
 </div>
 
 <div class="wrap" style="position:relative">
   <div id="cy"></div>
   <div id="status" class="status"></div>
+  <div id="cap" class="cap"></div>
   <div class="panel" id="panel"></div>
 </div>
 <div class="foot">Pure BioGRID CRISPR co-essentiality · no STRING, no literature · edges pooled across all genome-wide screens per species — <b>Human</b> (1,375 screens) and <b>Mouse</b> (87 screens) live in separate networks; the mouse network is exploratory.</div>
@@ -148,21 +218,177 @@ let CY=null, ORG='human', CTX='all', RECIP=true, FOCUS='FANCD2', CONTEXTS=[];
 const DEFAULT_FOCUS={human:'FANCD2', mouse:'Rpl13'};
 const DEFAULT_CTX={human:'all', mouse:'mouse'};
 
+/* EVIDENCE TIERS. Two independent channels back an edge: channel 1 is the percentile-profile
+   correlation over every screen (net_edge.strength / .reciprocal), channel 2 is Fisher co-hit
+   enrichment over only the screens where both genes were CALLED HITS (hit_only_connection).
+   Measured against CORUM same-complex membership on 11,954 evaluable edges — 46.4% / 22.4% /
+   17.7% / 4.9% precision against a 0.615% baseline (script/exp_evidence_tiers.py).
+
+   The visual grammar: WEIGHT AND DARKNESS = how many channels agree; LINE STYLE = which one.
+   Solid means channel 1 called it mutual-best, dashed means only channel 2 spoke, dotted means
+   neither did and all that is left is a bare correlation — 70.7% of the network, at 4.9%.
+
+   Thickness deliberately no longer tracks |r|. |r| is the weakest of the four dimensions
+   (AUROC 0.6361) and is non-monotone at the top: its strongest decile scores 17.3% while the
+   second scores 20.9%. Drawing it as weight told the user the opposite of the truth. */
+const TIER={
+  1:{key:'both',  label:'both channels',    color:'#2E4756', width:4.5, style:'solid',  op:.92,
+     blurb:'Mutual-best correlation AND significant co-hit enrichment — two independent channels.'},
+  2:{key:'mutual',label:'mutual-best',      color:'#6E8794', width:2.8, style:'solid',  op:.78,
+     blurb:'Each gene is the other’s best correlate, but they are not co-called hits more than chance.'},
+  3:{key:'cohit', label:'co-hit only',      color:'#6E8794', width:2.8, style:'dashed', op:.72,
+     blurb:'Called hits together far more than their individual hit rates predict, without a mutual-best correlation.'},
+  4:{key:'weak',  label:'correlation only', color:'#C3C9C2', width:1.2, style:'dotted', op:.42,
+     blurb:'A one-directional correlation and nothing else. Seven of every ten drawn edges are here, and they recover a known complex 4.9% of the time.'},
+};
+const TIER_PREC={1:'46.4%',2:'22.4%',3:'17.7%',4:'4.9%'};
+let TIER_FLOOR=4;                 // show tiers 1..TIER_FLOOR — 4 = everything, today's behaviour
+
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 const cyStyle=[
   {selector:'node',style:{
     'background-color':n=>LEAN_COLOR[n.data('lean')]||LEAN_COLOR.null,
     'border-color':n=>LEAN_BORDER[n.data('lean')]||LEAN_BORDER.null,
     'border-width':2,'width':n=>18+8*Math.sqrt(n.data('degree')||1),'height':n=>18+8*Math.sqrt(n.data('degree')||1),
     'label':'data(label)','font-family':'IBM Plex Mono','font-size':11,'color':'#3A3D44',
-    'text-valign':'bottom','text-margin-y':4,'text-halign':'center'}},
+    /* Placement is set per node by placeLabels() after layout — see there for why a fixed
+       'below the node' does not survive a dense neighbourhood. */
+    'text-valign':'bottom','text-margin-y':4,'text-halign':'center',
+    /* A solid chip, not just a stroke. An outline keeps a label legible against EDGES; it does
+       nothing when the label lands on another gene's circle, which is what actually happens in a
+       core like FANCD2's. The chip wins against anything drawn under it. */
+    'text-background-color':'#FCFCFB','text-background-opacity':.9,
+    'text-background-padding':2.5,'text-background-shape':'roundrectangle',
+    'text-outline-color':'#FCFCFB','text-outline-width':1}},
+  /* Bring a hovered gene's whole rendering — circle AND label — above its neighbours, so the one
+     label the user is reaching for is never the one underneath. */
+  {selector:'node.lift',style:{'z-index':30,'text-background-opacity':1,'color':'#14161A'}},
   {selector:'node[?focus]',style:{'border-color':'#14161A','border-width':4,'width':42,'height':42,
-    'font-size':14,'font-weight':600,'color':'#14161A','z-index':10}},
-  {selector:'edge',style:{'line-color':'#C9CDC7','width':e=>1+5*Math.max(0,e.data('strength')),
-    'curve-style':'straight','opacity':.7}},
-  {selector:'edge[!reciprocal]',style:{'line-color':'#DFE2DC','line-style':'dashed','opacity':.5}},
-  {selector:'.sel',style:{'line-color':'#1F6F8B','opacity':1,'width':3.5}},
+    'font-size':14,'font-weight':600,'color':'#14161A','z-index':10,
+    'overlay-color':'#1F6F8B','overlay-padding':0,'overlay-opacity':0}},
+  {selector:'edge',style:{'curve-style':'straight',
+    'line-color':e=>(TIER[e.data('tier')]||TIER[4]).color,
+    'width':    e=>(TIER[e.data('tier')]||TIER[4]).width,
+    'line-style':e=>(TIER[e.data('tier')]||TIER[4]).style,
+    'opacity':  e=>(TIER[e.data('tier')]||TIER[4]).op}},
+  {selector:'.sel',style:{'line-color':'#1F6F8B','opacity':1,'width':4.5,'line-style':'solid'}},
   {selector:'node.dim',style:{'opacity':.22}},{selector:'edge.dim',style:{'opacity':.06}},
+  /* Hover isolation is a SEPARATE class from .dim so a moment of mouse travel cannot wipe out a
+     selection the user made by clicking. It only ever engages when nothing is selected. */
+  {selector:'node.hov',style:{'opacity':.14}},{selector:'edge.hov',style:{'opacity':.05}},
+  {selector:'.tierhidden',style:{'display':'none'}},
+  {selector:'.pphidden',style:{'display':'none'}},
 ];
+
+/* EDGE SCOPE. By default the graph draws only the edges that touch the focal gene. For FANCD2's
+   widened neighbourhood that is 18 lines instead of 103 — the other 85 run between two partners,
+   and they are most of the ink on the canvas.
+
+   The partner-partner edges are not noise: they are what makes the picture a neighbourhood rather
+   than a ranked list, since a complex is visible precisely because its members connect to EACH
+   OTHER. So they are hidden, not discarded, and — this is the part that makes hiding them
+   acceptable — THE LAYOUT IS STILL COMPUTED FROM ALL OF THEM. cose places FANCA/FANCB/FANCC/FANCG
+   together because they are mutually connected; dropping the lines afterwards leaves that grouping
+   standing as spatial proximity. The reader still sees the module, just without the thicket. */
+let SHOW_PP=false;
+
+/* ── The load sequence ──────────────────────────────────────────────────────────────────────
+   Edges arrive by TIER, strongest first. This is not decoration: the order IS the ranking, so by
+   the time the graph settles the reader has already been told which lines carry weight without
+   having read the legend. The caption names the measured precision of the tier currently landing,
+   then retires — it is an introduction, not furniture.
+   Skipped wholesale under prefers-reduced-motion, and skipped for tiers the evidence filter is
+   hiding, so the animation can never contradict the filter. */
+function sediment(){
+  const cap = document.getElementById('cap');
+  const done = () => { if(cap){ cap.textContent=''; cap.classList.remove('on'); } };
+  /* An INLINE opacity outranks every class selector in cytoscape, so the animation must hand
+     control back when it finishes or `.hov` and `.dim` are silently dead for the rest of the
+     session — the graph stops responding to hover and to selection, with nothing in the console.
+     Everything below animates inline and then removes the inline value. */
+  const release = ele => ele.removeStyle('opacity');
+  if(REDUCED){ CY.elements().forEach(release); done(); return; }
+  CY.nodes().style('opacity',0);
+  CY.edges().style('opacity',0);
+  CY.nodes().sort((a,b)=>(b.data('degree')||0)-(a.data('degree')||0))
+    .forEach((n,i)=>setTimeout(()=>n.animate({style:{opacity:1}},
+      {duration:240, complete:()=>release(n)}), 30+i*24));
+  [[360,1],[880,2],[1220,3],[1560,4]].forEach(([t,k])=>setTimeout(()=>{
+    const all=CY.edges(`[tier = ${k}]`);
+    if(!all.length) return;
+    // Only what is actually drawn gets an entrance; the rest just has its inline 0 dropped, so
+    // un-hiding it later shows it immediately instead of leaving it invisible.
+    const set=all.filter(e=>!e.hasClass('tierhidden')&&!e.hasClass('pphidden'));
+    all.not(set).forEach(release);
+    if(!set.length) return;
+    if(cap){ cap.textContent=`${TIER[k].label} · ${TIER_PREC[k]} recover a known complex`; cap.classList.add('on'); }
+    set.animate({style:{opacity:TIER[k].op}},{duration:340,easing:'ease-out',
+      complete:()=>set.forEach(release)});
+  }, t));
+  setTimeout(done, 3300);
+  /* The final state must not depend on animation callbacks firing. A backgrounded tab throttles
+     requestAnimationFrame to roughly nothing, cytoscape stops stepping its animations, and every
+     `complete` — and therefore every release() — is never called, leaving the whole graph at the
+     opacity 0 the sequence starts from. Measured: 1 frame per 800ms with document.hidden true.
+     It self-heals when the tab is focused, but "invisible until you click on it" is not a state to
+     ship. One unconditional settle puts everything back under the stylesheet regardless.
+
+     stop() first: removeStyle does NOT cancel a running animation, and a throttled one keeps
+     writing its interpolated inline opacity every frame afterwards — the settle appeared to work
+     and then the graph faded back to a half-drawn 0.43. */
+  setTimeout(()=>{
+    if(!CY || CY.destroyed()) return;
+    CY.elements().stop(true);
+    CY.elements().forEach(release);
+  }, 2200);
+  /* Two slow rings on the focus gene, then still. A permanent pulse would be an animation the eye
+     never stops correcting for; two says "you are here" and stops. */
+  const foc=CY.nodes('[?focus]');
+  let n=0;
+  (function ping(){
+    if(n++>1 || !foc.length) return;
+    foc.style({'overlay-padding':0,'overlay-opacity':.20});
+    foc.animate({style:{'overlay-padding':26,'overlay-opacity':0}},
+                {duration:1500,easing:'ease-out',complete:ping});
+  })();
+}
+
+/* Client-side so the floor is instant and needs no refetch — the tier is already on every edge. */
+function applyTierFloor(){
+  if(!CY) return;
+  CY.edges().forEach(e=>{
+    const hide=(e.data('tier')||4)>TIER_FLOOR;
+    e[hide?'addClass':'removeClass']('tierhidden');
+    /* Clear rather than set. An edge un-hidden by raising the floor may still be mid-entrance at
+       opacity 0; dropping the inline value returns it to the stylesheet's tier opacity, and — unlike
+       setting one — leaves `.hov` and `.dim` able to win afterwards. */
+    if(!hide) e.removeStyle('opacity');
+  });
+  const box=document.getElementById('tierpills'); if(!box) return;
+  [...box.querySelectorAll('.pill')].forEach(b=>b.classList.toggle('on',+b.dataset.floor===TIER_FLOOR));
+}
+function setTierFloor(n){ TIER_FLOOR=n; applyTierFloor(); const j=window.__NETJ; if(j) renderPanel(j); }
+
+/** True when an edge touches the focal gene. */
+function isDirect(e){ return e.source().data('focus')===true || e.target().data('focus')===true; }
+/** Edges currently drawn — neither filtered out by evidence nor by scope. */
+function visibleEdges(){ return CY?CY.edges().filter(e=>!e.hasClass('tierhidden')&&!e.hasClass('pphidden')):[]; }
+
+function applyEdgeScope(){
+  if(!CY) return;
+  let pp=0;
+  CY.edges().forEach(e=>{
+    const between=!isDirect(e);
+    if(between) pp++;
+    e[(between&&!SHOW_PP)?'addClass':'removeClass']('pphidden');
+    if(!(between&&!SHOW_PP)) e.removeStyle('opacity');   // same reason as applyTierFloor
+  });
+  const lab=document.getElementById('ppn');
+  if(lab) lab.textContent=pp?`(${pp})`:'';
+  const box=document.getElementById('pp');
+  if(box) box.disabled=!pp;
+}
 
 async function loadContexts(){
   const r=await fetch('/api/net_contexts?organism='+ORG);const j=await r.json();
@@ -194,20 +420,169 @@ async function load(){
   const u=`/api/screen_net?gene=${encodeURIComponent(FOCUS)}&context=${encodeURIComponent(CTX)}&reciprocal=${RECIP?1:0}&organism=${ORG}`;
   let j;try{j=await (await fetch(u)).json();}catch(e){status('request failed');return;}
   if(j.error){status(j.error);if(CY)CY.elements().remove();renderPanel(null);return;}
-  status('');FOCUS=j.focus;document.getElementById('q').placeholder=j.focus;
+  status('');FOCUS=j.focus;document.getElementById('q').placeholder=j.focus;window.__NETJ=j;
   const els=[
     ...j.nodes.map(n=>({data:{id:n.id,label:n.label,lean:String(n.lean),focus:n.focus,degree:n.degree,mean_percentile:n.mean_percentile}})),
-    ...j.edges.map(e=>({data:{id:e.source+'__'+e.target,source:e.source,target:e.target,strength:e.strength,reciprocal:e.reciprocal}})),
+    ...j.edges.map(e=>({data:{id:e.source+'__'+e.target,source:e.source,target:e.target,strength:e.strength,reciprocal:e.reciprocal,
+      tier:e.tier,tier_label:e.tier_label,jaccard:e.jaccard,cohit:e.cohit}})),
   ];
   if(!CY){
     CY=cytoscape({container:document.getElementById('cy'),elements:els,style:cyStyle,
       minZoom:.2,maxZoom:3,wheelSensitivity:.25});
     CY.on('tap','node',ev=>{const d=ev.target.data();if(d.id!==FOCUS){FOCUS=d.id;load();}else selectNode(ev.target);});
     CY.on('tap','edge',ev=>selectEdge(ev.target));
-    CY.on('tap',ev=>{if(ev.target===CY){CY.elements().removeClass('dim sel');renderPanel(j);}});
+    CY.on('tap',ev=>{if(ev.target===CY){CY.elements().removeClass('dim sel hov');renderPanel(j);}});
+    /* Hover a gene to see only its evidence. Deferred to a click-free graph so it cannot fight a
+       selection: with something selected, the panel is showing that thing and the graph must agree. */
+    CY.on('mouseover','node',ev=>{
+      ev.target.addClass('lift');            // label to the front, always — even with a selection
+      if(CY.elements('.sel').length) return;
+      CY.elements().not(ev.target.closedNeighborhood()).addClass('hov');
+    });
+    CY.on('mouseout','node',ev=>{ev.target.removeClass('lift');CY.elements().removeClass('hov');});
   }else{CY.elements().remove();CY.add(els);}
-  CY.layout({name:'cose',animate:true,animationDuration:600,padding:60,nodeRepulsion:22000,idealEdgeLength:118,nodeOverlap:28,componentSpacing:150,gravity:.25,coolingFactor:.96}).run();
+  applyTierFloor();
+  applyEdgeScope();
+  fitWrap();                 // size the canvas BEFORE cytoscape measures it, not after
+  /* animate:false + an explicit fit. The old animated cose left the graph wherever it converged,
+     which for most genes was a knot in one corner with two thirds of the canvas empty; the
+     entrance animation now belongs to sediment() instead, which says something. */
+  /* Repulsion and gravity left where they are on purpose. Spreading the layout to buy label
+     clearance does not work: fit() scales the result back down, so the clearance is the same
+     fraction of a smaller graph, and the looser shape wastes more canvas. Tried 46000/140/0.15 —
+     measurably worse. Label legibility is bought by placeLabels() and the chips, not by geometry. */
+  const lay=CY.layout({name:'cose',animate:false,padding:70,nodeRepulsion:24000,idealEdgeLength:120,
+    nodeOverlap:30,componentSpacing:150,gravity:.3,coolingFactor:.95});
+  /* resize() BEFORE fit(). cytoscape caches its container's dimensions, and vendored into the
+     React app this page mounts inside a shadow root whose flex column has not resolved yet — the
+     graph fitted itself to a stale, tiny box and rendered as a thumbnail in the corner while the
+     canvas around it was full size. */
+  lay.one('layoutstop',()=>{CY.resize();placeLabels();CY.fit(undefined,70);sediment();});
+  lay.run();
   renderPanel(j);
+  watchResize();
+}
+
+/* LABEL PLACEMENT. Every label used to sit directly below its node, which is fine on a sparse
+   neighbourhood and unreadable on a dense one: in FANCD2's core the label of one gene lands on the
+   circle of the gene beneath it, and two labels land on each other. Nothing about the halo or the
+   chip fixes that — the text is legible, it is just in the wrong place.
+
+   So each label is pushed OUTWARD, away from the neighbourhood's centre. In a force-directed layout
+   the crowding is always toward the middle, so the outward side of any node is the emptiest side
+   available to it. Eight positions, one per octant, using the halign/valign pairs cytoscape already
+   supports. The focus gene keeps its label below, centred: it is the one node the reader looks for
+   by position rather than by reading, and moving it would be the one change they notice. */
+const LBL_H=['right','right','center','left','left','left','center','right'];
+const LBL_V=['center','bottom','bottom','bottom','center','top','top','top'];
+const LBL_FONT=11, LBL_CHAR=6.6, LBL_PAD=2.5, LBL_GAP=4;   // IBM Plex Mono 11px, measured
+
+/** Where a label would sit, in MODEL coordinates, for one of the eight placements. */
+function labelBox(n, oct, zoom){
+  const p=n.position(), r=n.width()/2;
+  const w=((n.data('label')||'').length*LBL_CHAR + 2*LBL_PAD)/zoom;
+  const h=(LBL_FONT + 2*LBL_PAD + 2)/zoom;
+  const gap=LBL_GAP/zoom;
+  const hh=LBL_H[oct], vv=LBL_V[oct];
+  const cx = hh==='right' ? p.x + r + gap + w/2
+           : hh==='left'  ? p.x - r - gap - w/2 : p.x;
+  const cy = vv==='bottom'? p.y + r + gap + h/2
+           : vv==='top'   ? p.y - r - gap - h/2 : p.y;
+  return {x1:cx-w/2, x2:cx+w/2, y1:cy-h/2, y2:cy+h/2};
+}
+function overlap(a,b){
+  return Math.max(0, Math.min(a.x2,b.x2)-Math.max(a.x1,b.x1))
+       * Math.max(0, Math.min(a.y2,b.y2)-Math.max(a.y1,b.y1));
+}
+
+/* LABEL PLACEMENT. Every label used to sit directly below its node, which is fine on a sparse
+   neighbourhood and unreadable on a dense one: in FANCD2's core the label of one gene lands on the
+   circle of the gene beneath it, and two labels land on each other. Nothing about the halo or the
+   chip fixes that — the text is legible, it is just in the wrong place.
+
+   Two passes. First choice is OUTWARD, away from the neighbourhood's centre: in a force-directed
+   layout the crowding is always toward the middle, so a node's outward side is the emptiest side
+   available to it. That alone fixes the ring but not the core, where a node sitting near the
+   centroid has no outward direction to take — so the second pass actually measures. Nodes are
+   placed hubs-first (they are the ones a reader is looking for), each tries all eight positions,
+   and takes the one whose box overlaps the least of what is already committed.
+
+   Nothing is ever hidden. A gene name a biologist cannot read is a gene they cannot look up, so a
+   crowded label still gets its least-bad spot rather than being dropped — and hovering lifts it
+   clear regardless.
+
+   The focus gene keeps its label below, centred: it is the one node the reader finds by position
+   rather than by reading, and moving it is the one change they would notice. */
+function placeLabels(){
+  if(!CY || !CY.nodes().length) return;
+  const bb=CY.nodes().boundingBox();
+  const cx=(bb.x1+bb.x2)/2, cy=(bb.y1+bb.y2)/2;
+  const el=document.getElementById('cy');
+  const cw=el?el.clientWidth:900, ch=el?el.clientHeight:600;
+  /* Labels render at a fixed PIXEL size, so their footprint in model space depends on the zoom —
+     which fit() has not applied yet. Predict it the same way fit() will. */
+  const zoom=Math.max(.15, Math.min(3,
+    Math.min((cw-140)/Math.max(bb.w,1), (ch-140)/Math.max(bb.h,1))));
+
+  const taken=[];                                  // committed label boxes
+  const circles=CY.nodes().map(n=>{
+    const p=n.position(), r=n.width()/2;
+    return {x1:p.x-r, x2:p.x+r, y1:p.y-r, y2:p.y+r};
+  });
+
+  const order=CY.nodes().sort((a,b)=>
+    (b.data('focus')?1e9:b.data('degree')||0)-(a.data('focus')?1e9:a.data('degree')||0));
+
+  order.forEach(n=>{
+    let oct;
+    if(n.data('focus')){
+      oct=2;                                       // centre-bottom, always
+    }else{
+      const dx=n.position().x-cx, dy=n.position().y-cy;
+      const pref=(dx===0&&dy===0)?2:((Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8);
+      let best=pref, bestScore=Infinity;
+      // Try the outward choice first, then the rest; ties keep the outward one.
+      for(const cand of [pref,(pref+1)%8,(pref+7)%8,(pref+2)%8,(pref+6)%8,(pref+3)%8,(pref+5)%8,(pref+4)%8]){
+        const box=labelBox(n,cand,zoom);
+        let s=0;
+        for(const t of taken)   s+=overlap(box,t)*2;   // label-on-label is worse than label-on-circle
+        for(const c of circles) s+=overlap(box,c);
+        if(s<bestScore-1e-6){ bestScore=s; best=cand; if(s===0) break; }
+      }
+      oct=best;
+    }
+    taken.push(labelBox(n,oct,zoom));
+    const h=LBL_H[oct], v=LBL_V[oct];
+    n.style({'text-halign':h,'text-valign':v,
+      'text-margin-x':h==='right'?LBL_GAP:h==='left'?-LBL_GAP:0,
+      'text-margin-y':v==='bottom'?LBL_GAP:v==='top'?-LBL_GAP:0});
+  });
+}
+
+/* The graph area claims everything between the chrome above it and the footnote below, measured
+   from the viewport so it does not care what the DOM chain above it looks like. */
+function fitWrap(){
+  const w=document.querySelector('.wrap'); if(!w) return;
+  const foot=document.querySelector('.foot');
+  const footH=foot?foot.getBoundingClientRect().height:0;
+  const h=Math.max(320, Math.round(window.innerHeight - w.getBoundingClientRect().top - footH));
+  if(w.style.height!==h+'px') w.style.height=h+'px';
+}
+
+/* Keep the graph fitted when its box changes — the control bar rewrapping, a React parent
+   mounting, the window resizing. Installed once. */
+let RESIZE_OBS=null;
+function watchResize(){
+  fitWrap();
+  if(RESIZE_OBS || typeof ResizeObserver==='undefined') return;
+  const host=document.getElementById('cy'); if(!host) return;
+  let t=null;
+  RESIZE_OBS=new ResizeObserver(()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{ if(CY && CY.nodes().length){ CY.resize(); CY.fit(undefined,70); } },120);
+  });
+  RESIZE_OBS.observe(host);
+  window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(fitWrap,120);});
 }
 
 function selectNode(node){
@@ -224,33 +599,129 @@ function selectNode(node){
     partners.map(p=>`<div class="partner" onclick="jump('${p.id}')"><b>${p.id}</b><span class="r">r ${p.strength}${p.reciprocal?' ⇄':''}</span></div>`).join('')+
     `</div><div class="hint"><a href="/gene?gene=${d.label}">Open ${d.label} in the gene wiki →</a></div>`;
 }
+function fmtQ(q){ if(q==null) return '—';
+  if(q===0) return '&lt;1e-300';                       /* the table underflows at ~1.7e-310 */
+  const e=Math.floor(Math.log10(q)); return q<1e-4?`1e${e}`:q.toPrecision(2); }
+
 function selectEdge(edge){
   CY.elements().addClass('dim');CY.elements().removeClass('sel');
   edge.removeClass('dim').addClass('sel');edge.source().removeClass('dim');edge.target().removeClass('dim');
-  const d=edge.data();
+  const d=edge.data(), t=TIER[d.tier]||TIER[4], c=d.cohit;
+  /* Both channels, always, in the same order — an edge that FAILS channel 2 is a finding, not an
+     absence to hide. The number that decides whether this is worth a cloning experiment is the
+     tier's measured precision, so it leads. */
   document.getElementById('panel').innerHTML=
     `<h3 style="font-family:var(--mono);font-size:15px">${d.source} — ${d.target}</h3>`+
-    `<div class="sub">co-essential edge · ${CTX}</div>`+
+    `<div class="sub">co-essential edge · ${esc(CTX)}</div>`+
+    `<div class="tier-head" style="border-left:3px solid ${t.color}">
+       <div class="tier-name">${t.label}</div>
+       <div class="tier-prec">${TIER_PREC[d.tier]||'—'} of edges like this recover a known CORUM complex
+         <span class="tier-base">· 0.6% for a random annotated pair</span></div>
+     </div>`+
+    `<div class="ctl-lab" style="margin:14px 0 6px">Channel 1 · profile correlation</div>`+
     kv('correlation r', d.strength)+kv('mutual-best', d.reciprocal?'yes ⇄':'one-directional')+
-    `<div class="hint">These two genes' knockout-fitness profiles track each other across the genome-wide screens of this context.</div>`;
+    `<div class="ctl-lab" style="margin:14px 0 6px">Channel 2 · co-hit enrichment</div>`+
+    (c ? kv('co-hit screens', `${c.co_hit} of ${c.support}`)+kv('enrichment', c.fold+'×')+
+         kv('FDR q', fmtQ(c.q_value))+kv('same direction', (c.concordance*100).toFixed(1)+'%')
+       : `<div class="hint" style="margin:0">Not co-called significantly more often than their
+            individual hit rates predict. Channel 2 is silent on this pair.</div>`)+
+    `<div class="ctl-lab" style="margin:14px 0 6px">Neighbourhood</div>`+
+    kv('shared partners (Jaccard)', d.jaccard==null?'—':d.jaccard.toFixed(3))+
+    `<div class="hint">Channel 1 correlates the full fitness profile across every screen. Channel 2
+       uses <b>only</b> the screens where both genes were called hits — the cells channel 1 averages
+       away — so the two agree by biology, not by construction.
+       ${c&&c.concordance!=null?`Same-direction share is descriptive only: it does not separate real
+       complexes from coincidences (AUROC 0.53), so nothing is filtered on it.`:''}</div>`;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* THE EVIDENCE LANE. A gel lane, read the way a bench biologist already reads one: bands stacked
+   strongest-first, band height = how much of this neighbourhood sits at that level of evidence.
+   It replaced a horizontal proportion bar plus a separate key — the bar encoded the same numbers
+   but a 5px strip is not a thing you read, and splitting count from swatch made the reader do a
+   join. Here the proportion IS the row, so "seven of every ten of these lines are the pale band
+   at the bottom" arrives without anyone reading a number.
+
+   One line of content per band, vertically centred, with a 30px floor. The earlier two-line
+   version broke on real data: mutual-best is 8 of 103 edges here, and its band could not hold a
+   label. Height still carries the proportion; the content just never fights it. */
+function tierLane(j){
+  if(!j || !j.edges) return '';
+  const direct=e=>e.source===j.focus||e.target===j.focus;
+  const inScope=j.edges.filter(e=>SHOW_PP||direct(e));
+  const drawn=inScope.filter(e=>(e.tier||4)<=TIER_FLOOR);
+  if(!drawn.length) return '';
+  const h={1:0,2:0,3:0,4:0};
+  drawn.forEach(e=>{h[e.tier||4]++;});
+  const tot=drawn.length;
+  const bands=[1,2,3,4].filter(t=>h[t]).map(t=>{
+    const pale=t===4;
+    return `<div class="band" data-tier="${t}" style="flex:${h[t]};
+        background:${TIER[t].color};color:${pale?'var(--ink2)':'#FCFCFB'}"
+        title="${esc(TIER[t].blurb)}">
+      ${t===3?'<i class="hatch"></i>':''}
+      <b>${h[t]}</b><span>${TIER[t].label}</span><em>${TIER_PREC[t]}</em></div>`;
+  }).join('');
+  /* The lane describes what is ON SCREEN, not what the server sent — otherwise it would keep
+     advertising 103 edges while 18 are drawn. Both kinds of hidden edge are named, because a
+     reader who cannot see why a number moved stops trusting the number. */
+  const byEvidence=inScope.length-drawn.length;
+  const byScope=j.edges.length-inScope.length;
+  const notes=[];
+  if(byEvidence) notes.push(`${byEvidence} below the evidence filter`);
+  if(byScope) notes.push(`${byScope} between partners, hidden`);
+  return `<div class="ctl-lab" style="margin:16px 0 7px">Edge evidence · CORUM precision</div>`+
+    `<div class="lane">${bands}</div>`+
+    `<div class="hint" style="margin:7px 0 0">Band height is that tier's share of the ${tot} edge${tot===1?'':'s'}
+       drawn. Hover a band to isolate it.${notes.length?` <span style="color:var(--faint)">${notes.join(' · ')}.</span>`:''}</div>`;
+}
+
+/* Bound after every panel render, because renderPanel replaces the whole subtree. */
+function bindLane(){
+  document.querySelectorAll('.lane .band').forEach(b=>{
+    const k=+b.dataset.tier;
+    b.addEventListener('mouseenter',()=>{
+      if(!CY||CY.elements('.sel').length) return;
+      // Only over what is DRAWN — otherwise a hidden partner-partner edge would keep its genes lit
+      // and the isolation would contradict the picture.
+      const lit=visibleEdges().filter(e=>(e.data('tier')||4)===k);
+      CY.edges().forEach(e=>e.toggleClass('hov',!lit.contains(e)));
+      CY.nodes().addClass('hov');
+      lit.connectedNodes().removeClass('hov');
+    });
+    b.addEventListener('mouseleave',()=>{ if(CY) CY.elements().removeClass('hov'); });
+  });
+}
 
 function renderPanel(j){
   if(!j){document.getElementById('panel').innerHTML=`<div class="sub" style="margin-top:8px">No graph.</div>`+legend();return;}
   const n=j.nodes.length,e=j.edges.length;
+  const direct=x=>x.source===j.focus||x.target===j.focus;
+  const shown=j.edges.filter(x=>(x.tier||4)<=TIER_FLOOR&&(SHOW_PP||direct(x))).length;
   document.getElementById('panel').innerHTML=
     `<h3>${j.focus}</h3><div class="sub">${j.context_label}</div>`+
-    kv('neighborhood', n+' genes')+kv('edges', e)+
+    /* The lane sits directly under the gene name, above every count. It is the one thing on this
+       panel that tells the reader whether to believe the picture, so it leads. */
+    tierLane(j)+
+    (j.cohit_available===false?`<div class="hint" style="color:var(--eviq);margin:7px 0 0">The co-hit
+       channel is unavailable on this deployment, so every edge is graded on channel 1 alone.</div>`:'')+
+    (j.reciprocal_only?`<div class="hint" style="margin:7px 0 0">This view keeps only mutual-best
+       edges, so nothing below <b>mutual-best</b> can appear. Untick <b>reciprocal only</b> to see the
+       wider neighbourhood graded.</div>`:'')+
+    `<div style="margin-top:16px">`+
+    kv('neighborhood', n+' genes')+kv('edges', shown===e?e:`${shown} of ${e}`)+
     kv('view', j.fellback?'<span style="color:var(--eviq)">one-directional</span>':(j.reciprocal_only?'reciprocal only':'all top-k'))+
+    `</div>`+
     (j.fellback?`<div class="hint" style="color:var(--eviq);margin:6px 0 0">${esc(j.focus)} has no <b>mutual-best</b> partner — showing its one-directional partners instead.</div>`:'')+
-    `<div class="hint">Click a <b>gene</b> to recenter the map on it, or an <b>edge</b> to inspect the correlation. Toggle <b>reciprocal only</b> to loosen or tighten the graph.</div>`+
+    `<div class="hint">Click a <b>gene</b> to recenter the map on it, or an <b>edge</b> to inspect both evidence channels. Hover a gene to see only its own evidence.</div>`+
     `<div class="predict-box">
        <button class="predbtn" id="predbtn" onclick="predictFn()">✳ Predict undiscovered function →</button>
-       <div class="pred-note">Reasons over ${esc(j.focus)}'s co-essential partners in <b>this</b> network — RETICLE's own BioGRID data, not STRING or DepMap — to propose a shared complex/pathway/process it isn't yet annotated with.</div>
+       <div class="pred-note">Reasons over ${esc(j.focus)}'s co-essential partners in <b>this</b> network — RETICLE's own BioGRID data, not STRING or DepMap — to propose a shared complex/pathway/process it isn't yet annotated with.
+         The gene wiki carries the other view, inferred from <a href="/gene?gene=${encodeURIComponent(j.focus)}&taxid=${ORG==='mouse'?10090:9606}#predictions">STRING + DepMap →</a>.</div>
        <div id="predout"></div>
      </div>`+
     legend();
+  bindLane();
 }
 
 /* Stamps every request. The call takes 15-55s and the user can click another node while it is in
@@ -281,37 +752,90 @@ async function predictFn(){
   btn.disabled=false; btn.textContent=label;
 }
 
+/* Every server-side check still runs at full strength; what changed is that a failed check now
+   returns a VERDICT instead of deleting the prediction. That is what makes the professor's filter
+   possible at all — you cannot offer to show weaker material that never left the server. It also
+   turns the anti-hallucination check from an invisible claim into a visible one. */
+const VERDICT={
+  'verified':                       {label:'verified',         cls:'v-ok'},
+  'single-supporter':               {label:'single supporter', cls:'v-weak',
+     note:'Exactly one partner in the dossier carries this claim, and it is not a top-tier partner. Shown, not hidden — but it is one observation.'},
+  'rejected:not-novel':             {label:'not novel',        cls:'v-rej',
+     note:'Restates something this gene is already annotated with. The novelty re-check rejected it server-side, regardless of what the model claimed.'},
+  'rejected:no-verifiable-support': {label:'unverifiable',     cls:'v-rej',
+     note:'Every partner symbol it cited is absent from the dossier it was given. The citation check rejected it.'},
+};
+let PRED_SHOW='verified';                 // 'verified' = the strict view · 'all' = show the rest
+function setPredShow(v){ PRED_SHOW=v; if(window.__PREDJ) renderPrediction(window.__PREDJ); }
+
 function renderPrediction(j, req){
   if(req!==undefined && req!==PRED_REQ) return;      // see predictFn — do not paint a stale reply
   const host=document.getElementById('predout'); if(!host) return;
-  const caption=`<div class="pred-note">${j.n_annotated_partners}/${j.n_partners} partners with known function · ${esc(j.context_label)}${j.model?` · <span style="color:var(--pred)">${esc(j.model)}</span>`:''}</div>`;
+  window.__PREDJ=j;
+  const caption=`<div class="pred-note">${j.n_annotated_partners}/${j.n_partners} partners with known function`
+    +(j.n_beyond_view?` · <b>${j.n_beyond_view}</b> read beyond your graph filter`:'')
+    +` · ${esc(j.context_label)}${j.model?` · <span style="color:var(--pred)">${esc(j.model)}</span>`:''}</div>`;
   if(!j.predictions || !j.predictions.length){
     host.innerHTML=caption+`<div class="pred-summary">${esc(j.summary||'No convergent, novel function emerged from this neighborhood.')}</div>`;
     return;
   }
-  const cards=j.predictions.map(p=>{
+  const strict=j.predictions.filter(p=>p.verdict==='verified');
+  const rest  =j.predictions.filter(p=>p.verdict!=='verified');
+  const shown =PRED_SHOW==='all'?j.predictions:strict;
+
+  const card=p=>{
+    const v=VERDICT[p.verdict]||VERDICT['verified'], rej=p.verdict.startsWith('rejected');
     const chips=p.supporting_partners.map(s=>
-      `<span class="pc-chip" onclick="jump('${esc(s.symbol)}')"><b>${esc(s.symbol)}</b> r ${s.strength.toFixed(2)}${s.reciprocal?' ⇄':''}</span>`).join('');
-    return `<div class="pred-card">
-      <div class="pc-h"><span class="pc-name">${esc(p.prediction)}</span><span class="pc-type">${esc(p.type)}</span><span class="pc-conf ${p.confidence}">${esc(p.confidence)}</span></div>
-      <div class="pc-conv">${esc(p.convergence)}</div>
+      `<span class="pc-chip t${s.tier}" onclick="jump('${esc(s.symbol)}')" title="${esc(TIER[s.tier].label)} — ${TIER_PREC[s.tier]} CORUM precision">
+         <i>T${s.tier}</i><b>${esc(s.symbol)}</b> r ${s.strength.toFixed(2)}${s.reciprocal?' ⇄':''}</span>`).join('');
+    return `<div class="pred-card${rej?' rejected':''}">
+      <div class="pc-h"><span class="pc-name">${esc(p.prediction)}</span><span class="pc-type">${esc(p.type)}</span>
+        <span class="pc-verdict ${v.cls}">${v.label}</span></div>
+      <div class="pc-conv">${esc(p.convergence)}${p.verdict==='verified'?` · ${esc(p.confidence)} confidence`:''}</div>
+      ${v.note?`<div class="pc-note">${v.note}</div>`:''}
       <div class="pc-rat">${esc(p.rationale)}</div>
-      <div class="pc-supp">${chips}</div>
-    </div>`;
-  }).join('');
-  host.innerHTML=caption+`<div class="pred-cards">${cards}</div>`+(j.summary?`<div class="pred-summary">${esc(j.summary)}</div>`:'');
+      ${p.supporting_partners.length?`<div class="pc-supp">${chips}</div>`:''}
+      ${p.unverifiable_citations && p.unverifiable_citations.length
+        ? `<div class="pc-ghost">cited but not in the dossier: ${p.unverifiable_citations.map(esc).join(', ')}</div>`:''}
+    </div>`;};
+
+  /* Always present, even at zero, so "nothing was filtered" is a statement the user can read
+     rather than an absence they have to infer. */
+  const nSingle=rest.filter(p=>p.verdict==='single-supporter').length;
+  const nRej=rest.length-nSingle;
+  const bar=`<div class="pred-filter">
+     <span>${strict.length} verified${nSingle?` · ${nSingle} single-supporter`:''}${nRej?` · ${nRej} rejected by validation`:''}</span>
+     ${rest.length?`<button class="pf-btn" onclick="setPredShow('${PRED_SHOW==='all'?'verified':'all'}')">${PRED_SHOW==='all'?'hide':'show all'}</button>`:''}
+   </div>`;
+  const audit=j.n_unverifiable_citations
+    ? `<div class="pred-audit">The model named ${j.n_unverifiable_citations} partner${j.n_unverifiable_citations===1?'':'s'} that ${j.n_unverifiable_citations===1?'is':'are'} not in the dossier it was given. Those citations were struck server-side.</div>`
+    : '';
+  host.innerHTML=caption+bar+`<div class="pred-cards">${shown.map(card).join('')}</div>`+audit
+    +(j.summary?`<div class="pred-summary">${esc(j.summary)}</div>`:'');
 }
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 function leanText(l){return l==='essential'?'<span class="tag t-ess">essential</span>':l==='advantageous'?'<span class="tag t-adv">KO-advantageous</span>':l==='mixed'?'<span class="tag t-mix">mixed</span>':'<span class="tag t-unk">unrated</span>';}
 function legend(){return `<div class="legend"><div class="ctl-lab" style="margin-bottom:8px">node = gene · color = fitness role</div>`+
   [['essential','#1F6F8B','#155568','KO deleterious (essential)'],['advantageous','#C77D31','#9c5f22','KO advantageous'],['mixed','#8A8F98','#6B7280','no clear fitness lean']]
   .map(x=>`<div class="legrow"><span class="dot" style="background:${x[1]};border-color:${x[2]}"></span>${x[3]}</div>`).join('')+
-  `<div class="legrow" style="margin-top:6px"><span style="width:22px;border-top:2px solid #C9CDC7"></span>reciprocal edge</div>`+
-  `<div class="legrow"><span style="width:22px;border-top:2px dashed #DFE2DC"></span>one-directional</div></div>`;}
+  /* No edge legend here any more — the lane above is the legend, and repeating it made the panel
+     say the same four things twice. What the lane cannot show is line STYLE, so that one row stays. */
+  `<div class="legrow" style="margin-top:12px;color:var(--muted)">
+     <span style="width:22px;border-top:3px solid #2E4756"></span>solid = mutual-best
+     <span style="width:22px;border-top:2px dashed #6E8794;margin-left:6px"></span>dashed = co-hit</div>`+
+  `</div>`;}
 
 function go(ev){ev.preventDefault();const v=document.getElementById('q').value.trim();if(v){FOCUS=v;load();}}
 function jump(g){FOCUS=g;load();}
 document.getElementById('recip').onchange=e=>{RECIP=e.target.checked;load();};
+/* No refetch and no relayout: every edge is already here, and the positions were computed from all
+   of them, so revealing the partner-partner set drops the lines back onto a layout that already
+   accounts for them. */
+document.getElementById('pp').onchange=e=>{
+  SHOW_PP=e.target.checked;
+  applyEdgeScope();
+  const j=window.__NETJ; if(j) renderPanel(j);
+};
 
 /* accept ?gene=&organism= so the global nav can carry the current gene in from the wiki */
 (function(){

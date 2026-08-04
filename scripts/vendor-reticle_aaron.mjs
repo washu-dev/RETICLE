@@ -452,8 +452,13 @@ export function mountReticle(host, apiBase, opts) {
     pageHost.innerHTML = '';
     pageHost.appendChild(pageEl);
 
-    // The tab bar lives inside the page markup — rebind it on every switch.
-    pageEl.querySelectorAll('[data-t]').forEach((a) => {
+    /* The tab bar lives inside the page markup — rebind it on every switch. Scoped to .gnav-tabs
+       rather than every [data-t] in the page: "data-t" is a short, generic name and a page is
+       entitled to use it for its own content (the network page tagged its evidence bands with it).
+       Unscoped, those elements picked up a tab-switch handler and clicking one called show("1"),
+       which has no page to mount and took the whole tab down.
+       NB no backticks in comments inside this template literal — see the warning above. */
+    pageEl.querySelectorAll('.gnav-tabs [data-t]').forEach((a) => {
       a.classList.toggle('on', a.getAttribute('data-t') === meta.key);
       a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -468,6 +473,38 @@ export function mountReticle(host, apiBase, opts) {
         e.stopPropagation();
         if (typeof options.onBack === 'function') options.onBack();
       });
+    });
+
+    /* CROSS-PAGE LINKS IN BODY CONTENT. The pages link to each other outside the tab bar —
+       "Open in Network →", "Open FANCD2 in the gene wiki →" — and standing alone those are plain
+       hrefs to /network?gene=… and /gene?gene=…. Inside the React app those paths do not exist,
+       so a click would navigate the whole SPA away from itself.
+       They cannot be rewritten at build time the way the tab bar is: they are built at RUNTIME
+       inside template literals in each page's own script, so there is no markup for a regex to
+       find. Delegation on the page element catches them however they were created. The gene is
+       carried across by writing it into the destination page's search box and calling its own
+       lookup, which is exactly what a user typing it would do. */
+    pageEl.addEventListener('click', (e) => {
+      const a = e.target && e.target.closest && e.target.closest('a[href]');
+      if (!a || a.hasAttribute('data-t') || a.hasAttribute('data-rx-home')) return;
+      const href = a.getAttribute('href') || '';
+      const m = /^\\/(gene|screen|network)\\b/.exec(href);
+      if (!m) return;                       // external link (NCBI, PubMed, …) — leave it alone
+      e.preventDefault();
+      e.stopPropagation();
+      const key = m[1];
+      const gene = (/[?&]gene=([^&#]*)/.exec(href) || [])[1];
+      show(key);
+      if (gene) {
+        const sym = decodeURIComponent(gene);
+        const box = byId(root, 'q');
+        if (box) box.value = sym;
+        // Each page names its own gene entry point: the wiki calls it lookup(), the network calls
+        // it jump(). Both take a symbol. load() is last and only as a fallback — it takes no
+        // argument on the network page, so preferring it would land on the previous gene.
+        const go = window.lookup || window.jump || window.load;
+        if (typeof go === 'function') { try { go(sym); } catch (err) { /* page will show its own */ } }
+      }
     });
 
     // Drop the previous page's inline-handler globals before the next page installs its own —
@@ -485,6 +522,14 @@ export function mountReticle(host, apiBase, opts) {
       // diagnose than one that says why.
       console.error('[reticle_aaron] page ' + meta.key + ' failed to start', err);
     }
+
+    /* Re-assert the active tab AFTER the page script ran. Each page also highlights its own tab,
+       by reading location.pathname — which is stubbed to '/' in here, so every page decides it is
+       the Gene page and lights that too. Two tabs came up active. The generator knows which page
+       it actually mounted, so it gets the last word. */
+    pageEl.querySelectorAll('.gnav-tabs [data-t]').forEach((a) => {
+      a.classList.toggle('on', a.getAttribute('data-t') === meta.key);
+    });
   }
 
   show(options.initial || 'gene');
