@@ -155,7 +155,14 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 /* fingerprint */
 .fp{margin:2px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
 .fp-num{text-align:center;border-right:1px solid var(--line2);padding-right:24px}
-.fp-num b{font-family:var(--serif);font-weight:400;font-size:50px;line-height:1;color:var(--eviq);display:block}
+/* SERIF STAYS ON TITLES AND PROSE, NOT ON DATA. A display face in a value is a display face in
+   the wrong place: Fraunces has old-style figures, so a column of counts jogs up and down as you
+   read it, and a gene symbol set in serif here while the same symbol is monospaced on the graph,
+   in every chip and in every key-value row gives one object two identities on one screen.
+   Numbers and identifiers move to the mono face the rest of the product already uses for them;
+   classification words move to the sans. Section headings, the wordmark and running prose keep
+   the serif — those are the places it was earning its keep. */
+.fp-num b{font-family:var(--mono);font-weight:400;font-size:44px;line-height:1;color:var(--eviq);display:block;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .fp-num s{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:3px}
 .fp-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
 .fp-lane{display:flex;gap:2px;height:46px;width:100%}
@@ -173,7 +180,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 .part:hover{border-color:var(--know)}.part b{font-family:var(--mono);font-size:13px;font-weight:500}.part s{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-decoration:none}
 .dep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
 .dep-badge{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
-.dep-badge b{display:block;font-family:var(--serif);font-size:21px;font-weight:500;line-height:1.1}
+.dep-badge b{display:block;font-family:var(--sans);font-size:17px;font-weight:600;line-height:1.2;letter-spacing:-.005em}
 .dep-badge.common b{color:var(--eviq)}.dep-badge.selective b{color:var(--know)}.dep-badge.non b{color:var(--muted)}
 .dep-badge s{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:5px}
 .dep-txt{font-size:14.5px;color:var(--ink2);line-height:1.55}.dep-txt code{font-family:var(--mono);font-size:13px;background:#00000006;padding:1px 5px;border-radius:4px}
@@ -206,7 +213,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 .struct-cap .badge.exp{background:var(--know-soft);color:#14536a}
 .struct-sel{margin-left:auto;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink2);padding:2px 4px;cursor:pointer;max-width:120px}
 .ibox-h{padding:16px 18px 4px}
-.ibox-h b{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1;letter-spacing:-.01em;display:block}
+.ibox-h b{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1.15;letter-spacing:.01em;display:block}
 .ibox-h span{font-size:13px;color:var(--muted);font-style:italic;font-family:var(--serif)}
 .ibox-s{padding:12px 18px;border-top:1px solid var(--line2)}
 .ibox-s .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
@@ -241,7 +248,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 
 .band{margin-top:8px}
 .band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
-.band-h .name{font-family:var(--serif);font-size:21px;font-weight:500}
+.band-h .name{font-family:var(--sans);font-size:17px;font-weight:600;letter-spacing:-.005em}
 .band.stress .band-h .name,.band.reporter .band-h .name{font-size:18px}
 .band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
 .sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}
@@ -301,7 +308,7 @@ a.lfact:hover{color:var(--ink);text-decoration:underline}
 
 /* darkness card (right rail) */
 .darkcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin-bottom:14px}
-.darkcard .darknum{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1}
+.darkcard .darknum{font-family:var(--mono);font-weight:400;font-size:35px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .darkcard .darknum small{font-size:16px;color:var(--faint)}
 .darkcard .band-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
 .darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}
@@ -596,8 +603,17 @@ function screensSection(sc){
 }
 
 /* ---------- render ---------- */
+/* EYEBROW DISCIPLINE. Twelve sections each carried a small uppercase provenance label above the
+   headline, which is the templated rhythm every AI-built page has — and worse here, six of them
+   duplicated a `.src` line already inside the section that said the same thing MORE precisely:
+   the Function eyebrow read "curated" while its body read "NCBI · RefSeq summary" and
+   "UniProt · reviewed P04637 · 231 citations". The vaguer copy was the one in the louder position.
+   Those six are dropped. The other six are the only place their source is named, and on a tool
+   whose whole claim is auditability, deleting provenance to hit a styling count is the wrong
+   trade — so this stops at six rather than the four a pure reading of the rule would ask for. */
 function sec(id,mv,title,eyebrow,body){
-  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2><s>${eyebrow}</s></div>${body}</section>`;
+  const eb = eyebrow ? `<s>${eyebrow}</s>` : '';
+  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2>${eb}</div>${body}</section>`;
 }
 function render(w){
   const html=`<div class="page">
@@ -615,17 +631,17 @@ function render(w){
         <div class="ai-body loading" id="aibody"><span class="dot"></span> Reading ${esc(w.identity.symbol)} across its screens…</div>
         <div class="disc">Fitness essentiality + stress divergence + reporter probes, grounded in PubMed. Verify against primary screens.</div>
       </div>
-      ${sec('function','know','Function','curated','')}
+      ${sec('function','know','Function','','')}
       ${sec('ontology','know','Gene ontology','GO','')}
-      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','Reactome',''):''}
-      ${sec('interactions','know','Interactions','STRING v12','')}
+      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','',''):''}
+      ${sec('interactions','know','Interactions','','')}
       ${w.uniprot.disease?sec('clinical','know','Clinical significance','UniProt','<div class="src"><b>UniProt</b> · involvement in disease</div>'+clampProse(w.uniprot.disease,3)):''}
-      ${sec('predictions','pred','Predicted functions','STRING + DepMap','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
+      ${sec('predictions','pred','Predicted functions','','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
       ${sec('behavior','eviq','Screen behavior','RETICLE · harmonized','<div id="behavior-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Reading the harmonized screens…</div>')}
       ${sec('dependency','eviq','Dependency','DepMap 24Q4','')}
-      ${sec('coess','eviq','Co-essentiality','RETICLE · BioGRID ORCS','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
+      ${sec('coess','eviq','Co-essentiality','','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
       ${w.screens.n_total?sec('screens','eviq','CRISPR Screening','BioGRID ORCS',''):''}
-      ${w.screens.n_total?sec('distribution','eviq','Score distribution','in-screen',''):''}
+      ${w.screens.n_total?sec('distribution','eviq','Score distribution','',''):''}
       ${sec('literature','eviq','Literature','PubMed','')}
     </main>
     <aside class="rail"><div id="darkcard-slot"></div>${infobox(w)}</aside>
