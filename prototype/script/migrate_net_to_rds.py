@@ -7,12 +7,21 @@ explore_mouse_coessential.py, but web/app.py reads it from RDS whenever AWS_DB_H
 committed path for that sync — the RDS copies had been loaded out of band, so rebuilding the network
 locally silently left the cloud serving a stale graph.
 
-Table name mapping (matches web/app.py::_net_edge_table):
-  local reticle_net.db        net_edge  ->  reticle.net_edge
-  local reticle_net_mouse.db  net_edge  ->  reticle.net_edge_mouse   (mouse is suffixed on RDS
-                                            because both species share one schema there, while
-                                            locally they live in separate files under one name)
-  local reticle_net.db        net_screen -> reticle.net_screen
+Table name mapping (matches web/app.py::_net_edge_table and ::_cohit_table):
+  local reticle_net.db        net_edge            ->  reticle.net_edge
+  local reticle_net_mouse.db  net_edge            ->  reticle.net_edge_mouse   (mouse is suffixed on
+                                                      RDS because both species share one schema
+                                                      there, while locally they live in separate
+                                                      files under one name)
+  local reticle_net.db        net_screen          ->  reticle.net_screen
+  local reticle_net.db        hit_only_connection ->  reticle.hit_only_connection
+  local reticle_net_mouse.db  hit_only_connection ->  reticle.hit_only_connection_mouse
+
+The two hit_only_connection jobs are newer than the rest: channel 2 was built by compute_hit_only.py
+and then sat unread for months, so nothing had ever needed it in the cloud. The evidence-tier feature
+reads it, which is what made the gap matter. Until this sync has RUN, the cloud degrades to grading
+edges on channel 1 alone — coessential_network_aaron.cohit_among() latches the missing table and
+logs once rather than raising, so a stale deployment serves a coarser graph rather than a 500.
 
 Only ever creates/drops inside the `reticle` schema — never public.*.
 
@@ -39,6 +48,16 @@ JOBS = [
      [("ix_nscr_dom", "assay_domain")]),
     (paths.PROCESSED_DATA / "reticle_net_mouse.db", "net_edge", "net_edge_mouse",
      [("ix_nem_a", "gene_a"), ("ix_nem_b", "gene_b"), ("ix_nem_ctx", "context")]),
+    # Channel 2. The composite is the one that matters: the only query that reads these tables is
+    # cohit_among()'s symmetric `gene_a IN (...) AND gene_b IN (...)`, which a leading-column btree
+    # on gene_a serves directly. The single-column pair is kept to mirror the local schema and to
+    # keep an ad-hoc "what does this gene co-hit with" lookup on gene_b cheap — the pair is stored in
+    # ONE direction only, so gene_b is a genuine second access path, not a duplicate of gene_a.
+    # Index names must be unique per SCHEMA in Postgres, hence the distinct mouse prefix.
+    (paths.PROCESSED_DATA / "reticle_net.db", "hit_only_connection", "hit_only_connection",
+     [("ix_hoc_ab", "gene_a, gene_b"), ("ix_hoc_a", "gene_a"), ("ix_hoc_b", "gene_b")]),
+    (paths.PROCESSED_DATA / "reticle_net_mouse.db", "hit_only_connection", "hit_only_connection_mouse",
+     [("ix_hocm_ab", "gene_a, gene_b"), ("ix_hocm_a", "gene_a"), ("ix_hocm_b", "gene_b")]),
 ]
 
 # sqlite declared type -> postgres type
