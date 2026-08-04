@@ -1667,6 +1667,10 @@ def _clean_uniprot(text):
 # ---------------------------------------------------------------------------
 # TYPE-AHEAD for the search box. Two suggesters, one per mode.
 # ---------------------------------------------------------------------------
+class _SuggestUnavailable(Exception):
+    """The index could not be read — distinct from "nothing matched", which is an empty list."""
+
+
 def gene_suggest(q, taxid=9606, limit=8):
     """Ranked gene suggestions for a typed prefix.
 
@@ -1699,10 +1703,10 @@ def gene_suggest(q, taxid=9606, limit=8):
             "ORDER BY (term = ? AND is_alias = 0) DESC, is_alias, rank DESC, LENGTH(term), term "
             "LIMIT ?", (taxid, term + "%", term, limit * 5))
     except Exception as e:
-        # The table is newer than the rest of the KB, so a deploy can legitimately predate it.
-        # A search box that silently offers nothing is better than one that 500s under the cursor.
+        # NOT the same as "nothing matched" — see the route, which flags it. Returning [] here on
+        # its own told a user that PO matches no genes while POLR2A sat in the table.
         print(f"  [suggest] gene_search unavailable: {e}")
-        return []
+        raise _SuggestUnavailable() from e
     out, seen = [], set()
     for r in rows:
         sym = r["symbol"]
@@ -1753,7 +1757,7 @@ def screen_suggest(q, taxid=9606, limit=8):
             (taxid, squashed, like, like, like, f"{q}%", limit))
     except Exception as e:
         print(f"  [suggest] screen search unavailable: {e}")
-        return []
+        raise _SuggestUnavailable() from e
     return [{"screen_id": str(r["screen_id"]),
              "cell_line": r["cell_line"] or "", "condition": r["condition_name"] or "",
              "phenotype": r["phenotype"] or "", "author": r["author"] or "",
@@ -2204,12 +2208,15 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 limit = 8
             fn = gene_suggest if u.path.endswith("gene_suggest") else screen_suggest
+            ok = True
             try:
                 items = fn(term, taxid, limit)
             except Exception as e:
+                # Still 200 — a 5xx under a cursor makes the page feel broken over a transient —
+                # but `ok` separates "nothing matched" from "could not read the index".
                 print(f"  [suggest] {u.path} failed: {e}")
-                items = []
-            return self._send(200, {"query": term, "taxid": taxid, "items": items})
+                items, ok = [], False
+            return self._send(200, {"query": term, "taxid": taxid, "ok": ok, "items": items})
 
         if u.path == "/api/gene_wiki":
             q = parse_qs(u.query)

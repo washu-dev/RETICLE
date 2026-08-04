@@ -71,6 +71,11 @@ const CSS = `
   transition:border-color .18s, box-shadow .18s;
 }
 .rxhome .boxwrap.open .box{border-radius:16px 16px 0 0}
+.rxhome .drop.down{border-color:var(--eviq)}
+.rxhome .drop .nolist{
+  display:block; padding:11px 15px; font-size:12.5px; color:var(--eviq); line-height:1.55; cursor:default;
+}
+.rxhome .drop .nolist b{font-family:var(--mono); font-size:11.5px}
 .rxhome .box:focus-within{border-color:var(--know); box-shadow:0 0 0 4px var(--know-soft)}
 .rxhome .plus{
   flex:0 0 auto; width:34px; height:34px; border-radius:10px; border:1px solid transparent;
@@ -205,16 +210,24 @@ export default function HomeLanding_aaron({
      link that without this the list can settle on the answer to a prefix the user has already
      typed past. */
   const reqRef = useRef(0);
+  const [down, setDown] = useState(false);
   useEffect(() => {
     const term = q.trim();
-    if (!term) { setHits([]); return; }
+    if (!term) { setHits([]); setDown(false); return; }
     const req = ++reqRef.current;
     const t = setTimeout(() => {
       const path = mode === 'gene' ? 'gene_suggest' : 'screen_suggest';
       fetch(`${API_BASE_URL}/api/${path}?q=${encodeURIComponent(term)}&organism=${organism}&limit=8`)
         .then((r) => r.json())
-        .then((d) => { if (req === reqRef.current) { setHits(d.items || []); setSel(0); } })
-        .catch(() => { if (req === reqRef.current) setHits([]); });
+        .then((d) => {
+          if (req !== reqRef.current) return;
+          setHits(d.items || []);
+          setSel(0);
+          // `ok: false` means the index could not be read. Saying nothing there would tell the
+          // user their gene does not exist, which is a different and much worse claim.
+          setDown(d.ok === false);
+        })
+        .catch(() => { if (req === reqRef.current) { setHits([]); setDown(true); } });
     }, 120);
     return () => clearTimeout(t);
   }, [q, mode, organism]);
@@ -261,7 +274,7 @@ export default function HomeLanding_aaron({
       <div className="stage">
         <h1 className="mark">RETI<b>C</b>LE<span>beta</span></h1>
 
-        <div className={`boxwrap${hits.length ? ' open' : ''}`} ref={wrapRef}>
+        <div className={`boxwrap${hits.length || down ? ' open' : ''}`} ref={wrapRef}>
           <form className="box" onSubmit={submit}>
             <button
               type="button"
@@ -309,6 +322,15 @@ export default function HomeLanding_aaron({
                   <small>{m.blurb}</small>
                 </button>
               ))}
+            </div>
+          )}
+
+          {down && !hits.length && (
+            <div className="drop down" role="status">
+              <div className="row nolist">
+                Suggestions are unavailable right now — the search index could not be read.
+                Press <b>Enter</b> to open the {mode === 'gene' ? 'gene' : 'screen'} anyway.
+              </div>
             </div>
           )}
 

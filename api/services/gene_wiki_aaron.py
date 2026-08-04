@@ -73,6 +73,15 @@ def _clean_uniprot(text: str | None) -> tuple[str | None, int]:
 # ---------------------------------------------------------------------------------------------
 # TYPE-AHEAD for the home page's search box. One suggester per mode.
 # ---------------------------------------------------------------------------------------------
+class SuggestUnavailable(Exception):
+    """The index could not be read. Distinct from "nothing matched", which is an empty list.
+
+    Both used to surface as []. That is a lie the user acts on: when RDS stopped answering, the box
+    reported that PO matches no genes — with POLR2A sitting right there in the table. A suggester
+    that cannot reach its index has to say so, not answer confidently on its behalf.
+    """
+
+
 async def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
     """Ranked gene suggestions for a typed prefix, from the precomputed gene_search table.
 
@@ -102,12 +111,12 @@ async def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[di
             "LIMIT ?",
             (taxid, term + "%", term, limit * 5),
         )
-    except Exception:
-        # gene_search is newer than the rest of the schema, so a deploy can predate it. The box
-        # fires this on every keystroke: an empty list is a far better failure than a 500 under
-        # the cursor.
-        logger.warning("gene_search unavailable; type-ahead will return nothing", exc_info=True)
-        return []
+    except Exception as exc:
+        # gene_search is newer than the rest of the schema, so a deploy can predate it — and RDS
+        # itself goes unreachable from time to time. Either way this is NOT "no matches"; the
+        # router turns it into a flagged 200 so the box can say it lost the index.
+        logger.warning("gene_search unavailable", exc_info=True)
+        raise SuggestUnavailable() from exc
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
     for r in rows:
@@ -153,9 +162,9 @@ async def get_screen_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[
             "ORDER BY CAST(number_of_hits AS INTEGER) DESC LIMIT ?",
             (taxid, squashed, like, like, like, f"{q}%", limit),
         )
-    except Exception:
+    except Exception as exc:
         logger.warning("screen suggest unavailable", exc_info=True)
-        return []
+        raise SuggestUnavailable() from exc
     return [{"screen_id": str(r["screen_id"]),
              "cell_line": r["cell_line"] or "", "condition": r["condition_name"] or "",
              "phenotype": r["phenotype"] or "", "author": r["author"] or "",

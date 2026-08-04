@@ -17,11 +17,13 @@ frontend consumes them unchanged.
 
 import logging
 import re
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
 
 from services.gene_wiki_aaron import (
+    SuggestUnavailable,
     get_gene_predictions,
     get_gene_screen_distribution,
     get_gene_structure,
@@ -67,6 +69,26 @@ def _suggest_query(q: str) -> str:
     return _SUGGEST_STRIP.sub("", q or "").strip()[:40]
 
 
+
+async def _suggest(
+    term: str, taxid: int, limit: int,
+    fn: Callable[[str, int, int], Awaitable[list[dict[str, Any]]]],
+) -> dict[str, Any]:
+    """Shared shape for both suggesters.
+
+    Still always 200 — the caller is a box someone is mid-word in, and a 5xx there would make the
+    page feel broken over a transient. But `ok` now separates "nothing matched" from "could not
+    read the index". Collapsing both into an empty list told a user that PO matches no genes while
+    POLR2A sat in the table, which is worse than saying nothing.
+    """
+    if not term:
+        return {"query": term, "taxid": taxid, "ok": True, "items": []}
+    try:
+        return {"query": term, "taxid": taxid, "ok": True,
+                "items": await fn(term, taxid, limit)}
+    except SuggestUnavailable:
+        return {"query": term, "taxid": taxid, "ok": False, "items": []}
+
 @router.get("/gene_suggest")
 async def gene_suggest(
     q: str = Query("", max_length=64),
@@ -83,8 +105,7 @@ async def gene_suggest(
         taxid = 10090
     taxid = _validate_taxid(taxid)
     term = _suggest_query(q)
-    return {"query": term, "taxid": taxid,
-            "items": await get_gene_suggest(term, taxid, limit) if term else []}
+    return await _suggest(term, taxid, limit, get_gene_suggest)
 
 
 @router.get("/screen_suggest")
@@ -99,8 +120,7 @@ async def screen_suggest(
         taxid = 10090
     taxid = _validate_taxid(taxid)
     term = _suggest_query(q)
-    return {"query": term, "taxid": taxid,
-            "items": await get_screen_suggest(term, taxid, limit) if term else []}
+    return await _suggest(term, taxid, limit, get_screen_suggest)
 
 
 @router.get("/gene_wiki")
