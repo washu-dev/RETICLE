@@ -55,7 +55,11 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
    radial-gradient(circle at 1px 1px, var(--line2) 1px, transparent 0) 0 0/22px 22px,
    radial-gradient(ellipse at 50% 46%, #FFFFFF 0%, #FBFBF9 55%, #F5F4F0 100%)}
 .panel{width:298px;flex:0 0 auto;border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:20px}
-.panel h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
+/* Mono, not serif. This h3 is the focal GENE SYMBOL, and it changes every time you click a node —
+   it is a value the panel is reporting, not the title of a document. Set in Fraunces it was the
+   only place on the screen where FANCD2 was not monospaced: the graph node, the partner chips and
+   every key-value row already use the mono face. Size and weight still carry the heading role. */
+.panel h3{font-family:var(--mono);font-weight:500;font-size:20px;margin:0 0 4px;letter-spacing:.01em}
 .panel .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:2px}
 .kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line2)}
 .kv span:first-child{color:var(--muted)}
@@ -300,9 +304,26 @@ let SHOW_PP=false;
    then retires — it is an introduction, not furniture.
    Skipped wholesale under prefers-reduced-motion, and skipped for tiers the evidence filter is
    hiding, so the animation can never contradict the filter. */
+/* Plays ONCE per mount, not on every load().
+   The sequence teaches the evidence hierarchy — the order is the ranking — and that is worth 1.6
+   seconds the first time a neighbourhood appears. It is worth nothing the ninth time. load() fires
+   on seven paths (node click, context, species, search, jump, reciprocal toggle, first paint), so
+   a user walking the graph node by node was paying the full entrance on every click before they
+   could read anything. This is the Operate-mode rule that product "loads into a task" and users do
+   not want to watch it load; the first view is the one exception, so it keeps exactly that. */
+let SEDIMENTED = false;
+
 function sediment(){
   const cap = document.getElementById('cap');
   const done = () => { if(cap){ cap.textContent=''; cap.classList.remove('on'); } };
+  if(SEDIMENTED){
+    // Settle straight to the stylesheet — no inline opacity, so .hov and .dim keep working.
+    CY.elements().stop(true);
+    CY.elements().forEach(e=>e.removeStyle('opacity'));
+    done();
+    return;
+  }
+  SEDIMENTED = true;
   /* An INLINE opacity outranks every class selector in cytoscape, so the animation must hand
      control back when it finishes or `.hov` and `.dim` are silently dead for the rest of the
      session — the graph stops responding to hover and to selection, with nothing in the console.
