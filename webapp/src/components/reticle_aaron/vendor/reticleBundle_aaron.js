@@ -1909,17 +1909,10 @@ export function mountReticle(host, apiBase, opts) {
       e.stopPropagation();
       const key = m[1];
       const gene = (/[?&]gene=([^&#]*)/.exec(href) || [])[1];
+      const org = (/[?&]organism=([^&#]*)/.exec(href) || [])[1]
+        || ((/[?&]taxid=10090/.test(href)) ? 'mouse' : undefined);
       show(key);
-      if (gene) {
-        const sym = decodeURIComponent(gene);
-        const box = byId(root, 'q');
-        if (box) box.value = sym;
-        // Each page names its own gene entry point: the wiki calls it lookup(), the network calls
-        // it jump(). Both take a symbol. load() is last and only as a fallback — it takes no
-        // argument on the network page, so preferring it would land on the previous gene.
-        const go = window.lookup || window.jump || window.load;
-        if (typeof go === 'function') { try { go(sym); } catch (err) { /* page will show its own */ } }
-      }
+      if (gene) openGene(decodeURIComponent(gene), org && decodeURIComponent(org));
     });
 
     // Drop the previous page's inline-handler globals before the next page installs its own —
@@ -1947,7 +1940,32 @@ export function mountReticle(host, apiBase, opts) {
     });
   }
 
+  /* Drive the page that is mounted to a specific gene. Used by the cross-page links above and by
+     the host app, which lets the signed-in home page hand a symbol straight to the wiki instead of
+     making the user type it a second time on arrival.
+     Each page names its own entry point: the wiki calls it lookup(), the network calls it jump().
+     Both take a symbol. load() is last and only as a fallback — it takes no argument on the network
+     page, so preferring it would land on the previous gene. */
+  function openGene(sym, organism) {
+    if (!sym) return;
+    const box = byId(root, 'q');
+    if (box) box.value = sym;
+    /* The wiki reads its species from a #tax select at call time, so setting it before lookup() is
+       what makes a mouse symbol resolve as mouse. The network page instead keeps species in a
+       module variable behind its own pills, whose handler resets the focal gene and reloads — so
+       it is deliberately NOT driven from here; clicking it and then jumping would race two loads.
+       A mouse gene reached through a cross-page link therefore lands on the human network. Known,
+       and it needs an entry point on that page rather than a bodge out here. */
+    if (organism) {
+      const tax = byId(root, 'tax');
+      if (tax) tax.value = organism === 'mouse' ? '10090' : '9606';
+    }
+    const go = window.lookup || window.jump || window.load;
+    if (typeof go === 'function') { try { go(sym); } catch (err) { /* page shows its own error */ } }
+  }
+
   show(options.initial || 'gene');
+  if (options.initialGene) openGene(String(options.initialGene), options.initialOrganism);
 
   return function cleanup() {
     disposed = true;

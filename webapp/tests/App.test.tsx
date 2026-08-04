@@ -42,29 +42,49 @@ describe("App (signed in)", () => {
     mock.state.account = signedInAccount;
   });
 
+  // The home page leads with a gene search rather than a headline and a "Launch app" button —
+  // everyone reaching it has already signed in and arrives holding either a symbol or a list.
+  // These assertions follow that, and are written against the two entry points rather than the
+  // copy around them, so a wording change does not read as a regression.
   it("renders without crashing", async () => {
     render(<App />);
-    await screen.findByText("Launch app");
+    await screen.findByPlaceholderText(/gene symbol/i);
   });
 
-  it("shows RETICLE branding on the landing page", async () => {
+  it("shows RETICLE branding on the home page", async () => {
     render(<App />);
-    expect((await screen.findAllByText("RETICLE")).length).toBeGreaterThan(0);
+    // The wordmark is RETI<b>C</b>LE, so it spans elements — match on the composed text.
+    const marks = await screen.findAllByText(
+      (_content, el) => el?.textContent?.replace(/\s+/g, "").startsWith("RETICLE") ?? false,
+    );
+    expect(marks.length).toBeGreaterThan(0);
   });
 
-  it("shows the upload gene list call-to-action", async () => {
+  it("offers the gene-list route as well as the gene search", async () => {
     render(<App />);
-    expect(await screen.findByText("Upload gene list")).toBeTruthy();
+    expect(await screen.findByText(/Analyse a ranked gene list/i)).toBeTruthy();
   });
 
   it("navigates into a sub-flow and back via the sticky Home control", async () => {
     render(<App />);
-    // Enter a sub-flow from the landing nav.
-    fireEvent.click(await screen.findByText("Launch app"));
-    // The sticky Home control is only shown off the landing page.
+    // Enter a sub-flow from the home page.
+    fireEvent.click(await screen.findByText(/Analyse a ranked gene list/i));
+    // The sticky Home control is only shown off the home page.
     fireEvent.click(await screen.findByText("Home"));
     // Home returns us to the main page.
-    expect(await screen.findByText("Launch app")).toBeTruthy();
+    expect(await screen.findByPlaceholderText(/gene symbol/i)).toBeTruthy();
+  });
+
+  it("carries a typed gene into the wiki instead of making the user retype it", async () => {
+    render(<App />);
+    const box = await screen.findByPlaceholderText(/gene symbol/i);
+    fireEvent.change(box, { target: { value: "FANCD2" } });
+    fireEvent.click(screen.getByText(/Open gene wiki/i));
+    // Leaving the home page is the observable part here; the vendored bundle owns what happens
+    // next and does not run under jsdom.
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText(/gene symbol/i)).toBeNull(),
+    );
   });
 });
 
@@ -83,16 +103,18 @@ describe("App (signed out)", () => {
     ).toBeTruthy();
   });
 
+  // The SSO button now names the identity provider — "Login" said what the button was, not what
+  // pressing it does.
   it("shows the Login landing page after Sign in is clicked", async () => {
     render(<App />);
     fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
-    expect(await screen.findByText("Login")).toBeTruthy();
+    expect(await screen.findByText(/Sign in with WashU/i)).toBeTruthy();
   });
 
-  it("starts SSO login when Login is clicked", async () => {
+  it("starts SSO login when the WashU button is clicked", async () => {
     render(<App />);
     fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
-    fireEvent.click(await screen.findByText("Login"));
+    fireEvent.click(await screen.findByText(/Sign in with WashU/i));
     await waitFor(() => expect(mock.instance.loginRedirect).toHaveBeenCalled());
   });
 });
