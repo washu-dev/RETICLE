@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
-#SBATCH --time=03:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # Notes:
 # - CPU job (D8). Contextual convergence re-runs the same sparse Hᵀ·H + vectorized
@@ -60,6 +60,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup.sh not found; using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 if [ ! -f ~/.pgpass ]; then
     echo -e "${RED}[ERROR]${NC} ~/.pgpass not found (see slurm/PGPASS_SETUP.md)"; exit 1
@@ -73,7 +74,7 @@ cd "$SCRIPTS_DIR"
 START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} compute_contextual.py --version $VERSION ${EXTRA_ARGS[*]}"
 echo ""
-python3 compute_contextual.py --version "$VERSION" "${EXTRA_ARGS[@]}"
+run_with_heartbeat "compute_contextual.py" python3 compute_contextual.py --version "$VERSION" "${EXTRA_ARGS[@]}"
 EXIT_CODE=$?
 END_TIME=$(date +%s); DURATION=$((END_TIME - START_TIME))
 

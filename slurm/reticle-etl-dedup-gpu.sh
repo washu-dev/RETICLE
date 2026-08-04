@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=00:30:00
+#SBATCH --time=23:00:00
 #SBATCH --gres=gpu:1
 #SBATCH --partition=general-gpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
@@ -77,6 +77,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup-gpu.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup-gpu.sh not found"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 # Verify GPU access
 echo -e "${BLUE}[CHECK]${NC} Verifying GPU availability..."
@@ -139,7 +140,7 @@ START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} Starting GPU deduplication phase..."
 echo ""
 
-python3 gpu_etl_dedup_only.py \
+run_with_heartbeat "gpu_etl_dedup_only.py" python3 gpu_etl_dedup_only.py \
     --version "$VERSION_ID"
 
 ETL_EXIT_CODE=$?

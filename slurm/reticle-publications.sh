@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=03:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # CPU job. P2 populate publications. Do NOT hardcode --account; set SBATCH_ACCOUNT.
 # SBATCH_PARTITION overrides --partition. Requires ~/.pgpass.
@@ -40,6 +40,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup.sh not found; using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 if [ ! -f ~/.pgpass ]; then echo -e "${RED}[ERROR]${NC} ~/.pgpass not found"; exit 1; fi
 PGPASS_PERMS=$(stat -c %a ~/.pgpass 2>/dev/null || stat -f %A ~/.pgpass 2>/dev/null)
@@ -48,7 +49,7 @@ if [ "$PGPASS_PERMS" != "600" ]; then echo -e "${RED}[ERROR]${NC} ~/.pgpass must
 cd "$SCRIPTS_DIR"
 START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} populate_publications.py --version $VERSION ${EXTRA_ARGS[*]}"
-python3 populate_publications.py --version "$VERSION" "${EXTRA_ARGS[@]}"
+run_with_heartbeat "populate_publications.py" python3 populate_publications.py --version "$VERSION" "${EXTRA_ARGS[@]}"
 EXIT_CODE=$?
 DURATION=$(($(date +%s) - START_TIME))
 echo ""

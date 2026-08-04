@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
-#SBATCH --time=02:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # Notes:
 # - CPU job. Low volume (only the ambiguous screens for a version); rate-limited LLM calls.
@@ -55,12 +55,13 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup.sh not found; using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 if [ ! -f ~/.pgpass ]; then
     echo -e "${RED}[ERROR]${NC} ~/.pgpass not found"; exit 1
 fi
 
 cd "$SCRIPTS_DIR"
-python3 directionality_mapper.py --version "$VERSION" "${EXTRA_ARGS[@]}"
+run_with_heartbeat "directionality_mapper.py" python3 directionality_mapper.py --version "$VERSION" "${EXTRA_ARGS[@]}"
 EXIT_CODE=$?
 echo -e "${BLUE}========================================${NC}"
 [ $EXIT_CODE -eq 0 ] && echo -e "${GREEN}✓ DIRECTIONALITY COMPLETED${NC}" || echo -e "${RED}✗ FAILED (exit $EXIT_CODE)${NC}"

@@ -285,6 +285,12 @@ class ContextualCompute:
 
         # 1) ensure a fact_gene_pair row exists for every pair with a winning context,
         #    setting context_* (leaves coess_/cohit_/cocite_ columns untouched).
+        # Chunked with a commit per chunk (same pattern as the dim_gene_pair_context
+        # write below, D6, and D9's rollup) — this pair_batch can be 1M+ rows against
+        # an existing 15M+ row table; one giant unchunked transaction is a long window
+        # with zero progress visibility and zero partial-progress if the connection
+        # drops (this table has hit exactly that failure mode before — see D6/D7's
+        # OOM/9h-query fixes in git history).
         pair_batch = [(
             self.version_id, self.run_id, self.config_id, self.organism,
             b["gene_a"], b["gene_b"], b["gene_a_symbol"], b["gene_b_symbol"],
@@ -292,7 +298,7 @@ class ContextualCompute:
             float(b["fdr"]), b["tier"], b["tier"], float(b["jaccard"]), "context", 1,
             int(b["n11"]), float(b["fdr"]),
         ) for b in best_per_pair.values()]
-        psycopg2.extras.execute_values(cur, """
+        _PAIR_UPSERT_SQL = """
             INSERT INTO fact_gene_pair
                 (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
                  gene_a_symbol, gene_b_symbol, context_effect, context_support,
@@ -304,9 +310,16 @@ class ContextualCompute:
                 context_effect=EXCLUDED.context_effect, context_support=EXCLUDED.context_support,
                 context_best_key=EXCLUDED.context_best_key, context_best_fdr=EXCLUDED.context_best_fdr,
                 context_tier=EXCLUDED.context_tier, is_current=TRUE
-        """, pair_batch, page_size=5000)
-        self.conn.commit()
-        logger.info(f"Upserted {len(pair_batch):,} fact_gene_pair rows (context_* columns)")
+        """
+        PAIR_CH = 20_000
+        pair_total = 0
+        for s in range(0, len(pair_batch), PAIR_CH):
+            chunk = pair_batch[s:s + PAIR_CH]
+            psycopg2.extras.execute_values(cur, _PAIR_UPSERT_SQL, chunk, page_size=5000)
+            self.conn.commit()
+            pair_total += len(chunk)
+            logger.info(f"  {pair_total:,}/{len(pair_batch):,} fact_gene_pair rows upserted (context_*)")
+        logger.info(f"Upserted {pair_total:,} fact_gene_pair rows (context_* columns)")
 
         # 2) resolve gene_pair_id for every winning pair via a temp join table
         cur.execute("CREATE TEMP TABLE IF NOT EXISTS tmp_ctx_pairs (gene_a_id INT, gene_b_id INT)")

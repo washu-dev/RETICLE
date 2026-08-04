@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=10:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 # Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
@@ -78,6 +78,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo "Warning: env-setup.sh not found, using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 # Create log directory
 mkdir -p "$RETICLE_DIR/logs"
@@ -119,7 +120,7 @@ START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} Starting ETL pipeline..."
 echo ""
 
-python3 hpc_etl_pipeline.py \
+run_with_heartbeat "hpc_etl_pipeline.py" python3 hpc_etl_pipeline.py \
     --version "$VERSION_ID" \
     --threads "$NUM_THREADS" \
     --chunk-size "$CHUNK_SIZE" \

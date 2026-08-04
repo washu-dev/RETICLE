@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=10:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
 # Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
@@ -87,6 +87,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup.sh not found"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 # Change to scripts directory
 cd "$SCRIPTS_DIR"
@@ -176,7 +177,7 @@ echo "  Loading CSV → screen_gene_raw table"
 echo "  Building fact and dimension tables"
 echo ""
 
-python3 cpu_etl_load_only.py \
+run_with_heartbeat "cpu_etl_load_only.py" python3 cpu_etl_load_only.py \
     --version "$VERSION_ID"
 
 ETL_EXIT_CODE=$?

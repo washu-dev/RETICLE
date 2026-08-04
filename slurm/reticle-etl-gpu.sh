@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=48G
-#SBATCH --time=00:30:00
+#SBATCH --time=23:00:00
 #SBATCH --gres=gpu:1
 #SBATCH --partition=general-gpu
 # Note: --partition can be overridden via sbatch --partition= or wrapper sets it
@@ -68,6 +68,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup-gpu.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup-gpu.sh not found"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 # Verify GPU access
 echo -e "${BLUE}[CHECK]${NC} Verifying GPU availability..."
@@ -135,7 +136,7 @@ START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} Starting GPU ETL pipeline..."
 echo ""
 
-python3 hpc_etl_gpu.py \
+run_with_heartbeat "hpc_etl_gpu.py" python3 hpc_etl_gpu.py \
     --version "$VERSION_ID" \
     --threads "$NUM_THREADS"
 

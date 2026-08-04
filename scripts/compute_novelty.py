@@ -494,13 +494,18 @@ class NoveltyCompute:
         self.write_expectation_model(cur)
         self.conn.commit()
 
+        # Chunked with a commit per chunk (same pattern as D6/D9 and D8's fact_gene_pair
+        # write) — keeps each transaction short and gives partial progress if the
+        # connection drops mid-write, instead of one long, invisible transaction.
+        CH = 20_000
+
         if resid_rows:
             batch = [(
                 self.version_id, self.run_id, self.config_id, self.organism, ga, gb, sa, sb,
                 effect, rho, n, p, fdr, t, ant, novelty,
                 t, effect, "resid", 1, n, fdr,
             ) for ga, gb, sa, sb, effect, rho, n, p, fdr, t, novelty, ant in resid_rows]
-            psycopg2.extras.execute_values(cur, """
+            _RESID_SQL = """
                 INSERT INTO fact_gene_pair
                     (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
                      gene_a_symbol, gene_b_symbol,
@@ -515,9 +520,15 @@ class NoveltyCompute:
                     resid_fdr=EXCLUDED.resid_fdr, resid_tier=EXCLUDED.resid_tier,
                     is_antagonistic=EXCLUDED.is_antagonistic, novelty_score=EXCLUDED.novelty_score,
                     is_current=TRUE
-            """, batch, page_size=5000)
-            self.conn.commit()
-            logger.info(f"Upserted {len(batch):,} resid_* fact_gene_pair rows")
+            """
+            total = 0
+            for s in range(0, len(batch), CH):
+                chunk = batch[s:s + CH]
+                psycopg2.extras.execute_values(cur, _RESID_SQL, chunk, page_size=5000)
+                self.conn.commit()
+                total += len(chunk)
+                logger.info(f"  {total:,}/{len(batch):,} resid_* fact_gene_pair rows upserted")
+            logger.info(f"Upserted {total:,} resid_* fact_gene_pair rows")
 
         if buffering:
             sym = self.symbol_by_gene
@@ -526,7 +537,7 @@ class NoveltyCompute:
                 str(sym.get(ga, "")), str(sym.get(gb, "")), True, "a,b,c",
                 "Weak",
             ) for ga, gb, corr, n_ctx in buffering]
-            psycopg2.extras.execute_values(cur, """
+            _BUFFERING_SQL = """
                 INSERT INTO fact_gene_pair
                     (version_id, run_id, config_id, organism, gene_a_id, gene_b_id,
                      gene_a_symbol, gene_b_symbol, is_buffering_candidate, buffering_basis,
@@ -535,9 +546,15 @@ class NoveltyCompute:
                 ON CONFLICT (version_id, config_id, gene_a_id, gene_b_id) DO UPDATE SET
                     is_buffering_candidate=EXCLUDED.is_buffering_candidate,
                     buffering_basis=EXCLUDED.buffering_basis, is_current=TRUE
-            """, batch, page_size=5000)
-            self.conn.commit()
-            logger.info(f"Upserted {len(batch):,} buffering-candidate fact_gene_pair rows")
+            """
+            total = 0
+            for s in range(0, len(batch), CH):
+                chunk = batch[s:s + CH]
+                psycopg2.extras.execute_values(cur, _BUFFERING_SQL, chunk, page_size=5000)
+                self.conn.commit()
+                total += len(chunk)
+                logger.info(f"  {total:,}/{len(batch):,} buffering-candidate fact_gene_pair rows upserted")
+            logger.info(f"Upserted {total:,} buffering-candidate fact_gene_pair rows")
 
         print(f"Wrote {len(resid_rows):,} residual-channel pairs + {len(buffering):,} buffering candidates "
               f"(config_id={self.config_id}); expectation model "

@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=10:00:00
+#SBATCH --time=23:00:00
 #SBATCH --partition=general-cpu
 # Note: --partition can be overridden via environment RETICLE_PARTITION_CPU or sbatch --partition=
 # Note: --account can be set via sbatch --account= or RETICLE_ACCOUNT env var
@@ -160,6 +160,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo "Warning: env-setup.sh not found, using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 # Create log directory
 mkdir -p "$RETICLE_DIR/logs"
@@ -217,7 +218,7 @@ START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} Starting HPC staging loader..."
 echo ""
 
-python3 hpc_staging_loader.py \
+run_with_heartbeat "hpc_staging_loader.py" python3 hpc_staging_loader.py \
     --organism "$ORGANISM" \
     --threads "$NUM_THREADS" \
     --description "$STAGING_DESCRIPTION"

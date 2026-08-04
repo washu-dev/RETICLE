@@ -48,7 +48,7 @@ Options:
   --mem MB           Memory in GB (default: auto = 4GB per core)
   --gpu              Use GPU mode (requires RAPIDS)
   --gpus N           Number of GPUs (default: 1, only with --gpu)
-  --time HH:MM:SS    Time limit (default: 30 min for CPU, 15 min for GPU)
+  --time HH:MM:SS    Time limit (default: 23:00:00 for CPU and GPU)
   --partition NAME   SLURM partition (overrides default)
   --help             Show this help
 
@@ -57,10 +57,10 @@ Environment Variables:
   RETICLE_PARTITION_GPU   Default partition for GPU jobs (default: gpu)
 
 Examples:
-  $0 2                               # CPU, 8 cores, 30 minutes
+  $0 2                               # CPU, 8 cores, 23h
   $0 2 --cores 32 --mem 128          # CPU, 32 cores, 128GB RAM
-  $0 2 --gpu                         # GPU, 1 GPU, 15 minutes
-  $0 2 --gpu --gpus 2 --time 00:30:00  # GPU, 2 GPUs, 30 minutes
+  $0 2 --gpu                         # GPU, 1 GPU, 23h
+  $0 2 --gpu --gpus 2 --time 00:30:00  # GPU, 2 GPUs, 30 minutes (explicit override)
 
 Set default partitions for your cluster:
   export RETICLE_PARTITION_CPU=general-cpu
@@ -81,7 +81,7 @@ shift
 MODE="cpu"
 CORES=8
 GPUS=0
-TIME_LIMIT="00:30:00"
+TIME_LIMIT="23:00:00"
 PARTITION=${RETICLE_PARTITION_CPU:-cpu}      # Set via: export RETICLE_PARTITION_CPU=general-cpu
 PARTITION_GPU=${RETICLE_PARTITION_GPU:-gpu}   # Set via: export RETICLE_PARTITION_GPU=gpu-v100
 ACCOUNT="${RETICLE_ACCOUNT:-}"                # Set via: export RETICLE_ACCOUNT=myaccount
@@ -103,7 +103,7 @@ while [[ $# -gt 0 ]]; do
         --gpu)
             MODE="gpu"
             PARTITION="$PARTITION_GPU"
-            TIME_LIMIT="00:15:00"
+            TIME_LIMIT="23:00:00"
             CORES=16
             GPUS=1
             shift

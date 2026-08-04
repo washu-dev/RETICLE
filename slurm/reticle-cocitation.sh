@@ -39,6 +39,7 @@ if [ -f "$RETICLE_DIR/slurm/env-setup.sh" ]; then
 else
     echo -e "${YELLOW}[WARN]${NC} env-setup.sh not found; using system python"
 fi
+source "$RETICLE_DIR/slurm/heartbeat.sh"
 
 if [ ! -f ~/.pgpass ]; then echo -e "${RED}[ERROR]${NC} ~/.pgpass not found"; exit 1; fi
 PGPASS_PERMS=$(stat -c %a ~/.pgpass 2>/dev/null || stat -f %A ~/.pgpass 2>/dev/null)
@@ -47,7 +48,7 @@ if [ "$PGPASS_PERMS" != "600" ]; then echo -e "${RED}[ERROR]${NC} ~/.pgpass must
 cd "$SCRIPTS_DIR"
 START_TIME=$(date +%s)
 echo -e "${BLUE}[RUN]${NC} compute_cocitation.py --version $VERSION ${EXTRA_ARGS[*]}"
-python3 compute_cocitation.py --version "$VERSION" "${EXTRA_ARGS[@]}"
+run_with_heartbeat "compute_cocitation.py" python3 compute_cocitation.py --version "$VERSION" "${EXTRA_ARGS[@]}"
 EXIT_CODE=$?
 DURATION=$(($(date +%s) - START_TIME))
 echo ""

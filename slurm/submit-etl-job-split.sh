@@ -46,10 +46,10 @@ Options:
   --gpu                 Submit only Phase 1 (GPU dedup) [default]
   --cpu                 Submit only Phase 2 (CPU load)
   --both                Submit both phases sequentially
-  --gpu-time HH:MM:SS   Time limit for Phase 1 (default: 5 min)
+  --gpu-time HH:MM:SS   Time limit for Phase 1 (default: 23:00:00)
   --gpu-gpus N          Number of GPUs for Phase 1 (default: 1)
   --gpu-cores N         CPU cores for Phase 1 (default: 8)
-  --cpu-time HH:MM:SS   Time limit for Phase 2 (default: 1 hour)
+  --cpu-time HH:MM:SS   Time limit for Phase 2 (default: 23:00:00)
   --cpu-cores N         CPU cores for Phase 2 (default: 8)
   --partition NAME      SLURM partition (overrides defaults)
   --help                Show this help
@@ -65,8 +65,8 @@ Examples:
   $0 2 --cpu                              # Phase 2: Load only (manual phase 1)
 
 Performance Expectations:
-  Phase 1 (GPU dedup):  ~30 seconds on A100, ~5 min reserved
-  Phase 2 (CPU load):   ~30 seconds on fast node, ~1 hour reserved
+  Phase 1 (GPU dedup):  ~30 seconds on A100 typically, 23h reserved (headroom for large versions)
+  Phase 2 (CPU load):   ~30 seconds on fast node typically, 23h reserved (headroom for large versions)
 
   Total GPU time: Only ~30 seconds (vs 30 min in unified pipeline)
   Significant cost savings on expensive GPU resources.
@@ -84,12 +84,12 @@ shift
 
 # Defaults
 MODE="gpu"
-GPU_TIME_LIMIT="00:05:00"
+GPU_TIME_LIMIT="23:00:00"
 GPU_GPUS=1
 GPU_CORES=8
 GPU_PARTITION=${RETICLE_PARTITION_GPU:-gpu}
 
-CPU_TIME_LIMIT="01:00:00"
+CPU_TIME_LIMIT="23:00:00"
 CPU_CORES=8
 CPU_PARTITION=${RETICLE_PARTITION_CPU:-cpu}
 
