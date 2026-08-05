@@ -171,10 +171,22 @@ const SCR_PAGE=50;
 async function findSimilar(sid){
   sid=(sid||'').replace(/\D/g,''); if(!sid) return;
   const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
+  let r;
   try{
-    const r=await fetch(`/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
-    const d=await r.json();
-    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    r=await fetch(`/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach RETICLE. Check your connection.'; return; }
+  try{
+    /* Body once, as text, parsed after the status check. r.json() first would throw on the
+       plain-text 500 uvicorn emits, and the failure would be reported as a dead network. */
+    const body=await r.text();
+    let d=null; try{ d=JSON.parse(body); }catch(_){}
+    if(!r.ok){
+      st.className='status err';
+      st.textContent = r.status===404 ? ((d&&(d.detail||d.error))||`No screen #${sid} in the comparable pool.`)
+                     : 'The screen database is not responding right now — try again in a moment.';
+      return;
+    }
+    if(!d||!d.query){ st.className='status err'; st.textContent='RETICLE returned a response it could not read.'; return; }
     st.textContent=''; $('#hero').classList.add('compact');
     history.replaceState(null,'',`/screen?screen=${encodeURIComponent(d.query.screen_id)}`);
     document.title=`Screens like #${d.query.screen_id} · RETICLE`;
@@ -182,7 +194,7 @@ async function findSimilar(sid){
                maxw:d.results.length?Math.max(0.01,d.results[0].r):1,
                bg:d.background, nsame:d.n_same_study};
     renderScreenSimilar(d);
-  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+  }catch(e){ st.className='status err'; st.textContent='RETICLE returned a response it could not read.'; }
 }
 
 function scrRowsHTML(results, start){

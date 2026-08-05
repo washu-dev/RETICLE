@@ -1008,11 +1008,17 @@ function wireReporterExplain(){
       if(!sym||!screens){ box.dataset.loaded='0'; return; }
       box.innerHTML='<span class="rex-load">reading the paper…</span>';
       fetch('/api/reporter_explain_aaron?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
-        .then(r=>r.json()).then(d=>{
+        /* Read as text, parse after. r.json() straight off throws on a plain-text 5xx, which
+           sends every server-side failure into .catch() dressed up as a network outage. */
+        .then(r=>r.text().then(t=>{
+          let j=null; try{ j=JSON.parse(t); }catch(_){}
+          if(!r.ok) throw new Error((j&&(j.detail||j.error))||'The AI note is unavailable right now.');
+          return j||{};
+        })).then(d=>{
           if(d.error){ box.innerHTML='<span class="rex-err">'+esc(d.error)+'</span>'; return; }
           const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
           box.innerHTML=`<div class="rex-h"><span>AI note</span>${cites?`<span class="rex-src">cites ${cites}</span>`:''}</div><div class="rex-t">${esc(d.text)||'—'}</div>`;
-        }).catch(()=>{ box.innerHTML='<span class="rex-err">Could not reach the server.</span>'; });
+        }).catch(e=>{ box.innerHTML='<span class="rex-err">'+esc(e&&e.message||'The AI note is unavailable right now.')+'</span>'; });
     });
   });
 }

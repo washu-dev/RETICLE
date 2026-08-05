@@ -673,11 +673,17 @@ function wireReporterExplain(){
       if(!sym||!screens){ box.dataset.loaded='0'; return; }
       box.innerHTML='<span class="rex-load">reading the paper…</span>';
       fetch(APIBASE+'/api/reporter_explain_aaron?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
-        .then(r=>r.json()).then(d=>{
+        /* Read as text, parse after. r.json() straight off throws on a plain-text 5xx, which
+           sends every server-side failure into .catch() dressed up as a network outage. */
+        .then(r=>r.text().then(t=>{
+          let j=null; try{ j=JSON.parse(t); }catch(_){}
+          if(!r.ok) throw new Error((j&&(j.detail||j.error))||'The AI note is unavailable right now.');
+          return j||{};
+        })).then(d=>{
           if(d.error){ box.innerHTML='<span class="rex-err">'+esc(d.error)+'</span>'; return; }
           const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
           box.innerHTML=`<div class="rex-h"><span>AI note</span>${cites?`<span class="rex-src">cites ${cites}</span>`:''}</div><div class="rex-t">${esc(d.text)||'—'}</div>`;
-        }).catch(()=>{ box.innerHTML='<span class="rex-err">Could not reach the server.</span>'; });
+        }).catch(e=>{ box.innerHTML='<span class="rex-err">'+esc(e&&e.message||'The AI note is unavailable right now.')+'</span>'; });
     });
   });
 }
@@ -1016,10 +1022,22 @@ const SCR_PAGE=50;
 async function findSimilar(sid){
   sid=(sid||'').replace(/\D/g,''); if(!sid) return;
   const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
+  let r;
   try{
-    const r=await fetch(`${APIBASE}/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
-    const d=await r.json();
-    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
+    r=await fetch(`${APIBASE}/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
+  }catch(e){ st.className='status err'; st.textContent='Could not reach RETICLE. Check your connection.'; return; }
+  try{
+    /* Body once, as text, parsed after the status check. r.json() first would throw on the
+       plain-text 500 uvicorn emits, and the failure would be reported as a dead network. */
+    const body=await r.text();
+    let d=null; try{ d=JSON.parse(body); }catch(_){}
+    if(!r.ok){
+      st.className='status err';
+      st.textContent = r.status===404 ? ((d&&(d.detail||d.error))||`No screen #${sid} in the comparable pool.`)
+                     : 'The screen database is not responding right now — try again in a moment.';
+      return;
+    }
+    if(!d||!d.query){ st.className='status err'; st.textContent='RETICLE returned a response it could not read.'; return; }
     st.textContent=''; $('#hero').classList.add('compact');
     history.replaceState(null,'',`/screen?screen=${encodeURIComponent(d.query.screen_id)}`);
     document.title=`Screens like #${d.query.screen_id} · RETICLE`;
@@ -1027,7 +1045,7 @@ async function findSimilar(sid){
                maxw:d.results.length?Math.max(0.01,d.results[0].r):1,
                bg:d.background, nsame:d.n_same_study};
     renderScreenSimilar(d);
-  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+  }catch(e){ st.className='status err'; st.textContent='RETICLE returned a response it could not read.'; }
 }
 
 function scrRowsHTML(results, start){
@@ -1682,13 +1700,22 @@ async function predictFn(){
        model read the mutual-best set no matter what the graph showed. */
     const r=await fetch(`${APIBASE}/api/net_predict?gene=${encodeURIComponent(gene)}&organism=${ORG}`
       +`&context=${encodeURIComponent(CTX)}&reciprocal=${view?1:0}`);
-    const j=await r.json();
+    /* Body once, as text, parsed after the status check — r.json() throws on the plain-text 500
+       uvicorn emits, which used to report a live server as an unreachable one. */
+    const body=await r.text();
+    let j=null; try{ j=JSON.parse(body); }catch(_){}
     if(req!==PRED_REQ) return;                       // superseded — the user moved on
-    if(!r.ok){ host.innerHTML=`<div class="pred-err">${esc(j.error||'Prediction failed.')}</div>`; }
+    if(!r.ok){
+      const msg = (j&&(j.error||j.detail))
+        || (r.status>=500 ? 'The prediction service is not responding right now — try again in a moment.'
+                          : 'Prediction failed.');
+      host.innerHTML=`<div class="pred-err">${esc(msg)}</div>`;
+    }
+    else if(!j){ host.innerHTML=`<div class="pred-err">RETICLE returned a response it could not read.</div>`; }
     else renderPrediction(j, req);
   }catch(e){
     if(req!==PRED_REQ) return;
-    host.innerHTML=`<div class="pred-err">Could not reach the server.</div>`;
+    host.innerHTML=`<div class="pred-err">Could not reach RETICLE. Check your connection.</div>`;
   }
   if(req!==PRED_REQ) return;
   btn.disabled=false; btn.textContent=label;
