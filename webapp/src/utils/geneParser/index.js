@@ -7,3 +7,4 @@ export { detectFormat }      from './detectFormat.js';
 export { suggestScoreColumn } from './scoreColumns.js';
 export { parseGeneList }      from './parseGeneList.js';
 export { resolveIdentifiers } from './resolveIds.js';
+export { deriveScreenSignals, directionLabel } from './screenSignals.js';

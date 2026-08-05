@@ -219,6 +219,82 @@ describe('parseGeneList — SIMPLE (EXAMPLE_GENE_LIST regression)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// ORCS parsing — #-header stripping, HIT flag, '-' missing scores
+// ---------------------------------------------------------------------------
+describe('parseGeneList — BioGRID ORCS', () => {
+  const ORCS_RAW = `#SCREEN_ID\tIDENTIFIER_ID\tIDENTIFIER_TYPE\tOFFICIAL_SYMBOL\tALIASES\tORGANISM_ID\tORGANISM_OFFICIAL\tSCORE.1\tSCORE.2\tHIT\tSOURCE
+381\t5441\tENTREZ_GENE\tPOLR2L\tRBP10\t9606\tHomo sapiens\t-1.9868\t0.0\tYES\tBioGRID ORCS
+381\t5691\tENTREZ_GENE\tPSMB3\tHC10-II\t9606\tHomo sapiens\t-1.8961\t-\tYES\tBioGRID ORCS
+381\t22827\tENTREZ_GENE\tPUF60\tFIR\t9606\tHomo sapiens\t-1.8083\t0.0\tNO\tBioGRID ORCS
+381\t6301\tENTREZ_GENE\tSARS\tSERRS\t9606\tHomo sapiens\t-1.8052\t0.0\tNO\tBioGRID ORCS
+381\t6632\tENTREZ_GENE\tSNRPD1\tSMD1\t9606\tHomo sapiens\t-1.7818\t0.0\tYES\tBioGRID ORCS`;
+
+  const opts = {
+    format: 'ORCS', delimiter: '\t',
+    idColumn: 'OFFICIAL_SYMBOL', scoreColumn: 'SCORE.1', hitColumn: 'HIT',
+  };
+
+  test('strips # header and parses all 5 genes', () => {
+    const { genes } = parseGeneList(ORCS_RAW, opts);
+    expect(genes).toHaveLength(5);
+    expect(genes[0].symbol).toBe('POLR2L');
+  });
+
+  test('SCORE.1 parsed as the numeric score', () => {
+    const { genes } = parseGeneList(ORCS_RAW, opts);
+    expect(genes[0].score).toBeCloseTo(-1.9868);
+  });
+
+  test("'-' missing value in SCORE.2 does not crash parsing", () => {
+    const { genes } = parseGeneList(ORCS_RAW, { ...opts, scoreColumn: 'SCORE.2' });
+    // PSMB3 has '-' for SCORE.2 → treated as missing (0 default)
+    expect(genes[1].symbol).toBe('PSMB3');
+    expect(genes[1].score).toBe(0);
+  });
+
+  test('HIT column parsed into isHit boolean (YES→true, NO→false)', () => {
+    const { genes } = parseGeneList(ORCS_RAW, opts);
+    expect(genes[0].isHit).toBe(true);
+    expect(genes[2].isHit).toBe(false);
+  });
+
+  test('entrez IDENTIFIER_ID captured in extra', () => {
+    const { genes } = parseGeneList(ORCS_RAW, opts);
+    expect(genes[0].extra?.IDENTIFIER_ID).toBe('5441');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RESIDUAL parsing — z-score screen (zs_GammaTNF_vs_DMSO.csv shape)
+// ---------------------------------------------------------------------------
+describe('parseGeneList — RESIDUAL', () => {
+  const RESIDUAL_RAW = `Gene,condition,n,mean_lfc,mean_residual,pop_mean,pop_sd,z_score,p_value,fdr,ascending_rank,descending_rank
+Ifngr2,GammaTNF,4,0.9467,0.7070,1.5e-14,0.2402,5.8855,3.9e-9,5.9e-6,22629,1
+Ifngr1,GammaTNF,4,0.3598,0.6157,1.5e-14,0.2402,5.1253,2.9e-7,2.6e-4,22628,2
+Fip1l1,GammaTNF,4,-0.4899,0.5282,1.5e-14,0.2402,4.3973,1.0e-5,0.0052,22627,3
+Wdr74,GammaTNF,4,-1.5137,0.5076,1.5e-14,0.2402,4.2260,2.3e-5,0.0090,22626,4
+Rela,GammaTNF,4,-0.8,0.4,1.5e-14,0.2402,-3.1,1e-4,0.02,1,22625`;
+
+  const opts = {
+    format: 'RESIDUAL', delimiter: ',',
+    idColumn: 'Gene', scoreColumn: 'z_score',
+  };
+
+  test('parses 5 genes with z_score as the score', () => {
+    const { genes } = parseGeneList(RESIDUAL_RAW, opts);
+    expect(genes).toHaveLength(5);
+    expect(genes[0].symbol).toBe('Ifngr2');
+    expect(genes[0].score).toBeCloseTo(5.8855);
+  });
+
+  test('condition and residual carried in extra', () => {
+    const { genes } = parseGeneList(RESIDUAL_RAW, opts);
+    expect(genes[0].extra?.condition).toBe('GammaTNF');
+    expect(genes[0].extra?.mean_residual).toBe('0.7070');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Fewer-than-5 genes warning
 // ---------------------------------------------------------------------------
 describe('parseGeneList — fewer than 5 genes warning', () => {

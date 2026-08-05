@@ -6,12 +6,56 @@ class GeneInput(CamelModel):
     score: float
 
 
+class ScreenContext(CamelModel):
+    """The researcher's description of the screen they uploaded (the context
+    vector). Every field is optional — auto-detected values pre-fill the form and
+    the user may override any of them. Stored/echoed so results can label the
+    described screen; not all fields drive the query today."""
+
+    modality: str | None = None            # KO | CRISPRi | CRISPRa | RNAi | Other
+    organism: str | None = None            # Human | Mouse
+    selection_method: str | None = None    # Negative|Positive|Bidirectional|Phenotype|Unknown
+    coverage_scope: str | None = None      # Genome-wide | Focused | Unknown
+    coverage_availability: str | None = None  # FULL | HITS_ONLY (auto-detected)
+    assay_domain: str | None = None        # fitness | stress | reporter | other
+    cell_line: str | None = None
+    cell_type: str | None = None
+    library: str | None = None
+    condition: str | None = None
+    concentration: str | None = None
+    timepoint: str | None = None
+    timepoint_unit: str | None = None      # hours | days
+    n_replicates: int | None = None
+    comparison_direction: str | None = None
+    hit_threshold_type: str | None = None
+    hit_threshold_value: float | None = None
+    direction: str | None = None           # bidirectional | depletion | enrichment
+    algorithm: str | None = None
+    score_column: str | None = None
+    file_format: str | None = None
+
+
+class CorpusFilters(CamelModel):
+    """Which screens in the corpus to compare against. 'Any'/empty/all-selected
+    values are treated as no-ops so the default request reproduces the unfiltered
+    corpus."""
+
+    organism: str = "Any"                  # Any | Human | Mouse
+    assay_domains: list[str] = []          # subset of fitness|stress|reporter|other
+    coverage: str = "Any"                  # Any | FULL
+    cell_types: list[str] = []
+    modalities: list[str] = []
+    min_shared_genes: int = 0
+
+
 class QueryRequest(CamelModel):
     genes: list[GeneInput]
     algorithm: str = "MAGeCK LFC"
     organism: str = "Both"
     modalities: list[str] = ["KO", "CRISPRa"]
     pathway_analysis: bool = False
+    screen_context: ScreenContext | None = None
+    corpus_filters: CorpusFilters | None = None
 
 
 class MatchedScreen(CamelModel):
@@ -28,6 +72,48 @@ class MatchedScreen(CamelModel):
     directionality: str
     shared_genes: int
     total_genes: int
+    # The query genes that are hits in this screen — the clickable bridge to the
+    # single-gene lookup. Empty when unknown (e.g. the offline mock path).
+    shared_gene_symbols: list[str] = []
+
+
+class ScreenGene(CamelModel):
+    symbol: str
+    percentile: float | None = None
+    is_hit: bool = False
+    harmonized_score: float | None = None
+    robust_z: float | None = None
+
+
+class ScreenDetail(CamelModel):
+    """One screen's metadata + a capped, control-filtered list of its genes."""
+
+    screen_id: str
+    biogrid_url: str
+    pmid: str | None = None
+    pubmed_url: str | None = None
+    author: str | None = None
+    name: str | None = None
+    organism: str | None = None
+    cell_line: str | None = None
+    cell_type: str | None = None
+    screen_type: str | None = None
+    modality: str | None = None
+    analysis: str | None = None
+    methodology: str | None = None
+    phenotype: str | None = None
+    rationale: str | None = None
+    coverage_type: str | None = None
+    assay_domain: str | None = None
+    condition_name: str | None = None
+    growth_direction: str | None = None
+    score_basis: str | None = None
+    is_directional: bool | None = None
+    scores_size: int | None = None
+    n_genes: int | None = None
+    n_hits: int | None = None
+    genes_shown: int | None = None
+    genes: list[ScreenGene] = []
 
 
 class DarkGene(CamelModel):
@@ -91,3 +177,5 @@ class QueryResponse(CamelModel):
     matched_screens: list[MatchedScreen]
     dark_genes: list[DarkGene]
     graph_elements: GraphElements
+    screen_context: ScreenContext | None = None
+    corpus_pool_size: int | None = None

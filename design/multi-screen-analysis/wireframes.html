@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RETICLE — W1 + W2 wireframes (low-fi)</title>
+<style>
+/* ============================================================
+   LOW-FI WIREFRAME — grayscale only, no skin.
+   Renders design/multi-screen-analysis/02_WIREFRAMES_W1_W2.md
+   as a clickable click-through. Visuals are deliberately plain;
+   the skin (color/type/motion) is a separate later pass.
+   ============================================================ */
+:root{
+  --ink:#1b1b1b; --mut:#6c6c6c; --faint:#9b9b9b;
+  --line:#c9c9c9; --line2:#e4e4e4; --bg:#f2f2f2; --card:#fff; --btn:#2b2b2b;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.mono{font-family:var(--mono)}
+:focus-visible{outline:2px solid #333;outline-offset:2px}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+a{color:inherit}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:10px 20px}
+.brand{font-family:var(--mono);font-weight:600;letter-spacing:.02em}
+.brand b{color:#000}
+.wftag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--mut);border:1px dashed var(--line);border-radius:3px;padding:3px 8px}
+.topbar .spacer{flex:1}
+.wfbtn{font-family:var(--mono);font-size:12px;color:var(--mut);border:1px solid var(--line);
+  border-radius:3px;padding:5px 10px}
+.wfbtn:hover{border-color:#999;color:var(--ink)}
+
+.wrap{max-width:1000px;margin:0 auto;padding:26px 22px 90px}
+.crumb{font-family:var(--mono);font-size:12px;color:var(--mut);margin-bottom:14px}
+.crumb .lk{cursor:pointer;border-bottom:1px dotted var(--faint)}
+.crumb .lk:hover{color:var(--ink)}
+
+.screen{display:none}
+.screen.is-active{display:block;animation:fade .15s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.screen.is-active{animation:none}}
+
+h1{font-weight:500;font-size:26px;letter-spacing:-.01em;margin:2px 0 6px}
+h2{font-weight:600;font-size:14px;margin:26px 0 8px;font-family:var(--mono);
+  text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+p.sub{color:var(--mut);margin:0 0 14px;max-width:70ch}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+
+.card{border:1px solid var(--line);background:var(--card);border-radius:3px;padding:18px 20px;margin:14px 0}
+.center{max-width:620px;margin:40px auto;text-align:center}
+.inputbox{border:1px dashed var(--line);border-radius:3px;padding:22px;color:var(--faint);
+  font-family:var(--mono);font-size:13px;text-align:left;margin:14px 0}
+.note{font-size:12.5px;color:var(--mut);margin-top:10px}
+.lock{display:inline-flex;gap:7px;align-items:center;border:1px solid var(--line);border-radius:100px;
+  padding:5px 12px;font-size:12px;color:var(--mut);margin-top:12px}
+
+.btn{border:1px solid var(--line);background:#fff;border-radius:3px;padding:9px 15px;font-size:13.5px}
+.btn:hover{border-color:#999}
+.btn.primary{background:var(--btn);border-color:var(--btn);color:#fff}
+.btn.primary:hover{background:#000}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+
+.summary{border:1px dashed #b7b7b7;border-radius:3px;padding:14px 16px;margin:14px 0;background:#fafafa}
+.summary .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.summary p{margin:0;font-size:14px;line-height:1.6}
+.gref{font-family:var(--mono);font-size:12.5px;background:#eee;border:1px solid var(--line2);padding:0 5px;border-radius:2px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+tbody tr:hover{background:#fafafa}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px}
+.g{font-family:var(--mono)}
+.lk{cursor:pointer;border-bottom:1px dotted var(--faint)}
+.lk:hover{color:#000;border-bottom-color:#000}
+
+.pill{display:inline-block;border:1px solid var(--line);border-radius:100px;padding:1px 9px;
+  font-family:var(--mono);font-size:11px;color:var(--mut);margin:2px 3px 2px 0}
+.pill.on{border-color:#8a8a8a;color:var(--ink)}
+.chips{margin:8px 0}
+
+/* progressive disclosure: expert metrics hidden until "show numbers" */
+.num{display:none}
+.screen[data-num="on"] .num{display:inline}
+.numrow{display:none}
+.screen[data-num="on"] .numrow{display:table-row}
+.numtoggle{font-family:var(--mono);font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:3px;padding:4px 9px}
+.numtoggle:hover{border-color:#999;color:var(--ink)}
+
+.claim{font-family:var(--mono);font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:100px;padding:3px 9px}
+
+/* fingerprint / bars — plain text glyphs in mono (low-fi) */
+.fp{font-family:var(--mono);font-size:13px;line-height:1.9;color:var(--ink);margin:6px 0}
+.fp .d{color:var(--faint)}
+.barline{font-family:var(--mono);font-size:13px;color:var(--ink)}
+
+details{border:1px solid var(--line2);border-radius:3px;margin:10px 0;padding:0 12px}
+details[open]{padding-bottom:10px}
+summary{cursor:pointer;padding:10px 0;font-family:var(--mono);font-size:12.5px;color:var(--mut)}
+summary:hover{color:var(--ink)}
+
+.linkouts{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--line2)}
+.linkouts .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+
+.method{font-family:var(--mono);font-size:12.5px;color:var(--mut);margin:6px 0 12px}
+.method button{border:1px solid var(--line);border-radius:3px;padding:4px 10px;margin-left:6px;color:var(--mut)}
+.method button.on{border-color:#333;color:#000;background:#f0f0f0}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.hint{font-size:12px;color:var(--faint);margin-top:8px}
+.back{font-family:var(--mono);font-size:12px;color:var(--mut);cursor:pointer;border-bottom:1px dotted var(--faint)}
+.back:hover{color:#000}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">RETI<b>C</b>LE</span>
+  <span class="wftag">low-fi wireframe · not final visuals</span>
+  <span class="spacer"></span>
+  <button class="wfbtn" onclick="go('w1-start')">W1 · upload a screen</button>
+  <button class="wfbtn" onclick="go('w2-start')">W2 · a gene</button>
+</div>
+
+<div class="wrap">
+
+<!-- ============ W1.1 START ============ -->
+<section class="screen" id="w1-start">
+  <div class="center">
+    <div class="eyebrow">W1 · upload my screen</div>
+    <h1>Compare your screen to every screen in the corpus</h1>
+    <div class="inputbox">Paste genes  (Ifngr2, Jak2, Rela …)<br>— or —   ⬆ drop a screen file  (.csv / .tsv)</div>
+    <div class="btnrow" style="justify-content:center">
+      <button class="btn primary" onclick="go('w1-parse')">Compare to the corpus →</button>
+    </div>
+    <div class="note">Works with a few favorite genes or a full screen.</div>
+    <div class="lock">🔒 Unpublished screens stay on your WashU session unless you choose to contribute them.</div>
+  </div>
+</section>
+
+<!-- ============ W1.2 PARSE-CONFIRM ============ -->
+<section class="screen" id="w1-parse">
+  <div class="crumb"><span class="lk" onclick="go('w1-start')">W1 · upload</span> › parse</div>
+  <div class="card center" style="margin-top:24px;text-align:left;max-width:640px">
+    <div class="g" style="font-size:15px">✓ zs_GammaTNF_vs_DMSO.csv</div>
+    <p class="sub" style="margin-top:8px">22,628 genes · mouse · scores read: <span class="mono">mean_lfc, z, fdr</span><br>
+    Direction detected: <b>resistance</b> (KO helps) ⇄ <b>sensitization</b></p>
+    <div class="btnrow">
+      <button class="btn primary" onclick="go('w1-overview')">Looks right — Compare →</button>
+      <button class="btn" onclick="go('w1-start')">Fix column mapping</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ W1.3 RESULT OVERVIEW (hero) ============ -->
+<section class="screen" id="w1-overview" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w1-start')">W1 · upload</span> › results</div>
+  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+    <h1 style="margin:0">GammaTNF vs DMSO · mouse</h1>
+    <span class="claim">◔ hypothesis-generating</span>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w1-overview')">show numbers ▾</button>
+  </div>
+
+  <div class="summary">
+    <div class="lbl">● di2 · what the corpus sees</div>
+    <p>Your screen behaves like published cytokine-survival screens. The resistance end is IFN-γ/TNF
+    receptors + JAK-STAT (<span class="gref">Ifngr1/2</span>, <span class="gref">Jak2</span>,
+    <span class="gref">Tnfrsf1a</span>); the sensitizing end is NF-κB machinery
+    (<span class="gref">Rela</span>, <span class="gref">Adam17</span>, <span class="gref">Otulin</span>).
+    Three screens below ask the same question under different names.</p>
+  </div>
+
+  <h2>Matched screens</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Screen</th><th>Shared context</th><th>Direction</th><th>Support</th><th class="num">κ · N · FDR</th></tr></thead>
+      <tbody>
+        <tr><td class="lk" onclick="go('w1-screen')">Zhang 2021</td><td>NF-κB / cytokine survival</td><td>same →</td><td>strong</td><td class="num mono">0.87 · 41scr/6lib · 1e-9</td></tr>
+        <tr><td class="lk" onclick="go('w1-screen')">Okonkwo 2019</td><td>JAK-STAT / IFN response</td><td>same →</td><td>strong</td><td class="num mono">0.81 · 38scr/5lib · 4e-8</td></tr>
+        <tr><td class="lk" onclick="go('w1-screen')">ORCS-1140</td><td>TNF (overexpression)</td><td>opposite ←</td><td>moderate</td><td class="num mono">0.64 · 29scr/2lib · 2e-5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="hint">“opposite” is expected here — an overexpression screen should oppose knockout under the same pressure.</p>
+
+  <h2>Shared pathways</h2>
+  <div class="chips">
+    <span class="pill on">NF-κB</span><span class="pill on">TNF response</span>
+    <span class="pill on">JAK-STAT</span><span class="pill">+ de-novo (CRISPR)</span>
+  </div>
+
+  <div class="linkouts">
+    <span class="lbl">Take it further</span>
+    <button class="btn">Pathway enrichment ↗</button>
+    <button class="btn">Darkness</button>
+    <button class="btn">STRING ↗</button>
+  </div>
+
+  <div class="btnrow" style="margin-top:20px">
+    <button class="btn" onclick="go('w1-surprises')">▸ Surprises (12)</button>
+    <button class="btn" onclick="go('w2-gene')">▸ Your genes (list entities)</button>
+  </div>
+</section>
+
+<!-- ============ W1.4 SCREEN DETAIL ============ -->
+<section class="screen" id="w1-screen" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w1-overview')">results</span> › screen</div>
+  <div style="display:flex;align-items:baseline;gap:12px">
+    <h1 style="margin:0">Zhang 2021 · ORCS-2381</h1>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w1-screen')">show numbers ▾</button>
+  </div>
+  <p class="sub" style="margin-top:10px">Studied: CD8 T-cell survival under cytokine stress<br>
+  Cell: OT-I · Pressure: IL-2 / IFN · Modality: KO · Coverage: FULL (genome-wide)<br>
+  Paper: <span class="lk">PMID 34879274 ↗</span></p>
+
+  <h2>Why it matched your screen</h2>
+  <p>34 genes shared at the same end; both center on NF-κB / JAK-STAT cytokine survival.
+  <span class="num mono">(κ 0.87 · 41 shared screens · 6 libraries · FDR 1e-9)</span></p>
+
+  <h2>Shared genes  <span style="text-transform:none;letter-spacing:0;color:var(--faint);font-family:var(--sans)">— click a gene → its entity</span></h2>
+  <p class="g">
+    <span class="lk" onclick="go('w2-gene')">Ifngr1</span> ·
+    <span class="lk" onclick="go('w2-gene')">Jak2</span> ·
+    <span class="lk" onclick="go('w2-gene')">Tnfrsf1a</span> ·
+    <span class="lk" onclick="go('w2-gene')">Rela</span> ·
+    <span class="lk" onclick="go('w2-gene')">Adam17</span> ·
+    <span class="lk" onclick="go('w2-gene')">Otulin</span> · …
+  </p>
+  <p style="margin-top:20px"><span class="back" onclick="go('w1-overview')">‹ back to results</span></p>
+</section>
+
+<!-- ============ W1.5 SURPRISES ============ -->
+<section class="screen" id="w1-surprises" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w1-overview')">results</span> › surprises</div>
+  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+    <h1 style="margin:0">Surprises in your screen</h1>
+    <span class="claim">◔ hypothesis-generating</span>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w1-surprises')">show numbers ▾</button>
+  </div>
+  <p class="sub" style="margin-top:10px">Genes that scored strongly here, but the corpus didn't predict
+  for a cytokine-survival screen — worth a look.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Gene</th><th>Why it's surprising</th><th>Confidence</th><th class="num">residual z</th></tr></thead>
+      <tbody>
+        <tr><td class="lk g" onclick="go('w2-gene')">Fip1l1</td><td>strong here; ~silent in the corpus under like conditions</td><td>moderate</td><td class="num mono">+3.1</td></tr>
+        <tr><td class="lk g" onclick="go('w2-gene')">Wdr74</td><td>strong here; mostly a fitness gene elsewhere</td><td>low</td><td class="num mono">+2.4</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="hint">ⓘ Novel dependencies only. “Should have mattered but didn't” (buffering) is deferred — false negatives are hard to read.</p>
+  <p style="margin-top:16px"><span class="back" onclick="go('w1-overview')">‹ back to results</span></p>
+</section>
+
+<!-- ============ W2.1 START ============ -->
+<section class="screen" id="w2-start">
+  <div class="center">
+    <div class="eyebrow">W2 · a gene</div>
+    <h1>What does the corpus know about a gene?</h1>
+    <div class="inputbox">🔍  Gm3558</div>
+    <div class="btnrow" style="justify-content:center">
+      <button class="btn primary" onclick="go('w2-gene')">Look up gene →</button>
+    </div>
+    <div class="note">Optional: under conditions like my screen &nbsp;[ attach ▾ ]</div>
+  </div>
+</section>
+
+<!-- ============ W2.2 GENE ENTITY ============ -->
+<section class="screen" id="w2-gene" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w2-start')">W2 · a gene</span> › entity</div>
+  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+    <h1 style="margin:0">Gm3558</h1>
+    <span class="mono" style="color:var(--mut);font-size:13px">mouse · Entrez 100041874 · predicted gene · under-characterized</span>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w2-gene')">show numbers ▾</button>
+  </div>
+
+  <div class="summary">
+    <div class="lbl">● di2 · CRISPR-informed annotation</div>
+    <p>Barely studied, but a hit in 11 of 33 screens, mostly proliferation/fitness. Its strongest
+    partners are ribosome / proteasome / mTOR-adjacent, so it tracks core cellular fitness.
+    Worth a look — not noise.</p>
+  </div>
+
+  <h2>Behavior across screens</h2>
+  <div class="barline">hit  ██████████░░░░░░░░░░░░░░░░░░░░░  11 / 33 assayed</div>
+  <div class="fp">
+    context fingerprint:<br>
+    &nbsp;&nbsp;proliferation ▮▮▮▮▮ hit &nbsp;&nbsp; signal-transduction ▮▮ hit &nbsp;&nbsp; chemical resp. ▮▮ hit<br>
+    &nbsp;&nbsp;<span class="d">phagocytosis ▯▯▯ not &nbsp;&nbsp; viral ▯ not &nbsp;&nbsp; protein accum. ▯▯▯ not</span>
+  </div>
+  <div class="fp">Rarely studied &nbsp; ●●●●●●●○○○ &nbsp; <span class="d">(darkness)</span></div>
+
+  <div class="btnrow" style="margin-top:16px">
+    <button class="btn" onclick="go('w2-why')">▸ Why a hit here / not there</button>
+    <button class="btn" onclick="go('w2-relatives')">▸ Relatives (14 strong)</button>
+  </div>
+  <div class="linkouts">
+    <span class="lbl">Links</span>
+    <button class="btn">NCBI ↗</button><button class="btn">UniProt ↗</button>
+    <button class="btn">STRING ↗</button><button class="btn">PubMed (3) ↗</button>
+  </div>
+</section>
+
+<!-- ============ W2.3 WHY HIT / NOT ============ -->
+<section class="screen" id="w2-why" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w2-gene')">Gm3558</span> › why hit / not</div>
+  <div style="display:flex;align-items:baseline;gap:12px">
+    <h1 style="margin:0">Why a hit here — and not there</h1>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w2-why')">show numbers ▾</button>
+  </div>
+
+  <h2>Hit in 11</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Screen</th><th>Cell / pressure</th><th>Phenotype</th><th>Why (plain)</th><th class="num">score</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">345</td><td>NIH-3T3</td><td>proliferation</td><td>fitness gene</td><td class="num mono">CasTLE 146 · p 1e-5</td></tr>
+        <tr><td class="mono">1483</td><td>Treg</td><td>proliferation</td><td>fitness gene</td><td class="num mono">Log2FC −3.15 · p 4e-4</td></tr>
+        <tr><td class="mono">1565</td><td>PDAC + salirasib</td><td>chemical resp.</td><td>context-specific</td><td class="num mono">FDR 1e-3</td></tr>
+        <tr><td class="mono">2411</td><td>CD8 OT-I</td><td>proliferation</td><td>fitness gene</td><td class="num mono">Log2FC −1.63</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Assayed, not a hit in 22</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Screen</th><th>Cell / pressure</th><th>Phenotype</th><th>Why (plain)</th><th class="num">score</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1888</td><td>J774 macrophage</td><td>phagocytosis</td><td>different phenotype</td><td class="num mono">p 0.08</td></tr>
+        <tr><td class="mono">1438</td><td>BV-2 + reovirus</td><td>viral response</td><td>different pressure</td><td class="num mono">FDR 0.43</td></tr>
+        <tr><td class="mono">1398</td><td>BV-2</td><td>protein accum.</td><td>below cutoff</td><td class="num mono">p 0.84</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="hint">ⓘ “Not a hit” = measured, but under a different phenotype or pressure — or just under that screen's own cutoff.</p>
+  <p style="margin-top:16px"><span class="back" onclick="go('w2-gene')">‹ back to Gm3558</span></p>
+</section>
+
+<!-- ============ W2.4 RELATIVES ============ -->
+<section class="screen" id="w2-relatives" data-num="off">
+  <div class="crumb"><span class="lk" onclick="go('w2-gene')">Gm3558</span> › relatives</div>
+  <div style="display:flex;align-items:baseline;gap:12px">
+    <h1 style="margin:0">Relatives — genes that behave like it</h1>
+    <span class="spacer" style="flex:1"></span>
+    <button class="numtoggle" onclick="toggleNum('w2-relatives')">show numbers ▾</button>
+  </div>
+  <div class="method">Method:
+    <button id="mA" class="on" onclick="setMethod('A')">Hit-based (mouse)</button>
+    <button id="mB" onclick="setMethod('B')">Co-essentiality (human)</button>
+  </div>
+
+  <h2>Strong (14)</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Gene</th><th id="colwhy">Why related (channels)</th><th>Support</th><th class="num">stats</th></tr></thead>
+      <tbody id="relbody"><!-- filled by JS --></tbody>
+    </table>
+  </div>
+
+  <details><summary>▸ Moderate (12)</summary>
+    <p class="g" style="font-size:13px;color:var(--mut)">Eif2b2 · Med12 · Mettl16 · Twistnb · Gm5795 · Kri1 · Gemin6 · 2810004N23Rik · Mrpl4 · Chd4 · Trmt6 · C330027C09Rik</p>
+  </details>
+  <details><summary>▸ Common-essential neighborhood (696) — real co-hits, but explained by the partner's own promiscuity</summary>
+    <p class="hint">Kept separate on purpose: these co-hit reproducibly with Gm3558 but are hits in a large fraction of ALL screens, so the association is largely non-specific (e.g. Rps15a, Pold1, Rpl37a…).</p>
+  </details>
+
+  <p class="hint" style="margin-top:14px">ⓘ Two methods can define “related.” Hit-based (shown) folds in literature; the pure-CRISPR
+  co-essentiality network does not. Toggle above to compare. &nbsp; <button class="btn" style="padding:4px 10px">view as network →</button></p>
+  <p style="margin-top:14px"><span class="back" onclick="go('w2-gene')">‹ back to Gm3558</span></p>
+</section>
+
+</div>
+
+<script>
+const RELATIVES = {
+  A: {
+    colwhy: "Why related (channels)",
+    rows: [
+      ["Mtor",   "co-hit · co-ess · cited · context", "8 screens / 7 pubs", "OR 168 · ρ 0.73 · spec 2.7×"],
+      ["Exosc8", "co-hit · co-ess · cited · context", "7 / 7",              "OR 33 · ρ 0.76 · spec 2.5×"],
+      ["Pabpc1", "co-hit · co-ess · cited · context", "7 / 7",              "OR 33 · ρ 0.72 · spec 2.4×"],
+      ["Psma3",  "co-hit · co-ess · cited · context", "8 / 7",              "OR 76 · ρ 0.66 · core-ess"],
+    ]
+  },
+  B: {
+    colwhy: "Why related (co-essentiality only)",
+    rows: [
+      ["(human ortholog view)", "reciprocal top-25 · centered Pearson r", "shared screens", "no literature · CORUM-validated"],
+      ["MTOR",   "co-essential (reciprocal)", "r 0.71 · support 1,240", "r ≥ 0.16 · reciprocal"],
+      ["EXOSC8", "co-essential (reciprocal)", "r 0.66 · support 1,190", "r ≥ 0.16 · reciprocal"],
+      ["PABPC1", "co-essential (reciprocal)", "r 0.63 · support 1,205", "r ≥ 0.16 · reciprocal"],
+    ]
+  }
+};
+function renderRel(m){
+  const d = RELATIVES[m];
+  document.getElementById("colwhy").textContent = d.colwhy;
+  document.getElementById("relbody").innerHTML = d.rows.map(r=>
+    `<tr><td class="g">${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td class="num mono">${r[3]}</td></tr>`).join("");
+}
+function setMethod(m){
+  document.getElementById("mA").classList.toggle("on", m==="A");
+  document.getElementById("mB").classList.toggle("on", m==="B");
+  renderRel(m);
+}
+function toggleNum(id){
+  const s = document.getElementById(id);
+  s.dataset.num = s.dataset.num==="on" ? "off" : "on";
+}
+function go(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("is-active", s.id===id));
+  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
+  window.scrollTo({top:0,behavior:"instant"});
+}
+function openHash(){
+  const id=(location.hash||"#w1-start").slice(1);
+  go(document.getElementById(id)?id:"w1-start");
+}
+window.addEventListener("hashchange",openHash);
+renderRel("A");
+openHash();
+</script>
+</body>
+</html>

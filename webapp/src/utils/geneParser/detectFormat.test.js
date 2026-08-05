@@ -109,6 +109,64 @@ ATG5\t234.5\t-2.31\t1.1e-05`;
 });
 
 // ---------------------------------------------------------------------------
+// ORCS — BioGRID native .screen.tab.txt (real sample shape)
+// ---------------------------------------------------------------------------
+describe('detectFormat — BioGRID ORCS', () => {
+  const ORCS_RAW = `#SCREEN_ID\tIDENTIFIER_ID\tIDENTIFIER_TYPE\tOFFICIAL_SYMBOL\tALIASES\tORGANISM_ID\tORGANISM_OFFICIAL\tSCORE.1\tSCORE.2\tSCORE.3\tSCORE.4\tSCORE.5\tHIT\tSOURCE
+381\t5441\tENTREZ_GENE\tPOLR2L\tRBP10|RPABC5\t9606\tHomo sapiens\t-1.98680010698\t0.0\t-\t-\t-\tYES\tBioGRID ORCS
+381\t5691\tENTREZ_GENE\tPSMB3\tHC10-II\t9606\tHomo sapiens\t-1.89612473832\t0.0\t-\t-\t-\tYES\tBioGRID ORCS`;
+
+  test('returns ORCS format for #-prefixed BioGRID header', () => {
+    expect(detectFormat(ORCS_RAW).format).toBe('ORCS');
+  });
+
+  test('idColumn is OFFICIAL_SYMBOL', () => {
+    expect(detectFormat(ORCS_RAW).idColumn).toBe('OFFICIAL_SYMBOL');
+  });
+
+  test('hitColumn is HIT', () => {
+    expect(detectFormat(ORCS_RAW).hitColumn).toBe('HIT');
+  });
+
+  test('delimiter is tab and confidence is HIGH', () => {
+    const r = detectFormat(ORCS_RAW);
+    expect(r.delimiter).toBe('\t');
+    expect(r.confidence).toBeGreaterThanOrEqual(0.9);
+  });
+
+  test('columns strip the leading # from the first token', () => {
+    expect(detectFormat(ORCS_RAW).columns[0]).toBe('SCREEN_ID');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RESIDUAL — z-score / residual-model screen (zs_GammaTNF_vs_DMSO.csv shape)
+// ---------------------------------------------------------------------------
+describe('detectFormat — RESIDUAL', () => {
+  const RESIDUAL_RAW = `Gene,condition,n,mean_lfc,mean_residual,pop_mean,pop_sd,z_score,p_value,fdr,ascending_rank,descending_rank
+Ifngr2,GammaTNF,4,0.9467,0.7070,1.5e-14,0.2402,5.8855,3.9e-9,5.9e-6,22629,1
+Ifngr1,GammaTNF,4,0.3598,0.6157,1.5e-14,0.2402,5.1253,2.9e-7,2.6e-4,22628,2`;
+
+  test('returns RESIDUAL format', () => {
+    expect(detectFormat(RESIDUAL_RAW).format).toBe('RESIDUAL');
+  });
+
+  test('idColumn is Gene, delimiter is comma', () => {
+    const r = detectFormat(RESIDUAL_RAW);
+    expect(r.idColumn).toBe('Gene');
+    expect(r.delimiter).toBe(',');
+  });
+
+  test('conditionColumn is condition', () => {
+    expect(detectFormat(RESIDUAL_RAW).conditionColumn).toBe('condition');
+  });
+
+  test('confidence HIGH when both z_score and mean_residual present', () => {
+    expect(detectFormat(RESIDUAL_RAW).confidence).toBeGreaterThanOrEqual(0.9);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // SIMPLE — CSV
 // ---------------------------------------------------------------------------
 describe('detectFormat — SIMPLE CSV', () => {
