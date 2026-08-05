@@ -7,6 +7,7 @@ exchange or network call ever happens. We mount the interpret router on a
 throwaway FastAPI app so the tests don't depend on main.py registration.
 """
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -104,7 +105,7 @@ class TestReporterExplainEndpoint:
         assert resp.status_code == 422
 
     def test_screens_capped_to_six(self, client: TestClient) -> None:
-        captured = {}
+        captured: dict[str, Any] = {}
 
         def fake_chat(messages: object, **kw: object) -> str:
             captured["messages"] = messages

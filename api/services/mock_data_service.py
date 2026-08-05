@@ -358,7 +358,11 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         HAVING COUNT(DISTINCT hs.gene_symbol) >= ?
         ORDER BY shared_genes DESC, rho DESC
         LIMIT 20
-    """, tuple(symbols) + tuple(corpus_params) + (int(getattr(request.corpus_filters, "min_shared_genes", 0) or 0),))
+    """,
+        tuple(symbols)
+        + tuple(corpus_params)
+        + (int(getattr(request.corpus_filters, "min_shared_genes", 0) or 0),),
+    )
 
     matched_screens = [
         MatchedScreen(

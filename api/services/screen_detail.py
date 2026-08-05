@@ -166,6 +166,7 @@ def _s(v: object) -> str | None:
 
 def _f(v: object) -> float | None:
     try:
-        return float(v) if v is not None else None
+        # v is an arbitrary DB cell (object); non-floatable values raise below.
+        return float(v) if v is not None else None  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return None
