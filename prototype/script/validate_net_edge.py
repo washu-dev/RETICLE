@@ -25,6 +25,7 @@ annotated is neither right nor wrong, and counting it as wrong would just penali
   /opt/anaconda3/bin/python3 script/validate_net_edge.py --organism mouse
 """
 import argparse
+import csv
 import sqlite3
 from collections import defaultdict
 from pathlib import Path
@@ -37,26 +38,33 @@ CORUM = paths.PROCESSED_DATA / "corum_human_v5.3.txt"
 
 
 def load_corum(min_size=3, max_size=60):
-    """gene symbol -> set of complex ids, size-filtered the same way validate_complexes.py does."""
+    """gene symbol -> set of complex ids, size-filtered the same way validate_complexes.py does.
+
+    Parsed with the csv module, not `line.split("\t")`. CORUM's TSV quotes fields that contain
+    tabs and newlines, so splitting by hand tears rows apart mid-record and shifts the remainder
+    into the wrong columns. The damage was quiet and one-directional: the naive parse admitted 210
+    "gene symbols" that were actually numeric ids leaking from another column (101600, 10801849,
+    ...), lost 134 real symbols, and collapsed 2,626 complexes to 2,445 — because a torn row can
+    repeat a complex_id and `members[cid] = genes` overwrites instead of accumulating.
+
+    Every precision figure this script has ever printed was therefore scored against a slightly
+    corrupted ground truth. The direction of every comparison held up when re-scored, but a
+    validator quietly grading against junk is exactly the failure that survives longest.
+    """
     gene_cplx = defaultdict(set)
     members = defaultdict(set)
-    with open(CORUM, encoding="utf-8", errors="replace") as fh:
-        header = fh.readline().rstrip("\n").split("\t")
-        try:
-            i_id = header.index("complex_id")
-        except ValueError:
-            i_id = 0
-        i_sub = next((i for i, h in enumerate(header) if "subunits_gene_name" in h), None)
-        if i_sub is None:
-            raise SystemExit(f"cannot find a subunits_gene_name column in {CORUM.name}: {header[:12]}")
-        for line in fh:
-            f = line.rstrip("\n").split("\t")
-            if len(f) <= max(i_id, i_sub):
-                continue
-            cid = f[i_id]
-            genes = {g.strip().upper() for g in f[i_sub].replace(",", ";").split(";") if g.strip()}
+    with open(CORUM, encoding="utf-8", errors="replace", newline="") as fh:
+        rd = csv.DictReader(fh, delimiter="\t")
+        sub_col = next((c for c in (rd.fieldnames or []) if "subunits_gene_name" in c), None)
+        if sub_col is None:
+            raise SystemExit(f"cannot find a subunits_gene_name column in {CORUM.name}: "
+                             f"{(rd.fieldnames or [])[:12]}")
+        id_col = "complex_id" if "complex_id" in (rd.fieldnames or []) else (rd.fieldnames or [""])[0]
+        for r in rd:
+            genes = {g.strip().upper()
+                     for g in (r.get(sub_col) or "").replace(",", ";").split(";") if g.strip()}
             if min_size <= len(genes) <= max_size:
-                members[cid] = genes
+                members[r[id_col]] |= genes
     for cid, genes in members.items():
         for g in genes:
             gene_cplx[g].add(cid)
@@ -69,10 +77,14 @@ def main():
     ap.add_argument("--min-size", type=int, default=3)
     ap.add_argument("--max-size", type=int, default=60)
     ap.add_argument("--n-random", type=int, default=2_000_000, help="random pairs for the chance baseline")
+    ap.add_argument("--context", help="net_edge context to score (default: the pooled production one). "
+                                      "Use e.g. domain:fitness to score a per-domain layer — precision "
+                                      "is only interpretable next to the coverage printed below it, "
+                                      "since a smaller context buys precision by shipping fewer edges.")
     args = ap.parse_args()
 
     db = paths.PROCESSED_DATA / ("reticle_net_mouse.db" if args.organism == "mouse" else "reticle_net.db")
-    context = "mouse" if args.organism == "mouse" else "all"
+    context = args.context or ("mouse" if args.organism == "mouse" else "all")
 
     gene_cplx, members = load_corum(args.min_size, args.max_size)
     print(f"CORUM {args.min_size}-{args.max_size} subunits: {len(members):,} complexes, "
@@ -83,7 +95,15 @@ def main():
         "SELECT gene_a, gene_b, strength, reciprocal FROM net_edge "
         "WHERE context=? AND channel='coessential'", (context,)).fetchall()
     con.close()
-    print(f"shipped edges in '{context}': {len(edges):,}")
+    if not edges:
+        raise SystemExit(f"no edges in context '{context}' — build it first")
+    # Coverage, printed before precision on purpose. A context built from fewer screens can post a
+    # better precision simply by emitting fewer, safer edges; the two numbers only mean something
+    # together.
+    nodes = {g for a, b, _, _ in edges for g in (a, b)}
+    n_recip_all = sum(1 for *_, r in edges if r)
+    print(f"shipped edges in '{context}': {len(edges):,}  "
+          f"({n_recip_all:,} reciprocal)  over {len(nodes):,} genes")
 
     # Only pairs where BOTH endpoints are CORUM-annotated are scorable.
     scored = [(a, b, s, r) for a, b, s, r in edges

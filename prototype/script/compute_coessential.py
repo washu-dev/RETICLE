@@ -52,15 +52,21 @@ complexes genome-wide (RPL13→ribosome, FANCD2→Fanconi; see the design notes)
      screen's measured genes — preserves coverage/support and each screen's distribution,
      destroys only co-movement) and raise the threshold to the lowest corr where
      reciprocal-edge FDR (null/real above the cut) <= --fdr. Over the full pooled set the
-     floor is tiny so the threshold lands just above --min-corr; a future per-context layer
-     (few screens each) is where this earns its keep. FIXED seed → reproducible.
+     floor is tiny so the threshold lands just above --min-corr. It does exactly its job on a
+     small context -- reporter's 80 screens lift it from 0.15 to 0.45 -- which is also why such a
+     context has nothing left to ship (306 edges). FIXED seed → reproducible.
 
 Edges = each gene's top-k partners by raw co-essentiality correlation (support + FDR-threshold gated).
 `reciprocal=1` = mutual-best (the clean, sparse view the frontend defaults to);
 `reciprocal=0` = looser union (a partner one-directionally). Strength = the correlation.
 
 Production is POOLED (--all, context='all'): one network over every genome-wide human screen.
-Context slicing (--domain/--mechanism) is retained for the planned per-context layer.
+--domain/--mechanism are an EXPERIMENT HARNESS, not a pending feature. An assay-domain layer was
+built and measured on 2026-08-05 and is not worth shipping: splitting by fitness halves mutual-best
+CORUM precision (0.354 -> 0.211) while emitting MORE edges, and even over the genes pooling leaves
+sparse, pooling's few edges beat every domain layer (0.358 vs 0.147-0.151). Pooling wins because
+co-essentiality needs HETEROGENEOUS conditions to be discriminative -- see script/exp_domain_contexts.py
+for the full table and the mechanism.
 Reads observations from reticle_master.db; writes edges to reticle_net.db.
 
   /opt/anaconda3/bin/python3 script/compute_coessential.py --all --min-screens 100
