@@ -225,7 +225,8 @@ def _verified_article(pmid: str | None) -> dict | None:
         return None
     try:
         from services.external_sources import article_meta
-        return article_meta(pmid)
+        meta = article_meta(pmid)
+        return meta if isinstance(meta, dict) else None
     except Exception:
         return None
 

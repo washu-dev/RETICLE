@@ -7,6 +7,7 @@ as a local-dev / no-DB fallback.
 """
 
 import math
+from typing import Any
 from uuid import uuid4
 
 from models.gene import Citation, GeneDetail, StringInteractor
@@ -34,7 +35,7 @@ from services.reference_screens import REFERENCE_SCREENS, citation_for
 # citation) come from the verified data so every PubMed/BioGRID link resolves;
 # only the overlap numbers here are illustrative. Shared-gene tokens are kept to
 # genes the offline gene lookup can resolve, so clicking one opens a real card.
-_DEMO_OVERLAP = [
+_DEMO_OVERLAP: list[dict[str, Any]] = [
     {"rho": 0.82, "fdr": 0.0003, "dir": "agree",
      "shared": 18, "symbols": ["ATG5", "ATG7", "ULK1", "IRGM", "BECN1"]},
     {"rho": 0.74, "fdr": 0.0011, "dir": "agree",
@@ -107,7 +108,7 @@ _DARK_GENES: list[DarkGene] = [
 
 # Short "Author Year" labels for the graph's screen nodes, aligned to the first
 # five verified reference screens (so node pmids/citations link out correctly).
-_GRAPH_SCREENS = [
+_GRAPH_SCREENS: list[dict[str, Any]] = [
     {"pos": (300, 200), "detail": "Cancer fitness · Human · KO"},
     {"pos": (500, 100), "detail": "Glioblastoma · Human · KO"},
     {"pos": (650, 280), "detail": "Formaldehyde tox · Human · KO"},
