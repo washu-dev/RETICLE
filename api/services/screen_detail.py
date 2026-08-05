@@ -29,43 +29,62 @@ def _is_display_gene(sym: str) -> bool:
     return bool(sym) and not is_control(sym) and not _GUIDE_RE.search(sym)
 
 
-def _mock_screen_detail(screen_id: str) -> ScreenDetail:
-    """Deterministic offline payload so the endpoint works without a DB."""
-    genes = [
-        ScreenGene(symbol=s, percentile=p, is_hit=True, harmonized_score=h, robust_z=z)
-        for s, p, h, z in [
-            ("IFNGR1", 1.0, 11.3, 4.96), ("STAT1", 0.999, 9.55, 4.21),
-            ("IFNGR2", 0.998, 9.28, 4.09), ("JAK2", 0.996, 8.7, 3.9),
-            ("B2M", 0.994, 8.1, 3.6), ("TAP1", 0.99, 7.4, 3.3),
-        ]
+# Illustrative genes for the offline payload. All resolve in the offline gene
+# lookup (mock_data_service), so clicking one from the drawer opens a real card.
+_MOCK_GENES = [
+    ScreenGene(symbol=s, percentile=p, is_hit=hit, harmonized_score=h, robust_z=z, raw_score=raw)
+    for s, p, hit, h, z, raw in [
+        ("ATG5", 0.998, True, 10.9, 4.71, -2.84), ("ATG7", 0.996, True, 9.82, 4.30, -2.61),
+        ("ULK1", 0.993, True, 8.74, 3.95, -2.30), ("BECN1", 0.988, True, 7.91, 3.58, -2.02),
+        ("IRGM", 0.981, True, 7.05, 3.21, -1.77), ("MAP1LC3B", 0.812, False, 3.10, 1.34, -0.71),
     ]
+]
+
+
+def _mock_screen_detail(screen_id: str) -> ScreenDetail:
+    """Deterministic offline payload built from a *verified real* ORCS screen so
+    both link-outs resolve. When `screen_id` is one of the reference screens we
+    return that one; otherwise we default to a verified screen but keep the
+    clicked id's ORCS page (real) and omit a (would-be fabricated) pmid."""
+    from services.reference_screens import BY_ID, REFERENCE_SCREENS, citation_for
+
+    known = BY_ID.get(str(screen_id))
+    entry = known or REFERENCE_SCREENS[0]
+    # The ORCS link always points at the clicked screen's real page. A pmid is
+    # attached only for a known reference screen — we never fabricate one for an
+    # unknown id (fabricated PubMed links were the original bug).
+    pmid = entry["pmid"] if known else None
+
     return ScreenDetail(
         screen_id=str(screen_id),
         biogrid_url=f"{BIOGRID_SCREEN_URL}{screen_id}",
-        pmid="31509742",
-        pubmed_url=f"{PUBMED_URL}31509742",
-        author="Freeman AJ (2019)",
-        name=f"Mock screen {screen_id}",
-        organism="Mus musculus",
-        cell_line="B16-F10",
-        cell_type="Melanoma Cell Line",
-        screen_type="Phenotype Screen",
-        modality="KO",
-        analysis="MaGeCK",
+        pmid=pmid,
+        pubmed_url=f"{PUBMED_URL}{pmid}" if pmid else None,
+        author=entry["author"],
+        name=entry["title"],
+        article_title=entry["title"] if pmid else None,
+        citation=citation_for(entry) if pmid else None,
+        organism=entry["organism"],
+        cell_line=entry["cell_line"],
+        cell_type=entry["cell_type"],
+        screen_type="Fitness Screen",
+        modality=entry["modality"],
+        analysis="MAGeCK",
         methodology="Knockout",
-        phenotype="protein/peptide accumulation",
-        rationale="Regulation of MHC I expression after IFNgamma exposure",
+        phenotype=entry["phenotype"],
+        rationale=entry["title"],
         coverage_type="FULL",
-        assay_domain="reporter",
-        condition_name="Interferon gamma",
+        assay_domain="fitness",
+        condition_name=None,
         growth_direction="none",
-        score_basis="DIR_POS(Log2FC)",
+        score_basis="DIR_NEG(Log2FC)",
+        raw_score_label="Log2FC",
         is_directional=True,
-        scores_size=20570,
-        n_genes=20570,
-        n_hits=1066,
-        genes_shown=len(genes),
-        genes=genes,
+        scores_size=18009,
+        n_genes=18009,
+        n_hits=sum(1 for g in _MOCK_GENES if g.is_hit),
+        genes_shown=len(_MOCK_GENES),
+        genes=list(_MOCK_GENES),
     )
 
 
@@ -103,15 +122,9 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
     n_hits = int(counts[0]["hits"]) if counts else 0
 
     # Hits first, then strongest by |percentile|. Over-fetch to survive control
-    # filtering, then cap. ABS() works on both Postgres and SQLite.
-    rows = db_fetchall(
-        """SELECT gene_symbol, percentile_score, is_hit, harmonized_score, robust_z_score
-           FROM harmonized_scores
-           WHERE screen_id = ? AND percentile_score IS NOT NULL
-           ORDER BY is_hit DESC, ABS(percentile_score) DESC
-           LIMIT ?""",
-        (sid, gene_cap * 3),
-    )
+    # filtering, then cap. Includes the raw deposited score alongside the
+    # harmonized columns so the UI can show both.
+    rows = _fetch_screen_genes(sid, gene_cap * 3)
 
     genes: list[ScreenGene] = []
     for r in rows:
@@ -124,11 +137,14 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
             is_hit=bool(r["is_hit"]),
             harmonized_score=_f(r["harmonized_score"]),
             robust_z=_f(r["robust_z_score"]),
+            raw_score=_f(r["raw_score"]) if "raw_score" in r else None,
         ))
         if len(genes) >= gene_cap:
             break
 
     pmid = str(m["pmid"]) if m["pmid"] else None
+    score_basis = _s(m["score_basis"])
+    article = _verified_article(pmid)
     return ScreenDetail(
         screen_id=sid,
         biogrid_url=f"{BIOGRID_SCREEN_URL}{sid}",
@@ -136,6 +152,8 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
         pubmed_url=f"{PUBMED_URL}{pmid}" if pmid else None,
         author=_s(m["author"]),
         name=_s(m["screen_name"]),
+        article_title=(article or {}).get("title"),
+        citation=(article or {}).get("citation"),
         organism=_s(m["organism_official"]),
         cell_line=_s(m["cell_line"]),
         cell_type=_s(m["cell_type"]),
@@ -149,7 +167,8 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
         assay_domain=_s(m["assay_domain"]),
         condition_name=_s(m["condition_name"]),
         growth_direction=_s(m["growth_direction"]),
-        score_basis=_s(m["score_basis"]),
+        score_basis=score_basis,
+        raw_score_label=_raw_score_label(score_basis),
         is_directional=bool(m["is_directional"]) if m["is_directional"] is not None else None,
         scores_size=int(m["scores_size"]) if m["scores_size"] is not None else None,
         n_genes=n_genes,
@@ -157,6 +176,58 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
         genes_shown=len(genes),
         genes=genes,
     )
+
+
+def _fetch_screen_genes(sid: str, limit: int) -> list:
+    """Genes for a screen, hits first then strongest by |percentile|.
+
+    Prefers the raw deposited score (raw_score) alongside the harmonized columns;
+    falls back to the harmonized-only shape if the raw column isn't present in
+    this deployment's schema, so the endpoint never 500s on a column mismatch.
+    ABS() works on both Postgres and SQLite.
+    """
+    from services.db_service import db_fetchall
+
+    order = "ORDER BY is_hit DESC, ABS(percentile_score) DESC LIMIT ?"
+    try:
+        return db_fetchall(
+            "SELECT gene_symbol, percentile_score, is_hit, harmonized_score, "
+            f"robust_z_score, raw_score FROM harmonized_scores "
+            f"WHERE screen_id = ? AND percentile_score IS NOT NULL {order}",
+            (sid, limit),
+        )
+    except Exception:
+        return db_fetchall(
+            "SELECT gene_symbol, percentile_score, is_hit, harmonized_score, "
+            f"robust_z_score FROM harmonized_scores "
+            f"WHERE screen_id = ? AND percentile_score IS NOT NULL {order}",
+            (sid, limit),
+        )
+
+
+def _raw_score_label(score_basis: str | None) -> str | None:
+    """Human label for the raw score column, parsed from score_basis.
+
+    score_basis looks like 'DIR_NEG(Log2FC)' or 'DIR_POS(BayesFactor)'; we surface
+    the inner metric name so the table header reads 'Raw (Log2FC)' rather than an
+    opaque code. Returns the basis unchanged if it doesn't match that shape.
+    """
+    if not score_basis:
+        return None
+    m = re.search(r"\(([^)]+)\)", score_basis)
+    return m.group(1).strip() if m else score_basis
+
+
+def _verified_article(pmid: str | None) -> dict | None:
+    """Resolve a pmid to verified article metadata (title + citation), best-effort.
+    Never raises into the request path; returns None offline or on any failure."""
+    if not pmid:
+        return None
+    try:
+        from services.external_sources import article_meta
+        return article_meta(pmid)
+    except Exception:
+        return None
 
 
 def _s(v: object) -> str | None:

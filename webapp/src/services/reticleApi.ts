@@ -69,6 +69,8 @@ export interface MatchedScreen {
   totalGenes: number;
   /** The query genes that are hits in this screen — clickable into gene lookup. */
   sharedGeneSymbols?: string[];
+  /** Verified article title, resolved from pmid (matches the PubMed link). */
+  articleTitle?: string | null;
 }
 
 export interface DarkGene {
@@ -185,6 +187,8 @@ export interface ScreenGene {
   isHit: boolean;
   harmonizedScore?: number | null;
   robustZ?: number | null;
+  /** The raw deposited score from BioGRID ORCS, before harmonization. */
+  rawScore?: number | null;
 }
 
 export interface ScreenDetail {
@@ -194,6 +198,11 @@ export interface ScreenDetail {
   pubmedUrl?: string | null;
   author?: string | null;
   name?: string | null;
+  /** Verified from pmid via NCBI — title + formatted citation that match the link. */
+  articleTitle?: string | null;
+  citation?: string | null;
+  /** What the raw score column means, e.g. "Log2FC" (parsed from score_basis). */
+  rawScoreLabel?: string | null;
   organism?: string | null;
   cellLine?: string | null;
   cellType?: string | null;

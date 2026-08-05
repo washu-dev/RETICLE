@@ -80,13 +80,21 @@ class WashULLMClient:
         self.client_id = _first_env("SECURE_API_CLIENT_ID", "WASHU_CLIENT_ID")
         self.client_secret = _first_env("SECURE_API_CLIENT_SECRET", "WASHU_CLIENT_SECRET")
         self.api_key = _first_env("SECURE_API_KEY", "WASHU_API_KEY")
+        # TEMP dev override: providers like OpenRouter/Groq authenticate with a
+        # STATIC bearer key (no OAuth2 exchange). When LLM_STATIC_BEARER is set,
+        # use it directly and skip the token exchange. Leave unset in prod so the
+        # WashU client-credentials path below is used.
+        self.static_bearer = _first_env("LLM_STATIC_BEARER")
         self._cached_token: str | None = None
         self._token_expiry = 0.0  # epoch seconds
 
     # -- config -------------------------------------------------------------
 
     def _configured(self) -> bool:
-        """True only when enough is set to attempt an OAuth2 token exchange."""
+        """True when we can authenticate — either a static bearer key (dev
+        override) or enough for an OAuth2 client-credentials exchange."""
+        if self.static_bearer:
+            return True
         return bool(self.token_url and self.client_id and self.client_secret)
 
     # -- auth ---------------------------------------------------------------
@@ -97,6 +105,10 @@ class WashULLMClient:
 
         Raises LlmUnavailable when unconfigured or the token exchange fails.
         """
+        # Dev override: a static bearer key skips the OAuth2 exchange entirely.
+        if self.static_bearer:
+            return self.static_bearer
+
         if self._cached_token and time.time() < self._token_expiry - TOKEN_EXPIRY_MARGIN:
             return self._cached_token
 
@@ -157,7 +169,9 @@ class WashULLMClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
-        if self.api_key:
+        # Only the WashU gateway wants X-Api-Key; skip it when a static bearer
+        # (OpenRouter/Groq/etc.) is driving auth so we don't leak an unrelated key.
+        if self.api_key and not self.static_bearer:
             headers["X-Api-Key"] = self.api_key
 
         try:

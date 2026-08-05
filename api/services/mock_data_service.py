@@ -23,64 +23,51 @@ from models.query import (
     QueryResponse,
     QueryStats,
 )
+from services.reference_screens import REFERENCE_SCREENS, citation_for
 
 # ---------------------------------------------------------------------------
-# Static reference data (mirrors mockData.js)
+# Static reference data
 # ---------------------------------------------------------------------------
+
+# Demo overlap stats (offline only) paired 1:1 with the verified real ORCS
+# screens in REFERENCE_SCREENS. The identity fields (name, pmid, biogrid id,
+# citation) come from the verified data so every PubMed/BioGRID link resolves;
+# only the overlap numbers here are illustrative. Shared-gene tokens are kept to
+# genes the offline gene lookup can resolve, so clicking one opens a real card.
+_DEMO_OVERLAP = [
+    {"rho": 0.82, "fdr": 0.0003, "dir": "agree",
+     "shared": 18, "symbols": ["ATG5", "ATG7", "ULK1", "IRGM", "BECN1"]},
+    {"rho": 0.74, "fdr": 0.0011, "dir": "agree",
+     "shared": 15, "symbols": ["ATG7", "IRGM", "ATG5", "MAP1LC3B"]},
+    {"rho": 0.61, "fdr": 0.0084, "dir": "agree",
+     "shared": 12, "symbols": ["ULK1", "BECN1", "ATG5"]},
+    {"rho": -0.55, "fdr": 0.0142, "dir": "inverted",
+     "shared": 11, "symbols": ["ATG5", "IRGM"]},
+    {"rho": 0.48, "fdr": 0.0389, "dir": "agree",
+     "shared": 9, "symbols": ["ULK1", "IRGM"]},
+    {"rho": 0.31, "fdr": 0.1204, "dir": "unknown",
+     "shared": 6, "symbols": ["BECN1"]},
+]
 
 _MATCHED_SCREENS: list[MatchedScreen] = [
-    MatchedScreen(id=1, biogrid_id="ORCS-4421",
-                  name="Autophagy regulation in LPS-stimulated macrophages",
-                  citation="Orvedahl et al., 2019", pmid="31097699",
-                  organism="Human", modality="KO", cell_type="THP-1 macrophages",
-                  rho=0.82, fdr=0.0003, directionality="agree",
-                  shared_genes=18, total_genes=847,
-                  shared_gene_symbols=["ATG5", "ATG7", "ULK1", "IRGM", "BECN1"]),
-    MatchedScreen(id=2, biogrid_id="ORCS-6102",
-                  name="IFNγ pathway modulators in monocyte-derived macrophages",
-                  citation="Zhao et al., 2021", pmid="33782614",
-                  organism="Human", modality="KO", cell_type="MDMs",
-                  rho=0.74, fdr=0.0011, directionality="agree",
-                  shared_genes=15, total_genes=912,
-                  shared_gene_symbols=["ATG7", "IRGM", "TBK1", "ATG5"]),
-    MatchedScreen(id=3, biogrid_id="ORCS-7883",
-                  name="mTOR complex regulation in nutrient stress",
-                  citation="Lin et al., 2022", pmid="35124892",
-                  organism="Human", modality="KO", cell_type="HEK293T",
-                  rho=0.61, fdr=0.0084, directionality="agree",
-                  shared_genes=12, total_genes=1204),
-    MatchedScreen(id=4, biogrid_id="ORCS-5519",
-                  name="Macrophage activation enhancers — CRISPRa gain-of-function",
-                  citation="Park et al., 2023", pmid="36891234",
-                  organism="Human", modality="CRISPRa",
-                  cell_type="iPSC-derived macrophages",
-                  rho=-0.55, fdr=0.0142, directionality="inverted",
-                  shared_genes=11, total_genes=763),
-    MatchedScreen(id=5, biogrid_id="ORCS-8234",
-                  name="Inflammatory cell death regulators in RAW264.7",
-                  citation="Huang et al., 2021", pmid="33441802",
-                  organism="Mouse", modality="KO", cell_type="RAW264.7",
-                  rho=0.48, fdr=0.0389, directionality="agree",
-                  shared_genes=9, total_genes=688),
-    MatchedScreen(id=6, biogrid_id="ORCS-9041",
-                  name="Autophagic flux determinants in J774 cells",
-                  citation="Chen et al., 2022", pmid="35672901",
-                  organism="Mouse", modality="KO", cell_type="J774A.1",
-                  rho=0.43, fdr=0.0512, directionality="agree",
-                  shared_genes=8, total_genes=731),
-    MatchedScreen(id=7, biogrid_id="ORCS-11203",
-                  name="Pyroptosis effector screen in BMDMs",
-                  citation="Kim et al., 2023", pmid="37102456",
-                  organism="Mouse", modality="KO", cell_type="BMDMs",
-                  rho=0.31, fdr=0.1204, directionality="unknown",
-                  shared_genes=6, total_genes=522),
-    MatchedScreen(id=8, biogrid_id="ORCS-10087",
-                  name="Immune checkpoint regulators in T cells",
-                  citation="Wilson et al., 2022", pmid="35984321",
-                  organism="Human", modality="KO",
-                  cell_type="Primary CD8+ T cells",
-                  rho=-0.28, fdr=0.1891, directionality="inverted",
-                  shared_genes=5, total_genes=1043),
+    MatchedScreen(
+        id=i + 1,
+        biogrid_id=s["screen_id"],
+        name=s["title"],
+        citation=citation_for(s),
+        pmid=s["pmid"],
+        organism="Human" if s["organism"] == "Homo sapiens" else "Mouse",
+        modality=s["modality"],
+        cell_type=s["cell_type"],
+        rho=o["rho"],
+        fdr=o["fdr"],
+        directionality=o["dir"],
+        shared_genes=o["shared"],
+        total_genes=18009,
+        shared_gene_symbols=o["symbols"],
+        article_title=s["title"],
+    )
+    for i, (s, o) in enumerate(zip(REFERENCE_SCREENS, _DEMO_OVERLAP, strict=False))
 ]
 
 _DARK_GENES: list[DarkGene] = [
@@ -118,33 +105,40 @@ _DARK_GENES: list[DarkGene] = [
              pubs=631,  screens=7, go_terms=17, is_bright=True,  cluster="core-autophagy"),
 ]
 
+# Short "Author Year" labels for the graph's screen nodes, aligned to the first
+# five verified reference screens (so node pmids/citations link out correctly).
+_GRAPH_SCREENS = [
+    {"pos": (300, 200), "detail": "Cancer fitness · Human · KO"},
+    {"pos": (500, 100), "detail": "Glioblastoma · Human · KO"},
+    {"pos": (650, 280), "detail": "Formaldehyde tox · Human · KO"},
+    {"pos": (150, 350), "detail": "Lung cancer · Human · KO"},
+    {"pos": (480, 400), "detail": "Zika resistance · Human · KO"},
+]
+
+
+def _short_label(author: str) -> str:
+    """'Behan FM (2019)' -> 'Behan 2019' for compact graph labels."""
+    surname = author.split(" ")[0] if author else author
+    year = "".join(c for c in author if c.isdigit())[:4]
+    return f"{surname} {year}".strip()
+
+
 _GRAPH_ELEMENTS = GraphElements(
     nodes=[
-        GraphNode(data=GraphNodeData(id="s1", label="Orvedahl 2019", type="screen",
-                                     detail="Autophagy · Human · KO",
-                                     citation="Orvedahl et al., 2019 · Nature Immunology",
-                                     pmid="31097699", gene_count=847),
-                  position=GraphNodePosition(x=300, y=200)),
-        GraphNode(data=GraphNodeData(id="s2", label="Zhao 2021", type="screen",
-                                     detail="IFNγ · Human · KO",
-                                     citation="Zhao et al., 2021 · Cell Reports",
-                                     pmid="33782614", gene_count=912),
-                  position=GraphNodePosition(x=500, y=100)),
-        GraphNode(data=GraphNodeData(id="s3", label="Lin 2022", type="screen",
-                                     detail="mTOR · Human · KO",
-                                     citation="Lin et al., 2022 · eLife",
-                                     pmid="35124892", gene_count=1204),
-                  position=GraphNodePosition(x=650, y=280)),
-        GraphNode(data=GraphNodeData(id="s4", label="Park 2023", type="screen",
-                                     detail="Activation · iPSC · CRISPRa",
-                                     citation="Park et al., 2023 · Cell Stem Cell",
-                                     pmid="36891234", gene_count=763),
-                  position=GraphNodePosition(x=150, y=350)),
-        GraphNode(data=GraphNodeData(id="s5", label="Huang 2021", type="screen",
-                                     detail="Cell death · Mouse · KO",
-                                     citation="Huang et al., 2021 · Science Immunology",
-                                     pmid="33441802", gene_count=688),
-                  position=GraphNodePosition(x=480, y=400)),
+        GraphNode(
+            data=GraphNodeData(
+                id=f"s{i + 1}",
+                label=_short_label(ref["author"]),
+                type="screen",
+                detail=cfg["detail"],
+                citation=citation_for(ref),
+                pmid=ref["pmid"],
+                gene_count=18009,
+            ),
+            position=GraphNodePosition(x=cfg["pos"][0], y=cfg["pos"][1]),
+        )
+        for i, (ref, cfg) in enumerate(zip(REFERENCE_SCREENS[:5], _GRAPH_SCREENS, strict=False))
+    ] + [
         GraphNode(data=GraphNodeData(id="g1", label="ATG5",     type="gene",
                                      detail="Core autophagy · 892 pubs",   screen_count=3),
                   position=GraphNodePosition(x=350, y=320)),
@@ -165,38 +159,22 @@ _GRAPH_ELEMENTS = GraphElements(
                   position=GraphNodePosition(x=390, y=380)),
     ],
     edges=[
-        GraphEdge(data=GraphEdgeData(
-            source="s1", target="g1", rho=0.82, edge_label="Orvedahl 2019 → ATG5")),
-        GraphEdge(data=GraphEdgeData(
-            source="s1", target="g2", rho=0.78, edge_label="Orvedahl 2019 → ATG7")),
-        GraphEdge(data=GraphEdgeData(
-            source="s1", target="g3", rho=0.74, edge_label="Orvedahl 2019 → IRGM")),
-        GraphEdge(data=GraphEdgeData(
-            source="s1", target="g4", rho=0.71, edge_label="Orvedahl 2019 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(
-            source="s2", target="g1", rho=0.68, edge_label="Zhao 2021 → ATG5")),
-        GraphEdge(data=GraphEdgeData(
-            source="s2", target="g3", rho=0.65, edge_label="Zhao 2021 → IRGM")),
-        GraphEdge(data=GraphEdgeData(
-            source="s2", target="g4", rho=0.62, edge_label="Zhao 2021 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(
-            source="s2", target="g5", rho=0.58, edge_label="Zhao 2021 → FAM114A1")),
-        GraphEdge(data=GraphEdgeData(
-            source="s3", target="g2", rho=0.61, edge_label="Lin 2022 → ATG7")),
-        GraphEdge(data=GraphEdgeData(
-            source="s3", target="g6", rho=0.57, edge_label="Lin 2022 → ULK1")),
-        GraphEdge(data=GraphEdgeData(
-            source="s3", target="g4", rho=0.54, edge_label="Lin 2022 → CCDC6")),
-        GraphEdge(data=GraphEdgeData(
-            source="s4", target="g5", rho=-0.55, edge_label="Park 2023 → FAM114A1")),
-        GraphEdge(data=GraphEdgeData(
-            source="s4", target="g1", rho=-0.48, edge_label="Park 2023 → ATG5")),
-        GraphEdge(data=GraphEdgeData(
-            source="s5", target="g6", rho=0.43, edge_label="Huang 2021 → ULK1")),
-        GraphEdge(data=GraphEdgeData(
-            source="s5", target="g3", rho=0.39, edge_label="Huang 2021 → IRGM")),
-        GraphEdge(data=GraphEdgeData(
-            source="s5", target="g5", rho=0.36, edge_label="Huang 2021 → FAM114A1")),
+        GraphEdge(data=GraphEdgeData(source="s1", target="g1", rho=0.82)),
+        GraphEdge(data=GraphEdgeData(source="s1", target="g2", rho=0.78)),
+        GraphEdge(data=GraphEdgeData(source="s1", target="g3", rho=0.74)),
+        GraphEdge(data=GraphEdgeData(source="s1", target="g4", rho=0.71)),
+        GraphEdge(data=GraphEdgeData(source="s2", target="g1", rho=0.68)),
+        GraphEdge(data=GraphEdgeData(source="s2", target="g3", rho=0.65)),
+        GraphEdge(data=GraphEdgeData(source="s2", target="g4", rho=0.62)),
+        GraphEdge(data=GraphEdgeData(source="s2", target="g5", rho=0.58)),
+        GraphEdge(data=GraphEdgeData(source="s3", target="g2", rho=0.61)),
+        GraphEdge(data=GraphEdgeData(source="s3", target="g6", rho=0.57)),
+        GraphEdge(data=GraphEdgeData(source="s3", target="g4", rho=0.54)),
+        GraphEdge(data=GraphEdgeData(source="s4", target="g5", rho=-0.55)),
+        GraphEdge(data=GraphEdgeData(source="s4", target="g1", rho=-0.48)),
+        GraphEdge(data=GraphEdgeData(source="s5", target="g6", rho=0.43)),
+        GraphEdge(data=GraphEdgeData(source="s5", target="g3", rho=0.39)),
+        GraphEdge(data=GraphEdgeData(source="s5", target="g5", rho=0.36)),
     ],
 )
 
@@ -219,9 +197,9 @@ _GENE_RATIONALES: dict[str, dict] = {
             "axis being studied."
         ),
         "citations": [
-            {"text": "Orvedahl et al. (2019) Nature Immunology", "pmid": "31097699"},
-            {"text": "Zhao et al. (2021) Cell Reports",           "pmid": "33782614"},
-            {"text": "Lin et al. (2022) eLife",                    "pmid": "35124892"},
+            {"text": "Behan FM et al. (2019) Nature",            "pmid": "30971826"},
+            {"text": "MacLeod G et al. (2019) Cell Reports",     "pmid": "30995489"},
+            {"text": "Zhao Y et al. (2020) Chemosphere",         "pmid": "33189395"},
         ],
         "suggested_validation": (
             "Orthogonal validation via CRISPRi depletion in bone-marrow-derived macrophages with "
@@ -244,8 +222,8 @@ _GENE_RATIONALES: dict[str, dict] = {
             "candidate."
         ),
         "citations": [
-            {"text": "Zhao et al. (2021) Cell Reports",              "pmid": "33782614"},
-            {"text": "Huang et al. (2021) Science Immunology",        "pmid": "33441802"},
+            {"text": "Zhao Y et al. (2020) Chemosphere",             "pmid": "33189395"},
+            {"text": "Krall EB et al. (2017) eLife",                 "pmid": "28145866"},
         ],
         "suggested_validation": (
             "Subcellular localization in activated macrophages using fluorescence microscopy. "
@@ -303,6 +281,26 @@ _DARK_GENE_INDEX: dict[str, DarkGene] = {g.symbol: g for g in _DARK_GENES}
 # ---------------------------------------------------------------------------
 # Public service functions
 # ---------------------------------------------------------------------------
+
+def _verify_citations(screens: list[MatchedScreen]) -> None:
+    """Overwrite each screen's citation/article_title with NCBI-verified values,
+    keyed on its own pmid. Best-effort and cached; a network failure leaves the
+    stored citation untouched. Mutates the list in place."""
+    try:
+        from services.external_sources import article_meta
+    except Exception:
+        return
+    for s in screens:
+        try:
+            meta = article_meta(s.pmid)
+        except Exception:
+            meta = None
+        if meta:
+            if meta.get("citation"):
+                s.citation = meta["citation"]
+            if meta.get("title"):
+                s.article_title = meta["title"]
+
 
 async def run_query(request: QueryRequest) -> QueryResponse:
     from services.corpus_service import build_corpus_where, corpus_count
@@ -383,6 +381,11 @@ async def run_query(request: QueryRequest) -> QueryResponse:
         )
         for i, row in enumerate(screen_rows)
     ]
+
+    # Verify each match's citation against its own pmid (best-effort, cached) so
+    # the citation text shown in the UI always matches the PubMed link it sits next
+    # to. Leaves the DB author string in place when NCBI is unreachable.
+    _verify_citations(matched_screens)
 
     matched_ids = [r["biogrid_id"] for r in screen_rows]
     dark_genes: list[DarkGene] = []

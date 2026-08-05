@@ -75,6 +75,9 @@ class MatchedScreen(CamelModel):
     # The query genes that are hits in this screen — the clickable bridge to the
     # single-gene lookup. Empty when unknown (e.g. the offline mock path).
     shared_gene_symbols: list[str] = []
+    # Verified article title, resolved from `pmid` via NCBI so the displayed
+    # citation always matches the PubMed link. None when unresolved (offline).
+    article_title: str | None = None
 
 
 class ScreenGene(CamelModel):
@@ -83,6 +86,9 @@ class ScreenGene(CamelModel):
     is_hit: bool = False
     harmonized_score: float | None = None
     robust_z: float | None = None
+    # The raw deposited score as it appears in BioGRID ORCS (score_1 / raw_score),
+    # before RETICLE's harmonization. None when the screen didn't deposit one.
+    raw_score: float | None = None
 
 
 class ScreenDetail(CamelModel):
@@ -94,6 +100,13 @@ class ScreenDetail(CamelModel):
     pubmed_url: str | None = None
     author: str | None = None
     name: str | None = None
+    # Verified from `pmid` via NCBI esummary — the article title and a formatted
+    # citation ("Behan FM et al., 2019 · Nature"). None when unresolved (offline).
+    article_title: str | None = None
+    citation: str | None = None
+    # Plain-language label for the raw deposited score column (from score_basis),
+    # e.g. "Log2FC" — tells the reader what ScreenGene.raw_score actually means.
+    raw_score_label: str | None = None
     organism: str | None = None
     cell_line: str | None = None
     cell_type: str | None = None

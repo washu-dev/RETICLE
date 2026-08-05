@@ -221,6 +221,46 @@ def pubmed_abstracts(pmids: list) -> Any:
     return _cached(key, fetch) or []
 
 
+def article_meta(pmid: str) -> Any:
+    """NCBI esummary → verified article metadata for a PMID.
+
+    Returns {pmid, title, first_author, year, journal, citation} or None when the
+    pmid is malformed or NCBI is unreachable (offline). Cached 30 days.
+
+    This is the seam that makes link-outs honest: the citation text shown next to
+    a PubMed link is derived from the SAME pmid the link points to, so the two can
+    never disagree (unlike a hand-authored citation string paired with a pmid).
+    """
+    pmid = str(pmid or "").strip()
+    if not pmid.isdigit():
+        return None
+    key = f"pmmeta:{pmid}"
+
+    def fetch() -> Any:
+        url = f"{NCBI}/esummary.fcgi?db=pubmed&id={pmid}&retmode=json{_ncbi_suffix()}"
+        rec = (json.loads(_get(url, ncbi=True)).get("result") or {}).get(pmid)
+        if not rec or rec.get("error"):
+            return None
+        authors = [a.get("name", "") for a in (rec.get("authors") or []) if a.get("name")]
+        first = authors[0] if authors else ""
+        year = (rec.get("pubdate") or "")[:4]
+        journal = (rec.get("source") or "").strip()
+        title = (rec.get("title") or "").strip().rstrip(".")
+        who = f"{first} et al." if len(authors) > 1 else first
+        head = ", ".join(p for p in (who, year) if p)
+        citation = " · ".join(p for p in (head, journal) if p)
+        return {
+            "pmid": pmid,
+            "title": title,
+            "first_author": first,
+            "year": year,
+            "journal": journal,
+            "citation": citation,
+        }
+
+    return _cached(key, fetch)
+
+
 def string_partners(symbol: str, taxid: int, limit: int = 8) -> Any:
     """STRING → top functional partners [{partner, score}]."""
     key = f"string:{taxid}:{symbol}:{limit}"
