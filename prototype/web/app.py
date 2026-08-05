@@ -17,6 +17,7 @@ The 2.1 GB DB and the gateway secret stay server-side.
 """
 
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -33,7 +34,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import paths  # noqa: E402
 import external_sources as ex  # noqa: E402  (NCBI / PubMed / GO / STRING + darkness)
 
-PORT = 8000
+PORT = int(os.environ.get("RETICLE_PORT", "8000"))  # override to run a second copy side by side
 DB = str(paths.DB)
 KB_DB = str(paths.PROCESSED_DATA / "kb.db")      # the gene-wiki knowledge base (6 sources)
 NET_DB = str(paths.PROCESSED_DATA / "reticle_net.db")  # human co-essentiality network
@@ -2330,7 +2331,7 @@ class Handler(BaseHTTPRequestHandler):
             if p is None:
                 return self._send(404, {"error": "No STRING network."})
             return self._send(200, p)
-        if u.path == "/api/coessential":
+        if u.path in ("/api/coessential", "/api/coessential_aaron"):
             q = parse_qs(u.query)
             sym = (q.get("symbol", [""])[0]).strip()
             taxid = ORG2TAX.get(q.get("org", ["Homo sapiens"])[0], 9606)
@@ -2343,7 +2344,7 @@ class Handler(BaseHTTPRequestHandler):
             if p is None:
                 return self._send(404, {"error": "No co-essentiality profile."})
             return self._send(200, p)
-        if u.path == "/api/screen_similar":
+        if u.path in ("/api/screen_similar", "/api/screen_similar_aaron"):
             q = parse_qs(u.query)
             sid = (q.get("screen", [""])[0]).strip()
             if not sid:
@@ -2358,7 +2359,7 @@ class Handler(BaseHTTPRequestHandler):
             if p is None:
                 return self._send(404, {"error": f"Screen {sid} not in the human · fitness · genome-wide pool."})
             return self._send(200, p)
-        if u.path == "/api/reporter_explain":
+        if u.path in ("/api/reporter_explain", "/api/reporter_explain_aaron"):
             q = parse_qs(u.query)
             sym = (q.get("symbol", [""])[0]).strip()
             screens = [s.strip() for s in (q.get("screens", [""])[0]).split(",") if s.strip()]
@@ -2424,7 +2425,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         u = urlparse(self.path)
-        if u.path == "/api/interpret":
+        if u.path in ("/api/interpret", "/api/interpret_aaron"):
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 payload = json.loads(self.rfile.read(length) or b"{}")
