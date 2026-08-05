@@ -59,6 +59,9 @@ body.landing .bar,body.landing #gw,body.landing #foot{display:none}
 #wave-canvas{position:absolute;left:0;bottom:0;width:100%;height:150px;display:block;z-index:1}
 .status{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center;padding:50px 0;min-height:20px;display:none}
 .status.err{color:#b4541f}
+.retry-btn{font-family:var(--mono);font-size:12px;color:var(--ink);background:#fff;border:1px solid var(--line);
+  border-radius:7px;padding:3px 11px;margin-left:9px;cursor:pointer;transition:.15s}
+.retry-btn:hover{border-color:var(--know);color:var(--know)}
 
 /* three-zone page */
 #gw{opacity:0}#gw.show{opacity:1;transition:opacity .4s}
@@ -1203,22 +1206,59 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- lookup ---------- */
+/* How long to wait before calling it: the wiki answers in well under a second when the database
+   is healthy, and a degraded RDS has been measured at 47 s. Without a deadline fetch() has none,
+   so the page just kept saying "Assembling" until the user gave up. */
+const LOOKUP_TIMEOUT_MS=20000;
+
+/* One failure renderer for every way the lookup can fail, so the message always says which
+   layer broke. The old code showed "Could not reach the server." for a server that had in fact
+   answered — it read the body with r.json() BEFORE checking r.ok, and uvicorn returns its 500 as
+   plain text, so the parse threw and every server-side failure fell into the network branch. */
+function lookupFailed(g,msg,retry){
+  const st=$('#status');
+  st.style.display='block'; st.className='status err';
+  st.innerHTML=esc(msg)+(retry?' <button class="retry-btn" id="lk-retry">Try again</button>':'');
+  if(retry){ const b=$('#lk-retry'); if(b) b.onclick=()=>lookup(g); }
+}
+
 async function lookup(g){
   g=(g||'').trim(); if(!g) return;
   const taxid=$('#tax').value;
   document.body.classList.remove('landing');
   $('#empty').style.display='none'; $('#gw').classList.remove('show'); $('#gw').innerHTML=''; $('#foot').innerHTML='';
   const st=$('#status'); st.style.display='block'; st.className='status'; st.textContent='Assembling '+g+'…';
+  const ac=('AbortController' in window)?new AbortController():null;
+  const timer=setTimeout(()=>{ if(ac) ac.abort(); }, LOOKUP_TIMEOUT_MS);
+  let r;
   try{
-    const r=await fetch(`/api/gene_wiki?gene=${encodeURIComponent(g)}&taxid=${taxid}`);
-    const d=await r.json();
-    if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
-    st.style.display='none';
-    history.replaceState(null,'',`/gene?gene=${encodeURIComponent(d.identity.symbol)}&taxid=${taxid}`);
-    document.title=`${d.identity.symbol} · RETICLE gene wiki`;
-    window.scrollTo(0,0);
-    render(d);
-  }catch(e){ st.className='status err'; st.textContent='Could not reach the server.'; }
+    r=await fetch(`/api/gene_wiki?gene=${encodeURIComponent(g)}&taxid=${taxid}`, ac?{signal:ac.signal}:undefined);
+  }catch(e){
+    clearTimeout(timer);
+    /* Only a genuinely unreachable server lands here now. An abort is our own deadline firing,
+       which means the server is up but the database behind it is not keeping up. */
+    return lookupFailed(g, (e&&e.name==='AbortError')
+      ? 'RETICLE is taking too long to answer — the gene database is likely under load. Nothing is wrong with '+g+'.'
+      : 'Could not reach RETICLE. Check your connection.', true);
+  }
+  clearTimeout(timer);
+  /* Read the body ONCE, as text, then try to parse. A 500 from uvicorn is the plain string
+     "Internal Server Error"; parsing it first is what used to hide the real status code. */
+  let body='', d=null;
+  try{ body=await r.text(); d=JSON.parse(body); }catch(e){ d=null; }
+  if(!r.ok){
+    if(r.status===404) return lookupFailed(g, (d&&(d.detail||d.error))||('No gene called '+g+' in the knowledge base.'), false);
+    if(r.status===422) return lookupFailed(g, (d&&(d.detail||d.error))||('"'+g+'" is not a valid gene symbol.'), false);
+    /* 5xx: the server answered, so this is not a connectivity problem. Say so, and offer the
+       retry rather than making the user retype the gene. */
+    return lookupFailed(g, 'The gene database is not responding right now. This is not a problem with '+g+' — try again in a moment.', true);
+  }
+  if(!d||!d.identity) return lookupFailed(g, 'RETICLE returned a response it could not read for '+g+'.', true);
+  st.style.display='none';
+  history.replaceState(null,'',`/gene?gene=${encodeURIComponent(d.identity.symbol)}&taxid=${taxid}`);
+  document.title=`${d.identity.symbol} · RETICLE gene wiki`;
+  window.scrollTo(0,0);
+  render(d);
 }
 // top-bar search (results view)
 $('#go').addEventListener('click',()=>lookup($('#q').value));
