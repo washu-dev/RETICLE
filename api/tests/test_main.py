@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from routers.screens_aaron import _validate_organism as _norm
+
 
 class TestHealth:
     def test_health_check(self, client: TestClient) -> None:
@@ -247,3 +249,59 @@ class TestGenes:
         assert "mechanistic_context" not in data
         assert "dark_score" not in data
         assert "string_interactors" not in data
+
+
+class TestOrganismNormalisation:
+    """Species-parameter handling on the co-essentiality routes.
+
+    These exist because /api/coessential silently served the HUMAN network for mouse genes in
+    production: gene.html and index.html both send `org=` + the full binomial ("Mus musculus"),
+    the route only declared `organism`, and FastAPI drops undeclared query params — so the
+    default "human" won and the response looked entirely plausible. Verified against the live
+    deployment at the time: `Cars` returned 12 nodes from the human pool where the mouse pool
+    holds 15.
+
+    They assert on the VALIDATOR, not on data, so they run in CI with no database: an accepted
+    organism gets past validation and fails later on the DB (500/404), while a rejected one is
+    a 422 raised before any query.
+    """
+
+    def test_full_binomial_maps_to_short_name(self) -> None:
+        assert _norm("Mus musculus") == "mouse"
+        assert _norm("Homo sapiens") == "human"
+
+    def test_short_names_pass_through(self) -> None:
+        assert _norm("mouse") == "mouse"
+        assert _norm("human") == "human"
+
+    def test_case_and_whitespace_insensitive(self) -> None:
+        assert _norm("  MUS MUSCULUS  ") == "mouse"
+        assert _norm("Mouse") == "mouse"
+
+    def test_taxid_spelling_accepted(self) -> None:
+        assert _norm("10090") == "mouse"
+        assert _norm("9606") == "human"
+
+    def test_absent_and_empty_default_to_human(self) -> None:
+        assert _norm(None) == "human"
+        assert _norm("") == "human"
+        assert _norm("   ") == "human"
+
+    def test_unknown_organism_is_rejected_not_defaulted(self) -> None:
+        """The whole point: an unrecognised species must NOT quietly become human."""
+        import pytest
+        from fastapi import HTTPException
+
+        for bad in ("rat", "Danio rerio", "7227", "hooman"):
+            with pytest.raises(HTTPException) as exc:
+                _norm(bad)
+            assert exc.value.status_code == 422
+
+    def test_coessential_accepts_the_org_alias(self, client: TestClient) -> None:
+        """`org=` is what the shipped pages send; it must not be silently discarded."""
+        bad = client.get("/api/coessential", params={"symbol": "Cars", "org": "Rattus norvegicus"})
+        assert bad.status_code == 422, "an unknown org must be rejected, not defaulted to human"
+
+    def test_coessential_rejects_unknown_organism(self, client: TestClient) -> None:
+        bad = client.get("/api/coessential", params={"symbol": "Cars", "organism": "rat"})
+        assert bad.status_code == 422

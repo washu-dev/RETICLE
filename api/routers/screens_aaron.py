@@ -51,6 +51,18 @@ _CONTEXT_RE = re.compile(r"^[A-Za-z0-9:·._-]{1,40}$")
 
 _ORGANISMS = {"human", "mouse"}
 
+# Every spelling of a species this API has ever been asked for, mapped to the two the services
+# understand. Three vocabularies are in play and they are not interchangeable: the cloud routes
+# say "human"/"mouse", the prototype pages say "Homo sapiens"/"Mus musculus" (they still do — the
+# Explore page and the gene wiki both pass the full binomial), and the wiki routes key off the
+# NCBI taxid. Normalising here is what stops a mouse request from being served human data.
+_ORGANISM_ALIASES = {
+    "human": "human", "homo sapiens": "human", "hsapiens": "human",
+    "hs": "human", "9606": "human",
+    "mouse": "mouse", "mus musculus": "mouse", "mmusculus": "mouse",
+    "mm": "mouse", "10090": "mouse",
+}
+
 
 def _validate_screen_id(screen_id: str) -> str:
     screen_id = screen_id.strip()
@@ -72,8 +84,25 @@ def _validate_symbol(symbol: str) -> str:
     return symbol
 
 
-def _validate_organism(organism: str) -> str:
-    return organism if organism in _ORGANISMS else "human"
+def _validate_organism(organism: str | None) -> str:
+    """Normalise any accepted spelling to "human"/"mouse"; reject anything else.
+
+    The old body was `organism if organism in _ORGANISMS else "human"`, which turned every
+    unrecognised value into human data with a 200 attached. That is how /api/coessential came to
+    serve the HUMAN network for mouse genes: the page sends `org=Mus musculus`, the route only
+    declared `organism`, so the value never arrived and the default won. Silently answering a
+    different question than the one asked is worse than failing, so an unknown non-empty value is
+    now a 422. Empty and absent still mean "human", which is what every existing caller relies on.
+    """
+    if organism is None or organism.strip() == "":
+        return "human"
+    norm = _ORGANISM_ALIASES.get(organism.strip().lower())
+    if norm is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown organism '{organism}' — expected human or mouse",
+        )
+    return norm
 
 
 def _validate_context(context: str | None) -> str | None:
@@ -150,15 +179,22 @@ async def screen_net(
 @router.get("/coessential")
 async def coessential(
     symbol: str = Query(..., min_length=1, max_length=40),
-    organism: str = Query("human"),
+    organism: str | None = Query(None),
+    org: str | None = Query(None),
 ) -> Any:
     """The Explore page's inline co-essentiality graph.
 
     Now served from the same net_edge table as /api/screen_net (the prototype read a local 61 MB
     .npz that had no cloud counterpart); the response shape is unchanged for the frontend.
+
+    `org` is accepted alongside `organism` because that is the name the shipped pages send
+    (gene.html and index.html both build `...&org=` + the full binomial). FastAPI drops query
+    params a route does not declare, so before this the value was discarded and every mouse
+    request silently returned the human graph — verified against production: `Cars` came back
+    with 12 nodes from the human pool instead of 15 from the mouse one.
     """
     symbol = _validate_symbol(symbol)
-    organism = _validate_organism(organism)
+    organism = _validate_organism(organism or org)
     logger.info("GET /api/coessential called with symbol=%s organism=%s", symbol, organism)
     payload = await get_coessential(symbol, organism)
     if payload is None:
