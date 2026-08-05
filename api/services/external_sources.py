@@ -19,6 +19,7 @@ Transport is stdlib urllib — no third-party HTTP dependency.
 
 import json
 import os
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -48,6 +49,7 @@ W_PUB, W_GO = 0.6, 0.4
 NCBI_KEY = os.getenv("NCBI_API_KEY", "")
 _RATE = 0.11 if NCBI_KEY else 0.34  # seconds between NCBI calls (10/s vs 3/s)
 _last_ncbi = [0.0]
+_NCBI_LOCK = threading.Lock()
 
 _MISS = object()  # sentinel distinguishing "cache miss" from a cached null
 _CACHE_READY = [False]
@@ -112,10 +114,18 @@ def _cached(key: str, fetch: Any) -> Any:
 
 def _get(url: str, ncbi: bool = False) -> bytes:
     if ncbi:
-        wait = _RATE - (time.time() - _last_ncbi[0])
-        if wait > 0:
-            time.sleep(wait)
-        _last_ncbi[0] = time.time()
+        # The whole read-sleep-write has to be atomic or it is not a rate limiter. Two threads
+        # that both read _last_ncbi before either writes it will both compute a near-zero wait
+        # and fire simultaneously, which is how you get a 429 or an IP block from NCBI.
+        # This is not hypothetical: /api/interpret and /api/reporter_explain already dispatch
+        # through starlette's run_in_threadpool, so concurrent callers exist today.
+        # The lock is released before the request itself — it paces the calls, it does not
+        # serialise them.
+        with _NCBI_LOCK:
+            wait = _RATE - (time.time() - _last_ncbi[0])
+            if wait > 0:
+                time.sleep(wait)
+            _last_ncbi[0] = time.time()
     req = urllib.request.Request(url, headers={"User-Agent": "RETICLE/1.0 (research)"})
     # URLs are built only from the fixed https hosts above (no user-controlled scheme)
     with urllib.request.urlopen(req, timeout=20) as r:  # noqa: S310  # nosec B310

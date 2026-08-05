@@ -112,6 +112,21 @@ _REXPLAIN_CACHE: dict[Any, dict] = {}  # (symbol.lower(), sorted screen ids) -> 
 _NET_PRED_CACHE: dict[Any, dict] = {}  # (gene_id | symbol, organism, context) -> payload
 
 
+def _cache_get(cache: dict[Any, dict], key: Any) -> dict[str, Any] | None:
+    """Read in ONE dict operation; None means miss.
+
+    `if key in cache: return cache[key]` is two operations, and _cache_put evicts
+    `next(iter(cache))` once the cap is reached — so a concurrent writer can drop the very key
+    that was just confirmed present, and the read raises KeyError. These caches are read from
+    starlette's threadpool (all four LLM routes), so that window is real. A single .get() is
+    atomic under the GIL.
+
+    None is an unambiguous miss marker rather than a sentinel object because _cache_put only
+    ever stores a dict — the three call sites all guard on a non-empty result before caching.
+    """
+    return cache.get(key)
+
+
 def _cache_put(cache: dict, key: Any, value: dict) -> None:
     """Insert, evicting the oldest entry once the cap is reached (dicts keep insertion order)."""
     if key not in cache and len(cache) >= _CACHE_MAX:
@@ -219,8 +234,9 @@ def _screen_analysis_sync(gene: str, taxid: int) -> dict[str, Any]:
         # "— gpt-4.1, per phenotype over N screen hits" footer. No LLM call, nothing cached.
         return {"found": True, "symbol": sym, "n_screens": 0, "by_phenotype": [], "overall": ""}
     key = w["identity"]["gene_id"]
-    if key in _SYNTH_CACHE:
-        return _SYNTH_CACHE[key]
+    hit = _cache_get(_SYNTH_CACHE, key)
+    if hit is not None:
+        return hit
     client = _client(INTERPRET_MODEL)
     # max_tokens passed literally rather than via gen_kwargs(): this reply is a per-phenotype list,
     # far longer than the ~200-word syntheses gen_kwargs is sized for. 4000, not the 1200 this
@@ -334,8 +350,9 @@ def _reporter_explain_sync(symbol: str, screen_ids: list[str]) -> dict[str, Any]
         raise ValueError("Missing symbol/screens.")
     # The ids are already capped at 6 by the router, and the cap is baked into the cache key.
     key = (symbol.lower(), tuple(sorted(screen_ids)))
-    if key in _REXPLAIN_CACHE:
-        return _REXPLAIN_CACHE[key]
+    hit = _cache_get(_REXPLAIN_CACHE, key)
+    if hit is not None:
+        return hit
     ph = ",".join("?" * len(screen_ids))
     # SQL audit: no literal '%' anywhere, and every '?' is a real placeholder (none sits inside a
     # quoted literal). The bare uppercase identifiers are unquoted, so Postgres folds them.
@@ -773,8 +790,9 @@ def _net_predict_sync(gene: str, context: str, organism: str, top: int, reciproc
     # same answer.
     cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
                  NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION)
-    if cache_key in _NET_PRED_CACHE:
-        return _NET_PRED_CACHE[cache_key]
+    hit = _cache_get(_NET_PRED_CACHE, cache_key)
+    if hit is not None:
+        return hit
 
     prompt = _net_predict_prompt(seed, organism, NET_CTX_LABELS.get(context, context), view,
                                  own_bp, own_pw, own_fn, partners)

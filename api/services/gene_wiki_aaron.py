@@ -22,6 +22,7 @@ Two prototype behaviours are preserved deliberately and are easy to break:
 import json
 import logging
 import re
+import threading
 import urllib.request
 from collections import defaultdict
 from typing import Any
@@ -52,6 +53,7 @@ _DIST_COL = {
 _STRUCT_CACHE: dict[str, dict] = {}
 _BP_SIZE: dict[str, int] | None = None
 _BP_NAME: dict[str, str] | None = None
+_BP_LOCK = threading.Lock()
 
 
 def resolve_symbol_variants(s: str) -> list[str]:
@@ -578,22 +580,35 @@ def _bp_meta() -> tuple[dict[str, int], dict[str, str]]:
     filter, where the approximation is acceptable.
     """
     global _BP_SIZE, _BP_NAME
-    if _BP_SIZE is None:
-        _BP_SIZE = {
-            r["go_id"]: r["c"]
-            for r in db_fetchall(
-                "SELECT gg.go_id, COUNT(*) c FROM kb_gene_go gg "
-                "JOIN kb_go_term t ON t.go_id=gg.go_id "
-                "WHERE t.namespace='biological_process' AND t.is_obsolete=0 "
-                f"{_GO_POSITIVE} GROUP BY gg.go_id"
-            )
-        }
-        _BP_NAME = {
-            r["go_id"]: r["name"]
-            for r in db_fetchall(
-                "SELECT go_id, name FROM kb_go_term WHERE namespace='biological_process'"
-            )
-        }
+    if _BP_SIZE is None or _BP_NAME is None:
+        # The lock is load-bearing, not defensive. The guard covers TWO globals whose
+        # assignments are separated by a full database round-trip, so without it a second
+        # caller arriving in that window sees _BP_SIZE already set, skips the block, and gets
+        # back (_BP_SIZE, None) — and get_gene_predictions' `name.get(term, term)` then raises
+        # AttributeError, i.e. an unhandled 500 on /api/gene_predictions.
+        # This is currently unreachable because the event loop serialises these requests, but
+        # /api/net_predict and /api/interpret already run in starlette's threadpool, so it is
+        # one call path away from being live.
+        with _BP_LOCK:
+            if _BP_SIZE is None or _BP_NAME is None:  # re-check under the lock
+                size = {
+                    r["go_id"]: r["c"]
+                    for r in db_fetchall(
+                        "SELECT gg.go_id, COUNT(*) c FROM kb_gene_go gg "
+                        "JOIN kb_go_term t ON t.go_id=gg.go_id "
+                        "WHERE t.namespace='biological_process' AND t.is_obsolete=0 "
+                        f"{_GO_POSITIVE} GROUP BY gg.go_id"
+                    )
+                }
+                name = {
+                    r["go_id"]: r["name"]
+                    for r in db_fetchall(
+                        "SELECT go_id, name FROM kb_go_term WHERE namespace='biological_process'"
+                    )
+                }
+                # Publish both only once both are built, so no reader can observe a half-state
+                # even if it somehow bypassed the lock.
+                _BP_SIZE, _BP_NAME = size, name
     return _BP_SIZE, _BP_NAME  # type: ignore[return-value]
 
 
