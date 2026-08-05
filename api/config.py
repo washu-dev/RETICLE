@@ -59,6 +59,11 @@ _SECRET_ENV_MAP: dict[str, str] = {
     "secure_api/CLIENT_ID": "SECURE_API_CLIENT_ID",
     "secure_api/CLIENT_SECRET": "SECURE_API_CLIENT_SECRET",
     "secure_api/API_KEY": "SECURE_API_KEY",
+    # WashU LLM gateway (AI narrative — services/llm_client.py). Optional: the
+    # client falls back to defaults and fails soft when these are unset.
+    "secure_api/TOKEN_URL": "WASHU_TOKEN_URL",
+    "secure_api/CHAT_URL": "WASHU_CHAT_URL",
+    "secure_api/SCOPE": "WASHU_SCOPE",
 }
 
 _SECRET_PREFIX = os.getenv("RETICLE_SECRET_PREFIX", "RETICLE")

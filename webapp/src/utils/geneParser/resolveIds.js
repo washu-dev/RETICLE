@@ -83,6 +83,19 @@ export function resolveIdentifiers(genes, organism, crosswalk) {
       return gene;
     }
 
+    // Entrez id carried alongside the symbol (BioGRID ORCS IDENTIFIER_ID). Only
+    // used as a fallback when the primary symbol isn't a recognizable token —
+    // OFFICIAL_SYMBOL is normally authoritative, so we don't override it.
+    const extraEntrez =
+      gene.extra && (gene.extra.IDENTIFIER_ID || gene.extra.identifier_id || gene.extra.entrez);
+    if ((!rawId || rawId === '-') && extraEntrez && looksLikeEntrez(String(extraEntrez))) {
+      const hgnc = entrez[String(extraEntrez)];
+      if (hgnc) {
+        resolved++;
+        return { ...gene, symbol: hgnc };
+      }
+    }
+
     // Mouse ortholog
     if (organism === 'Mouse') {
       const hgnc = ortholog[rawId];

@@ -14,10 +14,16 @@ from pydantic import BaseModel
 # imported transitively by the routers below).
 from config import settings
 from routers.auth import router as auth_router
+from routers.coessential import router as coessential_router
+from routers.corpus import router as corpus_router
 from routers.explorer import router as explorer_router
 from routers.genes import router as genes_router
+from routers.interpret import router as interpret_router
 from routers.llm_aaron import router as llm_aaron_router
+from routers.pathways import router as pathways_router
 from routers.query import router as query_router
+from routers.screen import router as screen_router
+from routers.screen_similar import router as screen_similar_router
 from routers.screens_aaron import router as screens_aaron_router
 from routers.wiki_aaron import router as wiki_aaron_router
 
@@ -99,8 +105,14 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(query_router)
+app.include_router(corpus_router)
 app.include_router(genes_router)
 app.include_router(explorer_router)
+app.include_router(coessential_router)
+app.include_router(screen_similar_router)
+app.include_router(screen_router)
+app.include_router(interpret_router)
+app.include_router(pathways_router)
 app.include_router(screens_aaron_router)
 app.include_router(wiki_aaron_router)
 app.include_router(llm_aaron_router)

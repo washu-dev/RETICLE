@@ -10,10 +10,10 @@ export default function StickyControls({ showHome = true, onHome }) {
   const pill = {
     display: 'flex', alignItems: 'center', gap: 7,
     padding: '9px 15px', borderRadius: 10,
-    border: '1px solid var(--border)',
-    background: 'rgba(11,17,32,0.85)', backdropFilter: 'blur(12px)',
-    color: 'var(--text-1)', fontSize: '0.85rem', fontWeight: 600,
-    boxShadow: '0 4px 16px rgba(0,0,0,0.35)', cursor: 'pointer',
+    border: '1px solid var(--border-2)',
+    background: 'var(--white)',
+    color: 'var(--fg)', fontSize: '0.85rem', fontWeight: 600,
+    boxShadow: 'var(--shadow)', cursor: 'pointer',
   };
 
   return (

@@ -34,27 +34,97 @@ function splitHeader(line, delimiter) {
 }
 
 /**
+ * Strip a leading comment marker from a header line. BioGRID ORCS exports write
+ * the column header itself as a `#`-prefixed line (`#SCREEN_ID\tIDENTIFIER_ID…`),
+ * so the `#` is part of the header, not a throwaway comment.
+ * @param {string} line
+ * @returns {string}
+ */
+function stripComment(line) {
+  return line.replace(/^#+\s*/, '');
+}
+
+/** Case-insensitive membership test against a lowercased column list. */
+function has(colLower, name) {
+  return colLower.includes(name);
+}
+
+/** Index of a column by case-insensitive name; -1 if absent. */
+function indexOfCol(colLower, name) {
+  return colLower.indexOf(name);
+}
+
+/**
  * detectFormat — inspect raw text and return a format descriptor.
  *
  * @param {string} raw  Raw file/paste content
  * @returns {{
- *   format: 'MAGECK'|'STARS'|'DESEQ2'|'SIMPLE'|'UNKNOWN',
+ *   format: 'MAGECK'|'STARS'|'DESEQ2'|'ORCS'|'RESIDUAL'|'SIMPLE'|'UNKNOWN',
  *   delimiter: '\t'|',',
  *   columns: string[],
  *   idColumn: string,
+ *   hitColumn: string,
+ *   conditionColumn: string,
  *   confidence: number
  * }}
  */
 export function detectFormat(raw) {
   const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) {
-    return { format: 'UNKNOWN', delimiter: '\t', columns: [], idColumn: '', confidence: 0 };
+    return {
+      format: 'UNKNOWN', delimiter: '\t', columns: [], idColumn: '',
+      hitColumn: '', conditionColumn: '', confidence: 0,
+    };
   }
 
-  const firstLine = lines[0];
+  const firstLine = stripComment(lines[0]);
   const delimiter = sniffDelimiter(firstLine);
   const columns   = splitHeader(firstLine, delimiter);
   const colLower  = columns.map(c => c.toLowerCase());
+
+  const hitIdx       = colLower.findIndex(c => c === 'hit' || c === 'hit_flag' || c === 'is_hit');
+  const conditionIdx = colLower.findIndex(c => c === 'condition');
+  const hitColumn       = hitIdx >= 0 ? columns[hitIdx] : '';
+  const conditionColumn = conditionIdx >= 0 ? columns[conditionIdx] : '';
+
+  // ---- BioGRID ORCS native export (.screen.tab.txt) ----
+  // Tab-delimited, header prefixed with '#'. Canonical columns: SCREEN_ID,
+  // IDENTIFIER_ID, IDENTIFIER_TYPE, OFFICIAL_SYMBOL, ALIASES, ORGANISM_ID,
+  // ORGANISM_OFFICIAL, SCORE.1..SCORE.5, HIT, SOURCE. Missing scores are '-'.
+  const hasOfficialSymbol = has(colLower, 'official_symbol');
+  const hasScoreDot       = colLower.some(c => /^score\.\d+$/.test(c));
+  if (hasOfficialSymbol && (hasScoreDot || hitIdx >= 0)) {
+    return {
+      format: 'ORCS',
+      delimiter,
+      columns,
+      idColumn: columns[indexOfCol(colLower, 'official_symbol')],
+      hitColumn,
+      conditionColumn,
+      confidence: hasScoreDot && hitIdx >= 0 ? CONFIDENCE_HIGH : CONFIDENCE_MED,
+    };
+  }
+
+  // ---- RESIDUAL / z-score screen (di2 residual-model output) ----
+  // e.g. zs_GammaTNF_vs_DMSO.csv:
+  //   Gene, condition, n, mean_lfc, mean_residual, pop_mean, pop_sd,
+  //   z_score, p_value, fdr, ascending_rank, descending_rank
+  const hasResidualShape =
+    has(colLower, 'gene') &&
+    has(colLower, 'mean_lfc') &&
+    (has(colLower, 'z_score') || has(colLower, 'mean_residual') || has(colLower, 'ascending_rank'));
+  if (hasResidualShape) {
+    return {
+      format: 'RESIDUAL',
+      delimiter,
+      columns,
+      idColumn: columns[indexOfCol(colLower, 'gene')],
+      hitColumn,
+      conditionColumn,
+      confidence: has(colLower, 'z_score') && has(colLower, 'mean_residual')
+        ? CONFIDENCE_HIGH : CONFIDENCE_MED,
+    };
+  }
 
   // ---- MAGeCK detection ----
   // MAGeCK output has an "id" column and columns containing pipe characters

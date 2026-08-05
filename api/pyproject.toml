@@ -35,6 +35,22 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "C", "B", "UP"]
 
+# FastAPI's dependency markers are designed to be called in argument defaults
+# (that is the framework's intended idiom), so they are not the B008 mutable-default
+# footgun the rule targets. Treat them as immutable calls.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+    "fastapi.Depends",
+    "fastapi.Security",
+]
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true

@@ -41,14 +41,16 @@ function buildCandidates(columns, priorityOrder) {
  * suggestScoreColumn — recommend a default score column and return all candidates.
  *
  * Priority rules per format:
- *   MAGeCK : neg|lfc  →  neg|score  →  pos|lfc  →  pos|score  →  (any pipe col)
- *   STARS  : LFC  →  q-value
- *   DESeq2 : log2FoldChange  →  stat
- *   SIMPLE : second column (index 1), whatever name it has
- *   UNKNOWN: first numeric-looking column, or column index 1
+ *   MAGeCK  : neg|lfc  →  neg|score  →  pos|lfc  →  pos|score  →  (any pipe col)
+ *   STARS   : LFC  →  q-value
+ *   DESeq2  : log2FoldChange  →  stat
+ *   ORCS    : SCORE.1  →  SCORE.2 …  (the deposited primary score comes first)
+ *   RESIDUAL: z_score  →  mean_lfc  →  mean_residual  →  fdr
+ *   SIMPLE  : second column (index 1), whatever name it has
+ *   UNKNOWN : first numeric-looking column, or column index 1
  *
  * @param {string[]} columns  Column names from the parsed header
- * @param {'MAGECK'|'STARS'|'DESEQ2'|'SIMPLE'|'UNKNOWN'} format
+ * @param {'MAGECK'|'STARS'|'DESEQ2'|'ORCS'|'RESIDUAL'|'SIMPLE'|'UNKNOWN'} format
  * @returns {{ defaultColumn: string, candidates: { value: string, label: string }[] }}
  */
 export function suggestScoreColumn(columns, format) {
@@ -71,6 +73,17 @@ export function suggestScoreColumn(columns, format) {
       break;
     case 'DESEQ2':
       priorityOrder = ['log2FoldChange', 'log2foldchange', 'stat', 'pvalue', 'padj', 'baseMean'];
+      break;
+    case 'ORCS': {
+      // Deposited scores in order (SCORE.1 is the authors' primary statistic).
+      const scoreCols = columns
+        .filter(c => /^score\.\d+$/i.test(c))
+        .sort((a, b) => Number(a.split('.')[1]) - Number(b.split('.')[1]));
+      priorityOrder = scoreCols;
+      break;
+    }
+    case 'RESIDUAL':
+      priorityOrder = ['z_score', 'mean_lfc', 'mean_residual', 'fdr', 'p_value'];
       break;
     case 'SIMPLE': {
       // Default to the second column (index 1)

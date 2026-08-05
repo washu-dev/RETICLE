@@ -1,29 +1,59 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ============================================================
+   RETICLE — WashU Medicine Design System (light).
+   Red = hero · Warm Gray ground · IvyStyle Sans · no emoji.
+   Canonical WashU tokens live here; the legacy dark-theme
+   variable names (--bg-0, --blue, …) are ALIASED onto them so
+   existing inline styles degrade gracefully during the reshape.
+   ============================================================ */
 :root {
-  --bg-0: #0b1120;
-  --bg-1: #111827;
-  --bg-2: #1a2540;
-  --bg-3: #1e2d4a;
-  --border: #2a3a5c;
-  --border-light: #334466;
+  /* --- Canonical WashU tokens (use these in new components) --- */
+  --washu-red: #ba0c2f;
+  --dark-red:  #971b2f;
+  --warm-gray: #f5f2ee;
+  --white:     #ffffff;
+  --teal:      #007d8a;
+  --teal-wash: #eef6f7;
+  --teal-line: #cfe3e6;
+  --gold:      #f1b434;
+  --green-washu: #215732;
+  --coral:     #ff6d6a;
+  --cool-gray: #d9d9d9;
+  --fg:        #161616;
+  --fg-muted:  #4a4a4a;
+  --faint:     #7d756c;
+  --border-1:  #e6e1da;
+  --border-2:  #d7d0c6;
 
-  --blue:   #4f9cf9;
-  --blue-dim: #2563b8;
-  --amber:  #fbbf24;
-  --amber-dim: #78450a;
-  --green:  #34d399;
-  --orange: #fb923c;
-  --gray:   #6b7280;
-  --purple: #a78bfa;
-  --pink:   #f472b6;
+  --font-sans:  "ivystyle-sans", Calibri, Tahoma, sans-serif;
+  --font-serif: "ivypresto-headline", Georgia, serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", Consolas, monospace;
 
-  --text-1: #f0f4ff;
-  --text-2: #a8b8d8;
-  --text-3: #6b7a99;
+  /* --- Legacy aliases (dark → WashU light), contrast direction preserved --- */
+  --bg-0: var(--warm-gray);   /* page ground */
+  --bg-1: var(--white);       /* white surfaces: tab container, slide-over */
+  --bg-2: var(--white);       /* cards */
+  --bg-3: #f0ebe3;            /* raised / active / hover (a touch darker warm) */
+  --border: var(--border-1);
+  --border-light: var(--border-2);
+
+  --blue:     #007d8a;        /* general interactive/semantic accent → teal */
+  --blue-dim: #005f6b;
+  --amber:    #8a6a12;        /* attention text (dark-matter) — passes contrast on white */
+  --amber-dim: #f7efd8;
+  --green:    #215732;
+  --orange:   #ba0c2f;        /* positive-score / inverted → the hero red */
+  --gray:     #7d756c;
+  --purple:   #6b4e8f;        /* CRISPRa badge (transitional; off-palette, rare) */
+  --pink:     #ff6d6a;
+
+  --text-1: #161616;
+  --text-2: #4a4a4a;
+  --text-3: #7d756c;
 
   --radius: 10px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow: 0 12px 30px -10px rgba(22, 22, 22, 0.18);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -31,7 +61,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg-0);
   color: var(--text-1);
   line-height: 1.5;
@@ -41,13 +71,15 @@ body {
 
 #root { width: 100%; }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-1); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--warm-gray); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 
 button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
-a { color: var(--blue); text-decoration: none; }
+a { color: var(--washu-red); text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+:focus-visible { outline: 2px solid var(--washu-red); outline-offset: 2px; }
 
 /* Typography helpers */
 .text-xs   { font-size: 0.75rem; }
@@ -57,7 +89,7 @@ a:hover { text-decoration: underline; }
 .text-2xl  { font-size: 1.5rem; }
 .text-3xl  { font-size: 1.875rem; }
 .text-4xl  { font-size: 2.25rem; }
-.font-mono { font-family: "JetBrains Mono","Fira Code",Consolas,monospace; }
+.font-mono { font-family: var(--font-mono); }
 .font-semibold { font-weight: 600; }
 .font-bold     { font-weight: 700; }
 .text-muted  { color: var(--text-2); }
@@ -75,12 +107,12 @@ a:hover { text-decoration: underline; }
   font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
   white-space: nowrap;
 }
-.badge-agree    { background: rgba(52,211,153,0.15); color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
-.badge-inverted { background: rgba(251,146,60,0.15); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
-.badge-unknown  { background: rgba(107,114,128,0.2); color: var(--gray);   border: 1px solid rgba(107,114,128,0.3); }
-.badge-dark     { background: rgba(251,191,36,0.12); color: var(--amber);  border: 1px solid rgba(251,191,36,0.25); }
-.badge-ko       { background: rgba(79,156,249,0.12); color: var(--blue);   border: 1px solid rgba(79,156,249,0.25); }
-.badge-crispra  { background: rgba(167,139,250,0.15);color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+.badge-agree    { background: rgba(33,87,50,0.10);  color: var(--green);  border: 1px solid rgba(33,87,50,0.28); }
+.badge-inverted { background: rgba(186,12,47,0.08);  color: var(--orange); border: 1px solid rgba(186,12,47,0.25); }
+.badge-unknown  { background: rgba(125,117,108,0.12);color: var(--gray);   border: 1px solid rgba(125,117,108,0.3); }
+.badge-dark     { background: rgba(241,180,52,0.16); color: var(--amber);  border: 1px solid rgba(241,180,52,0.4); }
+.badge-ko       { background: rgba(0,125,138,0.10);  color: var(--teal);   border: 1px solid rgba(0,125,138,0.28); }
+.badge-crispra  { background: rgba(107,78,143,0.12); color: var(--purple); border: 1px solid rgba(107,78,143,0.3); }
 
 /* Cards */
 .card {
@@ -91,33 +123,34 @@ a:hover { text-decoration: underline; }
 }
 
 /* Tabs */
-.tabs { display: flex; gap: 4px; background: var(--bg-1); border-radius: 10px; padding: 4px; }
+.tabs { display: flex; gap: 4px; background: var(--warm-gray); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
 .tab-btn {
   flex: 1; padding: 9px 16px; border-radius: 7px;
   font-size: 0.875rem; font-weight: 500; color: var(--text-2);
   transition: all 0.15s ease;
 }
-.tab-btn:hover  { color: var(--text-1); background: rgba(255,255,255,0.05); }
-.tab-btn.active { background: var(--bg-3); color: var(--text-1); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.tab-btn:hover  { color: var(--text-1); background: rgba(22,22,22,0.04); }
+.tab-btn.active { background: var(--white); color: var(--washu-red); box-shadow: 0 1px 4px rgba(22,22,22,0.10); }
 
 /* Table */
 .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .data-table th {
   text-align: left; padding: 10px 14px;
-  color: var(--text-3); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-3); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+  background: var(--warm-gray);
   border-bottom: 1px solid var(--border); white-space: nowrap;
 }
-.data-table td { padding: 12px 14px; border-bottom: 1px solid rgba(42,58,92,0.6); vertical-align: middle; }
+.data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: rgba(79,156,249,0.04); }
+.data-table tr:hover td { background: var(--warm-gray); }
 .data-table tr.clickable { cursor: pointer; }
 
 /* Slide-over panel */
 .slide-over {
   position: fixed; top: 0; right: 0; height: 100vh; width: 500px;
-  background: var(--bg-1); border-left: 1px solid var(--border);
+  background: var(--white); border-left: 1px solid var(--border);
   z-index: 50; overflow-y: auto;
-  box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow);
   transform: translateX(0);
   transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
 }
@@ -125,8 +158,8 @@ a:hover { text-decoration: underline; }
 
 /* Overlay */
 .overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  z-index: 40; backdrop-filter: blur(2px);
+  position: fixed; inset: 0; background: rgba(22,22,22,0.28);
+  z-index: 40;
   animation: fadeIn 0.2s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -135,7 +168,7 @@ a:hover { text-decoration: underline; }
 .spinner {
   width: 40px; height: 40px; border-radius: 50%;
   border: 3px solid var(--border);
-  border-top-color: var(--blue);
+  border-top-color: var(--washu-red);
   animation: spin 0.9s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -143,30 +176,85 @@ a:hover { text-decoration: underline; }
 /* Progress bar */
 .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .progress-fill {
-  height: 100%; background: linear-gradient(90deg, var(--blue-dim), var(--blue));
+  height: 100%; background: linear-gradient(90deg, var(--dark-red), var(--washu-red));
   border-radius: 2px; transition: width 0.6s ease;
 }
 
 /* Upload zone */
 .upload-zone {
-  border: 2px dashed var(--border-light); border-radius: 12px;
+  border: 2px dashed var(--border-2); border-radius: 12px;
   padding: 48px 32px; text-align: center;
   transition: all 0.2s ease; cursor: pointer;
 }
 .upload-zone:hover, .upload-zone.drag-over {
-  border-color: var(--blue); background: rgba(79,156,249,0.05);
+  border-color: var(--washu-red); background: rgba(186,12,47,0.04);
 }
 
 /* Pulse dot */
 .pulse-dot {
   width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+  box-shadow: 0 0 0 3px rgba(33,87,50,0.18);
   animation: pulse 2s infinite; display: inline-block;
 }
 @keyframes pulse {
-  0%,100% { box-shadow: 0 0 0 3px rgba(52,211,153,0.2); }
-  50%      { box-shadow: 0 0 0 7px rgba(52,211,153,0.05); }
+  0%,100% { box-shadow: 0 0 0 3px rgba(33,87,50,0.18); }
+  50%      { box-shadow: 0 0 0 7px rgba(33,87,50,0.04); }
 }
 
 /* Cytoscape container */
-.cy-container { width: 100%; height: 500px; border-radius: 8px; overflow: hidden; background: var(--bg-0); }
+.cy-container { width: 100%; height: 500px; border-radius: 8px; overflow: hidden; background: var(--warm-gray); }
+
+/* ============================================================
+   WashU design-system primitives (shared across the reshape)
+   ============================================================ */
+
+/* Eyebrow — small red kicker above a heading */
+.eyebrow {
+  font-weight: 700; font-size: 0.75rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--washu-red);
+}
+
+/* IvyPresto italic — the one emphasis word in a headline (WashU signature) */
+.emph { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
+
+/* Provenance label — marks a block as AI / Computed / Source */
+.prov {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;
+}
+.prov svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.prov.ai  { color: var(--teal); }
+.prov.cp  { color: var(--fg-muted); }
+.prov.src { color: var(--faint); }
+.prov .sub { font-weight: 600; letter-spacing: 0.02em; text-transform: none; color: var(--faint); }
+
+/* Provenance legend — the "how to read" strip */
+.prov-legend {
+  display: flex; gap: 18px; flex-wrap: wrap; align-items: center;
+  font-size: 0.78rem; color: var(--fg-muted);
+  background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 16px;
+}
+.prov-legend .lg { display: inline-flex; align-items: center; gap: 7px; }
+.prov-legend svg { width: 15px; height: 15px; }
+.prov-legend .ai-ink { color: var(--teal); }
+.prov-legend .cp-ink { color: var(--fg-muted); }
+.prov-legend .src-ink { color: var(--faint); }
+
+/* AI panel — teal-washed block for di2 narrative (provenance = AI) */
+.ai-panel {
+  background: var(--teal-wash);
+  border: 1px solid var(--teal-line); border-left: 3px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 15px 18px;
+}
+.ai-panel p { margin: 0; font-size: 1rem; line-height: 1.6; color: #152b2d; }
+/* Inline gene reference chip inside AI prose */
+.gref {
+  font-weight: 600; color: #0c3d43; background: #e2eff0;
+  border: 1px solid var(--teal-line); padding: 0 5px; border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

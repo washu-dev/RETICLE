@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
+import { Check } from 'lucide-react';
 import { runQuery } from '../services/reticleApi';
 
+// High-level, honest progress steps. These narrate the query at a level that is
+// actually true; they intentionally avoid claiming specific computations (e.g.
+// a calibrated Spearman ρ or AI hypotheses) that the backend does not yet run.
 const STEPS = [
-  { label: 'Resolving gene identifiers via canonical crosswalk',         pct: 15 },
-  { label: 'Querying 287 harmonized screens in reference set',           pct: 32 },
-  { label: 'Computing Spearman ρ correlations',                          pct: 50 },
-  { label: 'Scoring darkness: publication count × GO term specificity',  pct: 64 },
-  { label: 'Generating AI hypotheses for top dark-gene candidates',      pct: 78 },
-  { label: 'Applying directionality labels (KO ↔ CRISPRa)',             pct: 90 },
-  { label: 'Assembling results package',                                 pct: 100 },
+  { label: 'Resolving gene identifiers',                pct: 18 },
+  { label: 'Comparing your screen against the corpus',  pct: 42 },
+  { label: 'Ranking screens by shared hits',            pct: 64 },
+  { label: 'Scoring dark-matter candidates',            pct: 84 },
+  { label: 'Assembling your results',                   pct: 100 },
 ];
 
 export default function LoadingAnalysis({ geneCount, genes, options, onDone }) {
@@ -74,7 +76,7 @@ export default function LoadingAnalysis({ geneCount, genes, options, onDone }) {
     <div style={{
       minHeight: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', padding: 40,
-      background: 'radial-gradient(ellipse 60% 40% at 50% 40%, rgba(37,99,184,0.15) 0%, transparent 70%)',
+      background: 'radial-gradient(ellipse 60% 40% at 50% 40%, rgba(186,12,47,0.05) 0%, transparent 70%)',
     }}>
       <div style={{ width: '100%', maxWidth: 520, textAlign: 'center' }}>
         <div className="spinner" style={{ margin: '0 auto 28px' }} />
@@ -105,10 +107,10 @@ export default function LoadingAnalysis({ geneCount, genes, options, onDone }) {
                   background: done ? 'var(--green)' : active ? 'var(--blue)' : 'var(--border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.65rem', color: 'white', fontWeight: 700,
-                  boxShadow: active ? '0 0 0 4px rgba(79,156,249,0.2)' : 'none',
+                  boxShadow: active ? '0 0 0 4px rgba(0,125,138,0.2)' : 'none',
                   transition: 'all 0.3s',
                 }}>
-                  {done ? '✓' : i + 1}
+                  {done ? <Check size={11} /> : i + 1}
                 </div>
                 <span style={{
                   fontSize: '0.85rem',

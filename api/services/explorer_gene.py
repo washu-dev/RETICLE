@@ -16,7 +16,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from services.db_service import db_fetchall
+from services.db_service import USE_PG, db_fetchall
 
 HIST_BINS = 26  # over [-1, 1]
 
@@ -223,8 +223,55 @@ def reporter_ledger(rows: list) -> list:
     return ledger
 
 
+def _mock_gene_payload(symbol: str) -> dict:
+    """Offline sample payload (USE_PG false) so the gene drawer/Explorer populate
+    without a database. Deterministic and clearly synthetic — the real shape is
+    produced by get_gene_payload below."""
+    def scr(i: int, cell: str, pct: float, hit: int) -> dict:
+        return {
+            "screen_id": 1000 + i, "cell_line": cell, "screen_type": "KO",
+            "analysis": "MAGeCK", "phenotype": "proliferation",
+            "rationale": "fitness screen", "percentile": pct, "is_hit": hit,
+        }
+
+    fitness = {
+        "n": 18, "n_hits": 7, "hit_rate": 0.39, "median": -0.22, "mean": -0.18,
+        "p25": -0.55, "p75": 0.12, "min": -0.95, "max": 0.8, "lean": "essential",
+        "hist": {"edges": [-1.0, -0.6, -0.2, 0.2, 0.6, 1.0], "counts": [4, 6, 5, 2, 1]},
+        "rug": [-0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.4],
+        "most_essential": [scr(1, "K562", -0.95, 1), scr(2, "Jurkat", -0.88, 1)],
+        "most_advantageous": [scr(3, "A375", 0.8, 0)],
+        "screens": [
+            {"p": -0.9, "cc": "fitness", "cn": "", "h": 1},
+            {"p": 0.1, "cc": "fitness", "cn": "", "h": 0},
+        ],
+    }
+    stress = {
+        "n": 8, "n_hits": 4, "hit_rate": 0.5, "median": 0.0, "mean": 0.0,
+        "p25": -0.3, "p75": 0.3, "min": -0.8, "max": 0.7, "lean": "mixed",
+        "ledger": [{
+            "condition": "IFN-γ", "class": "cytokine", "direction": "resist",
+            "net": 2, "n_papers": 2, "n_screens": 3, "n_agree": 3, "facts": [],
+        }],
+    }
+    reporter = {
+        "n": 4, "n_hits": 2,
+        "ledger": [{
+            "process": "NF-κB signaling", "n_papers": 2, "n_screens": 2,
+            "facts": [], "screens": [2001, 2002],
+        }],
+    }
+    return {
+        "symbol": symbol, "query": symbol, "organism": "Homo sapiens",
+        "n_total": 30,  # 18 fitness + 8 stress + 4 reporter
+        "primary": "fitness", "fitness": fitness, "stress": stress, "reporter": reporter,
+    }
+
+
 async def get_gene_payload(symbol: str) -> dict | None:
     """Build the full Explorer payload for one gene symbol, or None if unknown."""
+    if not USE_PG:
+        return _mock_gene_payload(symbol)
     variants = resolve_symbol_variants(symbol)
     ph = ",".join("?" * len(variants))
     rows = db_fetchall(
