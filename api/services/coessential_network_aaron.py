@@ -394,6 +394,16 @@ async def get_screen_net(
         }
         for n in nodeset
     ]
+    # How many partners the WIDER view holds. A gene with one mutual-best partner renders a
+    # two-node graph that reads as a failure, so the panel needs to be able to say how much is
+    # behind the reciprocal filter rather than leaving the reader to guess whether one partner
+    # means "no signal" or "nothing loaded". A count, not the edges — the panel only decides
+    # whether widening is worth offering.
+    n_wider = db_fetchall(
+        f"SELECT COUNT(*) c FROM {tbl} WHERE context=? AND channel='coessential' "
+        f"AND (gene_a=? OR gene_b=?)",
+        (ctx, seed, seed),
+    )[0]["c"]
     return {
         "focus": seed,
         "context": ctx,
@@ -403,6 +413,7 @@ async def get_screen_net(
         "nodes": nodes,
         "edges": edges,
         "tiers": tiers,
+        "n_wider": int(n_wider),
         "cohit_available": cohit_available(organism),
     }
 

@@ -883,9 +883,15 @@ def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
     nodes = [{"id": n, "label": n, "focus": (n == seed), "lean": lab(lean.get(n)),
               "mean_percentile": round(lean[n], 3) if n in lean else None, "degree": deg.get(n, 0)}
              for n in nodeset]
+    # How many partners the WIDER view holds, so a sparse graph can name the number instead of
+    # leaving the reader to guess whether one partner means "no signal" or "nothing loaded".
+    # A count, not the edges: the panel only needs to decide whether widening is worth offering.
+    n_wider = net_fetchall(
+        f"SELECT COUNT(*) c FROM {tbl} WHERE context=? AND channel='coessential' "
+        f"AND (gene_a=? OR gene_b=?)", (context, seed, seed), organism=organism)[0]["c"]
     return {"focus": seed, "context": context, "context_label": NET_CTX_LABELS.get(context, context),
             "reciprocal_only": reciprocal_only, "fellback": fellback,
-            "nodes": nodes, "edges": edges, "tiers": tiers,
+            "nodes": nodes, "edges": edges, "tiers": tiers, "n_wider": int(n_wider),
             "cohit_available": organism not in _COHIT_UNAVAILABLE}
 
 

@@ -99,6 +99,15 @@ a{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}
 @media(prefers-reduced-motion:reduce){.cap{display:none}}
 .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid}
 .hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}
+/* The sparse note is the panel's answer to "why is this graph nearly empty", so it is boxed
+   rather than left as another hint line — it has to read as the explanation, not as an aside. */
+.sparse-note{margin:10px 0 0;padding:11px 12px;border:1px solid var(--line);border-left:2px solid var(--eviq);
+  border-radius:8px;background:#fff;font-size:12px;line-height:1.62;color:var(--ink2)}
+.sparse-note b{color:var(--ink)}
+.wider-btn{display:block;width:100%;margin-top:10px;font-family:var(--sans);font-size:12px;font-weight:500;
+  padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);
+  cursor:pointer;transition:.15s}
+.wider-btn:hover{border-color:var(--eviq);color:var(--eviq)}
 .foot{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:8px 22px;border-top:1px solid var(--line);letter-spacing:.03em;background:var(--card)}
 .status{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;color:var(--muted)}
 .partner{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line2);cursor:pointer}
@@ -714,6 +723,37 @@ function bindLane(){
   });
 }
 
+/* A graph with one or two partners looks broken even when it is the honest answer, so the panel
+   has to say which it is. Threshold is 3: below that the picture stops being a neighbourhood. */
+const SPARSE_MAX = 3;
+function isSparse(j){
+  return j.reciprocal_only && !j.fellback
+      && j.edges.filter(x=>x.source===j.focus||x.target===j.focus).length < SPARSE_MAX;
+}
+
+/* Deliberately reports MEASUREMENTS and stops short of explaining them.
+   The tidy story -- "no fitness cost, therefore nothing to correlate" -- was tested across all
+   3,768 networked genes and does not hold: genes with a positive mean percentile are sparse 43%
+   of the time, but so are 38% of selectively-essential ones and 21% of pan-essential ones. There
+   is no clean per-gene cause to assert, so the panel gives the reader the two numbers that bear
+   on it and leaves the inference to them. */
+function sparseNote(j){
+  if(!isSparse(j)) return '';
+  const f=(j.nodes||[]).find(n=>n.focus)||{};
+  const nDirect=j.edges.filter(x=>x.source===j.focus||x.target===j.focus).length;
+  const mp=(f.mean_percentile==null)?null:f.mean_percentile;
+  const wider=(j.n_wider||0)-nDirect;
+  return `<div class="sparse-note">
+    <b>${esc(j.focus)} has ${nDirect===0?'no':nDirect} mutual-best partner${nDirect===1?'':'s'}.</b>
+    ${mp==null?'':`Across the screens it was measured in, knocking it out leans
+      <b>${esc(String(f.lean||''))}</b> (mean percentile ${mp>0?'+':''}${mp}).`}
+    Co-essentiality scores how tightly two genes' fitness profiles move together, so a gene has
+    few mutual-best partners when its own profile carries little of that movement — which is a
+    result about the gene, not a gap in the data.
+    ${wider>0?`<button class="wider-btn" id="widerbtn">Show ${wider} one-directional partner${wider===1?'':'s'}, graded →</button>`:''}
+  </div>`;
+}
+
 function renderPanel(j){
   if(!j){document.getElementById('panel').innerHTML=`<div class="sub" style="margin-top:8px">No graph.</div>`+legend();return;}
   const n=j.nodes.length,e=j.edges.length;
@@ -722,11 +762,14 @@ function renderPanel(j){
   document.getElementById('panel').innerHTML=
     `<h3>${j.focus}</h3><div class="sub">${j.context_label}</div>`+
     /* The lane sits directly under the gene name, above every count. It is the one thing on this
-       panel that tells the reader whether to believe the picture, so it leads. */
-    tierLane(j)+
+       panel that tells the reader whether to believe the picture, so it leads.
+       EXCEPT when the graph is sparse: a tier histogram of one edge tells the reader nothing,
+       while the question they actually have — why is this nearly empty — goes unanswered below
+       the fold. On those genes the note leads and the lane follows. */
+    (isSparse(j)?sparseNote(j)+tierLane(j):tierLane(j)+sparseNote(j))+
     (j.cohit_available===false?`<div class="hint" style="color:var(--eviq);margin:7px 0 0">The co-hit
        channel is unavailable on this deployment, so every edge is graded on channel 1 alone.</div>`:'')+
-    (j.reciprocal_only?`<div class="hint" style="margin:7px 0 0">This view keeps only mutual-best
+    (j.reciprocal_only && !isSparse(j)?`<div class="hint" style="margin:7px 0 0">This view keeps only mutual-best
        edges, so nothing below <b>mutual-best</b> can appear. Untick <b>reciprocal only</b> to see the
        wider neighbourhood graded.</div>`:'')+
     `<div style="margin-top:16px">`+
@@ -743,6 +786,11 @@ function renderPanel(j){
      </div>`+
     legend();
   bindLane();
+  /* Drive the real checkbox rather than a second code path, so the toolbar and the panel can
+     never disagree about which view is on screen. */
+  const wb=document.getElementById('widerbtn');
+  if(wb) wb.onclick=()=>{ const cb=document.getElementById('recip'); cb.checked=false;
+                          RECIP=false; load(); };
 }
 
 /* Stamps every request. The call takes 15-55s and the user can click another node while it is in
