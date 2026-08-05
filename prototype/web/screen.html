@@ -172,7 +172,7 @@ async function findSimilar(sid){
   sid=(sid||'').replace(/\D/g,''); if(!sid) return;
   const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
   try{
-    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
+    const r=await fetch(`/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
     st.textContent=''; $('#hero').classList.add('compact');
@@ -215,7 +215,7 @@ async function loadMoreSimilar(){
   if(!_scrState) return;
   const btn=$('#scrmore'); if(btn){ btn.textContent='Loading…'; btn.disabled=true; }
   try{
-    const r=await fetch(`/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}&exclude_same_study=${_scrExcl?1:0}`);
+    const r=await fetch(`/api/screen_similar_aaron?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     $('#scrtbl').insertAdjacentHTML('beforeend', scrRowsHTML(d.results, _scrState.shown));
     _scrState.shown+=d.results.length; _scrState.total=d.n_total;

@@ -1007,7 +1007,7 @@ function wireReporterExplain(){
       const sym=row.dataset.symbol||'', screens=row.dataset.screens||'';
       if(!sym||!screens){ box.dataset.loaded='0'; return; }
       box.innerHTML='<span class="rex-load">reading the paper…</span>';
-      fetch('/api/reporter_explain?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
+      fetch('/api/reporter_explain_aaron?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
         .then(r=>r.json()).then(d=>{
           if(d.error){ box.innerHTML='<span class="rex-err">'+esc(d.error)+'</span>'; return; }
           const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
@@ -1125,7 +1125,7 @@ function renderNetwork(g, svgSel, kind){
 async function loadCoess(sym, organism){
   const host=document.getElementById('coess-body'); if(!host) return;
   try{
-    const r=await fetch('/api/coessential?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
+    const r=await fetch('/api/coessential_aaron?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
     const g=await r.json();
     if(!r.ok || !g.nodes || g.nodes.length<2){ hideSection('coess'); return; }
     const TL={1:['both channels','#2E4756','46.4%'],2:['mutual-best','#6E8794','22.4%'],
@@ -1183,7 +1183,7 @@ async function runInterpret(d){
   if(!lead||!body) return;
   lead.style.display='';                       // show loading
   try{
-    const r=await fetch('/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const r=await fetch('/api/interpret_aaron',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
     const j=await r.json();
     if(!r.ok){ lead.style.display='none'; return; }   // off-VPN / unavailable → hide quietly
     if(me) me.textContent=j.model; body.className='ai-body'; body.innerHTML=linkifyPMIDs(j.text);

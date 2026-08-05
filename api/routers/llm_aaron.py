@@ -204,7 +204,7 @@ async def screen_analysis(
         return _gateway_error("Screen analysis unavailable: ", exc)
 
 
-@router.get("/reporter_explain")
+@router.get("/reporter_explain_aaron")
 async def reporter_explain(
     symbol: str = Query(..., min_length=1, max_length=40),
     # Generous on purpose: the frontend sends the row's FULL screen-id list uncapped
@@ -270,7 +270,7 @@ async def net_predict(
     return payload
 
 
-@router.post("/interpret")
+@router.post("/interpret_aaron")
 async def interpret(payload: InterpretRequest) -> Any:
     """RAG interpretation of a gene's whole screen signal — the Explore page's AI paragraph.
 

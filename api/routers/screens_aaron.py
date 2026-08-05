@@ -8,10 +8,24 @@ Like explorer.py, these return the prototype's payload shape verbatim (snake_cas
 aliasing) so the ported frontend consumes them unchanged.
 
 Currently exposed:
-  GET /api/screen_similar   — screens whose gene-level fitness profile resembles a query screen
-  GET /api/net_contexts     — available co-essentiality network contexts
-  GET /api/screen_net       — one gene's co-essentiality neighbourhood (the Network page)
-  GET /api/coessential      — the Explore page's inline co-essentiality graph
+  GET /api/screen_similar_aaron  — screens whose fitness profile resembles a query screen
+  GET /api/net_contexts          — available co-essentiality network contexts
+  GET /api/screen_net            — one gene's co-essentiality neighbourhood (the Network page)
+  GET /api/coessential_aaron     — the gene wiki's inline co-essentiality graph
+
+WHY TWO OF THESE CARRY AN _aaron SUFFIX IN THE PATH, NOT JUST THE FILENAME
+-------------------------------------------------------------------------
+routers/coessential.py and routers/screen_similar.py serve /api/coessential and
+/api/screen_similar from a DIFFERENT implementation (cosine similarity over L2-normalised
+fitness profiles) for the Explorer. FastAPI matches the first registered route, and main.py
+includes those before this module — so these two were silently dead after that landed, and
+anything calling the plain path got the other implementation.
+
+The payloads are not interchangeable. The Explorer's edges are {a, b, r, score}; these carry
+`tier`, `tier_label`, `direct` and a `tiers` histogram, which is exactly what the gene wiki's
+evidence lane draws with. Serving one where the other is expected does not error, it just
+renders an untiered graph — so the paths are distinct rather than merged, and the Explorer's
+routes are left alone.
 
 Still to port from prototype/web/app.py (all RDS-backed and ready):
   /api/gene_wiki, /api/gene_predictions        (reticle.kb_*)
@@ -116,7 +130,7 @@ def _validate_context(context: str | None) -> str | None:
     return context
 
 
-@router.get("/screen_similar")
+@router.get("/screen_similar_aaron")
 async def screen_similar(
     screen: str = Query(..., min_length=1, max_length=9),
     limit: int = Query(50, ge=1, le=200),
@@ -176,7 +190,7 @@ async def screen_net(
     return payload
 
 
-@router.get("/coessential")
+@router.get("/coessential_aaron")
 async def coessential(
     symbol: str = Query(..., min_length=1, max_length=40),
     organism: str | None = Query(None),

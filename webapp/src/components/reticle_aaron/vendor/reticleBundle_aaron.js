@@ -672,7 +672,7 @@ function wireReporterExplain(){
       const sym=row.dataset.symbol||'', screens=row.dataset.screens||'';
       if(!sym||!screens){ box.dataset.loaded='0'; return; }
       box.innerHTML='<span class="rex-load">reading the paper…</span>';
-      fetch(APIBASE+'/api/reporter_explain?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
+      fetch(APIBASE+'/api/reporter_explain_aaron?symbol='+encodeURIComponent(sym)+'&screens='+encodeURIComponent(screens))
         .then(r=>r.json()).then(d=>{
           if(d.error){ box.innerHTML='<span class="rex-err">'+esc(d.error)+'</span>'; return; }
           const cites=(d.sources||[]).map(s=>`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(s.pmid)}" target="_blank" rel="noopener">PMID ${esc(s.pmid)}</a>`).join(' · ');
@@ -790,7 +790,7 @@ function renderNetwork(g, svgSel, kind){
 async function loadCoess(sym, organism){
   const host=root.getElementById('coess-body'); if(!host) return;
   try{
-    const r=await fetch(APIBASE+'/api/coessential?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
+    const r=await fetch(APIBASE+'/api/coessential_aaron?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
     const g=await r.json();
     if(!r.ok || !g.nodes || g.nodes.length<2){ hideSection('coess'); return; }
     const TL={1:['both channels','#2E4756','46.4%'],2:['mutual-best','#6E8794','22.4%'],
@@ -848,7 +848,7 @@ async function runInterpret(d){
   if(!lead||!body) return;
   lead.style.display='';                       // show loading
   try{
-    const r=await fetch(APIBASE+'/api/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const r=await fetch(APIBASE+'/api/interpret_aaron',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
     const j=await r.json();
     if(!r.ok){ lead.style.display='none'; return; }   // off-VPN / unavailable → hide quietly
     if(me) me.textContent=j.model; body.className='ai-body'; body.innerHTML=linkifyPMIDs(j.text);
@@ -1017,7 +1017,7 @@ async function findSimilar(sid){
   sid=(sid||'').replace(/\D/g,''); if(!sid) return;
   const st=$('#status'); st.className='status'; st.textContent='Ranking screens…';
   try{
-    const r=await fetch(`${APIBASE}/api/screen_similar?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
+    const r=await fetch(`${APIBASE}/api/screen_similar_aaron?screen=${encodeURIComponent(sid)}&limit=${SCR_PAGE}&offset=0&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     if(!r.ok){ st.className='status err'; st.textContent=d.error||'Lookup failed.'; return; }
     st.textContent=''; $('#hero').classList.add('compact');
@@ -1060,7 +1060,7 @@ async function loadMoreSimilar(){
   if(!_scrState) return;
   const btn=$('#scrmore'); if(btn){ btn.textContent='Loading…'; btn.disabled=true; }
   try{
-    const r=await fetch(`${APIBASE}/api/screen_similar?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}&exclude_same_study=${_scrExcl?1:0}`);
+    const r=await fetch(`${APIBASE}/api/screen_similar_aaron?screen=${encodeURIComponent(_scrState.sid)}&limit=${SCR_PAGE}&offset=${_scrState.shown}&exclude_same_study=${_scrExcl?1:0}`);
     const d=await r.json();
     $('#scrtbl').insertAdjacentHTML('beforeend', scrRowsHTML(d.results, _scrState.shown));
     _scrState.shown+=d.results.length; _scrState.total=d.n_total;

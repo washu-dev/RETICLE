@@ -507,7 +507,9 @@ def _http_json(url: str, timeout: int = 12) -> Any:
     if not url.startswith("https://"):
         raise ValueError("refusing to fetch a non-https URL")
     req = urllib.request.Request(url, headers={"User-Agent": "RETICLE-KB/1.0 (research)"})
-    # noqa/nosec: scheme verified immediately above; hosts are EBI and RCSB.
+    # The suppressions on the next line are for the scheme check above; hosts are EBI and RCSB.
+    # (Written as prose, not as a bare "noqa/nosec:" prefix — ruff parses any line containing
+    # `noqa` as a directive and warns that this one names no rule codes.)
     with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310  # nosec B310
         return json.loads(r.read())
 

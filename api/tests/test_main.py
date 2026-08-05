@@ -298,10 +298,45 @@ class TestOrganismNormalisation:
             assert exc.value.status_code == 422
 
     def test_coessential_accepts_the_org_alias(self, client: TestClient) -> None:
-        """`org=` is what the shipped pages send; it must not be silently discarded."""
-        bad = client.get("/api/coessential", params={"symbol": "Cars", "org": "Rattus norvegicus"})
+        """`org=` is what the shipped pages send; it must not be silently discarded.
+
+        The path carries the _aaron suffix because routers/coessential.py serves the plain
+        /api/coessential for the Explorer from a different implementation, and main.py includes
+        it first — so the plain path is NOT this route.
+        """
+        bad = client.get("/api/coessential_aaron",
+                         params={"symbol": "Cars", "org": "Rattus norvegicus"})
         assert bad.status_code == 422, "an unknown org must be rejected, not defaulted to human"
 
     def test_coessential_rejects_unknown_organism(self, client: TestClient) -> None:
-        bad = client.get("/api/coessential", params={"symbol": "Cars", "organism": "rat"})
+        bad = client.get("/api/coessential_aaron", params={"symbol": "Cars", "organism": "rat"})
         assert bad.status_code == 422
+
+    def test_aaron_routes_are_not_shadowed(self, client: TestClient) -> None:
+        """Regression guard for the collision itself.
+
+        Four _aaron routes were silently dead after routers/coessential.py, screen_similar.py
+        and interpret.py landed: FastAPI matches the FIRST registered route and main.py includes
+        those before the _aaron routers, so the plain paths resolved to the other implementation.
+        Nothing errored — /api/coessential just returned edges with no `tier` or `direct`, which
+        the gene wiki's evidence lane silently draws as an untiered graph.
+        """
+        from main import app
+
+        seen: dict[tuple[str, str], str] = {}
+        dups = []
+        for r in app.routes:
+            for m in getattr(r, "methods", None) or []:
+                if m in ("HEAD", "OPTIONS"):
+                    continue
+                # starlette types routes as BaseRoute, which declares neither attribute;
+                # only the Route subclass has them, and every route here is one.
+                key = (m, getattr(r, "path", ""))
+                mod = getattr(getattr(r, "endpoint", None), "__module__", "?")
+                if key in seen:
+                    dups.append(f"{m} {key[1]}: {seen[key]} shadows {mod}")
+                else:
+                    seen[key] = mod
+        assert not dups, (
+            "duplicate route paths — the second registration is dead: " + "; ".join(dups)
+        )
