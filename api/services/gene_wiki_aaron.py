@@ -70,6 +70,107 @@ def _clean_uniprot(text: str | None) -> tuple[str | None, int]:
     return (clean or None), n
 
 
+# ---------------------------------------------------------------------------------------------
+# TYPE-AHEAD for the home page's search box. One suggester per mode.
+# ---------------------------------------------------------------------------------------------
+class SuggestUnavailable(Exception):
+    """The index could not be read. Distinct from "nothing matched", which is an empty list.
+
+    Both used to surface as []. That is a lie the user acts on: when RDS stopped answering, the box
+    reported that PO matches no genes — with POLR2A sitting right there in the table. A suggester
+    that cannot reach its index has to say so, not answer confidently on its behalf.
+    """
+
+
+async def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
+    """Ranked gene suggestions for a typed prefix, from the precomputed gene_search table.
+
+    prototype/script/build_gene_search.py carries the reasoning and the measurements; the short
+    version is that the ranking needed BOTH a screen-hit count and a paper count. Hits alone put
+    TP53RK above TP53 — a tumour suppressor is rarely a called hit — and papers alone put PON1
+    above POLR2A on "PO".
+
+    Two rules in the ORDER BY, both learned by shipping them wrong first: canonical symbols come
+    before aliases, or "FANC" answers BRCA1 and BRCA2 (correct alias hits, wrong intent); and an
+    exact match only wins outright when it is a canonical symbol, or "PO" answers whichever obscure
+    gene carries "PO" as a literal alias.
+
+    De-duplicates by symbol — one gene with three matching aliases filled three of eight slots with
+    itself — and over-fetches to leave room for that.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    term = q.upper()
+    limit = max(1, min(int(limit), 25))
+    try:
+        rows = db_fetchall(
+            "SELECT symbol, term, is_alias, n_hits, name FROM gene_search "
+            "WHERE taxid = ? AND term LIKE ? "
+            "ORDER BY (term = ? AND is_alias = 0) DESC, is_alias, rank DESC, LENGTH(term), term "
+            "LIMIT ?",
+            (taxid, term + "%", term, limit * 5),
+        )
+    except Exception as exc:
+        # gene_search is newer than the rest of the schema, so a deploy can predate it — and RDS
+        # itself goes unreachable from time to time. Either way this is NOT "no matches"; the
+        # router turns it into a flagged 200 so the box can say it lost the index.
+        logger.warning("gene_search unavailable", exc_info=True)
+        raise SuggestUnavailable() from exc
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for r in rows:
+        sym = r["symbol"]
+        if sym in seen:
+            continue
+        seen.add(sym)
+        out.append({"symbol": sym, "name": r["name"] or "",
+                    "matched": r["term"] if r["is_alias"] else None,
+                    "n_hits": r["n_hits"]})
+        if len(out) >= limit:
+            break
+    return out
+
+
+async def get_screen_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
+    """Ranked screen suggestions. kb_screen is 2,157 rows, so no precomputed table is needed.
+
+    Matches what a person remembers a screen BY — cell line, condition, phenotype, first author, or
+    the BioGRID id. Two things the raw columns get wrong, both fixed here rather than in the data:
+
+      BioGRID punctuates its cell lines — K-562, HL-60, A-375 — and nobody types them that way.
+      "K562" matched zero of 1,952 human screens. Both sides are stripped of hyphens and spaces
+      before comparing, in plain SQL so it behaves the same on sqlite and Postgres.
+
+      number_of_hits is stored as TEXT, so ORDER BY put '5' above '1345'. Cast it.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    like = f"%{q.lower()}%"
+    squashed = "%" + "".join(c for c in q.lower() if c.isalnum()) + "%"
+    limit = max(1, min(int(limit), 25))
+    sq = "REPLACE(REPLACE(LOWER(cell_line), '-', ''), ' ', '')"
+    try:
+        rows = db_fetchall(
+            "SELECT screen_id, cell_line, condition_name, phenotype, author, pmid, "
+            "       number_of_hits "
+            "FROM kb_screen WHERE taxid = ? AND ("
+            f"     {sq} LIKE ? OR LOWER(condition_name) LIKE ? "
+            "  OR LOWER(phenotype) LIKE ? OR LOWER(author) LIKE ? "
+            "  OR CAST(screen_id AS TEXT) LIKE ?) "
+            "ORDER BY CAST(number_of_hits AS INTEGER) DESC LIMIT ?",
+            (taxid, squashed, like, like, like, f"{q}%", limit),
+        )
+    except Exception as exc:
+        logger.warning("screen suggest unavailable", exc_info=True)
+        raise SuggestUnavailable() from exc
+    return [{"screen_id": str(r["screen_id"]),
+             "cell_line": r["cell_line"] or "", "condition": r["condition_name"] or "",
+             "phenotype": r["phenotype"] or "", "author": r["author"] or "",
+             "pmid": r["pmid"], "n_hits": r["number_of_hits"]} for r in rows]
+
+
 def _kb_resolve(gene: str, taxid: int) -> dict | None:
     """symbol / alias / retired id / GeneID -> row with gene_id, symbol, taxid."""
     if gene.isdigit():

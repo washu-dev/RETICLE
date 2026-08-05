@@ -3,17 +3,17 @@
 // Re-generate with:  node scripts/vendor-reticle_aaron.mjs
 /* eslint-disable */
 
-const CSS_GENE = "\n:host{\n  --paper:#FCFCFB; --ink:#14161A; --ink2:#3A3D44; --muted:#6B7280; --faint:#9AA0A6;\n  --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;\n  --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;\n  --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;\n  --ess:#1F6F8B; --adv:#E08A3C; --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;\n  --serif:\"Fraunces\",Georgia,serif;\n  --sans:\"IBM Plex Sans\",system-ui,sans-serif;\n  --mono:\"IBM Plex Mono\",ui-monospace,monospace;\n}\n*{box-sizing:border-box}\nhtml,.rx-body{margin:0}\n.rx-body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;\n  -webkit-font-smoothing:antialiased;\n  background-image:radial-gradient(#00000004 1px,transparent 1px);background-size:22px 22px;background-attachment:fixed}\na{color:inherit}\n\n/* top bar */\n.bar{position:sticky;top:0;z-index:50;background:rgba(252,252,251,.9);backdrop-filter:blur(8px);\n  border-bottom:1px solid var(--line)}\n.bar .in{max-width:1340px;margin:0 auto;padding:12px clamp(20px,4vw,48px);display:flex;align-items:center;gap:18px}\n.mark{font-family:var(--serif);font-weight:500;font-size:19px;white-space:nowrap}\n.mark b{color:var(--know);font-weight:600}\n.mark s{font-family:var(--mono);font-size:10px;text-decoration:none;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px}\n.srch{display:flex;align-items:center;flex:1;max-width:440px;margin-left:auto;border:1px solid var(--line);border-radius:11px;background:var(--card);transition:border-color .2s,box-shadow .2s;padding:3px}\n.srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft)}\n.srch input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--ink);padding:8px 12px;letter-spacing:.02em}\n.srch input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}\n.srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer}\n.srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:background .2s}\n.srch button:hover{background:var(--know)}\n\n/* landing (empty state) — centred mark + search, wave dots pinned to the bottom */\n.rx-body.landing .bar,.rx-body.landing #gw,.rx-body.landing #foot{display:none}\n.land{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:0 20px;overflow:hidden}\n.land-inner{text-align:center;margin-top:-8vh;z-index:2}\n.land-mark{font-family:var(--serif);font-weight:500;font-size:clamp(46px,7.5vw,80px);letter-spacing:-.02em;color:var(--ink);line-height:1}\n.land-mark span{font-family:var(--mono);font-size:.26em;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);vertical-align:middle;margin-left:.55em;font-weight:400}\n.land-srch{display:flex;align-items:center;width:min(560px,92vw);margin:36px auto 0;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 12px 34px -14px rgba(0,0,0,.10);padding:5px;transition:box-shadow .2s,border-color .2s}\n.land-srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft),0 12px 34px -14px rgba(0,0,0,.12)}\n.land-srch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-family:var(--sans);font-size:17px;color:var(--ink);padding:13px 18px}\n.land-srch input::placeholder{color:var(--faint)}\n.land-srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:13px;color:var(--muted);cursor:pointer}\n.land-srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer;transition:background .2s;white-space:nowrap}\n.land-srch button:hover{background:var(--know)}\n.land .ex{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:20px}\n.land .ex b{color:var(--know);cursor:pointer;font-weight:500}.land .ex b:hover{text-decoration:underline}\n#wave-canvas{position:absolute;left:0;bottom:0;width:100%;height:150px;display:block;z-index:1}\n.status{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center;padding:50px 0;min-height:20px;display:none}\n.status.err{color:#b4541f}\n\n/* three-zone page */\n#gw{opacity:0}#gw.show{opacity:1;transition:opacity .4s}\n.page{max-width:1340px;margin:0 auto;padding:8px clamp(20px,4vw,48px) 60px;\n  display:grid;gap:0 44px;grid-template-columns:196px minmax(0,1fr) 336px;align-items:start}\n@media(max-width:1180px){.page{grid-template-columns:minmax(0,1fr) 320px;gap:0 32px}.toc{display:none}}\n@media(max-width:860px){.page{grid-template-columns:1fr}.rail{order:-1}.toc{display:none}}\n\n/* left TOC */\n.toc{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;padding-top:34px}\n.toc .grp{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}\n.toc .grp.k{color:var(--know)}.toc .grp.e{color:var(--eviq)}\n.toc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line);transition:color .15s,border-color .15s}\n.toc a:hover{color:var(--ink)}\n.toc a.on{color:var(--ink);border-left-color:var(--ink);font-weight:500}\n.toc a.on.k{color:var(--know);border-left-color:var(--know)}\n.toc a.on.e{color:var(--eviq);border-left-color:var(--eviq)}\n.toc a.on.p{color:var(--pred);border-left-color:var(--pred)}\n.toc .grp.p{color:var(--pred)}\n.toc-m{display:none}\n\n/* main column */\n.col{min-width:0;padding-top:30px}\nsection{scroll-margin-top:86px;margin-bottom:44px}\n.h2{display:flex;align-items:baseline;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:7px;margin:0 0 16px}\n.h2 h2{font-family:var(--serif);font-weight:400;font-size:clamp(23px,3vw,30px);letter-spacing:-.01em;margin:0}\n.h2 s{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;text-decoration:none;color:var(--faint);margin-left:auto}\n.know .h2{border-color:var(--know)}.know .h2 s{color:var(--know)}\n.eviq .h2{border-color:var(--eviq)}.eviq .h2 s{color:var(--eviq)}\n.pred .h2{border-color:var(--pred)}.pred .h2 s{color:var(--pred)}\n.pred-intro{font-size:14.5px;color:var(--ink2);max-width:72ch;margin:14px 0 16px}\n.pred-list{list-style:none;margin:0;padding:0;max-width:74ch}\n.pred-item{padding:14px 0;border-top:1px solid var(--line2)}.pred-item:first-child{border-top:0}\n.pred-h{display:flex;align-items:center;gap:9px}\n.pred-h b{font-size:15.5px;color:var(--ink);font-weight:600}\n.pred-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}\n.pred-dot.high{background:#3a9c6e}.pred-dot.moderate{background:var(--pred)}.pred-dot.tentative{background:var(--faint)}\n.pred-conf{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px}\n.pred-conf.high{background:#3a9c6e18;color:#2f7d58}.pred-conf.moderate{background:var(--pred-soft);color:var(--pred)}.pred-conf.tentative{background:#00000006;color:var(--faint)}\n.pred-ex{font-size:14px;line-height:1.55;color:var(--ink2);margin:6px 0 8px}\n.pred-ev{display:flex;flex-wrap:wrap;align-items:center;gap:5px}\n.pred-ev i{font-style:normal;font-family:var(--mono);font-size:11px;background:var(--pred-soft);border:1px solid var(--line);border-radius:7px;padding:2px 7px;color:#5a44a0}\n.pred-lay{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:4px}\n.pred-lay u{text-decoration:none;color:var(--pred)}\n.note-line{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px;line-height:1.5;max-width:74ch}\n.src{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:8px;margin:18px 0 9px}\n.src b{color:var(--ink2);font-weight:500}.src u{text-decoration:none;color:var(--faint);margin-left:auto;font-size:10px}\n.prose{font-size:15.5px;line-height:1.62;color:var(--ink2);max-width:72ch}\n.kv{display:flex;gap:8px;font-size:14px;color:var(--ink2);margin-top:12px;max-width:72ch}\n.kv b{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);min-width:74px;flex-shrink:0;padding-top:2px}\n\n/* verbatim statement bullets + reveal */\n.stmts{list-style:none;margin:0;padding:0;max-width:72ch}\n.stmts li{position:relative;padding:6px 0 6px 20px;font-size:15px;line-height:1.55;color:var(--ink2);border-bottom:1px solid var(--line2)}\n.stmts li:last-child{border-bottom:0}\n.stmts li::before{content:\"\";position:absolute;left:2px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--know)}\n.extra{display:contents}\n.reveal[data-collapsed=\"true\"] .extra{display:none}\n.pws{display:flex;flex-wrap:wrap;gap:7px;max-width:72ch}\n.pw{display:inline-block;font-size:12.5px;color:#14536a;background:var(--know-soft);border:1px solid var(--line);border-radius:8px;padding:5px 10px;text-decoration:none;line-height:1.3;transition:border-color .15s}\n.pw:hover{border-color:var(--know)}\n.ghead{padding:30px 0 6px;border-bottom:1.5px solid var(--ink);margin-bottom:6px}\n.ghead .ey{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}\n.ghead .ey b{color:var(--know);font-weight:500}\n.ghead h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,76px);line-height:.95;letter-spacing:-.02em;margin:8px 0 2px}\n.ghead .fn{font-family:var(--serif);font-weight:300;font-style:italic;font-size:clamp(18px,2.4vw,22px);color:var(--ink2)}\n.net{width:100%;max-width:560px;height:auto;display:block;margin:6px auto 0}\n.net a{cursor:pointer}.net a:hover text{fill:var(--know)}\n.netcap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5;max-width:72ch}\n.lead.scr{margin:16px 0}\n.scr-over{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;color:var(--ink);margin:0 0 14px;max-width:70ch}\n.scr-list{display:flex;flex-direction:column}\n.scr-row{display:grid;grid-template-columns:176px 1fr;gap:16px;padding:9px 0;border-top:1px solid var(--line2);align-items:start}\n.scr-ph{font-family:var(--mono);font-size:12px;color:var(--ink);display:flex;align-items:flex-start;gap:7px;line-height:1.35}\n.scr-ph i{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:4px}\n.scr-ins{font-size:14px;line-height:1.55;color:var(--ink2)}\n.phs-h{margin-top:18px}\n@media(max-width:860px){.scr-row{grid-template-columns:1fr;gap:2px}}\n.more{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--know);background:none;border:0;cursor:pointer;padding:0;letter-spacing:.02em}\n.more:hover{text-decoration:underline}\n.inl{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer}.inl:hover{text-decoration:underline}\n\n/* summary / lead */\n.lead{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);position:relative;overflow:hidden;padding:22px 26px;margin-bottom:22px}\n.lead::before{content:\"\";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--eviq)}\n.lead .ey{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq);display:flex;gap:8px;margin-bottom:12px}\n.lead .ey i{font-style:normal;color:var(--faint);text-transform:none;letter-spacing:.02em}\n.lead p{font-family:var(--serif);font-weight:300;font-size:18.5px;line-height:1.56;color:var(--ink);margin:0;max-width:68ch}\n.lead .load{font-family:var(--mono);font-size:13px;color:var(--muted)}\n.lead .load::after{content:\"▸\";margin-left:4px;animation:blink 1.1s steps(2) infinite}\n@keyframes blink{50%{opacity:.2}}\n.lead .mdl{margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}\n\n/* fingerprint */\n.fp{margin:2px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}\n.fp-num{text-align:center;border-right:1px solid var(--line2);padding-right:24px}\n.fp-num b{font-family:var(--serif);font-weight:400;font-size:50px;line-height:1;color:var(--eviq);display:block}\n.fp-num s{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:3px}\n.fp-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}\n.fp-lane{display:flex;gap:2px;height:46px;width:100%}\n.fp-seg{min-width:3px;border-radius:2px;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.30) 0 1px,transparent 1px 5px)}\n.fp-leg{display:flex;flex-wrap:wrap;margin-top:12px;gap:7px 15px}\n.fp-leg span{font-family:var(--mono);font-size:11px;color:var(--ink2);display:inline-flex;align-items:center;gap:6px}\n.fp-leg i{width:9px;height:9px;border-radius:2px}.fp-leg b{color:var(--faint);font-weight:400}\n\n/* GO / STRING / DepMap / screens */\n.go{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}\n.go-col s{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--know);text-decoration:none;display:block;margin-bottom:8px}\n.chip{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px dotted var(--line);line-height:1.35}.chip:last-child{border-bottom:0}\n.parts{display:flex;flex-wrap:wrap;gap:8px}\n.part{display:inline-flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 11px;transition:border-color .15s}\n.part:hover{border-color:var(--know)}.part b{font-family:var(--mono);font-size:13px;font-weight:500}.part s{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-decoration:none}\n.dep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}\n.dep-badge{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card)}\n.dep-badge b{display:block;font-family:var(--serif);font-size:21px;font-weight:500;line-height:1.1}\n.dep-badge.common b{color:var(--eviq)}.dep-badge.selective b{color:var(--know)}.dep-badge.non b{color:var(--muted)}\n.dep-badge s{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:5px}\n.dep-txt{font-size:14.5px;color:var(--ink2);line-height:1.55}.dep-txt code{font-family:var(--mono);font-size:13px;background:#00000006;padding:1px 5px;border-radius:4px}\n.ph{display:grid;grid-template-columns:150px 1fr auto;gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}.ph:last-child{border-bottom:0}\n.ph-n{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px}.ph-n i{width:8px;height:8px;border-radius:2px;flex-shrink:0}\n.ph-bar{height:9px;border-radius:3px;opacity:.85}.ph-c{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}\n.ph-cond{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--faint);padding:0 0 4px 164px;margin-top:-2px}\n.note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px;line-height:1.5;max-width:72ch}\n.lit{display:flex;align-items:baseline;gap:16px;padding:18px 22px;border:1px dashed var(--line);border-radius:13px}\n.lit b{font-family:var(--serif);font-size:32px;font-weight:400}.lit s{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-decoration:none}.lit p{font-size:13.5px;color:var(--muted);margin:0}\n\n/* right rail */\n.rail{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;padding-top:30px}\n.ibox{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}\n.struct{position:relative;height:300px;background:#FCFCFB;border-bottom:1px solid var(--line)}\n.struct canvas{border-radius:0}\n.struct-none{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;padding:20px}\n.distwrap{margin-top:4px}\n.dctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}\n.dtoggle{display:inline-flex;gap:4px}\n.dbtn{font-family:var(--mono);font-size:11.5px;padding:3px 11px;border:1px solid var(--line);background:var(--card);border-radius:20px;cursor:pointer;color:var(--ink2)}\n.dbtn.on{background:var(--eviq);border-color:var(--eviq);color:#fff}\n.dsel{font-family:var(--sans);font-size:12.5px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);max-width:280px}\n.dhist{width:100%;max-width:560px;height:auto;display:block;margin:2px 0}\n.dcap{font-size:13.5px;color:var(--ink2);margin:8px 0 2px}\n.dcap .hit{color:var(--eviq);font-weight:600}\n.struct-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(0deg,rgba(255,255,255,.94),rgba(255,255,255,.6));font-family:var(--mono);font-size:10.5px;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}\n.struct-cap .badge{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px}\n.struct-cap .badge.pred{background:var(--eviq-soft);color:#8a5410}\n.struct-cap .badge.exp{background:var(--know-soft);color:#14536a}\n.struct-sel{margin-left:auto;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink2);padding:2px 4px;cursor:pointer;max-width:120px}\n.ibox-h{padding:16px 18px 4px}\n.ibox-h b{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1;letter-spacing:-.01em;display:block}\n.ibox-h span{font-size:13px;color:var(--muted);font-style:italic;font-family:var(--serif)}\n.ibox-s{padding:12px 18px;border-top:1px solid var(--line2)}\n.ibox-s .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}\n.irow{display:flex;gap:10px;font-size:13px;padding:3px 0;align-items:baseline}\n.irow .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--faint);min-width:66px;flex-shrink:0}\n.irow .v{color:var(--ink2);min-width:0;word-break:break-word}\n.irow .v a{font-family:var(--mono);color:var(--know);text-decoration:none}.irow .v a:hover{text-decoration:underline}\n.ial{display:flex;flex-wrap:wrap;gap:5px}\n.ial i{font-style:normal;font-family:var(--mono);font-size:11px;background:#00000005;border:1px solid var(--line);border-radius:12px;padding:1px 8px;color:var(--ink2)}\n.orth{width:100%;border-collapse:collapse;font-size:12.5px}\n.orth td{padding:4px 0;border-bottom:1px solid var(--line2)}.orth tr:last-child td{border-bottom:0}\n.orth .sp{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:52px}\n.orth .cur{color:var(--ink);font-weight:500}\n.orth a{font-family:var(--mono);color:var(--know);text-decoration:none}.orth a:hover{text-decoration:underline}\n\n.foot{max-width:1340px;margin:0 auto;padding:0 clamp(20px,4vw,48px) 50px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em;line-height:1.6}\n\n@media(max-width:860px){\n  .rail{position:static;max-height:none;padding-top:8px;margin-bottom:20px}\n  .toc-m{display:block;margin:6px 0 4px}\n  .toc-m summary{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer;padding:8px 0}\n  .toc-m ol{margin:4px 0 0;padding-left:20px;font-size:14px}.toc-m a{color:var(--ink2);text-decoration:none;line-height:2}\n  .go{grid-template-columns:1fr}.dep{grid-template-columns:1fr}.ph{grid-template-columns:120px 1fr auto}.ph-cond{padding-left:0}\n  .fp{grid-template-columns:1fr}.fp-num{border-right:0;border-bottom:1px solid var(--line2);padding:0 0 12px}\n}\n/* ===== gene-level phenotype profile (merged from the old Explore page) ===== */\n.gene-verdict{margin:14px 0 4px;font-family:var(--serif);font-weight:300;font-size:clamp(17px,2.4vw,22px);line-height:1.4;color:var(--ink);max-width:70ch}\n.gene-verdict em{font-style:normal;font-weight:500}\n.gene-verdict .e{color:var(--ess)} .gene-verdict .a{color:var(--adv)}\n.gene-verdict .vs{display:block;font-family:var(--sans);font-weight:400;font-size:14.5px;color:var(--ink2);margin-top:10px;padding-left:13px;border-left:2px solid var(--line)}\n.gene-verdict .vs em{font-weight:600}.gene-verdict .vs em.e{color:var(--ess)}.gene-verdict .vs em.a{color:var(--adv)}\n\n.band{margin-top:8px}\n.band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}\n.band-h .name{font-family:var(--serif);font-size:21px;font-weight:500}\n.band.stress .band-h .name,.band.reporter .band-h .name{font-size:18px}\n.band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}\n.sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}\n.ends{display:flex;justify-content:space-between;margin-top:2px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}\n.ends .l b,.ends .r b{display:block;font-family:var(--sans);font-size:12.5px;font-weight:500}\n.ends .l b{color:var(--ess)} .ends .r{text-align:right} .ends .r b{color:var(--adv)}\n.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;background:var(--card);margin:22px 0;overflow:hidden}\n.stat{padding:16px 18px;border-right:1px solid var(--line2)}\n.stat:last-child{border-right:0}\n.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}\n.stat .v{font-family:var(--mono);font-size:25px;font-weight:500;margin-top:6px;letter-spacing:-.01em}\n.stat .v small{font-size:13px;color:var(--muted);font-weight:400}\n.hist-svg{width:100%;height:190px;display:block;overflow:visible;margin-top:8px}\n.sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:26px 0 6px;display:flex;align-items:center;gap:10px}\n.sec-h .lead2{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:12px}\n.sec-h::after{content:\"\";flex:1;height:1px;background:var(--line2)}\n.caveat{font-size:13px;color:var(--muted);margin-top:16px;padding-left:12px;border-left:2px solid var(--line)}\n\n/* stress / reporter fact ledgers */\n.lkey{font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--muted);margin-top:14px;padding:11px 14px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}\n.lkey b{color:var(--ink);font-weight:600}.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}\n.ledger{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}\n.lrow{border-bottom:1px solid var(--line2)}.lrow:last-child{border-bottom:0}\n.lrow>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:70px minmax(0,1fr) 104px 60px 40px;align-items:center;gap:12px;padding:10px 16px;transition:background .12s}\n.lrow>summary::-webkit-details-marker{display:none}\n.lrow>summary:hover{background:#FBFAF7}\n.lcc{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:3px 5px;text-align:center}\n.lcond{font-family:var(--sans);font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.ldir{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap}\n.ldir.resist{color:var(--adv)} .ldir.sensitise{color:var(--ess)} .ldir.mixed{color:var(--muted)}\n.lbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}\n.lbar i{display:block;height:100%;border-radius:3px;background:var(--faint)}\n.lrow.resist .lbar i{background:var(--adv)} .lrow.sensitise .lbar i{background:var(--ess)}\n.lcount{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}\n.lfacts{display:flex;flex-direction:column;gap:2px;padding:2px 16px 14px 94px;background:#FCFBF9}\n.lfact{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:none;padding:2px 0}\na.lfact:hover{color:var(--ink);text-decoration:underline}\n.fs.resist{color:var(--adv)} .fs.sensitise{color:var(--ess)}\n.lmore>summary{list-style:none;cursor:pointer;text-align:center;padding:10px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ess);transition:background .12s}\n.lmore>summary::-webkit-details-marker{display:none}\n.lmore>summary:hover{background:#FBFAF7}\n.lmore>summary .s-hide{display:none}\n.lmore[open]>summary .s-show{display:none}.lmore[open]>summary .s-hide{display:inline}\n.lmore .lrow{border-top:1px solid var(--line2);border-bottom:0}\n.lrow.rep>summary{grid-template-columns:74px minmax(0,1fr) 60px 34px}\n.rreg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}\n.band.reporter .lbar i{background:var(--faint)}\n.rphen{color:var(--faint)}\n.rexplain:empty{display:none}\n.rexplain{margin:0 0 10px;padding:11px 13px;border:1px solid var(--line);border-left:2px solid var(--adv);border-radius:8px;background:var(--card)}\n.rex-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}\n.rex-src{text-transform:none;letter-spacing:0}\n.rex-src a{color:var(--ess);text-decoration:none}.rex-src a:hover{text-decoration:underline}\n.rex-t{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:#2C3037}\n.rex-load,.rex-err{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}\n.rex-err{color:#B23A3A}\n\n/* darkness card (right rail) */\n.darkcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin-bottom:14px}\n.darkcard .darknum{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1}\n.darkcard .darknum small{font-size:16px;color:var(--faint)}\n.darkcard .band-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}\n.darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}\n.darkfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.2,.7,.2,1)}\n.darkcard .darkmeta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px}\n.darkcard .partners{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}\n.darkcard .partners .lab{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);width:100%}\n.pchip2{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:16px;padding:2px 10px;color:var(--muted);cursor:pointer;transition:.15s;text-decoration:none}\n.pchip2:hover{border-color:var(--ess);color:var(--ess)}\n\n/* co-essentiality network (force-directed) */\n.netwrap{margin-top:6px}\n.netsvg{width:100%;height:auto;max-width:720px;display:block;margin-top:12px;background:var(--card);border:1px solid var(--line2);border-radius:14px}\n.netlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center}\n.netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}\n.gnode text{transition:fill .15s}\n.gnode:hover text{fill:#14161A!important;font-weight:600}\n.gnode:hover circle{filter:brightness(1.08)}\n\n/* AI reading (whole-gene interpret) */\n.ai{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);padding:22px 26px;margin:14px 0 22px;position:relative;overflow:hidden}\n.ai::before{content:\"\";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--ess),var(--adv))}\n.ai-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}\n.ai-h .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq)}\n.ai-h .m{font-family:var(--mono);font-size:10.5px;color:var(--faint)}\n.ai-body{font-size:18px;line-height:1.56;color:var(--ink);font-family:var(--serif);font-weight:300;max-width:70ch}\n.ai-body a{color:var(--ess);font-weight:500;text-decoration:none;border-bottom:1px solid var(--ess-soft);font-family:var(--sans);font-size:13.5px}\n.ai-body a:hover{border-bottom-color:var(--ess)}\n.ai-body.loading{color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:400;display:flex;align-items:center;gap:10px}\n.ai .dot{width:7px;height:7px;border-radius:50%;background:var(--ess);animation:pulse 1.1s infinite ease-in-out}\n@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}\n.ai .sources{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--faint)}\n.ai .sources a{color:var(--ess);text-decoration:none}.ai .sources a:hover{text-decoration:underline}\n.ai .disc{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:14px}\n.tooltip{position:fixed;pointer-events:none;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:7px;opacity:0;transform:translateY(4px);transition:opacity .12s;z-index:400;white-space:nowrap}\n.tooltip.on{opacity:1;transform:none}\n@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}}\n\n/* ---------- global feature nav (shared: gene / screen / network) ---------- */\n.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;\n  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}\n.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;\n  text-decoration:none;letter-spacing:.01em;white-space:nowrap}\n.gnav-brand b{color:#1F6F8B}\n.gnav-tabs{display:flex;gap:4px}\n.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;\n  white-space:nowrap;transition:background .12s,color .12s}\n.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}\n.gnav-tabs a.on{background:#14161A;color:#fff}\n.gnav-sp{flex:1}\n@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}\n";
+const CSS_GENE = "\n:host{\n  --paper:#FCFCFB; --ink:#14161A; --ink2:#3A3D44; --muted:#6B7280; --faint:#9AA0A6;\n  --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;\n  --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;\n  --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;\n  --ess:#1F6F8B; --adv:#E08A3C; --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;\n  --serif:\"Fraunces\",Georgia,serif;\n  --sans:\"IBM Plex Sans\",system-ui,sans-serif;\n  --mono:\"IBM Plex Mono\",ui-monospace,monospace;\n}\n*{box-sizing:border-box}\nhtml,.rx-body{margin:0}\n.rx-body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;\n  -webkit-font-smoothing:antialiased;\n  background-image:radial-gradient(#00000004 1px,transparent 1px);background-size:22px 22px;background-attachment:fixed}\na{color:inherit}\n\n/* top bar */\n.bar{position:sticky;top:0;z-index:50;background:rgba(252,252,251,.9);backdrop-filter:blur(8px);\n  border-bottom:1px solid var(--line)}\n.bar .in{max-width:1340px;margin:0 auto;padding:12px clamp(20px,4vw,48px);display:flex;align-items:center;gap:18px}\n.mark{font-family:var(--serif);font-weight:500;font-size:19px;white-space:nowrap}\n.mark b{color:var(--know);font-weight:600}\n.mark s{font-family:var(--mono);font-size:10px;text-decoration:none;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px}\n.srch{display:flex;align-items:center;flex:1;max-width:440px;margin-left:auto;border:1px solid var(--line);border-radius:11px;background:var(--card);transition:border-color .2s,box-shadow .2s;padding:3px}\n.srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft)}\n.srch input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--ink);padding:8px 12px;letter-spacing:.02em}\n.srch input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}\n.srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer}\n.srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:background .2s}\n.srch button:hover{background:var(--know)}\n\n/* landing (empty state) — centred mark + search, wave dots pinned to the bottom */\n.rx-body.landing .bar,.rx-body.landing #gw,.rx-body.landing #foot{display:none}\n.land{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:0 20px;overflow:hidden}\n.land-inner{text-align:center;margin-top:-8vh;z-index:2}\n.land-mark{font-family:var(--serif);font-weight:500;font-size:clamp(46px,7.5vw,80px);letter-spacing:-.02em;color:var(--ink);line-height:1}\n.land-mark span{font-family:var(--mono);font-size:.26em;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);vertical-align:middle;margin-left:.55em;font-weight:400}\n.land-srch{display:flex;align-items:center;width:min(560px,92vw);margin:36px auto 0;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 12px 34px -14px rgba(0,0,0,.10);padding:5px;transition:box-shadow .2s,border-color .2s}\n.land-srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft),0 12px 34px -14px rgba(0,0,0,.12)}\n.land-srch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-family:var(--sans);font-size:17px;color:var(--ink);padding:13px 18px}\n.land-srch input::placeholder{color:var(--faint)}\n.land-srch select{border:0;outline:0;background:transparent;font-family:var(--mono);font-size:13px;color:var(--muted);cursor:pointer}\n.land-srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer;transition:background .2s;white-space:nowrap}\n.land-srch button:hover{background:var(--know)}\n.land .ex{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:20px}\n.land .ex b{color:var(--know);cursor:pointer;font-weight:500}.land .ex b:hover{text-decoration:underline}\n#wave-canvas{position:absolute;left:0;bottom:0;width:100%;height:150px;display:block;z-index:1}\n.status{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center;padding:50px 0;min-height:20px;display:none}\n.status.err{color:#b4541f}\n\n/* three-zone page */\n#gw{opacity:0}#gw.show{opacity:1;transition:opacity .4s}\n.page{max-width:1340px;margin:0 auto;padding:8px clamp(20px,4vw,48px) 60px;\n  display:grid;gap:0 44px;grid-template-columns:196px minmax(0,1fr) 336px;align-items:start}\n@media(max-width:1180px){.page{grid-template-columns:minmax(0,1fr) 320px;gap:0 32px}.toc{display:none}}\n@media(max-width:860px){.page{grid-template-columns:1fr}.rail{order:-1}.toc{display:none}}\n\n/* left TOC */\n.toc{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;padding-top:34px}\n.toc .grp{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}\n.toc .grp.k{color:var(--know)}.toc .grp.e{color:var(--eviq)}\n.toc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line);transition:color .15s,border-color .15s}\n.toc a:hover{color:var(--ink)}\n.toc a.on{color:var(--ink);border-left-color:var(--ink);font-weight:500}\n.toc a.on.k{color:var(--know);border-left-color:var(--know)}\n.toc a.on.e{color:var(--eviq);border-left-color:var(--eviq)}\n.toc a.on.p{color:var(--pred);border-left-color:var(--pred)}\n.toc .grp.p{color:var(--pred)}\n.toc-m{display:none}\n\n/* main column */\n.col{min-width:0;padding-top:30px}\nsection{scroll-margin-top:86px;margin-bottom:44px}\n.h2{display:flex;align-items:baseline;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:7px;margin:0 0 16px}\n.h2 h2{font-family:var(--serif);font-weight:400;font-size:clamp(23px,3vw,30px);letter-spacing:-.01em;margin:0}\n.h2 s{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;text-decoration:none;color:var(--faint);margin-left:auto}\n.know .h2{border-color:var(--know)}.know .h2 s{color:var(--know)}\n.eviq .h2{border-color:var(--eviq)}.eviq .h2 s{color:var(--eviq)}\n.pred .h2{border-color:var(--pred)}.pred .h2 s{color:var(--pred)}\n.pred-intro{font-size:14.5px;color:var(--ink2);max-width:72ch;margin:14px 0 16px}\n.pred-list{list-style:none;margin:0;padding:0;max-width:74ch}\n.pred-item{padding:14px 0;border-top:1px solid var(--line2)}.pred-item:first-child{border-top:0}\n.pred-h{display:flex;align-items:center;gap:9px}\n.pred-h b{font-size:15.5px;color:var(--ink);font-weight:600}\n.pred-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}\n.pred-dot.high{background:#3a9c6e}.pred-dot.moderate{background:var(--pred)}.pred-dot.tentative{background:var(--faint)}\n.pred-conf{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px}\n.pred-conf.high{background:#3a9c6e18;color:#2f7d58}.pred-conf.moderate{background:var(--pred-soft);color:var(--pred)}.pred-conf.tentative{background:#00000006;color:var(--faint)}\n.pred-ex{font-size:14px;line-height:1.55;color:var(--ink2);margin:6px 0 8px}\n.pred-ev{display:flex;flex-wrap:wrap;align-items:center;gap:5px}\n.pred-ev i{font-style:normal;font-family:var(--mono);font-size:11px;background:var(--pred-soft);border:1px solid var(--line);border-radius:7px;padding:2px 7px;color:#5a44a0}\n.pred-lay{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:4px}\n.pred-lay u{text-decoration:none;color:var(--pred)}\n.note-line{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:14px;line-height:1.5;max-width:74ch}\n.src{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:8px;margin:18px 0 9px}\n.src b{color:var(--ink2);font-weight:500}.src u{text-decoration:none;color:var(--faint);margin-left:auto;font-size:10px}\n.prose{font-size:15.5px;line-height:1.62;color:var(--ink2);max-width:72ch}\n.kv{display:flex;gap:8px;font-size:14px;color:var(--ink2);margin-top:12px;max-width:72ch}\n.kv b{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);min-width:74px;flex-shrink:0;padding-top:2px}\n\n/* verbatim statement bullets + reveal */\n.stmts{list-style:none;margin:0;padding:0;max-width:72ch}\n.stmts li{position:relative;padding:6px 0 6px 20px;font-size:15px;line-height:1.55;color:var(--ink2);border-bottom:1px solid var(--line2)}\n.stmts li:last-child{border-bottom:0}\n.stmts li::before{content:\"\";position:absolute;left:2px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--know)}\n.extra{display:contents}\n.reveal[data-collapsed=\"true\"] .extra{display:none}\n.pws{display:flex;flex-wrap:wrap;gap:7px;max-width:72ch}\n.pw{display:inline-block;font-size:12.5px;color:#14536a;background:var(--know-soft);border:1px solid var(--line);border-radius:8px;padding:5px 10px;text-decoration:none;line-height:1.3;transition:border-color .15s}\n.pw:hover{border-color:var(--know)}\n.ghead{padding:30px 0 6px;border-bottom:1.5px solid var(--ink);margin-bottom:6px}\n.ghead .ey{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}\n.ghead .ey b{color:var(--know);font-weight:500}\n.ghead h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,76px);line-height:.95;letter-spacing:-.02em;margin:8px 0 2px}\n.ghead .fn{font-family:var(--serif);font-weight:300;font-style:italic;font-size:clamp(18px,2.4vw,22px);color:var(--ink2)}\n.net{width:100%;max-width:560px;height:auto;display:block;margin:6px auto 0}\n.net a{cursor:pointer}.net a:hover text{fill:var(--know)}\n.netcap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5;max-width:72ch}\n.lead.scr{margin:16px 0}\n.scr-over{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;color:var(--ink);margin:0 0 14px;max-width:70ch}\n.scr-list{display:flex;flex-direction:column}\n.scr-row{display:grid;grid-template-columns:176px 1fr;gap:16px;padding:9px 0;border-top:1px solid var(--line2);align-items:start}\n.scr-ph{font-family:var(--mono);font-size:12px;color:var(--ink);display:flex;align-items:flex-start;gap:7px;line-height:1.35}\n.scr-ph i{width:8px;height:8px;border-radius:2px;flex-shrink:0;margin-top:4px}\n.scr-ins{font-size:14px;line-height:1.55;color:var(--ink2)}\n.phs-h{margin-top:18px}\n@media(max-width:860px){.scr-row{grid-template-columns:1fr;gap:2px}}\n.more{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--know);background:none;border:0;cursor:pointer;padding:0;letter-spacing:.02em}\n.more:hover{text-decoration:underline}\n.inl{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer}.inl:hover{text-decoration:underline}\n\n/* summary / lead */\n.lead{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);position:relative;overflow:hidden;padding:22px 26px;margin-bottom:22px}\n.lead::before{content:\"\";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--eviq)}\n.lead .ey{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq);display:flex;gap:8px;margin-bottom:12px}\n.lead .ey i{font-style:normal;color:var(--faint);text-transform:none;letter-spacing:.02em}\n.lead p{font-family:var(--serif);font-weight:300;font-size:18.5px;line-height:1.56;color:var(--ink);margin:0;max-width:68ch}\n.lead .load{font-family:var(--mono);font-size:13px;color:var(--muted)}\n.lead .load::after{content:\"▸\";margin-left:4px;animation:blink 1.1s steps(2) infinite}\n@keyframes blink{50%{opacity:.2}}\n.lead .mdl{margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}\n\n/* fingerprint */\n.fp{margin:2px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}\n.fp-num{text-align:center;border-right:1px solid var(--line2);padding-right:24px}\n/* SERIF STAYS ON TITLES AND PROSE, NOT ON DATA. A display face in a value is a display face in\n   the wrong place: Fraunces has old-style figures, so a column of counts jogs up and down as you\n   read it, and a gene symbol set in serif here while the same symbol is monospaced on the graph,\n   in every chip and in every key-value row gives one object two identities on one screen.\n   Numbers and identifiers move to the mono face the rest of the product already uses for them;\n   classification words move to the sans. Section headings, the wordmark and running prose keep\n   the serif — those are the places it was earning its keep. */\n.fp-num b{font-family:var(--mono);font-weight:400;font-size:44px;line-height:1;color:var(--eviq);display:block;font-variant-numeric:tabular-nums;letter-spacing:-.02em}\n.fp-num s{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:3px}\n.fp-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}\n.fp-lane{display:flex;gap:2px;height:46px;width:100%}\n.fp-seg{min-width:3px;border-radius:2px;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.30) 0 1px,transparent 1px 5px)}\n.fp-leg{display:flex;flex-wrap:wrap;margin-top:12px;gap:7px 15px}\n.fp-leg span{font-family:var(--mono);font-size:11px;color:var(--ink2);display:inline-flex;align-items:center;gap:6px}\n.fp-leg i{width:9px;height:9px;border-radius:2px}.fp-leg b{color:var(--faint);font-weight:400}\n\n/* GO / STRING / DepMap / screens */\n.go{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}\n.go-col s{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--know);text-decoration:none;display:block;margin-bottom:8px}\n.chip{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px dotted var(--line);line-height:1.35}.chip:last-child{border-bottom:0}\n.parts{display:flex;flex-wrap:wrap;gap:8px}\n.part{display:inline-flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 11px;transition:border-color .15s}\n.part:hover{border-color:var(--know)}.part b{font-family:var(--mono);font-size:13px;font-weight:500}.part s{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-decoration:none}\n.dep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}\n.dep-badge{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card)}\n.dep-badge b{display:block;font-family:var(--sans);font-size:17px;font-weight:600;line-height:1.2;letter-spacing:-.005em}\n.dep-badge.common b{color:var(--eviq)}.dep-badge.selective b{color:var(--know)}.dep-badge.non b{color:var(--muted)}\n.dep-badge s{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:5px}\n.dep-txt{font-size:14.5px;color:var(--ink2);line-height:1.55}.dep-txt code{font-family:var(--mono);font-size:13px;background:#00000006;padding:1px 5px;border-radius:4px}\n.ph{display:grid;grid-template-columns:150px 1fr auto;gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}.ph:last-child{border-bottom:0}\n.ph-n{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px}.ph-n i{width:8px;height:8px;border-radius:2px;flex-shrink:0}\n.ph-bar{height:9px;border-radius:3px;opacity:.85}.ph-c{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}\n.ph-cond{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--faint);padding:0 0 4px 164px;margin-top:-2px}\n.note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px;line-height:1.5;max-width:72ch}\n.lit{display:flex;align-items:baseline;gap:16px;padding:18px 22px;border:1px dashed var(--line);border-radius:13px}\n.lit b{font-family:var(--serif);font-size:32px;font-weight:400}.lit s{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-decoration:none}.lit p{font-size:13.5px;color:var(--muted);margin:0}\n\n/* right rail */\n.rail{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;padding-top:30px}\n.ibox{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}\n.struct{position:relative;height:300px;background:#FCFCFB;border-bottom:1px solid var(--line)}\n.struct canvas{border-radius:0}\n.struct-none{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;padding:20px}\n.distwrap{margin-top:4px}\n.dctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}\n.dtoggle{display:inline-flex;gap:4px}\n.dbtn{font-family:var(--mono);font-size:11.5px;padding:3px 11px;border:1px solid var(--line);background:var(--card);border-radius:20px;cursor:pointer;color:var(--ink2)}\n.dbtn.on{background:var(--eviq);border-color:var(--eviq);color:#fff}\n.dsel{font-family:var(--sans);font-size:12.5px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);max-width:280px}\n.dhist{width:100%;max-width:560px;height:auto;display:block;margin:2px 0}\n.dcap{font-size:13.5px;color:var(--ink2);margin:8px 0 2px}\n.dcap .hit{color:var(--eviq);font-weight:600}\n.struct-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(0deg,rgba(255,255,255,.94),rgba(255,255,255,.6));font-family:var(--mono);font-size:10.5px;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}\n.struct-cap .badge{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px}\n.struct-cap .badge.pred{background:var(--eviq-soft);color:#8a5410}\n.struct-cap .badge.exp{background:var(--know-soft);color:#14536a}\n.struct-sel{margin-left:auto;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink2);padding:2px 4px;cursor:pointer;max-width:120px}\n.ibox-h{padding:16px 18px 4px}\n.ibox-h b{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1.15;letter-spacing:.01em;display:block}\n.ibox-h span{font-size:13px;color:var(--muted);font-style:italic;font-family:var(--serif)}\n.ibox-s{padding:12px 18px;border-top:1px solid var(--line2)}\n.ibox-s .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}\n.irow{display:flex;gap:10px;font-size:13px;padding:3px 0;align-items:baseline}\n.irow .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--faint);min-width:66px;flex-shrink:0}\n.irow .v{color:var(--ink2);min-width:0;word-break:break-word}\n.irow .v a{font-family:var(--mono);color:var(--know);text-decoration:none}.irow .v a:hover{text-decoration:underline}\n.ial{display:flex;flex-wrap:wrap;gap:5px}\n.ial i{font-style:normal;font-family:var(--mono);font-size:11px;background:#00000005;border:1px solid var(--line);border-radius:12px;padding:1px 8px;color:var(--ink2)}\n.orth{width:100%;border-collapse:collapse;font-size:12.5px}\n.orth td{padding:4px 0;border-bottom:1px solid var(--line2)}.orth tr:last-child td{border-bottom:0}\n.orth .sp{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:52px}\n.orth .cur{color:var(--ink);font-weight:500}\n.orth a{font-family:var(--mono);color:var(--know);text-decoration:none}.orth a:hover{text-decoration:underline}\n\n.foot{max-width:1340px;margin:0 auto;padding:0 clamp(20px,4vw,48px) 50px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em;line-height:1.6}\n\n@media(max-width:860px){\n  .rail{position:static;max-height:none;padding-top:8px;margin-bottom:20px}\n  .toc-m{display:block;margin:6px 0 4px}\n  .toc-m summary{font-family:var(--mono);font-size:12px;color:var(--know);cursor:pointer;padding:8px 0}\n  .toc-m ol{margin:4px 0 0;padding-left:20px;font-size:14px}.toc-m a{color:var(--ink2);text-decoration:none;line-height:2}\n  .go{grid-template-columns:1fr}.dep{grid-template-columns:1fr}.ph{grid-template-columns:120px 1fr auto}.ph-cond{padding-left:0}\n  .fp{grid-template-columns:1fr}.fp-num{border-right:0;border-bottom:1px solid var(--line2);padding:0 0 12px}\n}\n/* ===== gene-level phenotype profile (merged from the old Explore page) ===== */\n.gene-verdict{margin:14px 0 4px;font-family:var(--serif);font-weight:300;font-size:clamp(17px,2.4vw,22px);line-height:1.4;color:var(--ink);max-width:70ch}\n.gene-verdict em{font-style:normal;font-weight:500}\n.gene-verdict .e{color:var(--ess)} .gene-verdict .a{color:var(--adv)}\n.gene-verdict .vs{display:block;font-family:var(--sans);font-weight:400;font-size:14.5px;color:var(--ink2);margin-top:10px;padding-left:13px;border-left:2px solid var(--line)}\n.gene-verdict .vs em{font-weight:600}.gene-verdict .vs em.e{color:var(--ess)}.gene-verdict .vs em.a{color:var(--adv)}\n\n.band{margin-top:8px}\n.band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}\n.band-h .name{font-family:var(--sans);font-size:17px;font-weight:600;letter-spacing:-.005em}\n.band.stress .band-h .name,.band.reporter .band-h .name{font-size:18px}\n.band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}\n.sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}\n.ends{display:flex;justify-content:space-between;margin-top:2px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}\n.ends .l b,.ends .r b{display:block;font-family:var(--sans);font-size:12.5px;font-weight:500}\n.ends .l b{color:var(--ess)} .ends .r{text-align:right} .ends .r b{color:var(--adv)}\n.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;background:var(--card);margin:22px 0;overflow:hidden}\n.stat{padding:16px 18px;border-right:1px solid var(--line2)}\n.stat:last-child{border-right:0}\n.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}\n.stat .v{font-family:var(--mono);font-size:25px;font-weight:500;margin-top:6px;letter-spacing:-.01em}\n.stat .v small{font-size:13px;color:var(--muted);font-weight:400}\n.hist-svg{width:100%;height:190px;display:block;overflow:visible;margin-top:8px}\n.sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:26px 0 6px;display:flex;align-items:center;gap:10px}\n.sec-h .lead2{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:12px}\n.sec-h::after{content:\"\";flex:1;height:1px;background:var(--line2)}\n.caveat{font-size:13px;color:var(--muted);margin-top:16px;padding-left:12px;border-left:2px solid var(--line)}\n\n/* stress / reporter fact ledgers */\n.lkey{font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--muted);margin-top:14px;padding:11px 14px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}\n.lkey b{color:var(--ink);font-weight:600}.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}\n.ledger{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}\n.lrow{border-bottom:1px solid var(--line2)}.lrow:last-child{border-bottom:0}\n.lrow>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:70px minmax(0,1fr) 104px 60px 40px;align-items:center;gap:12px;padding:10px 16px;transition:background .12s}\n.lrow>summary::-webkit-details-marker{display:none}\n.lrow>summary:hover{background:#FBFAF7}\n.lcc{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:3px 5px;text-align:center}\n.lcond{font-family:var(--sans);font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.ldir{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap}\n.ldir.resist{color:var(--adv)} .ldir.sensitise{color:var(--ess)} .ldir.mixed{color:var(--muted)}\n.lbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}\n.lbar i{display:block;height:100%;border-radius:3px;background:var(--faint)}\n.lrow.resist .lbar i{background:var(--adv)} .lrow.sensitise .lbar i{background:var(--ess)}\n.lcount{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}\n.lfacts{display:flex;flex-direction:column;gap:2px;padding:2px 16px 14px 94px;background:#FCFBF9}\n.lfact{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:none;padding:2px 0}\na.lfact:hover{color:var(--ink);text-decoration:underline}\n.fs.resist{color:var(--adv)} .fs.sensitise{color:var(--ess)}\n.lmore>summary{list-style:none;cursor:pointer;text-align:center;padding:10px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ess);transition:background .12s}\n.lmore>summary::-webkit-details-marker{display:none}\n.lmore>summary:hover{background:#FBFAF7}\n.lmore>summary .s-hide{display:none}\n.lmore[open]>summary .s-show{display:none}.lmore[open]>summary .s-hide{display:inline}\n.lmore .lrow{border-top:1px solid var(--line2);border-bottom:0}\n.lrow.rep>summary{grid-template-columns:74px minmax(0,1fr) 60px 34px}\n.rreg{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}\n.band.reporter .lbar i{background:var(--faint)}\n.rphen{color:var(--faint)}\n.rexplain:empty{display:none}\n.rexplain{margin:0 0 10px;padding:11px 13px;border:1px solid var(--line);border-left:2px solid var(--adv);border-radius:8px;background:var(--card)}\n.rex-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}\n.rex-src{text-transform:none;letter-spacing:0}\n.rex-src a{color:var(--ess);text-decoration:none}.rex-src a:hover{text-decoration:underline}\n.rex-t{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:#2C3037}\n.rex-load,.rex-err{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}\n.rex-err{color:#B23A3A}\n\n/* darkness card (right rail) */\n.darkcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin-bottom:14px}\n.darkcard .darknum{font-family:var(--mono);font-weight:400;font-size:35px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}\n.darkcard .darknum small{font-size:16px;color:var(--faint)}\n.darkcard .band-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}\n.darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}\n.darkfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.2,.7,.2,1)}\n.darkcard .darkmeta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px}\n.darkcard .partners{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}\n.darkcard .partners .lab{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);width:100%}\n.pchip2{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:16px;padding:2px 10px;color:var(--muted);cursor:pointer;transition:.15s;text-decoration:none}\n.pchip2:hover{border-color:var(--ess);color:var(--ess)}\n\n/* co-essentiality network (force-directed) */\n.netwrap{margin-top:6px}\n.netsvg{width:100%;height:auto;max-width:720px;display:block;margin-top:12px;background:var(--card);border:1px solid var(--line2);border-radius:14px}\n.netlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center}\n/* The evidence lane, laid out HORIZONTALLY here. It is vertical on the Network tab because that\n   panel is 298px wide; this section is the full column width, so the same proportions read better\n   across than down and cost a fraction of the vertical space a document section can spare. */\n.evlane{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-top:12px;max-width:720px;background:var(--line2)}\n.evlane span{display:block}\n.evkey{display:flex;gap:16px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--muted);align-items:center;max-width:720px}\n.evkey i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}\n.evkey b{font-family:var(--mono);font-weight:600;color:var(--ink2)}\n.evkey em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint)}\n.evmore{margin-left:auto;font-size:11.5px}\n.evnote{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:10px;max-width:720px}\n.netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}\n.gnode text{transition:fill .15s}\n.gnode:hover text{fill:#14161A!important;font-weight:600}\n.gnode:hover circle{filter:brightness(1.08)}\n\n/* AI reading (whole-gene interpret) */\n.ai{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fffdf8,#fffef9);padding:22px 26px;margin:14px 0 22px;position:relative;overflow:hidden}\n.ai::before{content:\"\";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--ess),var(--adv))}\n.ai-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}\n.ai-h .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eviq)}\n.ai-h .m{font-family:var(--mono);font-size:10.5px;color:var(--faint)}\n.ai-body{font-size:18px;line-height:1.56;color:var(--ink);font-family:var(--serif);font-weight:300;max-width:70ch}\n.ai-body a{color:var(--ess);font-weight:500;text-decoration:none;border-bottom:1px solid var(--ess-soft);font-family:var(--sans);font-size:13.5px}\n.ai-body a:hover{border-bottom-color:var(--ess)}\n.ai-body.loading{color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:400;display:flex;align-items:center;gap:10px}\n.ai .dot{width:7px;height:7px;border-radius:50%;background:var(--ess);animation:pulse 1.1s infinite ease-in-out}\n@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}\n.ai .sources{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--faint)}\n.ai .sources a{color:var(--ess);text-decoration:none}.ai .sources a:hover{text-decoration:underline}\n.ai .disc{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:14px}\n.tooltip{position:fixed;pointer-events:none;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:7px;opacity:0;transform:translateY(4px);transition:opacity .12s;z-index:400;white-space:nowrap}\n.tooltip.on{opacity:1;transform:none}\n@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line2)}}\n\n/* ---------- global feature nav (shared: gene / screen / network) ---------- */\n.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;\n  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}\n.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;\n  text-decoration:none;letter-spacing:.01em;white-space:nowrap}\n.gnav-brand b{color:#1F6F8B}\n.gnav-tabs{display:flex;gap:4px}\n.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;\n  white-space:nowrap;transition:background .12s,color .12s}\n.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}\n.gnav-tabs a.on{background:#14161A;color:#fff}\n.gnav-sp{flex:1}\n@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}\n";
 
 const CSS_SCREEN = "\n:host{\n  --paper:#FCFCFB; --ink:#14161A; --muted:#6B7280; --faint:#9AA0A6;\n  --line:#E8E6E1; --line2:#F0EEEA;\n  --ess:#1F6F8B; --adv:#E08A3C;\n  --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;\n  --serif:\"Fraunces\",Georgia,serif;\n  --sans:\"IBM Plex Sans\",system-ui,sans-serif;\n  --mono:\"IBM Plex Mono\",ui-monospace,monospace;\n}\n*{box-sizing:border-box}\nhtml,.rx-body{margin:0}\n.rx-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:400;\n  -webkit-font-smoothing:antialiased;line-height:1.5;\n  background-image:\n    radial-gradient(circle at 50% 0%, rgba(31, 111, 139, 0.04), transparent 50%),\n    radial-gradient(circle at 80% 80%, rgba(224, 138, 60, 0.03), transparent 50%),\n    radial-gradient(#00000005 1px,transparent 1px);\n  background-size:100% 100%,100% 100%,22px 22px;background-attachment:fixed}\n.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(26px,6vw,96px)}\n\n/* global feature nav (shared: gene / screen / network) */\n.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;\n  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}\n.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;\n  text-decoration:none;letter-spacing:.01em;white-space:nowrap}\n.gnav-brand b{color:#1F6F8B}\n.gnav-tabs{display:flex;gap:4px}\n.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;\n  white-space:nowrap;transition:background .12s,color .12s}\n.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}\n.gnav-tabs a.on{background:#14161A;color:#fff}\n.gnav-sp{flex:1}\n.tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}\n@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}.tag{display:none}}\n\n@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}\n.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14vh 0 6vh;transition:padding .5s ease}\n.hero.compact{padding:26px 0 12px;align-items:stretch;text-align:left;display:block}\n.hero-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:34px;animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both}\n.hero.compact .hero-brand{display:none}\n.hero-logo{font-family:var(--serif);font-size:clamp(52px,7.5vw,74px);font-weight:500;letter-spacing:-.02em;margin:0;color:var(--ink);line-height:1.05}\n.hero-logo span{color:var(--ess);font-weight:600}\n.hero-logo small{font-family:var(--mono);font-size:.22em;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);vertical-align:middle;margin-left:.5em;font-weight:400}\n.hero-tagline{font-family:var(--sans);font-size:clamp(14px,2.2vw,16px);font-weight:300;color:var(--muted);margin:12px 0 0;max-width:56ch;line-height:1.55}\n.search{display:flex;align-items:center;width:100%;max-width:600px;margin:32px auto 0;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 30px -10px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.02);transition:all .3s cubic-bezier(0.2,0.8,0.2,1);padding:4px;animation:fadeInUp .8s cubic-bezier(0.16,1,0.3,1) both;animation-delay:.12s}\n.hero.compact .search{margin:0;max-width:560px}\n.search:focus-within{border-color:var(--ess);box-shadow:0 0 0 4px var(--ess-soft),0 12px 35px -10px rgba(0,0,0,0.09)}\n.search input{flex:1;border:0;outline:0;background:transparent;font-family:var(--sans);font-size:17px;color:var(--ink);padding:14px 18px}\n.search input::placeholder{color:var(--faint)}\n.search button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer;transition:all .2s ease;white-space:nowrap}\n.search button:hover{background:var(--ess)}\n.hint{margin-top:16px;font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--muted);animation:fadeInUp .8s both;animation-delay:.22s}\n.hero.compact .hint{display:none}\n.landmarks-list{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);animation:fadeInUp .8s both;animation-delay:.24s}\n.hero.compact .landmarks-list{display:none}\n.lm-label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:4px}\n.lm-chip{font-family:var(--mono);font-size:12px;background:rgba(0,0,0,0.02);border:1px solid var(--line);padding:3px 10px;border-radius:12px;cursor:pointer;color:var(--ink);transition:all 0.2s ease}\n.lm-chip:hover{background:var(--ess-soft);border-color:var(--ess);color:var(--ess);transform:translateY(-1px)}\n.status{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:18px;min-height:18px;text-align:center}\n.hero.compact .status{text-align:left}\n.status.err{color:#b4541f}\n\n#result{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1)}\n#result.show{opacity:1;transform:none}\n.gene-head{padding:30px 0 6px;border-top:1px solid var(--line2);margin-top:20px}\n.gene-org{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--faint)}\n.gene-org b{color:var(--ess);font-weight:500}\n.gene-sym{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.02em;margin:6px 0 12px}\n.verdict{font-family:var(--serif);font-weight:300;font-size:clamp(16px,2.4vw,21px);color:var(--ink);line-height:1.4}\n.verdict em{font-style:normal;font-weight:500}\n.verdict a{color:var(--ess);text-decoration:none}.verdict a:hover{text-decoration:underline}\n\n.lkey{font-family:var(--sans);font-size:12.5px;line-height:1.65;color:var(--muted);\n  margin-top:14px;padding:12px 15px;border:1px dashed var(--line);border-radius:10px;background:#FCFBF9}\n.lkey b{color:var(--ink);font-weight:600}\n.lkey em{font-style:normal;font-family:var(--mono);color:var(--ink)}\n\n.scr-ctl{display:flex;align-items:center;gap:14px;margin:14px 0 4px;flex-wrap:wrap}\n.scr-excl{display:flex;align-items:center;gap:7px;font-size:13px;color:#3A3D44;cursor:pointer;user-select:none}\n.scr-excl input{accent-color:#1F6F8B;width:15px;height:15px}\n.scr-note{font-family:var(--mono);font-size:11px;color:#9AA0A6}\n.scrtbl{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}\n.scr-row{display:grid;grid-template-columns:34px 64px minmax(0,1fr) 90px 62px 48px 74px 24px;\n  align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .12s}\n.scr-row:last-child{border-bottom:0}\n.scr-row:not(.scr-hd):hover{background:#FBFAF7}\n.scr-hd{cursor:default;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);background:#FCFBF9}\n.scr-rank{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}\n.scr-id{font-family:var(--mono);font-size:12.5px;color:var(--ess)}\n.scr-lab{font-family:var(--sans);font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.scr-bar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden}\n.scr-bar i{display:block;height:100%;border-radius:3px;background:var(--adv)}\n.scr-w{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--adv);text-align:right}\n.scr-p{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}\n.scr-ov{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:right}\n.scr-link{font-family:var(--mono);font-size:13px;color:var(--muted);text-decoration:none;text-align:center}\n.scr-link:hover{color:var(--ink)}\n.scr-hd .scr-w,.scr-hd .scr-p,.scr-hd .scr-ov,.scr-hd .scr-rank{font-weight:400}\n.scr-same{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:9.5px;\n  letter-spacing:.04em;padding:1px 6px;border-radius:9px;background:#C77D3118;color:#C77D31;vertical-align:1px}\n.scr-row.is-same{background:#C77D3108}\n.scr-morewrap{text-align:center;margin-top:14px}\n.scr-morebtn{font-family:var(--mono);font-size:12.5px;color:var(--ess);background:#fff;\n  border:1px solid var(--line);border-radius:10px;padding:10px 20px;cursor:pointer;transition:background .12s}\n.scr-morebtn:hover{background:#FBFAF7}\n.scr-morebtn:disabled{color:var(--faint);cursor:default}\n.scr-done{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em}\n\nfooter{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}\n@media(max-width:680px){.scr-row{grid-template-columns:28px 54px minmax(0,1fr) 60px 44px 24px;gap:8px}.scr-ov,.scr-link{display:none}}\n";
 
-const CSS_NETWORK = "\n:host{\n  --paper:#FCFCFB; --ink:#14161A; --ink2:#3A3D44; --muted:#6B7280; --faint:#9AA0A6;\n  --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;\n  --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;\n  --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;\n  --serif:\"Fraunces\",Georgia,serif; --sans:\"IBM Plex Sans\",system-ui,sans-serif; --mono:\"IBM Plex Mono\",ui-monospace,monospace;\n}\n*{box-sizing:border-box}\n.rx-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5}\na{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}\n\n/* top bar */\n.bar{display:flex;align-items:center;gap:16px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}\n.mark{font-family:var(--serif);font-weight:500;font-size:19px;white-space:nowrap}\n.mark b{color:var(--know);font-weight:600}\n.mark s{font-family:var(--mono);font-size:10px;text-decoration:none;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px}\n.srch{display:flex;align-items:center;flex:1;max-width:340px;border:1px solid var(--line);border-radius:11px;background:var(--card);transition:border-color .2s,box-shadow .2s;padding:3px}\n.srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft)}\n.srch input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--ink);padding:8px 12px;letter-spacing:.02em}\n.srch input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}\n.srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:8px 15px;border-radius:8px;cursor:pointer}\n.navlink{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}\n\n/* controls */\n.controls{display:flex;align-items:center;gap:18px;padding:11px 22px;border-bottom:1px solid var(--line);background:var(--paper);flex-wrap:wrap}\n.ctl-lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-right:2px}\n.pill{font-family:var(--sans);font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s}\n.pill:hover{border-color:var(--know)}\n.pill.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}\n.toggle{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink2);cursor:pointer;user-select:none}\n.toggle input{accent-color:var(--know);width:15px;height:15px}\n.grow{flex:1}\n\n/* main split */\n.wrap{display:flex;height:calc(100vh - 108px)}\n#cy{flex:1;background:\n   radial-gradient(circle at 1px 1px, var(--line2) 1px, transparent 0) 0 0/22px 22px, var(--paper)}\n.panel{width:290px;border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:20px}\n.panel h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:0 0 3px}\n.panel .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}\n.kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line2)}\n.kv span:first-child{color:var(--muted)}\n.kv b{font-weight:600;font-family:var(--mono)}\n.tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:11px;letter-spacing:.04em}\n.t-ess{background:var(--know-soft);color:var(--know)} .t-adv{background:var(--eviq-soft);color:var(--eviq)}\n.t-mix{background:#6B72801a;color:var(--muted)} .t-unk{background:#9AA0A614;color:var(--faint)}\n.legend{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}\n.legrow{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink2);margin:8px 0}\n.dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid}\n.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}\n.foot{font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:8px 22px;border-top:1px solid var(--line);letter-spacing:.03em;background:var(--card)}\n.status{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;color:var(--muted)}\n.partner{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line2);cursor:pointer}\n.partner:hover b{color:var(--know)} .partner b{font-family:var(--mono);font-weight:500}\n.partner .r{font-family:var(--mono);font-size:11px;color:var(--eviq)}\n\n/* AI function prediction (gpt-5, over OUR OWN net_edge co-essentiality) */\n.predict-box{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}\n.predbtn{width:100%;font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 12px;\n  border:1px solid var(--pred);border-radius:10px;background:var(--pred-soft);color:var(--pred);\n  cursor:pointer;transition:background .15s}\n.predbtn:hover{background:#7C5CBF22}\n.predbtn:disabled{opacity:.55;cursor:default}\n.pred-note{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:8px}\n.pred-load{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:8px}\n.pred-dot{width:6px;height:6px;border-radius:50%;background:var(--pred);animation:predpulse 1.1s infinite ease-in-out}\n@keyframes predpulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}\n.pred-err{font-size:12.5px;color:#B23A3A;margin-top:10px;line-height:1.5}\n.pred-summary{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.5;font-style:italic}\n.pred-cards{display:flex;flex-direction:column;gap:10px;margin-top:12px}\n.pred-card{border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--paper)}\n.pred-card .pc-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}\n.pred-card .pc-name{font-family:var(--serif);font-size:14.5px;font-weight:500;color:var(--ink)}\n.pc-type{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);\n  border:1px solid var(--line);border-radius:5px;padding:1px 5px}\n.pc-conf{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;padding:1px 7px;border-radius:10px;margin-left:auto}\n.pc-conf.high{background:var(--know-soft);color:var(--know)}\n.pc-conf.moderate{background:var(--pred-soft);color:var(--pred)}\n.pc-conv{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}\n.pc-rat{font-size:12.5px;color:var(--ink2);line-height:1.5;margin-top:7px}\n.pc-supp{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}\n.pc-chip{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:12px;\n  padding:2px 8px;color:var(--muted);cursor:pointer;background:var(--card);transition:.15s}\n.pc-chip:hover{border-color:var(--know);color:var(--know)}\n.pc-chip b{font-weight:500}\n/* ---------- global feature nav (shared: index / gene / network) ---------- */\n.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;\n  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}\n.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;\n  text-decoration:none;letter-spacing:.01em;white-space:nowrap}\n.gnav-brand b{color:#1F6F8B}\n.gnav-tabs{display:flex;gap:4px}\n.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;\n  white-space:nowrap;transition:background .12s,color .12s}\n.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}\n.gnav-tabs a.on{background:#14161A;color:#fff}\n.gnav-sp{flex:1}\n@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}\n";
+const CSS_NETWORK = "\n:host{\n  --paper:#FCFCFB; --ink:#14161A; --ink2:#3A3D44; --muted:#6B7280; --faint:#9AA0A6;\n  --line:#E8E6E1; --line2:#F1EFEA; --card:#FFFFFF;\n  --know:#1F6F8B; --eviq:#C77D31; --pred:#7C5CBF;\n  --know-soft:#1F6F8B14; --eviq-soft:#C77D3114; --pred-soft:#7C5CBF14;\n  --serif:\"Fraunces\",Georgia,serif; --sans:\"IBM Plex Sans\",system-ui,sans-serif; --mono:\"IBM Plex Mono\",ui-monospace,monospace;\n}\n*{box-sizing:border-box}\n.rx-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5}\na{color:var(--know);text-decoration:none}a:hover{text-decoration:underline}\n\n/* top bar */\n.bar{display:flex;align-items:center;gap:16px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}\n.mark{font-family:var(--serif);font-weight:500;font-size:19px;white-space:nowrap}\n.mark b{color:var(--know);font-weight:600}\n.mark s{font-family:var(--mono);font-size:10px;text-decoration:none;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px}\n.srch{display:flex;align-items:center;flex:1;max-width:340px;border:1px solid var(--line);border-radius:11px;background:var(--card);transition:border-color .2s,box-shadow .2s;padding:3px}\n.srch:focus-within{border-color:var(--know);box-shadow:0 0 0 4px var(--know-soft)}\n.srch input{flex:1;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--ink);padding:8px 12px;letter-spacing:.02em}\n.srch input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}\n.srch button{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:8px 15px;border-radius:8px;cursor:pointer}\n.navlink{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}\n\n/* controls */\n.controls{display:flex;align-items:center;gap:18px;padding:11px 22px;border-bottom:1px solid var(--line);background:var(--paper);flex-wrap:wrap}\n.ctl-lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-right:2px}\n.pill{font-family:var(--sans);font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s}\n.pill:hover{border-color:var(--know)}\n.pill.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}\n.toggle{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink2);cursor:pointer;user-select:none}\n.toggle:has(input:disabled){opacity:.4;cursor:default}\n.ppn{font-family:var(--mono);font-size:11px;color:var(--faint)}\n.toggle input{accent-color:var(--know);width:15px;height:15px}\n.grow{flex:1}\n\n/* main split */\n/* Height is set by fitWrap() at runtime, not here. It used to be calc(100vh - 108px), which broke\n   the moment the control bar gained an Evidence group and wrapped to two rows. A flex column on\n   <body> does not fix it either: vendored into the React app this page lives inside a shadow root\n   with an extra host div between .rx-body and .wrap, so the column never reaches this element and\n   it grew to 1045px inside an 865px box. Measuring from the viewport is the one approach that is\n   identical in both mountings. */\n.wrap{display:flex;min-height:320px}\n/* A faint centre light under the dot grid. The graph is fitted and centred now, so the canvas has\n   a subject; the gradient gives it somewhere to sit instead of floating on flat paper. */\n#cy{flex:1;background:\n   radial-gradient(circle at 1px 1px, var(--line2) 1px, transparent 0) 0 0/22px 22px,\n   radial-gradient(ellipse at 50% 46%, #FFFFFF 0%, #FBFBF9 55%, #F5F4F0 100%)}\n.panel{width:298px;flex:0 0 auto;border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:20px}\n/* Mono, not serif. This h3 is the focal GENE SYMBOL, and it changes every time you click a node —\n   it is a value the panel is reporting, not the title of a document. Set in Fraunces it was the\n   only place on the screen where FANCD2 was not monospaced: the graph node, the partner chips and\n   every key-value row already use the mono face. Size and weight still carry the heading role. */\n.panel h3{font-family:var(--mono);font-weight:500;font-size:20px;margin:0 0 4px;letter-spacing:.01em}\n.panel .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:2px}\n.kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line2)}\n.kv span:first-child{color:var(--muted)}\n.kv b{font-weight:600;font-family:var(--mono)}\n.tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:11px;letter-spacing:.04em}\n.t-ess{background:var(--know-soft);color:var(--know)} .t-adv{background:var(--eviq-soft);color:var(--eviq)}\n.t-mix{background:#6B72801a;color:var(--muted)} .t-unk{background:#9AA0A614;color:var(--faint)}\n.legend{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}\n.legrow{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink2);margin:8px 0}\n\n/* evidence tier — the graded readout that replaced \"one line, thickness = r\" */\n.tier-head{padding:9px 0 9px 11px;margin:12px 0 2px;background:var(--line2);border-radius:0 6px 6px 0}\n.tier-name{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink)}\n.tier-prec{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}\n.tier-base{color:var(--faint)}\n/* the evidence lane — a gel read top-down, strongest band first */\n/* 240px, not the 196 this started at. A one-line band needs ~26px, and at 196 BOTH of the small\n   tiers hit that floor — 17 edges and 8 edges rendered the same height, which is the one thing a\n   proportional device must never do. At 240 only the genuinely tiny tier is floored. */\n.lane{display:flex;flex-direction:column;gap:2px;height:240px;border-radius:5px;overflow:hidden}\n.band{position:relative;display:flex;align-items:center;gap:8px;padding:0 10px;min-height:26px;\n  cursor:default;overflow:hidden;transition:filter .18s,opacity .18s}\n.band:hover{filter:brightness(1.09)}\n.band.off{opacity:.2}\n.band b{font-family:var(--mono);font-size:12px;font-weight:600;min-width:22px}\n.band span{font-size:11.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n.band em{font-family:var(--mono);font-size:10px;font-style:normal;margin-left:auto;opacity:.8}\n/* co-hit-only carries the same hue as mutual-best because they are worth nearly the same; the\n   hatch is what says \"the OTHER channel\", echoing the dashed line it stands for on the graph. */\n.band .hatch{position:absolute;inset:0;pointer-events:none;\n  background:repeating-linear-gradient(-45deg,#FFFFFF00 0 5px,#FFFFFF24 5px 10px)}\n\n/* the load caption — names the tier currently landing, then retires */\n.cap{position:absolute;left:24px;bottom:20px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;\n  text-transform:uppercase;color:var(--faint);opacity:0;transition:opacity .35s;pointer-events:none}\n.cap.on{opacity:1}\n@media(prefers-reduced-motion:reduce){.cap{display:none}}\n.dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid}\n.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px}\n.foot{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:8px 22px;border-top:1px solid var(--line);letter-spacing:.03em;background:var(--card)}\n.status{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;color:var(--muted)}\n.partner{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line2);cursor:pointer}\n.partner:hover b{color:var(--know)} .partner b{font-family:var(--mono);font-weight:500}\n.partner .r{font-family:var(--mono);font-size:11px;color:var(--eviq)}\n\n/* AI function prediction over OUR OWN net_edge co-essentiality. The model is NOT named\n   here — it is rendered from the response, so the card can never claim a model the\n   server did not call. */\n.predict-box{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}\n.predbtn{width:100%;font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 12px;\n  border:1px solid var(--pred);border-radius:10px;background:var(--pred-soft);color:var(--pred);\n  cursor:pointer;transition:background .15s}\n.predbtn:hover{background:#7C5CBF22}\n.predbtn:disabled{opacity:.55;cursor:default}\n.pred-note{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:8px}\n.pred-load{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;display:flex;align-items:center;gap:8px}\n.pred-dot{width:6px;height:6px;border-radius:50%;background:var(--pred);animation:predpulse 1.1s infinite ease-in-out}\n@keyframes predpulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}\n.pred-err{font-size:12.5px;color:#B23A3A;margin-top:10px;line-height:1.5}\n.pred-summary{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.5;font-style:italic}\n.pred-cards{display:flex;flex-direction:column;gap:10px;margin-top:12px}\n.pred-card{border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--paper)}\n.pred-card .pc-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}\n.pred-card .pc-name{font-family:var(--serif);font-size:14.5px;font-weight:500;color:var(--ink)}\n.pc-type{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);\n  border:1px solid var(--line);border-radius:5px;padding:1px 5px}\n.pc-conf{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;padding:1px 7px;border-radius:10px;margin-left:auto}\n.pc-conf.high{background:var(--know-soft);color:var(--know)}\n.pc-conf.moderate{background:var(--pred-soft);color:var(--pred)}\n.pc-conv{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px}\n.pc-rat{font-size:12.5px;color:var(--ink2);line-height:1.5;margin-top:7px}\n.pc-supp{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}\n.pc-chip{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:12px;\n  padding:2px 8px;color:var(--muted);cursor:pointer;background:var(--card);transition:.15s}\n.pc-chip:hover{border-color:var(--know);color:var(--know)}\n.pc-chip b{font-weight:500}\n/* supporter chips carry the tier they were graded at — the number a reviewer will ask about */\n.pc-chip i{font-style:normal;font-size:9px;letter-spacing:.03em;margin-right:5px;padding:0 3px;\n  border-radius:3px;background:var(--line2);color:var(--muted)}\n.pc-chip.t1 i{background:#2E475620;color:#2E4756}\n.pc-chip.t2 i,.pc-chip.t3 i{background:#6E879420;color:#55707E}\n\n/* verdicts — a failed check is now shown, not deleted */\n.pc-verdict{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;padding:1px 7px;border-radius:10px;margin-left:auto}\n.pc-verdict.v-ok{background:var(--know-soft);color:var(--know)}\n.pc-verdict.v-weak{background:var(--eviq-soft);color:var(--eviq)}\n.pc-verdict.v-rej{background:#8A8F9818;color:var(--muted)}\n.pred-card.rejected{background:transparent;border-style:dashed}\n.pred-card.rejected .pc-name{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}\n.pred-card.rejected .pc-rat{color:var(--faint)}\n.pc-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px;padding-left:9px;\n  border-left:2px solid var(--line)}\n.pc-ghost{font-family:var(--mono);font-size:10px;color:var(--eviq);margin-top:7px}\n.pred-filter{display:flex;align-items:center;gap:10px;margin-top:11px;font-size:11.5px;color:var(--muted)}\n.pred-filter .pf-btn{margin-left:auto;font-family:var(--sans);font-size:11px;border:1px solid var(--line);\n  background:var(--card);color:var(--muted);border-radius:9px;padding:3px 10px;cursor:pointer;transition:.15s}\n.pred-filter .pf-btn:hover{border-color:var(--know);color:var(--know)}\n.pred-audit{font-size:11.5px;color:var(--eviq);line-height:1.5;margin-top:10px;padding-left:9px;\n  border-left:2px solid var(--eviq)}\n/* ---------- global feature nav (shared: index / gene / network) ---------- */\n.gnav{position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:16px;padding:9px 20px;\n  background:rgba(252,252,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E6E1}\n.gnav-brand{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#14161A;\n  text-decoration:none;letter-spacing:.01em;white-space:nowrap}\n.gnav-brand b{color:#1F6F8B}\n.gnav-tabs{display:flex;gap:4px}\n.gnav-tabs a{font-size:13px;padding:5px 13px;border-radius:20px;text-decoration:none;color:#6B7280;\n  white-space:nowrap;transition:background .12s,color .12s}\n.gnav-tabs a:hover{background:#F1EFEA;color:#14161A}\n.gnav-tabs a.on{background:#14161A;color:#fff}\n.gnav-sp{flex:1}\n@media(max-width:760px){.gnav{gap:8px;padding:8px 12px}.gnav-tabs a{padding:5px 9px;font-size:12px}}\n";
 
 const MARKUP_GENE = "<nav class=\"gnav\">\n  <a class=\"gnav-brand\" href=\"javascript:void(0)\" data-rx-home=\"1\">RETI<b>C</b>LE</a>\n  <div class=\"gnav-tabs\">\n    <a data-tab-link=\"1\" data-t=\"gene\" href=\"javascript:void(0)\">Gene</a>\n    <a data-tab-link=\"1\" data-t=\"screen\" href=\"javascript:void(0)\">Screen</a>\n    <a data-tab-link=\"1\" data-t=\"network\" href=\"javascript:void(0)\">Network</a>\n  </div>\n</nav>\n<div class=\"bar\"><div class=\"in\">\n  <div class=\"mark\">gene<s>wiki</s></div>\n  <div class=\"srch\">\n    <input id=\"q\" type=\"text\" placeholder=\"Gene symbol — TP53, BRCA1, KRAS…\" autocomplete=\"off\" spellcheck=\"false\">\n    <select id=\"tax\"><option value=\"9606\">human</option><option value=\"10090\">mouse</option></select>\n    <button id=\"go\">Look up</button>\n  </div>\n</div></div>\n\n<div id=\"empty\" class=\"land\">\n  <div class=\"land-inner\">\n    <div class=\"land-mark\">RETICLE<span>wiki</span></div>\n    <div class=\"land-srch\">\n      <input id=\"q2\" type=\"text\" placeholder=\"Gene symbol — TP53, BRCA1, KRAS…\" autocomplete=\"off\" spellcheck=\"false\">\n      <select id=\"tax2\"><option value=\"9606\">human</option><option value=\"10090\">mouse</option></select>\n      <button id=\"go2\">Look up</button>\n    </div>\n    <div class=\"ex\">try <b data-g=\"TP53\">TP53</b> · <b data-g=\"BRCA1\">BRCA1</b> · <b data-g=\"RAN\">RAN</b> · <b data-g=\"CGAS\">CGAS</b></div>\n  </div>\n  <canvas id=\"wave-canvas\"></canvas>\n</div>\n<div id=\"status\" class=\"status\"></div>\n<div id=\"gw\"></div>\n<div id=\"foot\" class=\"foot\"></div>\n<div class=\"tooltip\" id=\"tip\"></div>";
 
 const MARKUP_SCREEN = "<nav class=\"gnav\">\n  <a class=\"gnav-brand\" href=\"javascript:void(0)\" data-rx-home=\"1\">RETI<b>C</b>LE</a>\n  <div class=\"gnav-tabs\">\n    <a data-tab-link=\"1\" data-t=\"gene\" href=\"javascript:void(0)\">Gene</a>\n    <a data-tab-link=\"1\" data-t=\"screen\" href=\"javascript:void(0)\">Screen</a>\n    <a data-tab-link=\"1\" data-t=\"network\" href=\"javascript:void(0)\">Network</a>\n  </div>\n  <div class=\"gnav-sp\"></div>\n  <span class=\"tag\">functional genomics · 2,157 CRISPR screens</span>\n</nav>\n\n<div class=\"wrap\">\n  <section class=\"hero\" id=\"hero\">\n    <div class=\"hero-brand\">\n      <h1 class=\"hero-logo\">RETI<span>C</span>LE<small>screen</small></h1>\n      <p class=\"hero-tagline\">Find the CRISPR screens whose genome-wide fitness profile most resembles a query screen — human · proliferation · genome-wide.</p>\n    </div>\n    <div class=\"search\">\n      <input id=\"qs\" type=\"text\" placeholder=\"BioGRID ORCS screen id — e.g. 2123\" autocomplete=\"off\" spellcheck=\"false\" autofocus>\n      <button id=\"gos\">Find similar</button>\n    </div>\n    <div class=\"hint\">Ranked by pairwise-complete Pearson on PC1-removed profiles · scored vs the screen's own background.</div>\n    <div class=\"landmarks-list\">\n      <span class=\"lm-label\">Try:</span>\n      <span class=\"lm-chip\" onclick=\"findSimilar('2123')\">#2123 · KMS-12-BM</span>\n      <span class=\"lm-chip\" onclick=\"findSimilar('1999')\">#1999 · Calu-3</span>\n      <span class=\"lm-chip\" onclick=\"findSimilar('1793')\">#1793 · PC-9</span>\n      <span class=\"lm-chip\" onclick=\"findSimilar('1905')\">#1905 · Primary T-cells</span>\n    </div>\n    <div class=\"status\" id=\"status\"></div>\n  </section>\n\n  <section id=\"result\" aria-live=\"polite\"></section>\n\n  <footer>\n    <span>Similarity = pairwise-complete Pearson r on PC1-removed within-screen percentiles · σ = z vs this screen's background.</span>\n    <span>BioGRID ORCS · reticle.screen_similarity</span>\n  </footer>\n</div>";
 
-const MARKUP_NETWORK = "<nav class=\"gnav\">\n  <a class=\"gnav-brand\" href=\"javascript:void(0)\" data-rx-home=\"1\">RETI<b>C</b>LE</a>\n  <div class=\"gnav-tabs\">\n    <a data-tab-link=\"1\" data-t=\"gene\" href=\"javascript:void(0)\">Gene</a>\n    <a data-tab-link=\"1\" data-t=\"screen\" href=\"javascript:void(0)\">Screen</a>\n    <a data-tab-link=\"1\" data-t=\"network\" href=\"javascript:void(0)\">Network</a>\n  </div>\n  <div class=\"gnav-sp\"></div>\n  <form class=\"srch\" onsubmit=\"go(event)\">\n    <input id=\"q\" placeholder=\"gene symbol — e.g. FANCD2\" autocomplete=\"off\" spellcheck=\"false\">\n    <button type=\"submit\">Map</button>\n  </form>\n</nav>\n\n<div class=\"controls\">\n  <span class=\"ctl-lab\">Species</span>\n  <div id=\"orgpills\" style=\"display:flex;gap:8px\">\n    <button class=\"pill on\" data-org=\"human\">Human</button>\n    <button class=\"pill\" data-org=\"mouse\">Mouse</button>\n  </div>\n  <span class=\"ctl-lab\" style=\"margin-left:16px\">Context</span>\n  <div id=\"ctxpills\" style=\"display:flex;gap:8px\"></div>\n  <div class=\"grow\"></div>\n  <label class=\"toggle\"><input type=\"checkbox\" id=\"recip\" checked> reciprocal only <span style=\"color:var(--faint)\">(mutual-best)</span></label>\n</div>\n\n<div class=\"wrap\" style=\"position:relative\">\n  <div id=\"cy\"></div>\n  <div id=\"status\" class=\"status\"></div>\n  <div class=\"panel\" id=\"panel\"></div>\n</div>\n<div class=\"foot\">Pure BioGRID CRISPR co-essentiality · no STRING, no literature · edges pooled across all genome-wide screens per species — <b>Human</b> (1,377 screens) and <b>Mouse</b> (87 screens) live in separate networks; the mouse network is exploratory.</div>";
+const MARKUP_NETWORK = "<nav class=\"gnav\">\n  <a class=\"gnav-brand\" href=\"javascript:void(0)\" data-rx-home=\"1\">RETI<b>C</b>LE</a>\n  <div class=\"gnav-tabs\">\n    <a data-tab-link=\"1\" data-t=\"gene\" href=\"javascript:void(0)\">Gene</a>\n    <a data-tab-link=\"1\" data-t=\"screen\" href=\"javascript:void(0)\">Screen</a>\n    <a data-tab-link=\"1\" data-t=\"network\" href=\"javascript:void(0)\">Network</a>\n  </div>\n  <div class=\"gnav-sp\"></div>\n  <form class=\"srch\" onsubmit=\"go(event)\">\n    <input id=\"q\" placeholder=\"gene symbol — e.g. FANCD2\" autocomplete=\"off\" spellcheck=\"false\">\n    <button type=\"submit\">Map</button>\n  </form>\n</nav>\n\n<div class=\"controls\">\n  <span class=\"ctl-lab\">Species</span>\n  <div id=\"orgpills\" style=\"display:flex;gap:8px\">\n    <button class=\"pill on\" data-org=\"human\">Human</button>\n    <button class=\"pill\" data-org=\"mouse\">Mouse</button>\n  </div>\n  <span class=\"ctl-lab\" style=\"margin-left:16px\">Context</span>\n  <div id=\"ctxpills\" style=\"display:flex;gap:8px\"></div>\n  <span class=\"ctl-lab\" style=\"margin-left:16px\">Evidence</span>\n  <div id=\"tierpills\" style=\"display:flex;gap:8px\">\n    <button class=\"pill\" data-floor=\"1\" onclick=\"setTierFloor(1)\" title=\"Both channels agree — 46.4% of these recover a known complex\">Both channels</button>\n    <button class=\"pill\" data-floor=\"3\" onclick=\"setTierFloor(3)\" title=\"At least one channel beyond a bare correlation — 17.7–46.4%\">Any second signal</button>\n    <button class=\"pill on\" data-floor=\"4\" onclick=\"setTierFloor(4)\" title=\"Every edge, including correlation-only — the bottom tier recovers a complex 4.9% of the time\">All edges</button>\n  </div>\n  <div class=\"grow\"></div>\n  <label class=\"toggle\" title=\"Edges between two partners, neither of which is the focal gene. They are what make the neighbourhood read as a complex rather than a list — but they are also most of the ink.\"><input type=\"checkbox\" id=\"pp\"> between partners <span class=\"ppn\" id=\"ppn\"></span></label>\n  <label class=\"toggle\"><input type=\"checkbox\" id=\"recip\" checked> reciprocal only <span style=\"color:var(--faint)\">(mutual-best)</span></label>\n</div>\n\n<div class=\"wrap\" style=\"position:relative\">\n  <div id=\"cy\"></div>\n  <div id=\"status\" class=\"status\"></div>\n  <div id=\"cap\" class=\"cap\"></div>\n  <div class=\"panel\" id=\"panel\"></div>\n</div>\n<div class=\"foot\">Pure BioGRID CRISPR co-essentiality · no STRING, no literature · edges pooled across all genome-wide screens per species — <b>Human</b> (1,375 screens) and <b>Mouse</b> (87 screens) live in separate networks; the mouse network is exploratory.</div>";
 
 /** CDN globals each page needs before its script can run. */
 export const PAGE_DEPS = {
@@ -271,8 +271,17 @@ function screensSection(sc){
 }
 
 /* ---------- render ---------- */
+/* EYEBROW DISCIPLINE. Twelve sections each carried a small uppercase provenance label above the
+   headline, which is the templated rhythm every AI-built page has — and worse here, six of them
+   duplicated a `.src` line already inside the section that said the same thing MORE precisely:
+   the Function eyebrow read "curated" while its body read "NCBI · RefSeq summary" and
+   "UniProt · reviewed P04637 · 231 citations". The vaguer copy was the one in the louder position.
+   Those six are dropped. The other six are the only place their source is named, and on a tool
+   whose whole claim is auditability, deleting provenance to hit a styling count is the wrong
+   trade — so this stops at six rather than the four a pure reading of the rule would ask for. */
 function sec(id,mv,title,eyebrow,body){
-  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2><s>${eyebrow}</s></div>${body}</section>`;
+  const eb = eyebrow ? `<s>${eyebrow}</s>` : '';
+  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2>${eb}</div>${body}</section>`;
 }
 function render(w){
   const html=`<div class="page">
@@ -290,17 +299,17 @@ function render(w){
         <div class="ai-body loading" id="aibody"><span class="dot"></span> Reading ${esc(w.identity.symbol)} across its screens…</div>
         <div class="disc">Fitness essentiality + stress divergence + reporter probes, grounded in PubMed. Verify against primary screens.</div>
       </div>
-      ${sec('function','know','Function','curated','')}
+      ${sec('function','know','Function','','')}
       ${sec('ontology','know','Gene ontology','GO','')}
-      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','Reactome',''):''}
-      ${sec('interactions','know','Interactions','STRING v12','')}
+      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','',''):''}
+      ${sec('interactions','know','Interactions','','')}
       ${w.uniprot.disease?sec('clinical','know','Clinical significance','UniProt','<div class="src"><b>UniProt</b> · involvement in disease</div>'+clampProse(w.uniprot.disease,3)):''}
-      ${sec('predictions','pred','Predicted functions','inferred','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
+      ${sec('predictions','pred','Predicted functions','','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
       ${sec('behavior','eviq','Screen behavior','RETICLE · harmonized','<div id="behavior-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Reading the harmonized screens…</div>')}
       ${sec('dependency','eviq','Dependency','DepMap 24Q4','')}
-      ${sec('coess','eviq','Co-essentiality','RETICLE · data-driven','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
+      ${sec('coess','eviq','Co-essentiality','','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
       ${w.screens.n_total?sec('screens','eviq','CRISPR Screening','BioGRID ORCS',''):''}
-      ${w.screens.n_total?sec('distribution','eviq','Score distribution','in-screen',''):''}
+      ${w.screens.n_total?sec('distribution','eviq','Score distribution','',''):''}
       ${sec('literature','eviq','Literature','PubMed','')}
     </main>
     <aside class="rail"><div id="darkcard-slot"></div>${infobox(w)}</aside>
@@ -423,12 +432,18 @@ async function loadPredictions(sym,taxid){
   let d; try{ d=await (await fetch(`${APIBASE}/api/gene_predictions?gene=${encodeURIComponent(sym)}&taxid=${taxid}`)).json(); }
   catch(e){ body.className='';body.style.color='var(--faint)';body.textContent='Prediction engine unreachable.';return; }
   if(!d.predictions||!d.predictions.length){
+    /* The most useful moment for the pointer, not the least: STRING and DepMap came up empty, and
+       our own screens are the one place left that might not have. */
     body.className='';body.style.color='var(--faint)';
-    body.textContent=`No confident novel-function predictions — ${sym}'s associations mostly recover functions it is already annotated with.`;return;
+    body.innerHTML=`No confident novel-function predictions from STRING or DepMap — ${esc(sym)}'s external
+      associations mostly recover functions it is already annotated with.
+      <a href="/network?gene=${encodeURIComponent(sym)}&organism=${taxid===10090?'mouse':'human'}">Try our own CRISPR network →</a>`;
+    return;
   }
   const items=d.predictions.map(p=>{
     const chips=p.supporters.map(s=>`<i>${esc(s)}</i>`).join('');
-    const lay=p.layers.map(l=>`<u>${l==='coess'?'co-essentiality':'STRING'}</u>`).join(' + ');
+    // "co-essentiality" alone is ambiguous on this page — the section below carries our own.
+    const lay=p.layers.map(l=>`<u>${l==='coess'?'DepMap co-essentiality':'STRING'}</u>`).join(' + ');
     return `<li class="pred-item">
       <div class="pred-h"><span class="pred-dot ${p.confidence}"></span><b>${esc(p.function)}</b><span class="pred-conf ${p.confidence}">${p.confidence}</span></div>
       <div class="pred-ex">${esc(p.explanation)}</div>
@@ -436,10 +451,19 @@ async function loadPredictions(sym,taxid){
     </li>`;
   }).join('');
   body.className='pred-out';
-  body.innerHTML=`<div class="src"><b>Inferred</b> · guilt-by-association from STRING + co-essentiality — HYPOTHESES for follow-up, not curated facts</div>`+
+  /* Naming the sources is not pedantry here. This page carries TWO things that were both called
+     "co-essentiality": this section's, which is DepMap correlation across cell lines, and the
+     Co-essentiality section below, which is our own BioGRID screens. They are different evidence
+     and they can disagree — which is useful only if the reader can tell which is which. */
+  body.innerHTML=`<div class="src"><b>Inferred</b> · guilt-by-association from EXTERNAL resources — STRING + DepMap — HYPOTHESES for follow-up, not curated facts</div>`+
     `<p class="pred-intro">Beyond the ${d.n_known_bp} biological processes ${esc(sym)} is already annotated with, its functional associations point to candidate roles it is <em>not</em> yet annotated with:</p>`+
     `<ul class="pred-list">${items}</ul>`+
-    `<div class="note-line">Ranked by evidence strength. Each is a testable hypothesis; the supporting genes and layers are the evidence. <b>high</b> = both independent layers agree.</div>`;
+    `<div class="note-line">Ranked by evidence strength. Each is a testable hypothesis; the supporting genes and layers are the evidence. <b>high</b> = both independent layers agree.</div>`+
+    `<div class="note-line">These reason over what the field already has: STRING's annotation-independent
+       channels and DepMap's cell-line co-essentiality. For the version that uses <b>only our own
+       CRISPR screens</b> — no STRING, no DepMap, no literature —
+       <a href="/network?gene=${encodeURIComponent(sym)}&organism=${taxid===10090?'mouse':'human'}">predict from the RETICLE network →</a>.
+       The two can disagree, and where they do, the disagreement is the interesting part.</div>`;
 }
 
 /* ---------- CRISPR screen-hit analysis (the only LLM call) — per phenotype ---------- */
@@ -672,15 +696,38 @@ function renderNetwork(g, svgSel, kind){
   edges.forEach(e=>{adj[e.a].add(e.b); adj[e.b].add(e.a);});
   const col=l=> l==='essential'?'#1F6F8B':l==='advantageous'?'#E08A3C':l==='mixed'?'#9AA0A6':'#ffffff';
   svg.innerHTML='';
-  const edgeTip=e=>`${e.a} — ${e.b}<br><span style="color:#E08A3C">co-essential</span> · Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}`;
-  const eEls=edges.map(e=>{const ln=document.createElementNS(NS,'line');
-    ln.setAttribute('stroke','#cfccc6'); ln.setAttribute('stroke-width',(0.5+e.score*2.2).toFixed(2));
-    ln.setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); ln.dataset.a=e.a; ln.dataset.b=e.b;
+
+  /* Edges are drawn by EVIDENCE TIER, the same grammar the Network tab uses: weight and darkness
+     say how many of the two independent channels back the pair, dash style says which one.
+     Measured against CORUM same-complex membership — 46.4% / 22.4% / 17.7% / 4.9% precision
+     against a 0.615% baseline. Width no longer tracks r: r is the weakest of the dimensions
+     (AUROC 0.636) and non-monotone at the top, so drawing it as weight said the opposite of
+     the truth. */
+  const TIER={
+    1:{c:'#2E4756',w:3.2,op:.92,dash:'',      lab:'both channels',    prec:'46.4%'},
+    2:{c:'#6E8794',w:2.0,op:.78,dash:'',      lab:'mutual-best',      prec:'22.4%'},
+    3:{c:'#6E8794',w:2.0,op:.72,dash:'6 4',   lab:'co-hit only',      prec:'17.7%'},
+    4:{c:'#C3C9C2',w:1.0,op:.42,dash:'1.5 3.5',lab:'correlation only',prec:'4.9%'},
+  };
+  const T=e=>TIER[e.tier]||TIER[4];
+  /* DRAW only the edges that touch the focal gene; keep the rest for PHYSICS. A partner-partner
+     edge is what pulls a complex into a clump, so the module is still visible as spatial grouping
+     — the reader just does not have to see through 43 extra lines to find the 14 that are about
+     the gene they searched for. */
+  const drawn=edges.filter(e=>e.direct!==false);
+
+  const edgeTip=e=>`${e.a} — ${e.b}<br><span style="color:#E08A3C">${T(e).lab}</span> · `
+    + `${T(e).prec} of edges like this recover a known complex<br>`
+    + `<span style="color:#9AA0A6">Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}</span>`;
+  const eEls=drawn.map(e=>{const ln=document.createElementNS(NS,'line'), s=T(e);
+    ln.setAttribute('stroke',s.c); ln.setAttribute('stroke-width',s.w);
+    ln.setAttribute('stroke-opacity',s.op); if(s.dash) ln.setAttribute('stroke-dasharray',s.dash);
+    ln.dataset.a=e.a; ln.dataset.b=e.b; ln._base=s;
     svg.appendChild(ln); return ln;});
-  const hitEls=edges.map((e,i)=>{const hit=document.createElementNS(NS,'line');
+  const hitEls=drawn.map((e,i)=>{const hit=document.createElementNS(NS,'line');
     hit.setAttribute('stroke','transparent'); hit.setAttribute('stroke-width','13'); hit.style.cursor='help';
     hit.addEventListener('mousemove',ev=>{ eEls[i].setAttribute('stroke','#14161A'); eEls[i].setAttribute('stroke-opacity','1'); showTip(edgeTip(e),ev.clientX,ev.clientY); });
-    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke','#cfccc6'); eEls[i].setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); hideTip(); });
+    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke',T(e).c); eEls[i].setAttribute('stroke-opacity',T(e).op); hideTip(); });
     svg.appendChild(hit); return hit;});
   const nEls=nodes.map(n=>{const r=n.focus?13:9, grp=document.createElementNS(NS,'g');
     grp.setAttribute('class','gnode'); grp.style.transition='opacity .2s';
@@ -698,9 +745,14 @@ function renderNetwork(g, svgSel, kind){
     grp.addEventListener('mouseleave',()=>hi(null));
     return grp;});
   function hi(name){
+    /* adj is built from ALL edges, including the partner-partner ones this view does not draw —
+       deliberately: hovering a gene should light up everything it is actually related to, not just
+       what happens to be on screen. */
     nEls.forEach(grp=>{ grp.style.opacity = (!name || adj[name].has(grp._n.name)) ? 1 : 0.16; });
     eEls.forEach(ln=>{ const on = !name || ln.dataset.a===name || ln.dataset.b===name;
-      ln.style.opacity = on?1:0.05; ln.setAttribute('stroke', (name&&on)?'#9aa0a6':'#cfccc6'); });
+      ln.style.opacity = on?1:0.05;
+      ln.setAttribute('stroke', (name&&on)?'#14161A':ln._base.c);   // restore the TIER colour
+      ln.setAttribute('stroke-opacity', (name&&on)?1:ln._base.op); });
   }
   function physics(alpha){
     for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
@@ -715,7 +767,9 @@ function renderNetwork(g, svgSel, kind){
       n.x=Math.max(46,Math.min(W-46,n.x)); n.y=Math.max(26,Math.min(H-30,n.y)); });
   }
   function paint(){
-    eEls.forEach((ln,i)=>{const a=nodes[idx[edges[i].a]],b=nodes[idx[edges[i].b]];
+    // eEls/hitEls are built from `drawn`, NOT `edges` — indexing them with `edges[i]` would put
+    // every line between the wrong pair of genes.
+    eEls.forEach((ln,i)=>{const a=nodes[idx[drawn[i].a]],b=nodes[idx[drawn[i].b]];
       const x1=a.x.toFixed(1),y1=a.y.toFixed(1),x2=b.x.toFixed(1),y2=b.y.toFixed(1);
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1); ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
       const hit=hitEls[i]; hit.setAttribute('x1',x1); hit.setAttribute('y1',y1); hit.setAttribute('x2',x2); hit.setAttribute('y2',y2);});
@@ -739,10 +793,29 @@ async function loadCoess(sym, organism){
     const r=await fetch(APIBASE+'/api/coessential?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
     const g=await r.json();
     if(!r.ok || !g.nodes || g.nodes.length<2){ hideSection('coess'); return; }
-    host.innerHTML=`<div class="src"><b>RETICLE</b> · genes whose CRISPR fitness profiles move together — data-driven, works for dark genes</div>
+    const TL={1:['both channels','#2E4756','46.4%'],2:['mutual-best','#6E8794','22.4%'],
+              3:['co-hit only','#6E8794','17.7%'],4:['correlation only','#C3C9C2','4.9%']};
+    const t=g.tiers||{}, tot=[1,2,3,4].reduce((s,k)=>s+(t[k]||0),0);
+    const lane = tot ? `<div class="evlane">`+[1,2,3,4].filter(k=>t[k]).map(k=>
+        `<span title="${TL[k][0]} — ${t[k]} edge${t[k]===1?'':'s'}, ${TL[k][2]} recover a known complex"
+           style="width:${t[k]/tot*100}%;background:${TL[k][1]}"></span>`).join('')+`</div>`
+      + `<div class="evkey">`+[1,2,3,4].filter(k=>t[k]).map(k=>
+        `<span><i style="background:${TL[k][1]}"></i>${TL[k][0]} <b>${t[k]}</b> <em>${TL[k][2]}</em></span>`).join('')
+      /* `organism` here is the ORG2TAX key — "Homo sapiens" / "Mus musculus" — while the Network
+         page takes "human" / "mouse". Passing it through unmapped produced a link that silently
+         fell back to human for a mouse gene. */
+      + `<a class="evmore" href="/network?gene=${encodeURIComponent(g.symbol)}&organism=${organism==='Mus musculus'?'mouse':'human'}">Open in Network →</a></div>` : '';
+    const nPP=(g.edges||[]).filter(e=>e.direct===false).length;
+    host.innerHTML=`<div class="src"><b>RETICLE</b> · genes whose CRISPR knockout-fitness profiles move together — our own screens, no literature</div>
       <div class="netwrap"><svg id="coesssvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      ${lane}
+      <div class="evnote">Two independent channels back an edge: correlation across every screen,
+        and co-hit enrichment across <b>only</b> the screens where both genes were called hits.
+        Percentages are how often edges of that grade recover a known CORUM complex, against
+        <b>0.6%</b> for a random annotated pair${g.n_screens?` · pooled over ${g.n_screens.toLocaleString()} genome-wide screens`:''}.
+        ${nPP?`Lines run to ${g.symbol} only; the ${nPP} edges between its partners still shape the layout, so a complex still clumps.`:''}</div>
       <div class="netlegend"><span><i style="background:#1F6F8B"></i>essential</span><span><i style="background:#E08A3C"></i>KO-advantageous</span><span><i style="background:#9AA0A6"></i>mixed</span>
-        <span style="color:var(--faint)">edge = correlated across fitness screens · hover for Pearson r · click a node to open it</span></div></div>`;
+        <span style="color:var(--faint)">hover an edge for its evidence · click a gene to open it</span></div></div>`;
     renderNetwork(g, '#coesssvg', 'coess');
   }catch(e){ hideSection('coess'); }
 }
@@ -1033,21 +1106,194 @@ let CY=null, ORG='human', CTX='all', RECIP=true, FOCUS='FANCD2', CONTEXTS=[];
 const DEFAULT_FOCUS={human:'FANCD2', mouse:'Rpl13'};
 const DEFAULT_CTX={human:'all', mouse:'mouse'};
 
+/* EVIDENCE TIERS. Two independent channels back an edge: channel 1 is the percentile-profile
+   correlation over every screen (net_edge.strength / .reciprocal), channel 2 is Fisher co-hit
+   enrichment over only the screens where both genes were CALLED HITS (hit_only_connection).
+   Measured against CORUM same-complex membership on 11,954 evaluable edges — 46.4% / 22.4% /
+   17.7% / 4.9% precision against a 0.615% baseline (script/exp_evidence_tiers.py).
+
+   The visual grammar: WEIGHT AND DARKNESS = how many channels agree; LINE STYLE = which one.
+   Solid means channel 1 called it mutual-best, dashed means only channel 2 spoke, dotted means
+   neither did and all that is left is a bare correlation — 70.7% of the network, at 4.9%.
+
+   Thickness deliberately no longer tracks |r|. |r| is the weakest of the four dimensions
+   (AUROC 0.6361) and is non-monotone at the top: its strongest decile scores 17.3% while the
+   second scores 20.9%. Drawing it as weight told the user the opposite of the truth. */
+const TIER={
+  1:{key:'both',  label:'both channels',    color:'#2E4756', width:4.5, style:'solid',  op:.92,
+     blurb:'Mutual-best correlation AND significant co-hit enrichment — two independent channels.'},
+  2:{key:'mutual',label:'mutual-best',      color:'#6E8794', width:2.8, style:'solid',  op:.78,
+     blurb:'Each gene is the other’s best correlate, but they are not co-called hits more than chance.'},
+  3:{key:'cohit', label:'co-hit only',      color:'#6E8794', width:2.8, style:'dashed', op:.72,
+     blurb:'Called hits together far more than their individual hit rates predict, without a mutual-best correlation.'},
+  4:{key:'weak',  label:'correlation only', color:'#C3C9C2', width:1.2, style:'dotted', op:.42,
+     blurb:'A one-directional correlation and nothing else. Seven of every ten drawn edges are here, and they recover a known complex 4.9% of the time.'},
+};
+const TIER_PREC={1:'46.4%',2:'22.4%',3:'17.7%',4:'4.9%'};
+let TIER_FLOOR=4;                 // show tiers 1..TIER_FLOOR — 4 = everything, today's behaviour
+
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 const cyStyle=[
   {selector:'node',style:{
     'background-color':n=>LEAN_COLOR[n.data('lean')]||LEAN_COLOR.null,
     'border-color':n=>LEAN_BORDER[n.data('lean')]||LEAN_BORDER.null,
     'border-width':2,'width':n=>18+8*Math.sqrt(n.data('degree')||1),'height':n=>18+8*Math.sqrt(n.data('degree')||1),
     'label':'data(label)','font-family':'IBM Plex Mono','font-size':11,'color':'#3A3D44',
-    'text-valign':'bottom','text-margin-y':4,'text-halign':'center'}},
+    /* Placement is set per node by placeLabels() after layout — see there for why a fixed
+       'below the node' does not survive a dense neighbourhood. */
+    'text-valign':'bottom','text-margin-y':4,'text-halign':'center',
+    /* A solid chip, not just a stroke. An outline keeps a label legible against EDGES; it does
+       nothing when the label lands on another gene's circle, which is what actually happens in a
+       core like FANCD2's. The chip wins against anything drawn under it. */
+    'text-background-color':'#FCFCFB','text-background-opacity':.9,
+    'text-background-padding':2.5,'text-background-shape':'roundrectangle',
+    'text-outline-color':'#FCFCFB','text-outline-width':1}},
+  /* Bring a hovered gene's whole rendering — circle AND label — above its neighbours, so the one
+     label the user is reaching for is never the one underneath. */
+  {selector:'node.lift',style:{'z-index':30,'text-background-opacity':1,'color':'#14161A'}},
   {selector:'node[?focus]',style:{'border-color':'#14161A','border-width':4,'width':42,'height':42,
-    'font-size':14,'font-weight':600,'color':'#14161A','z-index':10}},
-  {selector:'edge',style:{'line-color':'#C9CDC7','width':e=>1+5*Math.max(0,e.data('strength')),
-    'curve-style':'straight','opacity':.7}},
-  {selector:'edge[!reciprocal]',style:{'line-color':'#DFE2DC','line-style':'dashed','opacity':.5}},
-  {selector:'.sel',style:{'line-color':'#1F6F8B','opacity':1,'width':3.5}},
+    'font-size':14,'font-weight':600,'color':'#14161A','z-index':10,
+    'overlay-color':'#1F6F8B','overlay-padding':0,'overlay-opacity':0}},
+  {selector:'edge',style:{'curve-style':'straight',
+    'line-color':e=>(TIER[e.data('tier')]||TIER[4]).color,
+    'width':    e=>(TIER[e.data('tier')]||TIER[4]).width,
+    'line-style':e=>(TIER[e.data('tier')]||TIER[4]).style,
+    'opacity':  e=>(TIER[e.data('tier')]||TIER[4]).op}},
+  {selector:'.sel',style:{'line-color':'#1F6F8B','opacity':1,'width':4.5,'line-style':'solid'}},
   {selector:'node.dim',style:{'opacity':.22}},{selector:'edge.dim',style:{'opacity':.06}},
+  /* Hover isolation is a SEPARATE class from .dim so a moment of mouse travel cannot wipe out a
+     selection the user made by clicking. It only ever engages when nothing is selected. */
+  {selector:'node.hov',style:{'opacity':.14}},{selector:'edge.hov',style:{'opacity':.05}},
+  {selector:'.tierhidden',style:{'display':'none'}},
+  {selector:'.pphidden',style:{'display':'none'}},
 ];
+
+/* EDGE SCOPE. By default the graph draws only the edges that touch the focal gene. For FANCD2's
+   widened neighbourhood that is 18 lines instead of 103 — the other 85 run between two partners,
+   and they are most of the ink on the canvas.
+
+   The partner-partner edges are not noise: they are what makes the picture a neighbourhood rather
+   than a ranked list, since a complex is visible precisely because its members connect to EACH
+   OTHER. So they are hidden, not discarded, and — this is the part that makes hiding them
+   acceptable — THE LAYOUT IS STILL COMPUTED FROM ALL OF THEM. cose places FANCA/FANCB/FANCC/FANCG
+   together because they are mutually connected; dropping the lines afterwards leaves that grouping
+   standing as spatial proximity. The reader still sees the module, just without the thicket. */
+let SHOW_PP=false;
+
+/* ── The load sequence ──────────────────────────────────────────────────────────────────────
+   Edges arrive by TIER, strongest first. This is not decoration: the order IS the ranking, so by
+   the time the graph settles the reader has already been told which lines carry weight without
+   having read the legend. The caption names the measured precision of the tier currently landing,
+   then retires — it is an introduction, not furniture.
+   Skipped wholesale under prefers-reduced-motion, and skipped for tiers the evidence filter is
+   hiding, so the animation can never contradict the filter. */
+/* Plays ONCE per mount, not on every load().
+   The sequence teaches the evidence hierarchy — the order is the ranking — and that is worth 1.6
+   seconds the first time a neighbourhood appears. It is worth nothing the ninth time. load() fires
+   on seven paths (node click, context, species, search, jump, reciprocal toggle, first paint), so
+   a user walking the graph node by node was paying the full entrance on every click before they
+   could read anything. This is the Operate-mode rule that product "loads into a task" and users do
+   not want to watch it load; the first view is the one exception, so it keeps exactly that. */
+let SEDIMENTED = false;
+
+function sediment(){
+  const cap = root.getElementById('cap');
+  const done = () => { if(cap){ cap.textContent=''; cap.classList.remove('on'); } };
+  if(SEDIMENTED){
+    // Settle straight to the stylesheet — no inline opacity, so .hov and .dim keep working.
+    CY.elements().stop(true);
+    CY.elements().forEach(e=>e.removeStyle('opacity'));
+    done();
+    return;
+  }
+  SEDIMENTED = true;
+  /* An INLINE opacity outranks every class selector in cytoscape, so the animation must hand
+     control back when it finishes or `.hov` and `.dim` are silently dead for the rest of the
+     session — the graph stops responding to hover and to selection, with nothing in the console.
+     Everything below animates inline and then removes the inline value. */
+  const release = ele => ele.removeStyle('opacity');
+  if(REDUCED){ CY.elements().forEach(release); done(); return; }
+  CY.nodes().style('opacity',0);
+  CY.edges().style('opacity',0);
+  CY.nodes().sort((a,b)=>(b.data('degree')||0)-(a.data('degree')||0))
+    .forEach((n,i)=>setTimeout(()=>n.animate({style:{opacity:1}},
+      {duration:240, complete:()=>release(n)}), 30+i*24));
+  [[360,1],[880,2],[1220,3],[1560,4]].forEach(([t,k])=>setTimeout(()=>{
+    const all=CY.edges(`[tier = ${k}]`);
+    if(!all.length) return;
+    // Only what is actually drawn gets an entrance; the rest just has its inline 0 dropped, so
+    // un-hiding it later shows it immediately instead of leaving it invisible.
+    const set=all.filter(e=>!e.hasClass('tierhidden')&&!e.hasClass('pphidden'));
+    all.not(set).forEach(release);
+    if(!set.length) return;
+    if(cap){ cap.textContent=`${TIER[k].label} · ${TIER_PREC[k]} recover a known complex`; cap.classList.add('on'); }
+    set.animate({style:{opacity:TIER[k].op}},{duration:340,easing:'ease-out',
+      complete:()=>set.forEach(release)});
+  }, t));
+  setTimeout(done, 3300);
+  /* The final state must not depend on animation callbacks firing. A backgrounded tab throttles
+     requestAnimationFrame to roughly nothing, cytoscape stops stepping its animations, and every
+     `complete` — and therefore every release() — is never called, leaving the whole graph at the
+     opacity 0 the sequence starts from. Measured: 1 frame per 800ms with document.hidden true.
+     It self-heals when the tab is focused, but "invisible until you click on it" is not a state to
+     ship. One unconditional settle puts everything back under the stylesheet regardless.
+
+     stop() first: removeStyle does NOT cancel a running animation, and a throttled one keeps
+     writing its interpolated inline opacity every frame afterwards — the settle appeared to work
+     and then the graph faded back to a half-drawn 0.43. */
+  setTimeout(()=>{
+    if(!CY || CY.destroyed()) return;
+    CY.elements().stop(true);
+    CY.elements().forEach(release);
+  }, 2200);
+  /* Two slow rings on the focus gene, then still. A permanent pulse would be an animation the eye
+     never stops correcting for; two says "you are here" and stops. */
+  const foc=CY.nodes('[?focus]');
+  let n=0;
+  (function ping(){
+    if(n++>1 || !foc.length) return;
+    foc.style({'overlay-padding':0,'overlay-opacity':.20});
+    foc.animate({style:{'overlay-padding':26,'overlay-opacity':0}},
+                {duration:1500,easing:'ease-out',complete:ping});
+  })();
+}
+
+/* Client-side so the floor is instant and needs no refetch — the tier is already on every edge. */
+function applyTierFloor(){
+  if(!CY) return;
+  CY.edges().forEach(e=>{
+    const hide=(e.data('tier')||4)>TIER_FLOOR;
+    e[hide?'addClass':'removeClass']('tierhidden');
+    /* Clear rather than set. An edge un-hidden by raising the floor may still be mid-entrance at
+       opacity 0; dropping the inline value returns it to the stylesheet's tier opacity, and — unlike
+       setting one — leaves `.hov` and `.dim` able to win afterwards. */
+    if(!hide) e.removeStyle('opacity');
+  });
+  const box=root.getElementById('tierpills'); if(!box) return;
+  [...box.querySelectorAll('.pill')].forEach(b=>b.classList.toggle('on',+b.dataset.floor===TIER_FLOOR));
+}
+function setTierFloor(n){ TIER_FLOOR=n; applyTierFloor(); const j=window.__NETJ; if(j) renderPanel(j); }
+
+/** True when an edge touches the focal gene. */
+function isDirect(e){ return e.source().data('focus')===true || e.target().data('focus')===true; }
+/** Edges currently drawn — neither filtered out by evidence nor by scope. */
+function visibleEdges(){ return CY?CY.edges().filter(e=>!e.hasClass('tierhidden')&&!e.hasClass('pphidden')):[]; }
+
+function applyEdgeScope(){
+  if(!CY) return;
+  let pp=0;
+  CY.edges().forEach(e=>{
+    const between=!isDirect(e);
+    if(between) pp++;
+    e[(between&&!SHOW_PP)?'addClass':'removeClass']('pphidden');
+    if(!(between&&!SHOW_PP)) e.removeStyle('opacity');   // same reason as applyTierFloor
+  });
+  const lab=root.getElementById('ppn');
+  if(lab) lab.textContent=pp?`(${pp})`:'';
+  const box=root.getElementById('pp');
+  if(box) box.disabled=!pp;
+}
 
 async function loadContexts(){
   const r=await fetch(APIBASE+'/api/net_contexts?organism='+ORG);const j=await r.json();
@@ -1079,20 +1325,169 @@ async function load(){
   const u=`${APIBASE}/api/screen_net?gene=${encodeURIComponent(FOCUS)}&context=${encodeURIComponent(CTX)}&reciprocal=${RECIP?1:0}&organism=${ORG}`;
   let j;try{j=await (await fetch(u)).json();}catch(e){status('request failed');return;}
   if(j.error){status(j.error);if(CY)CY.elements().remove();renderPanel(null);return;}
-  status('');FOCUS=j.focus;root.getElementById('q').placeholder=j.focus;
+  status('');FOCUS=j.focus;root.getElementById('q').placeholder=j.focus;window.__NETJ=j;
   const els=[
     ...j.nodes.map(n=>({data:{id:n.id,label:n.label,lean:String(n.lean),focus:n.focus,degree:n.degree,mean_percentile:n.mean_percentile}})),
-    ...j.edges.map(e=>({data:{id:e.source+'__'+e.target,source:e.source,target:e.target,strength:e.strength,reciprocal:e.reciprocal}})),
+    ...j.edges.map(e=>({data:{id:e.source+'__'+e.target,source:e.source,target:e.target,strength:e.strength,reciprocal:e.reciprocal,
+      tier:e.tier,tier_label:e.tier_label,jaccard:e.jaccard,cohit:e.cohit}})),
   ];
   if(!CY){
     CY=window.cytoscape({container:root.getElementById('cy'),elements:els,style:cyStyle,
       minZoom:.2,maxZoom:3,wheelSensitivity:.25});
     CY.on('tap','node',ev=>{const d=ev.target.data();if(d.id!==FOCUS){FOCUS=d.id;load();}else selectNode(ev.target);});
     CY.on('tap','edge',ev=>selectEdge(ev.target));
-    CY.on('tap',ev=>{if(ev.target===CY){CY.elements().removeClass('dim sel');renderPanel(j);}});
+    CY.on('tap',ev=>{if(ev.target===CY){CY.elements().removeClass('dim sel hov');renderPanel(j);}});
+    /* Hover a gene to see only its evidence. Deferred to a click-free graph so it cannot fight a
+       selection: with something selected, the panel is showing that thing and the graph must agree. */
+    CY.on('mouseover','node',ev=>{
+      ev.target.addClass('lift');            // label to the front, always — even with a selection
+      if(CY.elements('.sel').length) return;
+      CY.elements().not(ev.target.closedNeighborhood()).addClass('hov');
+    });
+    CY.on('mouseout','node',ev=>{ev.target.removeClass('lift');CY.elements().removeClass('hov');});
   }else{CY.elements().remove();CY.add(els);}
-  CY.layout({name:'cose',animate:true,animationDuration:600,padding:60,nodeRepulsion:22000,idealEdgeLength:118,nodeOverlap:28,componentSpacing:150,gravity:.25,coolingFactor:.96}).run();
+  applyTierFloor();
+  applyEdgeScope();
+  fitWrap();                 // size the canvas BEFORE cytoscape measures it, not after
+  /* animate:false + an explicit fit. The old animated cose left the graph wherever it converged,
+     which for most genes was a knot in one corner with two thirds of the canvas empty; the
+     entrance animation now belongs to sediment() instead, which says something. */
+  /* Repulsion and gravity left where they are on purpose. Spreading the layout to buy label
+     clearance does not work: fit() scales the result back down, so the clearance is the same
+     fraction of a smaller graph, and the looser shape wastes more canvas. Tried 46000/140/0.15 —
+     measurably worse. Label legibility is bought by placeLabels() and the chips, not by geometry. */
+  const lay=CY.layout({name:'cose',animate:false,padding:70,nodeRepulsion:24000,idealEdgeLength:120,
+    nodeOverlap:30,componentSpacing:150,gravity:.3,coolingFactor:.95});
+  /* resize() BEFORE fit(). cytoscape caches its container's dimensions, and vendored into the
+     React app this page mounts inside a shadow root whose flex column has not resolved yet — the
+     graph fitted itself to a stale, tiny box and rendered as a thumbnail in the corner while the
+     canvas around it was full size. */
+  lay.one('layoutstop',()=>{CY.resize();placeLabels();CY.fit(undefined,70);sediment();});
+  lay.run();
   renderPanel(j);
+  watchResize();
+}
+
+/* LABEL PLACEMENT. Every label used to sit directly below its node, which is fine on a sparse
+   neighbourhood and unreadable on a dense one: in FANCD2's core the label of one gene lands on the
+   circle of the gene beneath it, and two labels land on each other. Nothing about the halo or the
+   chip fixes that — the text is legible, it is just in the wrong place.
+
+   So each label is pushed OUTWARD, away from the neighbourhood's centre. In a force-directed layout
+   the crowding is always toward the middle, so the outward side of any node is the emptiest side
+   available to it. Eight positions, one per octant, using the halign/valign pairs cytoscape already
+   supports. The focus gene keeps its label below, centred: it is the one node the reader looks for
+   by position rather than by reading, and moving it would be the one change they notice. */
+const LBL_H=['right','right','center','left','left','left','center','right'];
+const LBL_V=['center','bottom','bottom','bottom','center','top','top','top'];
+const LBL_FONT=11, LBL_CHAR=6.6, LBL_PAD=2.5, LBL_GAP=4;   // IBM Plex Mono 11px, measured
+
+/** Where a label would sit, in MODEL coordinates, for one of the eight placements. */
+function labelBox(n, oct, zoom){
+  const p=n.position(), r=n.width()/2;
+  const w=((n.data('label')||'').length*LBL_CHAR + 2*LBL_PAD)/zoom;
+  const h=(LBL_FONT + 2*LBL_PAD + 2)/zoom;
+  const gap=LBL_GAP/zoom;
+  const hh=LBL_H[oct], vv=LBL_V[oct];
+  const cx = hh==='right' ? p.x + r + gap + w/2
+           : hh==='left'  ? p.x - r - gap - w/2 : p.x;
+  const cy = vv==='bottom'? p.y + r + gap + h/2
+           : vv==='top'   ? p.y - r - gap - h/2 : p.y;
+  return {x1:cx-w/2, x2:cx+w/2, y1:cy-h/2, y2:cy+h/2};
+}
+function overlap(a,b){
+  return Math.max(0, Math.min(a.x2,b.x2)-Math.max(a.x1,b.x1))
+       * Math.max(0, Math.min(a.y2,b.y2)-Math.max(a.y1,b.y1));
+}
+
+/* LABEL PLACEMENT. Every label used to sit directly below its node, which is fine on a sparse
+   neighbourhood and unreadable on a dense one: in FANCD2's core the label of one gene lands on the
+   circle of the gene beneath it, and two labels land on each other. Nothing about the halo or the
+   chip fixes that — the text is legible, it is just in the wrong place.
+
+   Two passes. First choice is OUTWARD, away from the neighbourhood's centre: in a force-directed
+   layout the crowding is always toward the middle, so a node's outward side is the emptiest side
+   available to it. That alone fixes the ring but not the core, where a node sitting near the
+   centroid has no outward direction to take — so the second pass actually measures. Nodes are
+   placed hubs-first (they are the ones a reader is looking for), each tries all eight positions,
+   and takes the one whose box overlaps the least of what is already committed.
+
+   Nothing is ever hidden. A gene name a biologist cannot read is a gene they cannot look up, so a
+   crowded label still gets its least-bad spot rather than being dropped — and hovering lifts it
+   clear regardless.
+
+   The focus gene keeps its label below, centred: it is the one node the reader finds by position
+   rather than by reading, and moving it is the one change they would notice. */
+function placeLabels(){
+  if(!CY || !CY.nodes().length) return;
+  const bb=CY.nodes().boundingBox();
+  const cx=(bb.x1+bb.x2)/2, cy=(bb.y1+bb.y2)/2;
+  const el=root.getElementById('cy');
+  const cw=el?el.clientWidth:900, ch=el?el.clientHeight:600;
+  /* Labels render at a fixed PIXEL size, so their footprint in model space depends on the zoom —
+     which fit() has not applied yet. Predict it the same way fit() will. */
+  const zoom=Math.max(.15, Math.min(3,
+    Math.min((cw-140)/Math.max(bb.w,1), (ch-140)/Math.max(bb.h,1))));
+
+  const taken=[];                                  // committed label boxes
+  const circles=CY.nodes().map(n=>{
+    const p=n.position(), r=n.width()/2;
+    return {x1:p.x-r, x2:p.x+r, y1:p.y-r, y2:p.y+r};
+  });
+
+  const order=CY.nodes().sort((a,b)=>
+    (b.data('focus')?1e9:b.data('degree')||0)-(a.data('focus')?1e9:a.data('degree')||0));
+
+  order.forEach(n=>{
+    let oct;
+    if(n.data('focus')){
+      oct=2;                                       // centre-bottom, always
+    }else{
+      const dx=n.position().x-cx, dy=n.position().y-cy;
+      const pref=(dx===0&&dy===0)?2:((Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8);
+      let best=pref, bestScore=Infinity;
+      // Try the outward choice first, then the rest; ties keep the outward one.
+      for(const cand of [pref,(pref+1)%8,(pref+7)%8,(pref+2)%8,(pref+6)%8,(pref+3)%8,(pref+5)%8,(pref+4)%8]){
+        const box=labelBox(n,cand,zoom);
+        let s=0;
+        for(const t of taken)   s+=overlap(box,t)*2;   // label-on-label is worse than label-on-circle
+        for(const c of circles) s+=overlap(box,c);
+        if(s<bestScore-1e-6){ bestScore=s; best=cand; if(s===0) break; }
+      }
+      oct=best;
+    }
+    taken.push(labelBox(n,oct,zoom));
+    const h=LBL_H[oct], v=LBL_V[oct];
+    n.style({'text-halign':h,'text-valign':v,
+      'text-margin-x':h==='right'?LBL_GAP:h==='left'?-LBL_GAP:0,
+      'text-margin-y':v==='bottom'?LBL_GAP:v==='top'?-LBL_GAP:0});
+  });
+}
+
+/* The graph area claims everything between the chrome above it and the footnote below, measured
+   from the viewport so it does not care what the DOM chain above it looks like. */
+function fitWrap(){
+  const w=root.querySelector('.wrap'); if(!w) return;
+  const foot=root.querySelector('.foot');
+  const footH=foot?foot.getBoundingClientRect().height:0;
+  const h=Math.max(320, Math.round(window.innerHeight - w.getBoundingClientRect().top - footH));
+  if(w.style.height!==h+'px') w.style.height=h+'px';
+}
+
+/* Keep the graph fitted when its box changes — the control bar rewrapping, a React parent
+   mounting, the window resizing. Installed once. */
+let RESIZE_OBS=null;
+function watchResize(){
+  fitWrap();
+  if(RESIZE_OBS || typeof ResizeObserver==='undefined') return;
+  const host=root.getElementById('cy'); if(!host) return;
+  let t=null;
+  RESIZE_OBS=new ResizeObserver(()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{ if(CY && CY.nodes().length){ CY.resize(); CY.fit(undefined,70); } },120);
+  });
+  RESIZE_OBS.observe(host);
+  window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(fitWrap,120);});
 }
 
 function selectNode(node){
@@ -1109,80 +1504,243 @@ function selectNode(node){
     partners.map(p=>`<div class="partner" onclick="jump('${p.id}')"><b>${p.id}</b><span class="r">r ${p.strength}${p.reciprocal?' ⇄':''}</span></div>`).join('')+
     `</div><div class="hint"><a href="/gene?gene=${d.label}">Open ${d.label} in the gene wiki →</a></div>`;
 }
+function fmtQ(q){ if(q==null) return '—';
+  if(q===0) return '&lt;1e-300';                       /* the table underflows at ~1.7e-310 */
+  const e=Math.floor(Math.log10(q)); return q<1e-4?`1e${e}`:q.toPrecision(2); }
+
 function selectEdge(edge){
   CY.elements().addClass('dim');CY.elements().removeClass('sel');
   edge.removeClass('dim').addClass('sel');edge.source().removeClass('dim');edge.target().removeClass('dim');
-  const d=edge.data();
+  const d=edge.data(), t=TIER[d.tier]||TIER[4], c=d.cohit;
+  /* Both channels, always, in the same order — an edge that FAILS channel 2 is a finding, not an
+     absence to hide. The number that decides whether this is worth a cloning experiment is the
+     tier's measured precision, so it leads. */
   root.getElementById('panel').innerHTML=
     `<h3 style="font-family:var(--mono);font-size:15px">${d.source} — ${d.target}</h3>`+
-    `<div class="sub">co-essential edge · ${CTX}</div>`+
+    `<div class="sub">co-essential edge · ${esc(CTX)}</div>`+
+    `<div class="tier-head" style="border-left:3px solid ${t.color}">
+       <div class="tier-name">${t.label}</div>
+       <div class="tier-prec">${TIER_PREC[d.tier]||'—'} of edges like this recover a known CORUM complex
+         <span class="tier-base">· 0.6% for a random annotated pair</span></div>
+     </div>`+
+    `<div class="ctl-lab" style="margin:14px 0 6px">Channel 1 · profile correlation</div>`+
     kv('correlation r', d.strength)+kv('mutual-best', d.reciprocal?'yes ⇄':'one-directional')+
-    `<div class="hint">These two genes' knockout-fitness profiles track each other across the genome-wide screens of this context.</div>`;
+    `<div class="ctl-lab" style="margin:14px 0 6px">Channel 2 · co-hit enrichment</div>`+
+    (c ? kv('co-hit screens', `${c.co_hit} of ${c.support}`)+kv('enrichment', c.fold+'×')+
+         kv('FDR q', fmtQ(c.q_value))+kv('same direction', (c.concordance*100).toFixed(1)+'%')
+       : `<div class="hint" style="margin:0">Not co-called significantly more often than their
+            individual hit rates predict. Channel 2 is silent on this pair.</div>`)+
+    `<div class="ctl-lab" style="margin:14px 0 6px">Neighbourhood</div>`+
+    kv('shared partners (Jaccard)', d.jaccard==null?'—':d.jaccard.toFixed(3))+
+    `<div class="hint">Channel 1 correlates the full fitness profile across every screen. Channel 2
+       uses <b>only</b> the screens where both genes were called hits — the cells channel 1 averages
+       away — so the two agree by biology, not by construction.
+       ${c&&c.concordance!=null?`Same-direction share is descriptive only: it does not separate real
+       complexes from coincidences (AUROC 0.53), so nothing is filtered on it.`:''}</div>`;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* THE EVIDENCE LANE. A gel lane, read the way a bench biologist already reads one: bands stacked
+   strongest-first, band height = how much of this neighbourhood sits at that level of evidence.
+   It replaced a horizontal proportion bar plus a separate key — the bar encoded the same numbers
+   but a 5px strip is not a thing you read, and splitting count from swatch made the reader do a
+   join. Here the proportion IS the row, so "seven of every ten of these lines are the pale band
+   at the bottom" arrives without anyone reading a number.
+
+   One line of content per band, vertically centred, with a 30px floor. The earlier two-line
+   version broke on real data: mutual-best is 8 of 103 edges here, and its band could not hold a
+   label. Height still carries the proportion; the content just never fights it. */
+function tierLane(j){
+  if(!j || !j.edges) return '';
+  const direct=e=>e.source===j.focus||e.target===j.focus;
+  const inScope=j.edges.filter(e=>SHOW_PP||direct(e));
+  const drawn=inScope.filter(e=>(e.tier||4)<=TIER_FLOOR);
+  if(!drawn.length) return '';
+  const h={1:0,2:0,3:0,4:0};
+  drawn.forEach(e=>{h[e.tier||4]++;});
+  const tot=drawn.length;
+  const bands=[1,2,3,4].filter(t=>h[t]).map(t=>{
+    const pale=t===4;
+    return `<div class="band" data-tier="${t}" style="flex:${h[t]};
+        background:${TIER[t].color};color:${pale?'var(--ink2)':'#FCFCFB'}"
+        title="${esc(TIER[t].blurb)}">
+      ${t===3?'<i class="hatch"></i>':''}
+      <b>${h[t]}</b><span>${TIER[t].label}</span><em>${TIER_PREC[t]}</em></div>`;
+  }).join('');
+  /* The lane describes what is ON SCREEN, not what the server sent — otherwise it would keep
+     advertising 103 edges while 18 are drawn. Both kinds of hidden edge are named, because a
+     reader who cannot see why a number moved stops trusting the number. */
+  const byEvidence=inScope.length-drawn.length;
+  const byScope=j.edges.length-inScope.length;
+  const notes=[];
+  if(byEvidence) notes.push(`${byEvidence} below the evidence filter`);
+  if(byScope) notes.push(`${byScope} between partners, hidden`);
+  return `<div class="ctl-lab" style="margin:16px 0 7px">Edge evidence · CORUM precision</div>`+
+    `<div class="lane">${bands}</div>`+
+    `<div class="hint" style="margin:7px 0 0">Band height is that tier's share of the ${tot} edge${tot===1?'':'s'}
+       drawn. Hover a band to isolate it.${notes.length?` <span style="color:var(--faint)">${notes.join(' · ')}.</span>`:''}</div>`;
+}
+
+/* Bound after every panel render, because renderPanel replaces the whole subtree. */
+function bindLane(){
+  root.querySelectorAll('.lane .band').forEach(b=>{
+    const k=+b.dataset.tier;
+    b.addEventListener('mouseenter',()=>{
+      if(!CY||CY.elements('.sel').length) return;
+      // Only over what is DRAWN — otherwise a hidden partner-partner edge would keep its genes lit
+      // and the isolation would contradict the picture.
+      const lit=visibleEdges().filter(e=>(e.data('tier')||4)===k);
+      CY.edges().forEach(e=>e.toggleClass('hov',!lit.contains(e)));
+      CY.nodes().addClass('hov');
+      lit.connectedNodes().removeClass('hov');
+    });
+    b.addEventListener('mouseleave',()=>{ if(CY) CY.elements().removeClass('hov'); });
+  });
+}
 
 function renderPanel(j){
   if(!j){root.getElementById('panel').innerHTML=`<div class="sub" style="margin-top:8px">No graph.</div>`+legend();return;}
   const n=j.nodes.length,e=j.edges.length;
+  const direct=x=>x.source===j.focus||x.target===j.focus;
+  const shown=j.edges.filter(x=>(x.tier||4)<=TIER_FLOOR&&(SHOW_PP||direct(x))).length;
   root.getElementById('panel').innerHTML=
     `<h3>${j.focus}</h3><div class="sub">${j.context_label}</div>`+
-    kv('neighborhood', n+' genes')+kv('edges', e)+
+    /* The lane sits directly under the gene name, above every count. It is the one thing on this
+       panel that tells the reader whether to believe the picture, so it leads. */
+    tierLane(j)+
+    (j.cohit_available===false?`<div class="hint" style="color:var(--eviq);margin:7px 0 0">The co-hit
+       channel is unavailable on this deployment, so every edge is graded on channel 1 alone.</div>`:'')+
+    (j.reciprocal_only?`<div class="hint" style="margin:7px 0 0">This view keeps only mutual-best
+       edges, so nothing below <b>mutual-best</b> can appear. Untick <b>reciprocal only</b> to see the
+       wider neighbourhood graded.</div>`:'')+
+    `<div style="margin-top:16px">`+
+    kv('neighborhood', n+' genes')+kv('edges', shown===e?e:`${shown} of ${e}`)+
     kv('view', j.fellback?'<span style="color:var(--eviq)">one-directional</span>':(j.reciprocal_only?'reciprocal only':'all top-k'))+
+    `</div>`+
     (j.fellback?`<div class="hint" style="color:var(--eviq);margin:6px 0 0">${esc(j.focus)} has no <b>mutual-best</b> partner — showing its one-directional partners instead.</div>`:'')+
-    `<div class="hint">Click a <b>gene</b> to recenter the map on it, or an <b>edge</b> to inspect the correlation. Toggle <b>reciprocal only</b> to loosen or tighten the graph.</div>`+
+    `<div class="hint">Click a <b>gene</b> to recenter the map on it, or an <b>edge</b> to inspect both evidence channels. Hover a gene to see only its own evidence.</div>`+
     `<div class="predict-box">
-       <button class="predbtn" id="predbtn" onclick="predictFn()">✳ Predict undiscovered function (gpt-5) →</button>
-       <div class="pred-note">Reasons over ${esc(j.focus)}'s co-essential partners in <b>this</b> network — RETICLE's own BioGRID data, not STRING or DepMap — to propose a shared complex/pathway/process it isn't yet annotated with.</div>
+       <button class="predbtn" id="predbtn" onclick="predictFn()">✳ Predict undiscovered function →</button>
+       <div class="pred-note">Reasons over ${esc(j.focus)}'s co-essential partners in <b>this</b> network — RETICLE's own BioGRID data, not STRING or DepMap — to propose a shared complex/pathway/process it isn't yet annotated with.
+         The gene wiki carries the other view, inferred from <a href="/gene?gene=${encodeURIComponent(j.focus)}&taxid=${ORG==='mouse'?10090:9606}#predictions">STRING + DepMap →</a>.</div>
        <div id="predout"></div>
      </div>`+
     legend();
+  bindLane();
 }
 
+/* Stamps every request. The call takes 15-55s and the user can click another node while it is in
+   flight; without this, the reply for the gene they left paints under the name of the gene they
+   are now looking at. */
+let PRED_REQ = 0;
 async function predictFn(){
   const host=root.getElementById('predout'), btn=root.getElementById('predbtn');
   if(!host||!btn) return;
   const label=btn.textContent;
+  const req=++PRED_REQ, gene=FOCUS, view=RECIP;
   btn.disabled=true;
-  host.innerHTML=`<div class="pred-load"><span class="pred-dot"></span> gpt-5 is reading ${esc(FOCUS)}'s co-essential partners' known functions…</div>`;
+  host.innerHTML=`<div class="pred-load"><span class="pred-dot"></span> reading ${esc(gene)}'s co-essential partners' known functions…</div>`;
   try{
-    const r=await fetch(`${APIBASE}/api/net_predict?gene=${encodeURIComponent(FOCUS)}&organism=${ORG}&context=${encodeURIComponent(CTX)}`);
+    /* reciprocal is sent so the dossier is built from the neighbourhood on screen. Without it the
+       model read the mutual-best set no matter what the graph showed. */
+    const r=await fetch(`${APIBASE}/api/net_predict?gene=${encodeURIComponent(gene)}&organism=${ORG}`
+      +`&context=${encodeURIComponent(CTX)}&reciprocal=${view?1:0}`);
     const j=await r.json();
+    if(req!==PRED_REQ) return;                       // superseded — the user moved on
     if(!r.ok){ host.innerHTML=`<div class="pred-err">${esc(j.error||'Prediction failed.')}</div>`; }
-    else renderPrediction(j);
-  }catch(e){ host.innerHTML=`<div class="pred-err">Could not reach the server.</div>`; }
+    else renderPrediction(j, req);
+  }catch(e){
+    if(req!==PRED_REQ) return;
+    host.innerHTML=`<div class="pred-err">Could not reach the server.</div>`;
+  }
+  if(req!==PRED_REQ) return;
   btn.disabled=false; btn.textContent=label;
 }
 
-function renderPrediction(j){
+/* Every server-side check still runs at full strength; what changed is that a failed check now
+   returns a VERDICT instead of deleting the prediction. That is what makes the professor's filter
+   possible at all — you cannot offer to show weaker material that never left the server. It also
+   turns the anti-hallucination check from an invisible claim into a visible one. */
+const VERDICT={
+  'verified':                       {label:'verified',         cls:'v-ok'},
+  'single-supporter':               {label:'single supporter', cls:'v-weak',
+     note:'Exactly one partner in the dossier carries this claim, and it is not a top-tier partner. Shown, not hidden — but it is one observation.'},
+  'rejected:not-novel':             {label:'not novel',        cls:'v-rej',
+     note:'Restates something this gene is already annotated with. The novelty re-check rejected it server-side, regardless of what the model claimed.'},
+  'rejected:no-verifiable-support': {label:'unverifiable',     cls:'v-rej',
+     note:'Every partner symbol it cited is absent from the dossier it was given. The citation check rejected it.'},
+};
+let PRED_SHOW='verified';                 // 'verified' = the strict view · 'all' = show the rest
+function setPredShow(v){ PRED_SHOW=v; if(window.__PREDJ) renderPrediction(window.__PREDJ); }
+
+function renderPrediction(j, req){
+  if(req!==undefined && req!==PRED_REQ) return;      // see predictFn — do not paint a stale reply
   const host=root.getElementById('predout'); if(!host) return;
-  const caption=`<div class="pred-note">${j.n_annotated_partners}/${j.n_partners} partners with known function · ${esc(j.context_label)}${j.model?` · <span style="color:var(--pred)">${esc(j.model)}</span>`:''}</div>`;
+  window.__PREDJ=j;
+  const caption=`<div class="pred-note">${j.n_annotated_partners}/${j.n_partners} partners with known function`
+    +(j.n_beyond_view?` · <b>${j.n_beyond_view}</b> read beyond your graph filter`:'')
+    +` · ${esc(j.context_label)}${j.model?` · <span style="color:var(--pred)">${esc(j.model)}</span>`:''}</div>`;
   if(!j.predictions || !j.predictions.length){
     host.innerHTML=caption+`<div class="pred-summary">${esc(j.summary||'No convergent, novel function emerged from this neighborhood.')}</div>`;
     return;
   }
-  const cards=j.predictions.map(p=>{
+  const strict=j.predictions.filter(p=>p.verdict==='verified');
+  const rest  =j.predictions.filter(p=>p.verdict!=='verified');
+  const shown =PRED_SHOW==='all'?j.predictions:strict;
+
+  const card=p=>{
+    const v=VERDICT[p.verdict]||VERDICT['verified'], rej=p.verdict.startsWith('rejected');
     const chips=p.supporting_partners.map(s=>
-      `<span class="pc-chip" onclick="jump('${esc(s.symbol)}')"><b>${esc(s.symbol)}</b> r ${s.strength.toFixed(2)}${s.reciprocal?' ⇄':''}</span>`).join('');
-    return `<div class="pred-card">
-      <div class="pc-h"><span class="pc-name">${esc(p.prediction)}</span><span class="pc-type">${esc(p.type)}</span><span class="pc-conf ${p.confidence}">${esc(p.confidence)}</span></div>
-      <div class="pc-conv">${esc(p.convergence)}</div>
+      `<span class="pc-chip t${s.tier}" onclick="jump('${esc(s.symbol)}')" title="${esc(TIER[s.tier].label)} — ${TIER_PREC[s.tier]} CORUM precision">
+         <i>T${s.tier}</i><b>${esc(s.symbol)}</b> r ${s.strength.toFixed(2)}${s.reciprocal?' ⇄':''}</span>`).join('');
+    return `<div class="pred-card${rej?' rejected':''}">
+      <div class="pc-h"><span class="pc-name">${esc(p.prediction)}</span><span class="pc-type">${esc(p.type)}</span>
+        <span class="pc-verdict ${v.cls}">${v.label}</span></div>
+      <div class="pc-conv">${esc(p.convergence)}${p.verdict==='verified'?` · ${esc(p.confidence)} confidence`:''}</div>
+      ${v.note?`<div class="pc-note">${v.note}</div>`:''}
       <div class="pc-rat">${esc(p.rationale)}</div>
-      <div class="pc-supp">${chips}</div>
-    </div>`;
-  }).join('');
-  host.innerHTML=caption+`<div class="pred-cards">${cards}</div>`+(j.summary?`<div class="pred-summary">${esc(j.summary)}</div>`:'');
+      ${p.supporting_partners.length?`<div class="pc-supp">${chips}</div>`:''}
+      ${p.unverifiable_citations && p.unverifiable_citations.length
+        ? `<div class="pc-ghost">cited but not in the dossier: ${p.unverifiable_citations.map(esc).join(', ')}</div>`:''}
+    </div>`;};
+
+  /* Always present, even at zero, so "nothing was filtered" is a statement the user can read
+     rather than an absence they have to infer. */
+  const nSingle=rest.filter(p=>p.verdict==='single-supporter').length;
+  const nRej=rest.length-nSingle;
+  const bar=`<div class="pred-filter">
+     <span>${strict.length} verified${nSingle?` · ${nSingle} single-supporter`:''}${nRej?` · ${nRej} rejected by validation`:''}</span>
+     ${rest.length?`<button class="pf-btn" onclick="setPredShow('${PRED_SHOW==='all'?'verified':'all'}')">${PRED_SHOW==='all'?'hide':'show all'}</button>`:''}
+   </div>`;
+  const audit=j.n_unverifiable_citations
+    ? `<div class="pred-audit">The model named ${j.n_unverifiable_citations} partner${j.n_unverifiable_citations===1?'':'s'} that ${j.n_unverifiable_citations===1?'is':'are'} not in the dossier it was given. Those citations were struck server-side.</div>`
+    : '';
+  host.innerHTML=caption+bar+`<div class="pred-cards">${shown.map(card).join('')}</div>`+audit
+    +(j.summary?`<div class="pred-summary">${esc(j.summary)}</div>`:'');
 }
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 function leanText(l){return l==='essential'?'<span class="tag t-ess">essential</span>':l==='advantageous'?'<span class="tag t-adv">KO-advantageous</span>':l==='mixed'?'<span class="tag t-mix">mixed</span>':'<span class="tag t-unk">unrated</span>';}
 function legend(){return `<div class="legend"><div class="ctl-lab" style="margin-bottom:8px">node = gene · color = fitness role</div>`+
   [['essential','#1F6F8B','#155568','KO deleterious (essential)'],['advantageous','#C77D31','#9c5f22','KO advantageous'],['mixed','#8A8F98','#6B7280','no clear fitness lean']]
   .map(x=>`<div class="legrow"><span class="dot" style="background:${x[1]};border-color:${x[2]}"></span>${x[3]}</div>`).join('')+
-  `<div class="legrow" style="margin-top:6px"><span style="width:22px;border-top:2px solid #C9CDC7"></span>reciprocal edge</div>`+
-  `<div class="legrow"><span style="width:22px;border-top:2px dashed #DFE2DC"></span>one-directional</div></div>`;}
+  /* No edge legend here any more — the lane above is the legend, and repeating it made the panel
+     say the same four things twice. What the lane cannot show is line STYLE, so that one row stays. */
+  `<div class="legrow" style="margin-top:12px;color:var(--muted)">
+     <span style="width:22px;border-top:3px solid #2E4756"></span>solid = mutual-best
+     <span style="width:22px;border-top:2px dashed #6E8794;margin-left:6px"></span>dashed = co-hit</div>`+
+  `</div>`;}
 
 function go(ev){ev.preventDefault();const v=root.getElementById('q').value.trim();if(v){FOCUS=v;load();}}
 function jump(g){FOCUS=g;load();}
 root.getElementById('recip').onchange=e=>{RECIP=e.target.checked;load();};
+/* No refetch and no relayout: every edge is already here, and the positions were computed from all
+   of them, so revealing the partner-partner set drops the lines back onto a layout that already
+   accounts for them. */
+root.getElementById('pp').onchange=e=>{
+  SHOW_PP=e.target.checked;
+  applyEdgeScope();
+  const j=window.__NETJ; if(j) renderPanel(j);
+};
 
 /* accept ?gene=&organism= so the global nav can carry the current gene in from the wiki */
 (function(){
@@ -1215,11 +1773,13 @@ root.getElementById('recip').onchange=e=>{RECIP=e.target.checked;load();};
 
 // ---- end vendored network.html ----
   // Inline handler attributes evaluate in global scope — see inlineHandlerNames.
-  // Candidates found in this page: esc, go, jump, predictFn
+  // Candidates found in this page: esc, go, jump, predictFn, setPredShow, setTierFloor
   if (typeof esc !== 'undefined') { window.esc = esc; exposed.push('esc'); }
   if (typeof go !== 'undefined') { window.go = go; exposed.push('go'); }
   if (typeof jump !== 'undefined') { window.jump = jump; exposed.push('jump'); }
   if (typeof predictFn !== 'undefined') { window.predictFn = predictFn; exposed.push('predictFn'); }
+  if (typeof setPredShow !== 'undefined') { window.setPredShow = setPredShow; exposed.push('setPredShow'); }
+  if (typeof setTierFloor !== 'undefined') { window.setTierFloor = setTierFloor; exposed.push('setTierFloor'); }
   return exposed;
 }
 
@@ -1333,8 +1893,13 @@ export function mountReticle(host, apiBase, opts) {
     pageHost.innerHTML = '';
     pageHost.appendChild(pageEl);
 
-    // The tab bar lives inside the page markup — rebind it on every switch.
-    pageEl.querySelectorAll('[data-t]').forEach((a) => {
+    /* The tab bar lives inside the page markup — rebind it on every switch. Scoped to .gnav-tabs
+       rather than every [data-t] in the page: "data-t" is a short, generic name and a page is
+       entitled to use it for its own content (the network page tagged its evidence bands with it).
+       Unscoped, those elements picked up a tab-switch handler and clicking one called show("1"),
+       which has no page to mount and took the whole tab down.
+       NB no backticks in comments inside this template literal — see the warning above. */
+    pageEl.querySelectorAll('.gnav-tabs [data-t]').forEach((a) => {
       a.classList.toggle('on', a.getAttribute('data-t') === meta.key);
       a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1349,6 +1914,31 @@ export function mountReticle(host, apiBase, opts) {
         e.stopPropagation();
         if (typeof options.onBack === 'function') options.onBack();
       });
+    });
+
+    /* CROSS-PAGE LINKS IN BODY CONTENT. The pages link to each other outside the tab bar —
+       "Open in Network →", "Open FANCD2 in the gene wiki →" — and standing alone those are plain
+       hrefs to /network?gene=… and /gene?gene=…. Inside the React app those paths do not exist,
+       so a click would navigate the whole SPA away from itself.
+       They cannot be rewritten at build time the way the tab bar is: they are built at RUNTIME
+       inside template literals in each page's own script, so there is no markup for a regex to
+       find. Delegation on the page element catches them however they were created. The gene is
+       carried across by writing it into the destination page's search box and calling its own
+       lookup, which is exactly what a user typing it would do. */
+    pageEl.addEventListener('click', (e) => {
+      const a = e.target && e.target.closest && e.target.closest('a[href]');
+      if (!a || a.hasAttribute('data-t') || a.hasAttribute('data-rx-home')) return;
+      const href = a.getAttribute('href') || '';
+      const m = /^\/(gene|screen|network)\b/.exec(href);
+      if (!m) return;                       // external link (NCBI, PubMed, …) — leave it alone
+      e.preventDefault();
+      e.stopPropagation();
+      const key = m[1];
+      const gene = (/[?&]gene=([^&#]*)/.exec(href) || [])[1];
+      const org = (/[?&]organism=([^&#]*)/.exec(href) || [])[1]
+        || ((/[?&]taxid=10090/.test(href)) ? 'mouse' : undefined);
+      show(key);
+      if (gene) openGene(decodeURIComponent(gene), org && decodeURIComponent(org));
     });
 
     // Drop the previous page's inline-handler globals before the next page installs its own —
@@ -1366,9 +1956,46 @@ export function mountReticle(host, apiBase, opts) {
       // diagnose than one that says why.
       console.error('[reticle_aaron] page ' + meta.key + ' failed to start', err);
     }
+
+    /* Re-assert the active tab AFTER the page script ran. Each page also highlights its own tab,
+       by reading location.pathname — which is stubbed to '/' in here, so every page decides it is
+       the Gene page and lights that too. Two tabs came up active. The generator knows which page
+       it actually mounted, so it gets the last word. */
+    pageEl.querySelectorAll('.gnav-tabs [data-t]').forEach((a) => {
+      a.classList.toggle('on', a.getAttribute('data-t') === meta.key);
+    });
+  }
+
+  /* Drive the page that is mounted to a specific gene. Used by the cross-page links above and by
+     the host app, which lets the signed-in home page hand a symbol straight to the wiki instead of
+     making the user type it a second time on arrival.
+     Which entry point each page exposes is spelled out at the call below. */
+  function openGene(sym, organism) {
+    if (!sym) return;
+    // The wiki and network pages name their box #q; the screen page names its own #qs. Fill
+    // whichever is present so the value the host handed over is visible, not just acted on.
+    const box = byId(root, 'q') || byId(root, 'qs');
+    if (box) box.value = sym;
+    /* The wiki reads its species from a #tax select at call time, so setting it before lookup() is
+       what makes a mouse symbol resolve as mouse. The network page instead keeps species in a
+       module variable behind its own pills, whose handler resets the focal gene and reloads — so
+       it is deliberately NOT driven from here; clicking it and then jumping would race two loads.
+       A mouse gene reached through a cross-page link therefore lands on the human network. Known,
+       and it needs an entry point on that page rather than a bodge out here. */
+    if (organism) {
+      const tax = byId(root, 'tax');
+      if (tax) tax.value = organism === 'mouse' ? '10090' : '9606';
+    }
+    // Each page names its own entry point and only one of these exists at a time: the wiki has
+    // lookup(), the network has jump(), the screen page has findSimilar(). All three take the
+    // thing the box holds. load() is last and only as a fallback — it takes no argument on the
+    // network page, so preferring it would land on the previous gene.
+    const go = window.lookup || window.jump || window.findSimilar || window.load;
+    if (typeof go === 'function') { try { go(sym); } catch (err) { /* page shows its own error */ } }
   }
 
   show(options.initial || 'gene');
+  if (options.initialGene) openGene(String(options.initialGene), options.initialOrganism);
 
   return function cleanup() {
     disposed = true;

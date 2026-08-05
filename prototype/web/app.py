@@ -478,54 +478,113 @@ rather than inventing literature. Never fabricate a PMID — only cite ones prov
 # ---------------------------------------------------------------------------
 # Co-essentiality network — data-driven gene-gene graph from CRISPR profiles
 # (complements STRING: works even for dark genes with no literature edges)
+#
+# The coess_<taxid>.npz cache that used to live here is gone: coessential_network() reads net_edge
+# now, so nothing loads the dense matrix any more. The .npz files are still on disk and are still
+# what compute_coessential.py writes — they are simply no longer in a request path.
 # ---------------------------------------------------------------------------
-_COESS = {}
 
 
 def _lean_label(v):
     return "essential" if v < -0.15 else "advantageous" if v > 0.15 else "mixed"
 
 
-def _load_coess(taxid):
-    if taxid in _COESS:
-        return _COESS[taxid]
-    p = paths.PROCESSED_DATA / f"coess_{taxid}.npz"
-    if not p.exists():
-        _COESS[taxid] = None
-        return None
-    z = np.load(p, allow_pickle=True)
-    genes = [str(g) for g in z["genes"]]
-    _COESS[taxid] = {"R": z["R"].astype(np.float32), "genes": genes,
-                     "gidx": {g.lower(): i for i, g in enumerate(genes)},
-                     "lean": z["lean"], "n_screens": int(z["R"].shape[1])}
-    return _COESS[taxid]
+def coessential_network(symbol, taxid, top=14):
+    """The gene wiki's inline co-essentiality graph.
 
+    NOW READS net_edge — the same source the Network page serves — where it used to load a dense
+    coess_<taxid>.npz and compute `R @ R[query]` per request. That made the wiki show a materially
+    WORSE network than the Network tab while both were labelled "co-essentiality", which is the
+    kind of quiet disagreement that costs a tool its credibility:
 
-def coessential_network(symbol, taxid, top=14, r_min=0.25):
-    d = _load_coess(taxid)
-    if d is None:
+      coess_<taxid>.npz (old)          net_edge (now)
+      ------------------------------   --------------------------------------------------------
+      dense cosine == Pearson          same Pearson, but with PC1 — the pan-essentiality axis,
+                                       ~44.5% of variance — projected out first, which took CORUM
+                                       same-complex precision from 42.8% to 59.1%
+      fixed r >= 0.25 cutoff           per-context threshold calibrated against a within-screen
+                                       shuffle null at FDR <= 0.05
+      no support / reciprocity         carries co-measured support and a mutual-best flag
+      no node gates                    nodes gated on hit count, coverage and hit rate, which
+                                       suppresses the multi-mapping-sgRNA artifact cliques
+      no evidence tiers                every edge graded on both channels
+
+    The cloud made this same switch earlier (services/coessential_network_aaron.py); the prototype
+    was the one still on the old file, so the two disagreed.
+
+    PAYLOAD: the original shape is preserved — nodes[].name/lean/focus, edges[].a/b/r/score — so
+    nothing downstream breaks. Two fields are ADDED: `tier` on every edge, and `direct`, true when
+    the edge touches the focal gene. Partner-partner edges are still returned even though the wiki
+    draws only the direct ones: they are what let the force simulation pull a complex together, so
+    dropping them server-side would flatten the picture into a bare radial star.
+    """
+    organism = "mouse" if taxid == 10090 else "human"
+    tbl = _net_edge_table(organism)
+    context = "mouse" if organism == "mouse" else "all"
+
+    g = symbol.strip()
+    seed = None
+    for v in dict.fromkeys([g, g.upper(), g.capitalize()]):
+        if net_fetchall(f"SELECT 1 FROM {tbl} WHERE context=? AND (gene_a=? OR gene_b=?) LIMIT 1",
+                        (context, v, v), organism=organism):
+            seed = v
+            break
+    if seed is None:
         return None
-    qi = d["gidx"].get(symbol.strip().lower())
-    if qi is None:
+
+    # Mutual-best first, widen only if the gene has none — the reciprocal view is markedly cleaner
+    # (46.4% vs 4.9% CORUM precision between the top and bottom evidence tiers).
+    def _partners(recip):
+        rec = "AND reciprocal=1 " if recip else ""
+        return net_fetchall(
+            f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength "
+            f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
+            f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
+
+    rows = _partners(True)
+    if not rows:
+        rows = _partners(False)
+    if not rows:
         return None
-    R, genes, lean = d["R"], d["genes"], d["lean"]
-    r = R @ R[qi]                    # rows are centred+normalised → cosine == Pearson
-    r[qi] = -2.0
-    cand = [int(j) for j in np.argsort(-r) if r[j] >= r_min][:top]
-    members = [qi] + cand
-    nodes = [{"name": genes[j], "lean": _lean_label(float(lean[j])),
-              "focus": j == qi} for j in members]
-    edges = [{"a": genes[qi], "b": genes[j], "r": round(float(r[j]), 3),
-              "score": round(float(r[j]), 3)} for j in cand]
-    # partner-partner edges so it reads as a graph, not a star
-    for a in range(len(cand)):
-        for b in range(a + 1, len(cand)):
-            rv = float(R[cand[a]] @ R[cand[b]])
-            if rv >= max(r_min, 0.3):
-                edges.append({"a": genes[cand[a]], "b": genes[cand[b]],
-                              "r": round(rv, 3), "score": round(rv, 3)})
-    return {"symbol": genes[qi], "nodes": nodes, "edges": edges,
-            "n_screens": d["n_screens"]}
+
+    members = [seed] + [r["nb"] for r in rows]
+    mset = set(members)
+    ph = ",".join("?" * len(members))
+    erows = net_fetchall(
+        f"SELECT gene_a, gene_b, strength, reciprocal FROM {tbl} "
+        f"WHERE context=? AND channel='coessential' AND gene_a IN ({ph}) AND gene_b IN ({ph})",
+        [context] + members + members, organism=organism)
+
+    ch = _cohit_among(members, organism=organism)
+    lean = _net_fitness_lean(members, organism=organism)
+    nodes = [{"name": n, "lean": _lean_label(lean[n]) if n in lean else None, "focus": n == seed}
+             for n in members]
+
+    from collections import Counter
+    edges, hist = [], Counter()
+    for e in erows:
+        a, b = e["gene_a"], e["gene_b"]
+        if a not in mset or b not in mset or a == b:
+            continue
+        tier = _edge_tier(bool(e["reciprocal"]), ((a, b) if a <= b else (b, a)) in ch)
+        direct = seed in (a, b)
+        r = round(float(e["strength"]), 3)
+        edges.append({"a": a, "b": b, "r": r, "score": r, "tier": tier, "direct": direct})
+        if direct:
+            hist[tier] += 1
+
+    n_screens = None
+    if organism != "mouse":
+        try:
+            n_screens = net_fetchall(
+                "SELECT COUNT(*) c FROM net_screen WHERE coverage_type='FULL' AND n_genes >= 15000",
+                organism=organism)[0]["c"]
+        except Exception:
+            pass
+    return {"symbol": seed, "nodes": nodes, "edges": edges, "n_screens": n_screens,
+            "context_label": NET_CTX_LABELS.get(context, context),
+            "tiers": {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)},
+            "cohit_available": organism not in _COHIT_UNAVAILABLE}
 
 
 # ---------------------------------------------------------------------------
@@ -617,6 +676,152 @@ def _net_fitness_lean(genes, organism="human"):
     return {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 
 
+# ---------------------------------------------------------------------------
+# EVIDENCE TIERS — what actually separates a real edge from a coincidence.
+#
+# The graph used to draw every edge the same way, with thickness keyed on |r|. The database
+# already holds three near-orthogonal statements about any pair and the request path read one:
+#
+#   channel 1  net_edge.strength / .reciprocal   percentile-profile correlation over ALL screens
+#   channel 2  hit_only_connection               Fisher co-hit enrichment over ONLY the screens
+#                                                where both genes were CALLED HITS — the cells
+#                                                channel 1 dilutes away (compute_hit_only.py).
+#                                                417,924 human rows, never read by any endpoint.
+#   Jaccard    computed here from the edge list  do the two genes share third parties?
+#
+# script/exp_evidence_tiers.py measures all four against CORUM same-complex membership, over the
+# 11,954 drawn edges whose BOTH endpoints are CORUM-annotated (baseline 0.615%):
+#
+#     reciprocal AND co-hit     862 edges   7.2%    46.4% precision    75x chance
+#     reciprocal only         1,578        13.2%    22.4%              36x
+#     co-hit only             1,062         8.9%    17.7%              29x
+#     neither                 8,452        70.7%     4.9%               8x
+#
+# A 9.5x spread, and seven of every ten drawn edges are in the bottom cell. That is the whole
+# argument for this block: those 8,452 edges and those 862 edges were the same line on screen.
+#
+# |r| is deliberately NOT part of the tier. It is the weakest dimension (AUROC 0.6361 vs 0.6991
+# for reciprocal) and it is non-monotone where it matters most — the top |r| decile (0.322-0.720)
+# scores 17.3% against the second decile's 20.9%. Thickest was not truest. r stays a number on
+# the edge panel; the visual weight moves to the tier.
+# ---------------------------------------------------------------------------
+_TIER_LABEL = {1: "both channels", 2: "mutual-best", 3: "co-hit only", 4: "correlation only"}
+_COHIT_UNAVAILABLE = set()      # organisms whose co-hit table is missing — warn once, then hush
+
+
+def _cohit_table(organism):
+    """Channel 2's table. Mirrors _net_edge_table: local sqlite keeps human and mouse in separate
+    files under one name, RDS keeps both in one schema so mouse is suffixed."""
+    return "hit_only_connection_mouse" if (USE_PG and organism == "mouse") else "hit_only_connection"
+
+
+def _cohit_among(genes, organism="human"):
+    """{(a,b) ordered a<=b: {co_hit, fold, q_value, concordance, support}} for the co-hit pairs
+    among `genes`. Absent from the dict = no significant co-hit (the table is already BH-FDR
+    filtered at build time, so presence IS significance).
+
+    hit_only_connection stores ONE direction per pair — FANCA->FANCD2 is a row, the reverse is
+    not — so callers must normalise the key or they silently miss half the table. Since both
+    endpoints are inside `genes`, a symmetric IN/IN predicate catches whichever way it was stored.
+
+    Returns {} rather than raising when the table does not exist: the cloud's RDS sync
+    (script/migrate_net_to_rds.py) only carried net_edge until this feature needed channel 2, so a
+    deploy can legitimately be missing it. A graph with tiers collapsed to 'channel 1 only' is
+    still a graph; a 500 is not."""
+    if not genes or organism in _COHIT_UNAVAILABLE:
+        return {}
+    tbl = _cohit_table(organism)
+    ph = ",".join("?" * len(genes))
+    try:
+        rows = net_fetchall(
+            f"SELECT gene_a, gene_b, co_hit, fold, q_value, concordance, support FROM {tbl} "
+            f"WHERE gene_a IN ({ph}) AND gene_b IN ({ph})",
+            list(genes) + list(genes), organism=organism)
+    except Exception as e:
+        _COHIT_UNAVAILABLE.add(organism)
+        print(f"  [net] co-hit channel unavailable for {organism}, tiers fall back to "
+              f"channel 1 only: {e}")
+        return {}
+    out = {}
+    for r in rows:
+        a, b = r["gene_a"], r["gene_b"]
+        out[(a, b) if a <= b else (b, a)] = {
+            "co_hit": int(r["co_hit"]), "fold": round(float(r["fold"]), 2),
+            "q_value": float(r["q_value"]), "concordance": round(float(r["concordance"]), 3),
+            "support": int(r["support"])}
+    return out
+
+
+def _neighbour_sets(genes, tbl, context, organism="human"):
+    """gene -> set of its channel-1 partners in this context, over the WHOLE network.
+
+    Deliberately not restricted to the displayed subgraph: Jaccard measured inside the subgraph
+    would be circular (the nodes are there because they are the seed's partners, so they all share
+    the seed). The measured lift comes from full-network neighbourhoods."""
+    if not genes:
+        return {}
+    ph = ",".join("?" * len(genes))
+    try:
+        rows = net_fetchall(
+            f"SELECT gene_a, gene_b FROM {tbl} WHERE context=? AND channel='coessential' "
+            f"AND (gene_a IN ({ph}) OR gene_b IN ({ph}))",
+            [context] + list(genes) + list(genes), organism=organism)
+    except Exception as e:
+        print(f"  [net] neighbourhood Jaccard unavailable: {e}")
+        return {}
+    want = set(genes)
+    nb = {g: set() for g in genes}
+    for r in rows:
+        a, b = r["gene_a"], r["gene_b"]
+        if a in want:
+            nb[a].add(b)
+        if b in want:
+            nb[b].add(a)
+    return nb
+
+
+def _jaccard(nb, a, b):
+    """|N(a) & N(b)| / |N(a) | N(b)|, excluding a and b themselves so a plain A-B edge cannot
+    inflate their own coherence. None when either neighbourhood is unknown."""
+    na, nbs = nb.get(a), nb.get(b)
+    if na is None or nbs is None:
+        return None
+    na = na - {a, b}
+    nbs = nbs - {a, b}
+    union = na | nbs
+    return round(len(na & nbs) / len(union), 3) if union else 0.0
+
+
+def _edge_tier(reciprocal, has_cohit):
+    """1 both channels · 2 mutual-best only · 3 co-hit only · 4 neither. Ordered by MEASURED
+    CORUM precision (46.4 / 22.4 / 17.7 / 4.9%), which is why mutual-best-only outranks
+    co-hit-only rather than the other way round."""
+    if reciprocal and has_cohit:
+        return 1
+    if reciprocal:
+        return 2
+    return 3 if has_cohit else 4
+
+
+def _annotate_edges(edges, context, organism, tbl):
+    """Attach `cohit`, `jaccard` and `tier` to a list of {source,target,strength,reciprocal}.
+    Mutates and returns the list, plus a tier histogram for the UI to disclose."""
+    from collections import Counter
+    genes = sorted({g for e in edges for g in (e["source"], e["target"])})
+    ch = _cohit_among(genes, organism=organism)
+    nb = _neighbour_sets(genes, tbl, context, organism=organism)
+    hist = Counter()
+    for e in edges:
+        a, b = e["source"], e["target"]
+        c = ch.get((a, b) if a <= b else (b, a))
+        e["cohit"] = c
+        e["jaccard"] = _jaccard(nb, a, b)
+        e["tier"] = _edge_tier(bool(e["reciprocal"]), c is not None)
+        e["tier_label"] = _TIER_LABEL[e["tier"]]
+        hist[e["tier"]] += 1
+    return edges, {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)}
+
+
 def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
     """One gene's context neighborhood as a clustered graph: seed + its top partners
     + the partner-partner edges among them (so it reads as modules, not a star)."""
@@ -667,13 +872,20 @@ def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
             edges.append({"source": a, "target": b, "strength": round(e["strength"], 3),
                           "reciprocal": int(e["reciprocal"])})
             deg[a] += 1; deg[b] += 1
+    # Second channel + neighbourhood coherence. NB in the reciprocal view `erows` is already
+    # filtered to reciprocal=1, so every edge lands in tier 1 or 2 and the tier only reports
+    # whether channel 2 agrees. The full four-tier spread only appears once the user widens the
+    # view — which is exactly where they most need to be told which of the ~29 new edges is worth
+    # anything, since 70.7% of all drawn edges sit in the 4.9%-precision bottom tier.
+    edges, tiers = _annotate_edges(edges, context, organism, tbl)
     # `mean_percentile`, not median: _net_fitness_lean averages (AVG / precomputed mean_percentile).
     nodes = [{"id": n, "label": n, "focus": (n == seed), "lean": lab(lean.get(n)),
               "mean_percentile": round(lean[n], 3) if n in lean else None, "degree": deg.get(n, 0)}
              for n in nodeset]
     return {"focus": seed, "context": context, "context_label": NET_CTX_LABELS.get(context, context),
             "reciprocal_only": reciprocal_only, "fellback": fellback,
-            "nodes": nodes, "edges": edges}
+            "nodes": nodes, "edges": edges, "tiers": tiers,
+            "cohit_available": organism not in _COHIT_UNAVAILABLE}
 
 
 # ---------------------------------------------------------------------------
@@ -687,30 +899,46 @@ def screen_net(gene, context, reciprocal_only=True, top=18, organism="human"):
 _NET_PRED_CACHE = {}
 
 
-def _net_predict_partners(seed, tbl, context, organism, top=18, reciprocal_only=True):
-    """Partners for the prediction dossier, matching the view the user is actually looking at.
+def _net_predict_partners(seed, tbl, context, organism, top=18):
+    """Partners for the prediction dossier: ALWAYS the union top-`top`, each graded by evidence
+    tier against the seed.
 
-    `reciprocal_only` mirrors the graph's own toggle. It used to be absent, so the dossier was
-    always assembled reciprocal-first regardless of what was on screen: a user could widen the
-    graph to 29 partners, press Predict, and the model would read 2. That gap is not marginal —
-    median reciprocal degree in the shipped human network is 2 against a median union degree of
-    29, and only 135 of 5,269 genes (2.6%) have the 18 reciprocal partners this dossier is sized
-    for, against 86.7% that have 18 in the union.
+    This deliberately no longer mirrors the graph's reciprocal-only toggle, and that is a reversal
+    of the previous fix, so the reasoning is worth stating.
+
+    The bug before that fix was that the dossier was assembled reciprocal-first no matter what was
+    on screen — a user could widen the graph to 29 partners, press Predict, and the model would
+    silently read 2. The fix made the dossier follow the toggle. That closed the honesty gap but
+    kept the real damage: the toggle is a DISPLAY choice, and letting it decide what evidence the
+    model reads means 812 of 5,269 human genes (15.4%) — the ones with exactly one reciprocal
+    partner — trip the `n_annotated < 2` early return every single time and can NEVER produce a
+    prediction, while ~29 one-directional partners sit unread. Median reciprocal degree is 2
+    against a median union degree of 29; only 2.6% of genes have the 18 reciprocal partners this
+    dossier is sized for, against 86.7% in the union.
+
+    So: read the union always, grade every partner, and REPORT the difference rather than either
+    hiding it (the old bug) or obeying it (the old fix). Two side effects, both wanted — the
+    dossier is now reproducible across users regardless of their display state, which is why
+    `view` no longer belongs in the cache key; and a partner arriving through the widened window
+    is not treated as equal to a mutual-best one, because it carries its tier.
     """
-    def _partners(recip):
-        rec = "AND reciprocal=1 " if recip else ""
-        return net_fetchall(
-            f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
-            f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) {rec}"
-            f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
-    if not reciprocal_only:
-        return _partners(False), True
-    rows = _partners(True)
-    fellback = False
+    rows = net_fetchall(
+        f"SELECT CASE WHEN gene_a=? THEN gene_b ELSE gene_a END nb, strength, reciprocal "
+        f"FROM {tbl} WHERE context=? AND channel='coessential' AND (gene_a=? OR gene_b=?) "
+        f"ORDER BY strength DESC LIMIT ?", (seed, context, seed, seed, top), organism=organism)
     if not rows:
-        rows = _partners(False)
-        fellback = True
-    return rows, fellback
+        return [], {}
+    ch = _cohit_among([seed] + [r["nb"] for r in rows], organism=organism)
+    out = []
+    for r in rows:
+        nb = r["nb"]
+        c = ch.get((seed, nb) if seed <= nb else (nb, seed))
+        out.append({"nb": nb, "strength": r["strength"], "reciprocal": int(r["reciprocal"]),
+                    "tier": _edge_tier(bool(r["reciprocal"]), c is not None),
+                    "cohit_fold": c["fold"] if c else None})
+    from collections import Counter
+    hist = Counter(p["tier"] for p in out)
+    return out, {str(t): hist.get(t, 0) for t in (1, 2, 3, 4)}
 
 
 def _net_predict_go_bp(gene_ids, cap=8):
@@ -778,9 +1006,14 @@ gene — reason only from what is written below.
 2. NOVELTY IS THE POINT: never predict anything already listed in the focal gene's KNOWN FUNCTION block, or an \
 obvious synonym of it. If a convergence merely restates something the focal gene is already annotated with, \
 drop it.
-3. Every prediction MUST be supported by at least TWO named partners (exact symbols from the list below). More \
-converging partners, and higher co-essentiality r, mean higher confidence — but you do not need to compute a \
-confidence score yourself, just name the supporting partners honestly.
+3. Every prediction MUST name the partners that support it (exact symbols from the list below). Name ALL of them \
+and ONLY the ones that genuinely carry the claim — a partner you list is a partner a human will check. Two or \
+more is the normal case; ONE is acceptable only when that single partner's evidence tier is [T1]. Do not pad the \
+list to reach a count, and do not compute a confidence score yourself.
+3b. EVIDENCE TIERS are marked on each partner below and they are measured, not decorative. Against CORUM \
+same-complex membership: [T1] 46.4% · [T2] 22.4% · [T3] 17.7% · [T4] 4.9%, where a random annotated pair is 0.6%. \
+A claim carried by two [T1] partners is worth far more than one carried by four [T4] partners. Weigh them \
+accordingly, and prefer convergences that the higher-tier partners agree on.
 4. Prefer the single most specific, defensible claim: a named complex beats a named pathway beats a vague \
 process. Return 0-5 predictions — a short list of strong claims, not a long list of speculative ones.
 5. If the partners do NOT converge on anything coherent, return an empty predictions list and say so plainly in \
@@ -811,7 +1044,8 @@ def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_
         f"  Curated function: {own_fn or '(poorly characterized — no curated summary on record)'}",
         "",
         "CO-ESSENTIAL PARTNERS (your evidence — each is a REAL curated annotation set; "
-        "r = knockout-fitness profile correlation, ⇄ = mutual-best):",
+        "r = knockout-fitness profile correlation, ⇄ = mutual-best, ×N = co-hit enrichment, "
+        "[T1]-[T4] = measured evidence tier, T1 strongest):",
     ]
     any_annotated = False
     for p in partners:
@@ -819,7 +1053,8 @@ def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_
         if not has_evidence:
             continue
         any_annotated = True
-        tag = f"r={p['strength']:.2f}{' ⇄' if p['reciprocal'] else ''}"
+        tag = (f"[T{p['tier']}] r={p['strength']:.2f}{' ⇄' if p['reciprocal'] else ''}"
+               + (f" co-hit {p['cohit_fold']}×" if p.get("cohit_fold") else ""))
         lean_txt = f", fitness: {p['lean']}" if p["lean"] else ""
         lines.append(f"### {p['sym']}  ({tag}{lean_txt})")
         lines.append(f"  GO biological-process: {esc_join(p['go'])}")
@@ -833,9 +1068,12 @@ def _net_predict_prompt(sym, organism, context_label, view, own_bp, own_pw, own_
 
 
 def net_predict_functions(gene, context, organism="human", top=18, reciprocal_only=True):
-    """Guilt-by-association from OUR OWN BioGRID net_edge network (not STRING/DepMap): gpt-5
+    """Guilt-by-association from OUR OWN BioGRID net_edge network (not STRING/DepMap): the model
     reasons over the focal gene's co-essential partners' real curated functions and proposes a
-    complex/pathway/process the focal gene likely shares but is not yet annotated with."""
+    complex/pathway/process the focal gene likely shares but is not yet annotated with.
+
+    `reciprocal_only` is the caller's DISPLAY state. It no longer selects the dossier — that is
+    always the tier-graded union — and is used only to report `n_beyond_view`."""
     from llm_client import WashULLMClient
     taxid = 10090 if organism == "mouse" else 9606
     tbl = _net_edge_table(organism)
@@ -849,13 +1087,16 @@ def net_predict_functions(gene, context, organism="human", top=18, reciprocal_on
     if seed is None:
         return None
 
-    prows, fellback = _net_predict_partners(seed, tbl, context, organism, top=top,
-                                            reciprocal_only=reciprocal_only)
+    prows, partner_tiers = _net_predict_partners(seed, tbl, context, organism, top=top)
     if not prows:
         return None
     partner_syms = [r["nb"] for r in prows]
-    partner_meta = {r["nb"]: {"strength": round(r["strength"], 3), "reciprocal": bool(r["reciprocal"])}
-                     for r in prows}
+    partner_meta = {r["nb"]: {"strength": round(r["strength"], 3),
+                              "reciprocal": bool(r["reciprocal"]), "tier": r["tier"],
+                              "cohit_fold": r["cohit_fold"]} for r in prows}
+    # How much of this dossier the user could NOT see under their current graph filter. Reported,
+    # never acted on: the model reads the union either way (see _net_predict_partners).
+    n_beyond_view = sum(1 for r in prows if not r["reciprocal"]) if reciprocal_only else 0
 
     seed_r = _kb_resolve(seed, taxid)
     resolved = {}   # symbol -> gene_id, for partners that exist in the KB
@@ -888,33 +1129,38 @@ def net_predict_functions(gene, context, organism="human", top=18, reciprocal_on
         gid = resolved.get(sym)
         partners.append({
             "sym": sym, "strength": partner_meta[sym]["strength"], "reciprocal": partner_meta[sym]["reciprocal"],
+            "tier": partner_meta[sym]["tier"], "cohit_fold": partner_meta[sym]["cohit_fold"],
             "lean": lean_label(lean.get(sym)),
             "go": go_by_gid.get(gid, []) if gid else [],
             "pw": pw_by_gid.get(gid, []) if gid else [],
             "fn": fn_by_gid.get(gid) if gid else None,
         })
     n_annotated = sum(1 for p in partners if p["go"] or p["pw"] or p["fn"])
-    view = "one-directional" if fellback else "reciprocal"
+    view = "union"     # always, now — see _net_predict_partners
 
     if n_annotated < 2:
-        # Too little evidence to ground anything — don't spend a gpt-5 call on it.
+        # Genuinely nothing to reason over. This is now a real annotation-coverage statement: the
+        # dossier already read the full union, so the old "widen the view and it will improve"
+        # advice would be a lie — there is no wider view left.
         return {"found": True, "symbol": seed, "organism": organism, "context": context,
                 "context_label": NET_CTX_LABELS.get(context, context), "view": view,
                 "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
-                "n_unresolved": n_unresolved, "model": None, "converges": False, "predictions": [],
-                "no_call": True,
+                "n_unresolved": n_unresolved, "partner_tiers": partner_tiers,
+                "model": None, "converges": False, "predictions": [], "no_call": True,
                 "summary": (
-                    "Fewer than two of this gene's co-essential partners carry a curated function "
-                    "on record, so no prediction was attempted."
-                    + (" This view is restricted to mutual-best partners; widening it usually "
-                       "brings in more annotated neighbours." if reciprocal_only else ""))}
+                    f"Only {n_annotated} of this gene's {len(partner_syms)} co-essential partners "
+                    "carries a curated function on record, so no prediction was attempted. This is "
+                    "an annotation-coverage limit, not a filter — the dossier already reads every "
+                    "partner, mutual-best or not.")}
 
     # Everything that changes the answer belongs in the key. It used to be (gene, organism,
     # context) only, so switching the model or editing NET_PREDICT_SYS let a warm process keep
     # serving the previous answer labelled with the new model's name — a reproducibility bug in
-    # the one feature whose entire pitch is auditability.
+    # the one feature whose entire pitch is auditability. `view` used to be here too and no longer
+    # needs to be: the dossier is the union regardless of the caller's display state, which is
+    # itself the point — two users on the same gene now get the same answer.
     cache_key = (seed_r["gene_id"] if seed_r else seed, organism, context,
-                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION, view)
+                 NET_PREDICT_MODEL, NET_PREDICT_PROMPT_VERSION)
     if cache_key in _NET_PRED_CACHE:
         return _NET_PRED_CACHE[cache_key]
 
@@ -924,39 +1170,91 @@ def net_predict_functions(gene, context, organism="human", top=18, reciprocal_on
     data = client.chat_json([{"role": "system", "content": NET_PREDICT_SYS},
                               {"role": "user", "content": prompt}], **_gen_kwargs(NET_PREDICT_MODEL, max_tokens=3000))
 
-    partner_by_sym = {p["sym"]: p for p in partners}
-    preds_out = []
+    # ---- server-side validation: every check runs at FULL strength, nothing is deleted ---------
+    # This used to `continue` past any prediction that failed a check. The checks were right; the
+    # deletion was not. Three things were wrong with dropping:
+    #   * The anti-hallucination check is the product's whole claim to being auditable, and it fired
+    #     in the dark. Nobody could show it had ever caught anything, which is indistinguishable
+    #     from it not working.
+    #   * `len(cited) < 2` COUNTS HEADS when it should WEIGH EVIDENCE. One [T1] supporter recovers
+    #     a CORUM complex 46.4% of the time; two [T4] supporters do so 4.9% each. The old rule
+    #     dropped the first and kept the second.
+    #   * The professor's ask — let users see below the top confidence band — is unanswerable while
+    #     the weaker material never leaves the server.
+    # So: same checks, same thresholds, but they now produce a VERDICT that ships with the
+    # prediction. The client decides what to show; the server decides what is true.
+    #
+    # One check got STRICTER rather than looser. partner_by_sym used to cover every partner,
+    # including the unannotated ones _net_predict_prompt skips — so citing a partner the model was
+    # never shown counted as support. It cannot: an unannotated partner contributes no annotation to
+    # reason from, so a citation of one is a name produced without having read anything about it,
+    # which is precisely what this check exists to catch. Restricting to the shown set is the honest
+    # reading of "verifiable".
+    partner_by_sym = {p["sym"]: p for p in partners if p["go"] or p["pw"] or p["fn"]}
+    preds_out, n_ghost_citations = [], 0
     for pred in (data.get("predictions") or []):
         name = (pred.get("prediction") or "").strip()
         if not name:
             continue
+        raw = list(dict.fromkeys(s for s in (pred.get("supporting_partners") or [])
+                                 if isinstance(s, str) and s.strip()))
+        cited = [s for s in raw if s in partner_by_sym]
+        ghosts = [s for s in raw if s not in partner_by_sym]   # named a partner that is not there
+        n_ghost_citations += len(ghosts)
+        supporters = [{"symbol": s, "strength": partner_by_sym[s]["strength"],
+                       "reciprocal": partner_by_sym[s]["reciprocal"],
+                       "tier": partner_by_sym[s]["tier"],
+                       "cohit_fold": partner_by_sym[s]["cohit_fold"]} for s in cited]
+        supporters.sort(key=lambda x: (x["tier"], -x["strength"]))
+        best_tier = min((s["tier"] for s in supporters), default=4)
+        n_strong = sum(1 for s in supporters if s["tier"] <= 2)
+
         norm = name.lower().strip()
         if norm in own_bp_norm or norm in own_pw_norm:
-            continue                                    # server-side novelty re-check, not model-trusted
-        cited = [s for s in (pred.get("supporting_partners") or []) if s in partner_by_sym]
-        cited = list(dict.fromkeys(cited))               # dedupe, keep order
-        if len(cited) < 2:
-            continue                                     # hallucinated/insufficient support — drop, don't trust
-        supporters = [{"symbol": s, "strength": partner_by_sym[s]["strength"],
-                       "reciprocal": partner_by_sym[s]["reciprocal"]} for s in cited]
-        supporters.sort(key=lambda x: -x["strength"])
+            verdict = "rejected:not-novel"               # restates what the gene is already annotated with
+        elif not supporters:
+            verdict = "rejected:no-verifiable-support"   # every symbol it cited was invented
+        elif len(supporters) == 1:
+            # Weight, not headcount. A lone [T1] supporter is a stronger statement than a pair of
+            # [T4]s, so it is promoted rather than demoted — this is the one place the old rule was
+            # not merely blunt but backwards.
+            verdict = "verified" if best_tier == 1 else "single-supporter"
+        else:
+            verdict = "verified"
+
         strengths = [s["strength"] for s in supporters]
         n_recip = sum(1 for s in supporters if s["reciprocal"])
-        confidence = ("high" if len(supporters) >= 3 or (len(supporters) == 2 and n_recip == 2)
-                      else "moderate")
-        convergence = (f"{len(supporters)} partners · r {min(strengths):.2f}–{max(strengths):.2f}"
-                       + (f" · {n_recip} mutual-best" if n_recip else ""))
+        confidence = ("high" if n_strong >= 2 or (best_tier == 1 and len(supporters) >= 2)
+                      else "moderate" if best_tier <= 3
+                      else "low")
+        convergence = ((f"{len(supporters)} partner{'' if len(supporters) == 1 else 's'} · "
+                        f"r {min(strengths):.2f}–{max(strengths):.2f}"
+                        + (f" · {n_recip} mutual-best" if n_recip else "")
+                        + f" · best tier T{best_tier}") if supporters else "no verifiable support")
         preds_out.append({
-            "prediction": name, "type": pred.get("type") if pred.get("type") in ("complex", "pathway", "process") else "process",
+            "prediction": name,
+            "type": pred.get("type") if pred.get("type") in ("complex", "pathway", "process") else "process",
+            "verdict": verdict, "evidence_tier": best_tier if supporters else None,
             "confidence": confidence, "convergence": convergence,
             "rationale": (pred.get("rationale") or "").strip(), "supporting_partners": supporters,
+            "unverifiable_citations": ghosts,
         })
+
+    tally = {"verified": 0, "single-supporter": 0,
+             "rejected:not-novel": 0, "rejected:no-verifiable-support": 0}
+    for p in preds_out:
+        tally[p["verdict"]] = tally.get(p["verdict"], 0) + 1
 
     out = {"found": True, "symbol": seed, "organism": organism, "context": context,
            "context_label": NET_CTX_LABELS.get(context, context), "view": view,
            "n_partners": len(partner_syms), "n_annotated_partners": n_annotated,
-           "n_unresolved": n_unresolved, "model": client.model,
-           "converges": bool(preds_out), "predictions": preds_out,
+           "n_unresolved": n_unresolved, "partner_tiers": partner_tiers,
+           "n_beyond_view": n_beyond_view, "model": client.model,
+           # `converges` stays the STRICT reading — it is what the headline renders from, and
+           # loosening it would quietly restate a single-supporter hunch as a finding.
+           "converges": any(p["verdict"] == "verified" for p in preds_out),
+           "predictions": preds_out, "verdicts": tally,
+           "n_unverifiable_citations": n_ghost_citations,
            "summary": (data.get("summary") or "").strip()}
     if preds_out:
         _NET_PRED_CACHE[cache_key] = out
@@ -1364,6 +1662,106 @@ def _clean_uniprot(text):
     clean = re.sub(r"\bNote=", "", clean)          # UniProt structural marker, not prose
     clean = re.sub(r"\s{2,}", " ", clean).strip()
     return (clean or None), n
+
+
+# ---------------------------------------------------------------------------
+# TYPE-AHEAD for the search box. Two suggesters, one per mode.
+# ---------------------------------------------------------------------------
+class _SuggestUnavailable(Exception):
+    """The index could not be read — distinct from "nothing matched", which is an empty list."""
+
+
+def gene_suggest(q, taxid=9606, limit=8):
+    """Ranked gene suggestions for a typed prefix.
+
+    Reads gene_search, built by script/build_gene_search.py — see that file for why the ranking
+    needed both a screen-hit count and a paper count rather than either alone (short version:
+    hits alone put TP53RK above TP53, papers alone put PON1 above POLR2A).
+
+    Two rules the ORDER BY encodes, both learned by getting them wrong first:
+
+      canonical symbols BEFORE aliases. Ranked purely by score, "FANC" answered BRCA1, BRCA2,
+      RAD51 — every one a legitimate alias hit (FANCS is BRCA1, FANCD1 is BRCA2) and every one
+      wrong, because a person typing FANC wants the FANC genes. Aliases rescue a retired name;
+      they are not a queue-jump for a famous gene.
+
+      an exact match wins outright only if it is a CANONICAL symbol. Otherwise typing "PO" put
+      PRB4 first, because some gene carries "PO" as a literal alias.
+
+    De-duplicates by symbol: one gene with three matching aliases was filling three of eight slots
+    with itself. Over-fetches to leave room for that.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    term = q.upper()
+    limit = max(1, min(int(limit), 25))
+    try:
+        rows = kb_fetchall(
+            "SELECT symbol, term, is_alias, n_hits, name FROM gene_search "
+            "WHERE taxid = ? AND term LIKE ? "
+            "ORDER BY (term = ? AND is_alias = 0) DESC, is_alias, rank DESC, LENGTH(term), term "
+            "LIMIT ?", (taxid, term + "%", term, limit * 5))
+    except Exception as e:
+        # NOT the same as "nothing matched" — see the route, which flags it. Returning [] here on
+        # its own told a user that PO matches no genes while POLR2A sat in the table.
+        print(f"  [suggest] gene_search unavailable: {e}")
+        raise _SuggestUnavailable() from e
+    out, seen = [], set()
+    for r in rows:
+        sym = r["symbol"]
+        if sym in seen:
+            continue
+        seen.add(sym)
+        out.append({"symbol": sym, "name": r["name"] or "",
+                    "matched": r["term"] if r["is_alias"] else None,
+                    "n_hits": r["n_hits"]})
+        if len(out) >= limit:
+            break
+    return out
+
+
+def screen_suggest(q, taxid=9606, limit=8):
+    """Ranked screen suggestions. kb_screen is 2,157 rows, so this needs no precomputed table —
+    a scan across the few fields a person would actually type is already sub-10ms.
+
+    Matches what someone remembers a screen BY: the cell line, the condition, the phenotype, the
+    first author, or the BioGRID id itself. Ranked by hit count as a stand-in for "a screen with
+    something in it", since a screen with three hits is rarely the one being looked for.
+
+    TWO THINGS THE RAW COLUMNS GET WRONG, both fixed here rather than in the data:
+
+      BioGRID punctuates its cell lines — K-562, HL-60, A-375, HCT 116 — and nobody types them
+      that way. "K562" matched zero of 1,952 human screens. Both sides are stripped of hyphens and
+      spaces before comparing, which is doable in plain SQL and so works on sqlite and Postgres
+      alike.
+
+      number_of_hits is stored as TEXT, so ORDER BY put '5' above '1345'. Cast it.
+    """
+    q = (q or "").strip()
+    if not q:
+        return []
+    like = f"%{q.lower()}%"
+    squashed = f"%{''.join(c for c in q.lower() if c.isalnum())}%"
+    limit = max(1, min(int(limit), 25))
+    sq = "REPLACE(REPLACE(LOWER({}), '-', ''), ' ', '')"
+    try:
+        rows = kb_fetchall(
+            "SELECT screen_id, cell_line, condition_name, phenotype, author, pmid, "
+            "       screen_type, number_of_hits "
+            "FROM kb_screen WHERE taxid = ? AND ("
+            f"     {sq.format('cell_line')} LIKE ? OR LOWER(condition_name) LIKE ? "
+            "  OR LOWER(phenotype) LIKE ? OR LOWER(author) LIKE ? "
+            "  OR CAST(screen_id AS TEXT) LIKE ?) "
+            "ORDER BY CAST(number_of_hits AS INTEGER) DESC LIMIT ?",
+            (taxid, squashed, like, like, like, f"{q}%", limit))
+    except Exception as e:
+        print(f"  [suggest] screen search unavailable: {e}")
+        raise _SuggestUnavailable() from e
+    return [{"screen_id": str(r["screen_id"]),
+             "cell_line": r["cell_line"] or "", "condition": r["condition_name"] or "",
+             "phenotype": r["phenotype"] or "", "author": r["author"] or "",
+             "pmid": r["pmid"], "n_hits": r["number_of_hits"]} for r in rows]
 
 
 def _kb_resolve(gene, taxid):
@@ -1793,6 +2191,33 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, SCREEN_HTML.read_bytes(), "text/html; charset=utf-8")
         if u.path in ("/network", "/network.html", "/net"):
             return self._send(200, NETWORK_HTML.read_bytes(), "text/html; charset=utf-8")
+        # Type-ahead. Fires on every keystroke, so it never raises and never 404s — an empty list
+        # is the correct answer to "nothing matches yet", and a failing suggester must not be able
+        # to make the box itself feel broken.
+        if u.path in ("/api/gene_suggest", "/api/screen_suggest"):
+            q = parse_qs(u.query)
+            term = (q.get("q", [""])[0]).strip()
+            try:
+                taxid = int(q.get("taxid", ["9606"])[0] or 9606)
+            except ValueError:
+                taxid = 9606
+            if q.get("organism", [""])[0] == "mouse":
+                taxid = 10090
+            try:
+                limit = int(q.get("limit", ["8"])[0] or 8)
+            except ValueError:
+                limit = 8
+            fn = gene_suggest if u.path.endswith("gene_suggest") else screen_suggest
+            ok = True
+            try:
+                items = fn(term, taxid, limit)
+            except Exception as e:
+                # Still 200 — a 5xx under a cursor makes the page feel broken over a transient —
+                # but `ok` separates "nothing matched" from "could not read the index".
+                print(f"  [suggest] {u.path} failed: {e}")
+                items, ok = [], False
+            return self._send(200, {"query": term, "taxid": taxid, "ok": ok, "items": items})
+
         if u.path == "/api/gene_wiki":
             q = parse_qs(u.query)
             gene = (q.get("gene", [""])[0]).strip()
@@ -1974,8 +2399,10 @@ class Handler(BaseHTTPRequestHandler):
             gene = (q.get("gene", [""])[0]).strip()
             organism = "mouse" if q.get("organism", ["human"])[0] == "mouse" else "human"
             context = (q.get("context", [""])[0]).strip() or ("mouse" if organism == "mouse" else "all")
-            # Same default and same parsing as /api/screen_net — the dossier must be assembled from
-            # the neighbourhood the user is looking at, not from a different one.
+            # Same default and parsing as /api/screen_net, but it no longer SELECTS the dossier —
+            # that is always the union now (see _net_predict_partners). All it does is let the
+            # response report how many partners the model read that the caller's graph filter was
+            # hiding, so the difference is visible instead of either silent or obeyed.
             reciprocal = q.get("reciprocal", ["1"])[0] != "0"
             if not gene:
                 return self._send(400, {"error": "Missing gene."})

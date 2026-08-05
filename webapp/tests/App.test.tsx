@@ -42,34 +42,51 @@ describe("App (signed in)", () => {
     mock.state.account = signedInAccount;
   });
 
+  // The home page is now one box: a mode chip (gene | screen), a "+" for a ranked gene list, and
+  // a type-ahead. These target the CONTROLS — role, label, placeholder — rather than the sentence
+  // around them, so re-wording the page does not read as a regression.
   it("renders without crashing", async () => {
     render(<App />);
-    await screen.findByText("Launch app");
+    await screen.findByRole("textbox");
   });
 
-  it("shows WashU Medicine + RETICLE branding on the landing page", async () => {
+  it("shows RETICLE branding on the home page", async () => {
     render(<App />);
-    // The official WashU Medicine lockup is the primary brand mark.
-    expect((await screen.findAllByRole("img", { name: "WashU Medicine" })).length).toBeGreaterThan(0);
-    // The RETICLE wordmark colors the "C", so its text spans multiple nodes.
-    expect(
-      await screen.findByText((_content, el) => el?.tagName === "SPAN" && el.textContent === "RETICLE")
-    ).toBeTruthy();
+    // The wordmark is RETI<b>C</b>LE, so it spans elements — match on the composed text.
+    const marks = await screen.findAllByText(
+      (_content, el) => el?.textContent?.replace(/\s+/g, "").startsWith("RETICLE") ?? false,
+    );
+    expect(marks.length).toBeGreaterThan(0);
   });
 
-  it("shows the compare-to-the-corpus call-to-action", async () => {
+  it("offers both search modes from the chip", async () => {
     render(<App />);
-    expect(await screen.findByText("Compare to the corpus")).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { expanded: false }));
+    const items = await screen.findAllByRole("menuitem");
+    // Matched on the leading label, not the accessible name: each item's name also carries its
+    // blurb, and the Gene blurb ends "...what the screens say", which /Screen/i happily matches.
+    expect(items.map((i) => i.textContent?.split(/(?=[A-Z][a-z]+ )/)[0])).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^Gene/), expect.stringMatching(/^Screen/)]),
+    );
   });
 
   it("navigates into a sub-flow and back via the sticky Home control", async () => {
     render(<App />);
-    // Enter a sub-flow from the landing nav.
-    fireEvent.click(await screen.findByText("Launch app"));
-    // The sticky Home control is only shown off the landing page.
+    // The "+" is the ranked-gene-list route.
+    fireEvent.click(await screen.findByLabelText(/Analyse a ranked gene list/i));
+    // The sticky Home control is only shown off the home page.
     fireEvent.click(await screen.findByText("Home"));
-    // Home returns us to the main page.
-    expect(await screen.findByText("Launch app")).toBeTruthy();
+    expect(await screen.findByRole("textbox")).toBeTruthy();
+  });
+
+  it("carries a typed gene into the wiki instead of making the user retype it", async () => {
+    render(<App />);
+    const box = await screen.findByRole("textbox");
+    fireEvent.change(box, { target: { value: "FANCD2" } });
+    fireEvent.click(screen.getByLabelText("Search"));
+    // Leaving the home page is the observable part; the vendored bundle owns what happens next
+    // and does not run under jsdom.
+    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
   });
 });
 
@@ -88,16 +105,18 @@ describe("App (signed out)", () => {
     ).toBeTruthy();
   });
 
+  // The SSO button now names the identity provider — "Login" said what the button was, not what
+  // pressing it does.
   it("shows the Login landing page after Sign in is clicked", async () => {
     render(<App />);
     fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
-    expect(await screen.findByText("Login")).toBeTruthy();
+    expect(await screen.findByText(/Sign in with WashU/i)).toBeTruthy();
   });
 
-  it("starts SSO login when Login is clicked", async () => {
+  it("starts SSO login when the WashU button is clicked", async () => {
     render(<App />);
     fireEvent.click((await screen.findAllByText(/^Sign in$/i))[0]);
-    fireEvent.click(await screen.findByText("Login"));
+    fireEvent.click(await screen.findByText(/Sign in with WashU/i));
     await waitFor(() => expect(mock.instance.loginRedirect).toHaveBeenCalled());
   });
 });

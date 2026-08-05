@@ -38,9 +38,17 @@ function ensureFonts(): void {
 export default function ReticlePage_aaron({
   onBack,
   initial = 'gene',
+  gene,
+  organism,
 }: {
   onBack: () => void;
   initial?: 'gene' | 'screen' | 'network';
+  /** Open straight on this symbol. The home page's search box hands it over so the user does not
+   *  type the same gene twice — once to get here, once on arrival. */
+  gene?: string;
+  /** Which species to resolve `gene` against. Honoured on the wiki tab; the network tab keeps its
+   *  own species pills (see openGene in the vendoring generator). */
+  organism?: 'human' | 'mouse';
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
 
@@ -55,12 +63,14 @@ export default function ReticlePage_aaron({
     if (!host) return;
     const cleanup = mountReticle(host, API_BASE_URL, {
       initial,
+      initialGene: gene,
+      initialOrganism: organism,
       onBack: () => backRef.current(),
     });
     return () => {
       if (typeof cleanup === 'function') cleanup();
     };
-  }, [initial]);
+  }, [initial, gene, organism]);
 
   return <div ref={hostRef} style={{ width: '100%', minHeight: '100vh' }} />;
 }

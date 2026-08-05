@@ -155,7 +155,14 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 /* fingerprint */
 .fp{margin:2px 0 0;padding:20px 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
 .fp-num{text-align:center;border-right:1px solid var(--line2);padding-right:24px}
-.fp-num b{font-family:var(--serif);font-weight:400;font-size:50px;line-height:1;color:var(--eviq);display:block}
+/* SERIF STAYS ON TITLES AND PROSE, NOT ON DATA. A display face in a value is a display face in
+   the wrong place: Fraunces has old-style figures, so a column of counts jogs up and down as you
+   read it, and a gene symbol set in serif here while the same symbol is monospaced on the graph,
+   in every chip and in every key-value row gives one object two identities on one screen.
+   Numbers and identifiers move to the mono face the rest of the product already uses for them;
+   classification words move to the sans. Section headings, the wordmark and running prose keep
+   the serif — those are the places it was earning its keep. */
+.fp-num b{font-family:var(--mono);font-weight:400;font-size:44px;line-height:1;color:var(--eviq);display:block;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .fp-num s{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:3px}
 .fp-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
 .fp-lane{display:flex;gap:2px;height:46px;width:100%}
@@ -173,7 +180,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 .part:hover{border-color:var(--know)}.part b{font-family:var(--mono);font-size:13px;font-weight:500}.part s{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-decoration:none}
 .dep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
 .dep-badge{text-align:center;padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
-.dep-badge b{display:block;font-family:var(--serif);font-size:21px;font-weight:500;line-height:1.1}
+.dep-badge b{display:block;font-family:var(--sans);font-size:17px;font-weight:600;line-height:1.2;letter-spacing:-.005em}
 .dep-badge.common b{color:var(--eviq)}.dep-badge.selective b{color:var(--know)}.dep-badge.non b{color:var(--muted)}
 .dep-badge s{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:block;margin-top:5px}
 .dep-txt{font-size:14.5px;color:var(--ink2);line-height:1.55}.dep-txt code{font-family:var(--mono);font-size:13px;background:#00000006;padding:1px 5px;border-radius:4px}
@@ -206,7 +213,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 .struct-cap .badge.exp{background:var(--know-soft);color:#14536a}
 .struct-sel{margin-left:auto;font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink2);padding:2px 4px;cursor:pointer;max-width:120px}
 .ibox-h{padding:16px 18px 4px}
-.ibox-h b{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1;letter-spacing:-.01em;display:block}
+.ibox-h b{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1.15;letter-spacing:.01em;display:block}
 .ibox-h span{font-size:13px;color:var(--muted);font-style:italic;font-family:var(--serif)}
 .ibox-s{padding:12px 18px;border-top:1px solid var(--line2)}
 .ibox-s .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
@@ -241,7 +248,7 @@ section{scroll-margin-top:86px;margin-bottom:44px}
 
 .band{margin-top:8px}
 .band-h{display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
-.band-h .name{font-family:var(--serif);font-size:21px;font-weight:500}
+.band-h .name{font-family:var(--sans);font-size:17px;font-weight:600;letter-spacing:-.005em}
 .band.stress .band-h .name,.band.reporter .band-h .name{font-size:18px}
 .band-h .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
 .sig-svg{width:100%;height:118px;display:block;overflow:visible;margin-top:14px}
@@ -301,7 +308,7 @@ a.lfact:hover{color:var(--ink);text-decoration:underline}
 
 /* darkness card (right rail) */
 .darkcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin-bottom:14px}
-.darkcard .darknum{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1}
+.darkcard .darknum{font-family:var(--mono);font-weight:400;font-size:35px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .darkcard .darknum small{font-size:16px;color:var(--faint)}
 .darkcard .band-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
 .darkbar{height:5px;border-radius:3px;background:var(--line2);margin-top:10px;overflow:hidden}
@@ -316,6 +323,17 @@ a.lfact:hover{color:var(--ink);text-decoration:underline}
 .netwrap{margin-top:6px}
 .netsvg{width:100%;height:auto;max-width:720px;display:block;margin-top:12px;background:var(--card);border:1px solid var(--line2);border-radius:14px}
 .netlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center}
+/* The evidence lane, laid out HORIZONTALLY here. It is vertical on the Network tab because that
+   panel is 298px wide; this section is the full column width, so the same proportions read better
+   across than down and cost a fraction of the vertical space a document section can spare. */
+.evlane{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-top:12px;max-width:720px;background:var(--line2)}
+.evlane span{display:block}
+.evkey{display:flex;gap:16px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--muted);align-items:center;max-width:720px}
+.evkey i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.evkey b{font-family:var(--mono);font-weight:600;color:var(--ink2)}
+.evkey em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.evmore{margin-left:auto;font-size:11.5px}
+.evnote{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:10px;max-width:720px}
 .netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .gnode text{transition:fill .15s}
 .gnode:hover text{fill:#14161A!important;font-weight:600}
@@ -585,8 +603,17 @@ function screensSection(sc){
 }
 
 /* ---------- render ---------- */
+/* EYEBROW DISCIPLINE. Twelve sections each carried a small uppercase provenance label above the
+   headline, which is the templated rhythm every AI-built page has — and worse here, six of them
+   duplicated a `.src` line already inside the section that said the same thing MORE precisely:
+   the Function eyebrow read "curated" while its body read "NCBI · RefSeq summary" and
+   "UniProt · reviewed P04637 · 231 citations". The vaguer copy was the one in the louder position.
+   Those six are dropped. The other six are the only place their source is named, and on a tool
+   whose whole claim is auditability, deleting provenance to hit a styling count is the wrong
+   trade — so this stops at six rather than the four a pure reading of the rule would ask for. */
 function sec(id,mv,title,eyebrow,body){
-  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2><s>${eyebrow}</s></div>${body}</section>`;
+  const eb = eyebrow ? `<s>${eyebrow}</s>` : '';
+  return `<section id="${id}" class="${mv}"><div class="h2"><h2>${title}</h2>${eb}</div>${body}</section>`;
 }
 function render(w){
   const html=`<div class="page">
@@ -604,17 +631,17 @@ function render(w){
         <div class="ai-body loading" id="aibody"><span class="dot"></span> Reading ${esc(w.identity.symbol)} across its screens…</div>
         <div class="disc">Fitness essentiality + stress divergence + reporter probes, grounded in PubMed. Verify against primary screens.</div>
       </div>
-      ${sec('function','know','Function','curated','')}
+      ${sec('function','know','Function','','')}
       ${sec('ontology','know','Gene ontology','GO','')}
-      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','Reactome',''):''}
-      ${sec('interactions','know','Interactions','STRING v12','')}
+      ${w.pathways&&w.pathways.length?sec('pathways','know','Pathways','',''):''}
+      ${sec('interactions','know','Interactions','','')}
       ${w.uniprot.disease?sec('clinical','know','Clinical significance','UniProt','<div class="src"><b>UniProt</b> · involvement in disease</div>'+clampProse(w.uniprot.disease,3)):''}
-      ${sec('predictions','pred','Predicted functions','inferred','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
+      ${sec('predictions','pred','Predicted functions','','<div class="load" id="pred-body">Inferring candidate functions from associations…</div>')}
       ${sec('behavior','eviq','Screen behavior','RETICLE · harmonized','<div id="behavior-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Reading the harmonized screens…</div>')}
       ${sec('dependency','eviq','Dependency','DepMap 24Q4','')}
-      ${sec('coess','eviq','Co-essentiality','RETICLE · data-driven','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
+      ${sec('coess','eviq','Co-essentiality','','<div id="coess-body" style="color:var(--faint);font-family:var(--mono);font-size:12px">Looking for co-essential partners…</div>')}
       ${w.screens.n_total?sec('screens','eviq','CRISPR Screening','BioGRID ORCS',''):''}
-      ${w.screens.n_total?sec('distribution','eviq','Score distribution','in-screen',''):''}
+      ${w.screens.n_total?sec('distribution','eviq','Score distribution','',''):''}
       ${sec('literature','eviq','Literature','PubMed','')}
     </main>
     <aside class="rail"><div id="darkcard-slot"></div>${infobox(w)}</aside>
@@ -737,12 +764,18 @@ async function loadPredictions(sym,taxid){
   let d; try{ d=await (await fetch(`/api/gene_predictions?gene=${encodeURIComponent(sym)}&taxid=${taxid}`)).json(); }
   catch(e){ body.className='';body.style.color='var(--faint)';body.textContent='Prediction engine unreachable.';return; }
   if(!d.predictions||!d.predictions.length){
+    /* The most useful moment for the pointer, not the least: STRING and DepMap came up empty, and
+       our own screens are the one place left that might not have. */
     body.className='';body.style.color='var(--faint)';
-    body.textContent=`No confident novel-function predictions — ${sym}'s associations mostly recover functions it is already annotated with.`;return;
+    body.innerHTML=`No confident novel-function predictions from STRING or DepMap — ${esc(sym)}'s external
+      associations mostly recover functions it is already annotated with.
+      <a href="/network?gene=${encodeURIComponent(sym)}&organism=${taxid===10090?'mouse':'human'}">Try our own CRISPR network →</a>`;
+    return;
   }
   const items=d.predictions.map(p=>{
     const chips=p.supporters.map(s=>`<i>${esc(s)}</i>`).join('');
-    const lay=p.layers.map(l=>`<u>${l==='coess'?'co-essentiality':'STRING'}</u>`).join(' + ');
+    // "co-essentiality" alone is ambiguous on this page — the section below carries our own.
+    const lay=p.layers.map(l=>`<u>${l==='coess'?'DepMap co-essentiality':'STRING'}</u>`).join(' + ');
     return `<li class="pred-item">
       <div class="pred-h"><span class="pred-dot ${p.confidence}"></span><b>${esc(p.function)}</b><span class="pred-conf ${p.confidence}">${p.confidence}</span></div>
       <div class="pred-ex">${esc(p.explanation)}</div>
@@ -750,10 +783,19 @@ async function loadPredictions(sym,taxid){
     </li>`;
   }).join('');
   body.className='pred-out';
-  body.innerHTML=`<div class="src"><b>Inferred</b> · guilt-by-association from STRING + co-essentiality — HYPOTHESES for follow-up, not curated facts</div>`+
+  /* Naming the sources is not pedantry here. This page carries TWO things that were both called
+     "co-essentiality": this section's, which is DepMap correlation across cell lines, and the
+     Co-essentiality section below, which is our own BioGRID screens. They are different evidence
+     and they can disagree — which is useful only if the reader can tell which is which. */
+  body.innerHTML=`<div class="src"><b>Inferred</b> · guilt-by-association from EXTERNAL resources — STRING + DepMap — HYPOTHESES for follow-up, not curated facts</div>`+
     `<p class="pred-intro">Beyond the ${d.n_known_bp} biological processes ${esc(sym)} is already annotated with, its functional associations point to candidate roles it is <em>not</em> yet annotated with:</p>`+
     `<ul class="pred-list">${items}</ul>`+
-    `<div class="note-line">Ranked by evidence strength. Each is a testable hypothesis; the supporting genes and layers are the evidence. <b>high</b> = both independent layers agree.</div>`;
+    `<div class="note-line">Ranked by evidence strength. Each is a testable hypothesis; the supporting genes and layers are the evidence. <b>high</b> = both independent layers agree.</div>`+
+    `<div class="note-line">These reason over what the field already has: STRING's annotation-independent
+       channels and DepMap's cell-line co-essentiality. For the version that uses <b>only our own
+       CRISPR screens</b> — no STRING, no DepMap, no literature —
+       <a href="/network?gene=${encodeURIComponent(sym)}&organism=${taxid===10090?'mouse':'human'}">predict from the RETICLE network →</a>.
+       The two can disagree, and where they do, the disagreement is the interesting part.</div>`;
 }
 
 /* ---------- CRISPR screen-hit analysis (the only LLM call) — per phenotype ---------- */
@@ -986,15 +1028,38 @@ function renderNetwork(g, svgSel, kind){
   edges.forEach(e=>{adj[e.a].add(e.b); adj[e.b].add(e.a);});
   const col=l=> l==='essential'?'#1F6F8B':l==='advantageous'?'#E08A3C':l==='mixed'?'#9AA0A6':'#ffffff';
   svg.innerHTML='';
-  const edgeTip=e=>`${e.a} — ${e.b}<br><span style="color:#E08A3C">co-essential</span> · Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}`;
-  const eEls=edges.map(e=>{const ln=document.createElementNS(NS,'line');
-    ln.setAttribute('stroke','#cfccc6'); ln.setAttribute('stroke-width',(0.5+e.score*2.2).toFixed(2));
-    ln.setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); ln.dataset.a=e.a; ln.dataset.b=e.b;
+
+  /* Edges are drawn by EVIDENCE TIER, the same grammar the Network tab uses: weight and darkness
+     say how many of the two independent channels back the pair, dash style says which one.
+     Measured against CORUM same-complex membership — 46.4% / 22.4% / 17.7% / 4.9% precision
+     against a 0.615% baseline. Width no longer tracks r: r is the weakest of the dimensions
+     (AUROC 0.636) and non-monotone at the top, so drawing it as weight said the opposite of
+     the truth. */
+  const TIER={
+    1:{c:'#2E4756',w:3.2,op:.92,dash:'',      lab:'both channels',    prec:'46.4%'},
+    2:{c:'#6E8794',w:2.0,op:.78,dash:'',      lab:'mutual-best',      prec:'22.4%'},
+    3:{c:'#6E8794',w:2.0,op:.72,dash:'6 4',   lab:'co-hit only',      prec:'17.7%'},
+    4:{c:'#C3C9C2',w:1.0,op:.42,dash:'1.5 3.5',lab:'correlation only',prec:'4.9%'},
+  };
+  const T=e=>TIER[e.tier]||TIER[4];
+  /* DRAW only the edges that touch the focal gene; keep the rest for PHYSICS. A partner-partner
+     edge is what pulls a complex into a clump, so the module is still visible as spatial grouping
+     — the reader just does not have to see through 43 extra lines to find the 14 that are about
+     the gene they searched for. */
+  const drawn=edges.filter(e=>e.direct!==false);
+
+  const edgeTip=e=>`${e.a} — ${e.b}<br><span style="color:#E08A3C">${T(e).lab}</span> · `
+    + `${T(e).prec} of edges like this recover a known complex<br>`
+    + `<span style="color:#9AA0A6">Pearson r = ${(e.r!=null?e.r:e.score).toFixed(2)}</span>`;
+  const eEls=drawn.map(e=>{const ln=document.createElementNS(NS,'line'), s=T(e);
+    ln.setAttribute('stroke',s.c); ln.setAttribute('stroke-width',s.w);
+    ln.setAttribute('stroke-opacity',s.op); if(s.dash) ln.setAttribute('stroke-dasharray',s.dash);
+    ln.dataset.a=e.a; ln.dataset.b=e.b; ln._base=s;
     svg.appendChild(ln); return ln;});
-  const hitEls=edges.map((e,i)=>{const hit=document.createElementNS(NS,'line');
+  const hitEls=drawn.map((e,i)=>{const hit=document.createElementNS(NS,'line');
     hit.setAttribute('stroke','transparent'); hit.setAttribute('stroke-width','13'); hit.style.cursor='help';
     hit.addEventListener('mousemove',ev=>{ eEls[i].setAttribute('stroke','#14161A'); eEls[i].setAttribute('stroke-opacity','1'); showTip(edgeTip(e),ev.clientX,ev.clientY); });
-    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke','#cfccc6'); eEls[i].setAttribute('stroke-opacity',(0.22+e.score*0.45).toFixed(2)); hideTip(); });
+    hit.addEventListener('mouseleave',()=>{ eEls[i].setAttribute('stroke',T(e).c); eEls[i].setAttribute('stroke-opacity',T(e).op); hideTip(); });
     svg.appendChild(hit); return hit;});
   const nEls=nodes.map(n=>{const r=n.focus?13:9, grp=document.createElementNS(NS,'g');
     grp.setAttribute('class','gnode'); grp.style.transition='opacity .2s';
@@ -1012,9 +1077,14 @@ function renderNetwork(g, svgSel, kind){
     grp.addEventListener('mouseleave',()=>hi(null));
     return grp;});
   function hi(name){
+    /* adj is built from ALL edges, including the partner-partner ones this view does not draw —
+       deliberately: hovering a gene should light up everything it is actually related to, not just
+       what happens to be on screen. */
     nEls.forEach(grp=>{ grp.style.opacity = (!name || adj[name].has(grp._n.name)) ? 1 : 0.16; });
     eEls.forEach(ln=>{ const on = !name || ln.dataset.a===name || ln.dataset.b===name;
-      ln.style.opacity = on?1:0.05; ln.setAttribute('stroke', (name&&on)?'#9aa0a6':'#cfccc6'); });
+      ln.style.opacity = on?1:0.05;
+      ln.setAttribute('stroke', (name&&on)?'#14161A':ln._base.c);   // restore the TIER colour
+      ln.setAttribute('stroke-opacity', (name&&on)?1:ln._base.op); });
   }
   function physics(alpha){
     for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
@@ -1029,7 +1099,9 @@ function renderNetwork(g, svgSel, kind){
       n.x=Math.max(46,Math.min(W-46,n.x)); n.y=Math.max(26,Math.min(H-30,n.y)); });
   }
   function paint(){
-    eEls.forEach((ln,i)=>{const a=nodes[idx[edges[i].a]],b=nodes[idx[edges[i].b]];
+    // eEls/hitEls are built from `drawn`, NOT `edges` — indexing them with `edges[i]` would put
+    // every line between the wrong pair of genes.
+    eEls.forEach((ln,i)=>{const a=nodes[idx[drawn[i].a]],b=nodes[idx[drawn[i].b]];
       const x1=a.x.toFixed(1),y1=a.y.toFixed(1),x2=b.x.toFixed(1),y2=b.y.toFixed(1);
       ln.setAttribute('x1',x1); ln.setAttribute('y1',y1); ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
       const hit=hitEls[i]; hit.setAttribute('x1',x1); hit.setAttribute('y1',y1); hit.setAttribute('x2',x2); hit.setAttribute('y2',y2);});
@@ -1053,10 +1125,29 @@ async function loadCoess(sym, organism){
     const r=await fetch('/api/coessential?symbol='+encodeURIComponent(sym)+'&org='+encodeURIComponent(organism));
     const g=await r.json();
     if(!r.ok || !g.nodes || g.nodes.length<2){ hideSection('coess'); return; }
-    host.innerHTML=`<div class="src"><b>RETICLE</b> · genes whose CRISPR fitness profiles move together — data-driven, works for dark genes</div>
+    const TL={1:['both channels','#2E4756','46.4%'],2:['mutual-best','#6E8794','22.4%'],
+              3:['co-hit only','#6E8794','17.7%'],4:['correlation only','#C3C9C2','4.9%']};
+    const t=g.tiers||{}, tot=[1,2,3,4].reduce((s,k)=>s+(t[k]||0),0);
+    const lane = tot ? `<div class="evlane">`+[1,2,3,4].filter(k=>t[k]).map(k=>
+        `<span title="${TL[k][0]} — ${t[k]} edge${t[k]===1?'':'s'}, ${TL[k][2]} recover a known complex"
+           style="width:${t[k]/tot*100}%;background:${TL[k][1]}"></span>`).join('')+`</div>`
+      + `<div class="evkey">`+[1,2,3,4].filter(k=>t[k]).map(k=>
+        `<span><i style="background:${TL[k][1]}"></i>${TL[k][0]} <b>${t[k]}</b> <em>${TL[k][2]}</em></span>`).join('')
+      /* `organism` here is the ORG2TAX key — "Homo sapiens" / "Mus musculus" — while the Network
+         page takes "human" / "mouse". Passing it through unmapped produced a link that silently
+         fell back to human for a mouse gene. */
+      + `<a class="evmore" href="/network?gene=${encodeURIComponent(g.symbol)}&organism=${organism==='Mus musculus'?'mouse':'human'}">Open in Network →</a></div>` : '';
+    const nPP=(g.edges||[]).filter(e=>e.direct===false).length;
+    host.innerHTML=`<div class="src"><b>RETICLE</b> · genes whose CRISPR knockout-fitness profiles move together — our own screens, no literature</div>
       <div class="netwrap"><svg id="coesssvg" class="netsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet"></svg>
+      ${lane}
+      <div class="evnote">Two independent channels back an edge: correlation across every screen,
+        and co-hit enrichment across <b>only</b> the screens where both genes were called hits.
+        Percentages are how often edges of that grade recover a known CORUM complex, against
+        <b>0.6%</b> for a random annotated pair${g.n_screens?` · pooled over ${g.n_screens.toLocaleString()} genome-wide screens`:''}.
+        ${nPP?`Lines run to ${g.symbol} only; the ${nPP} edges between its partners still shape the layout, so a complex still clumps.`:''}</div>
       <div class="netlegend"><span><i style="background:#1F6F8B"></i>essential</span><span><i style="background:#E08A3C"></i>KO-advantageous</span><span><i style="background:#9AA0A6"></i>mixed</span>
-        <span style="color:var(--faint)">edge = correlated across fitness screens · hover for Pearson r · click a node to open it</span></div></div>`;
+        <span style="color:var(--faint)">hover an edge for its evidence · click a gene to open it</span></div></div>`;
     renderNetwork(g, '#coesssvg', 'coess');
   }catch(e){ hideSection('coess'); }
 }
