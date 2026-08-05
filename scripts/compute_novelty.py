@@ -88,6 +88,15 @@ class NoveltyCompute:
         self.conn = rc.pg_connect()
         logger.info(f"Connected to database (backend={'GPU/cupy' if self.is_gpu else 'CPU/numpy'})")
 
+    @staticmethod
+    def _coalesce(*vals):
+        """First non-None value. Unlike dict.get(key, default), this treats a
+        key present with an explicit JSON null the same as a missing key."""
+        for v in vals:
+            if v is not None:
+                return v
+        return None
+
     def resolve(self):
         cur = self.conn.cursor()
         cur.execute("SELECT organism FROM data_load_version WHERE version_id=%s", (self.version_id,))
@@ -115,20 +124,24 @@ class NoveltyCompute:
         cfg = cfgs[0]
         self.config_id = cfg["config_id"]
         th = cfg["thresholds"] or {}
-        self.tail_percentile = th.get("tail_percentile", 0.10)   # MUST match D5's (§6.1 residual uses the same window)
-        self.resid_rho_min = self.resid_rho_min if self.resid_rho_min is not None \
-            else (th.get("resid_rho_min") or th.get("abs_rho_min", 0.20))
-        self.top_k = self.top_k if self.top_k is not None else (th.get("resid_top_k") or th.get("ann_topk", 200))
-        self.min_support = self.min_support if self.min_support is not None \
-            else (th.get("resid_min_support") or th.get("min_coess_support", 5))
-        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else th.get("fdr_alpha", 0.01)
+        # _coalesce, not dict.get(key, default) chains: a JSONB threshold can be
+        # PRESENT with an explicit null (e.g. this warehouse's config_id=2 has
+        # "ann_topk": null, "compute_mode": "ANN_TOPK" — declared but never set).
+        # dict.get(key, default) only applies its default when the key is MISSING,
+        # not when it maps to null, so a two-level "th.get(a) or th.get(b, default)"
+        # chain silently produces None if b is present-null — exactly what crashed
+        # here (self.top_k = None, then `cand.size > self.top_k` raised TypeError).
+        self.tail_percentile = self._coalesce(th.get("tail_percentile"), 0.10)
+        self.resid_rho_min = self._coalesce(self.resid_rho_min, th.get("resid_rho_min"), th.get("abs_rho_min"), 0.20)
+        self.top_k = self._coalesce(self.top_k, th.get("resid_top_k"), th.get("ann_topk"), 200)
+        self.min_support = self._coalesce(self.min_support, th.get("resid_min_support"), th.get("min_coess_support"), 5)
+        self.fdr_alpha = self._coalesce(self.fdr_alpha, th.get("fdr_alpha"), 0.01)
         tier_cuts_all = th.get("tier_cuts") or {}
-        self.tier_cuts = tier_cuts_all.get("resid", tier_cuts_all.get("co_essentiality", {"strong": 0.50, "moderate": 0.30}))
-        self.antagonistic_rho = self.antagonistic_rho if self.antagonistic_rho is not None \
-            else th.get("antagonistic_rho", 0.30)
-        self.min_shared_contexts = self.min_shared_contexts if self.min_shared_contexts is not None \
-            else th.get("min_shared_contexts", 3)
-        self.sel_filter = th.get("selective_gene_filter", {})
+        self.tier_cuts = tier_cuts_all.get("resid") or tier_cuts_all.get("co_essentiality") \
+            or {"strong": 0.50, "moderate": 0.30}
+        self.antagonistic_rho = self._coalesce(self.antagonistic_rho, th.get("antagonistic_rho"), 0.30)
+        self.min_shared_contexts = self._coalesce(self.min_shared_contexts, th.get("min_shared_contexts"), 3)
+        self.sel_filter = th.get("selective_gene_filter") or {}
 
         cur.execute("SELECT run_id FROM etl_pipeline_run WHERE data_load_version_id=%s "
                     "ORDER BY run_id DESC LIMIT 1", (self.version_id,))

@@ -100,9 +100,12 @@ class ContextualCompute:
         self.min_context_screens = self.min_context_screens if self.min_context_screens is not None \
             else (th.get("min_context_screens") or 5)
         self.min_cohit = self.min_cohit if self.min_cohit is not None else (th.get("min_context_cohit") or 2)
-        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else th.get("fdr_alpha", 0.01)
-        self.tier_cuts = (th.get("tier_cuts") or {}).get("context", {"strong": 0.50, "moderate": 0.20})
-        self.sel_filter = th.get("selective_gene_filter", {})
+        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else (th.get("fdr_alpha") or 0.01)
+        # dict.get(key, default) only applies its default when key is MISSING, not
+        # when present-with-null (this warehouse's configs do that — e.g. ann_topk
+        # null in config_id=2 — see compute_novelty.py's _coalesce for the postmortem).
+        self.tier_cuts = (th.get("tier_cuts") or {}).get("context") or {"strong": 0.50, "moderate": 0.20}
+        self.sel_filter = th.get("selective_gene_filter") or {}
 
         bad = [t for t in self.context_types if t not in ALL_CONTEXT_TYPES]
         if bad:

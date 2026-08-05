@@ -83,9 +83,12 @@ class CoHitCompute:
         self.config_id = cfg["config_id"]
         th = cfg["thresholds"] or {}
         self.min_cohit = self.min_cohit if self.min_cohit is not None else (th.get("min_cohit_screens") or 3)
-        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else th.get("fdr_alpha", 0.01)
-        self.tier_cuts = (th.get("tier_cuts") or {}).get("co_hit", {"strong": 0.50, "moderate": 0.20})
-        self.sel_filter = th.get("selective_gene_filter", {})
+        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else (th.get("fdr_alpha") or 0.01)
+        # dict.get(key, default) only applies its default when key is MISSING, not
+        # when present-with-null (this warehouse's configs do that — e.g. ann_topk
+        # null in config_id=2 — see compute_novelty.py's _coalesce for the postmortem).
+        self.tier_cuts = (th.get("tier_cuts") or {}).get("co_hit") or {"strong": 0.50, "moderate": 0.20}
+        self.sel_filter = th.get("selective_gene_filter") or {}
 
         cur.execute("SELECT run_id FROM etl_pipeline_run WHERE data_load_version_id=%s "
                     "ORDER BY run_id DESC LIMIT 1", (self.version_id,))

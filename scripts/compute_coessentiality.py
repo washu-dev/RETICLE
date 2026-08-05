@@ -109,10 +109,13 @@ class CoessentialityCompute:
         self.tail_percentile = th.get("tail_percentile", 0.10)
         self.rho_min = self.rho_min if self.rho_min is not None else th.get("abs_rho_min", 0.20) or 0.20
         self.top_k = self.top_k if self.top_k is not None else (th.get("ann_topk") or 200)
-        self.min_support = self.min_support if self.min_support is not None else th.get("min_coess_support", 5)
-        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else th.get("fdr_alpha", 0.01)
-        self.tier_cuts = (th.get("tier_cuts") or {}).get("co_essentiality", {"strong": 0.50, "moderate": 0.30})
-        self.sel_filter = th.get("selective_gene_filter", {})
+        self.min_support = self.min_support if self.min_support is not None else (th.get("min_coess_support") or 5)
+        self.fdr_alpha = self.fdr_alpha if self.fdr_alpha is not None else (th.get("fdr_alpha") or 0.01)
+        # dict.get(key, default) only applies its default when key is MISSING, not
+        # when present-with-null (this warehouse's configs do that — e.g. ann_topk
+        # null in config_id=2 — see compute_novelty.py's _coalesce for the postmortem).
+        self.tier_cuts = (th.get("tier_cuts") or {}).get("co_essentiality") or {"strong": 0.50, "moderate": 0.30}
+        self.sel_filter = th.get("selective_gene_filter") or {}
 
         cur.execute("SELECT run_id FROM etl_pipeline_run WHERE data_load_version_id=%s "
                     "ORDER BY run_id DESC LIMIT 1", (self.version_id,))
