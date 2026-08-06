@@ -98,7 +98,12 @@ def _load_env():
 
 
 _ENV = _load_env()
-USE_PG = bool(_ENV.get("AWS_DB_HOST"))
+# RETICLE_LOCAL=1 forces the SQLite mirrors even when .env carries RDS credentials.
+# The shared RDS instance is 1 GiB serving ~53 GB and periodically stops answering for tens of
+# minutes at a time; every table this app reads also exists as a local file under processed_data/.
+# So a demo, or any work that must not depend on that instance being awake, runs with this set —
+# without editing .env, which holds secrets and is the same file the cloud deploy reads from.
+USE_PG = bool(_ENV.get("AWS_DB_HOST")) and os.environ.get("RETICLE_LOCAL", "") not in ("1", "true", "yes")
 _PG_PARAMS = (dict(host=_ENV.get("AWS_DB_HOST"), port=_ENV.get("AWS_DB_PORT", "5432"),
                    user=_ENV.get("AWS_DB_USER"), password=_ENV.get("AWS_DB_PASSWORD"),
                    dbname=_ENV.get("AWS_DB_NAME"), connect_timeout=15,
