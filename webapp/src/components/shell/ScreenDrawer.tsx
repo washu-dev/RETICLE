@@ -4,6 +4,7 @@ import Provenance from '../washu/Provenance';
 import { fetchScreenDetail, type ScreenDetail, type ScreenGene } from '../../services/reticleApi';
 import { ApiError } from '../../services/api';
 import { labelFor, ASSAY_DOMAIN, MODALITY } from '../../data/screenVocab';
+import { toReticleOrganism, type ReticleOrganism } from '../../utils/organism';
 
 /**
  * The screen drawer — opens a matched screen's own data without leaving the
@@ -40,10 +41,13 @@ export default function ScreenDrawer({
   screenId,
   onClose,
   onOpenGene,
+  onOpenScreen,
 }: {
   screenId: string | null;
   onClose: () => void;
-  onOpenGene: (symbol: string) => void;
+  onOpenGene: (symbol: string, organism: ReticleOrganism) => void;
+  /** Continue from the quick-look drawer into the full screen-comparison page. */
+  onOpenScreen?: (screenId: string) => void;
 }) {
   const open = screenId != null;
   const [detail, setDetail] = useState<Load<ScreenDetail>>({ state: 'loading', data: null });
@@ -245,7 +249,19 @@ export default function ScreenDrawer({
                 <a href={d.biogridUrl} target="_blank" rel="noreferrer" style={linkBtn}>
                   BioGRID ORCS <ExternalLink size={13} />
                 </a>
+                {onOpenScreen && d.similarityAvailable && (
+                  <button type="button" onClick={() => onOpenScreen(d.screenId)} style={linkBtn}>
+                    Find similar screens →
+                  </button>
+                )}
               </div>
+
+              {onOpenScreen && !d.similarityAvailable && (
+                <p style={faintHint}>
+                  Similar-screen matching is unavailable for this screen. The current comparison
+                  pool contains 962 supported human genome-wide fitness screens.
+                </p>
+              )}
 
               {/* Verified citation — resolved from the same pmid the link points to */}
               {d.citation && (
@@ -297,7 +313,7 @@ export default function ScreenDrawer({
                   <button
                     key={g.symbol}
                     className="lk"
-                    onClick={() => onOpenGene(g.symbol)}
+                    onClick={() => onOpenGene(g.symbol, toReticleOrganism(d.organism))}
                     title={g.percentile != null ? `percentile ${g.percentile.toFixed(3)}` : undefined}
                     style={{ ...geneTok, ...(g.isHit ? geneTokHit : null) }}
                   >
@@ -370,7 +386,7 @@ export default function ScreenDrawer({
                         <td>
                           <button
                             className="lk"
-                            onClick={() => onOpenGene(g.symbol)}
+                            onClick={() => onOpenGene(g.symbol, toReticleOrganism(d.organism))}
                             style={{ fontWeight: 600, color: g.isHit ? 'var(--washu-red)' : 'var(--fg)' }}
                             title={`Open ${g.symbol}`}
                           >
@@ -433,7 +449,7 @@ const tabBar: React.CSSProperties = { display: 'flex', gap: 4, marginTop: 4 };
 const tabBtn: React.CSSProperties = {
   minHeight: 44, padding: '11px 16px', border: 'none', background: 'none', cursor: 'pointer',
   fontSize: '0.84rem', fontWeight: 600, color: 'var(--fg-muted)',
-  borderBottom: '3px solid transparent', marginBottom: -1,
+  borderBottomWidth: 3, borderBottomStyle: 'solid', borderBottomColor: 'transparent', marginBottom: -1,
   display: 'inline-flex', alignItems: 'center', gap: 6,
 };
 // Active: bold red label, 3px underline, and a faint tint — three cues so the
@@ -473,7 +489,8 @@ const moreBtn: React.CSSProperties = {
 const linkBtn: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
   padding: '7px 12px', borderRadius: 6, border: '1px solid var(--border-2)',
-  background: '#fff', color: 'var(--washu-red)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none',
+  background: '#fff', color: 'var(--washu-red)', fontSize: '0.8rem', fontWeight: 600,
+  textDecoration: 'none', cursor: 'pointer',
 };
 const dlBtn: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px',

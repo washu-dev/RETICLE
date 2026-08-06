@@ -9,6 +9,7 @@ jest.mock('../../../services/reticleApi', () => ({
 const detail: ScreenDetail = {
   screenId: '833',
   biogridUrl: 'https://orcs.thebiogrid.org/Screen/833',
+  similarityAvailable: true,
   pmid: '30971826',
   pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/30971826',
   author: 'Behan FM (2019)',
@@ -69,7 +70,38 @@ describe('ScreenDrawer', () => {
     render(<ScreenDrawer screenId="833" onClose={jest.fn()} onOpenGene={onOpenGene} />);
     await openTab(/Genes/);
     fireEvent.click(screen.getByRole('button', { name: 'ATG7' }));
-    expect(onOpenGene).toHaveBeenCalledWith('ATG7');
+    expect(onOpenGene).toHaveBeenCalledWith('ATG7', 'human');
+  });
+
+  test('continues from the drawer into full screen comparison', async () => {
+    mockFetch.mockResolvedValue(detail);
+    const onOpenScreen = jest.fn();
+    render(
+      <ScreenDrawer
+        screenId="833"
+        onClose={jest.fn()}
+        onOpenGene={jest.fn()}
+        onOpenScreen={onOpenScreen}
+      />,
+    );
+    await waitFor(() => screen.getByText('Cancer dependency map'));
+    fireEvent.click(screen.getByRole('button', { name: /Find similar screens/i }));
+    expect(onOpenScreen).toHaveBeenCalledWith('833');
+  });
+
+  test('does not offer a guaranteed-404 comparison for an unsupported screen', async () => {
+    mockFetch.mockResolvedValue({ ...detail, similarityAvailable: false });
+    render(
+      <ScreenDrawer
+        screenId="833"
+        onClose={jest.fn()}
+        onOpenGene={jest.fn()}
+        onOpenScreen={jest.fn()}
+      />,
+    );
+    await waitFor(() => screen.getByText('Cancer dependency map'));
+    expect(screen.queryByRole('button', { name: /Find similar screens/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/Similar-screen matching is unavailable/i)).toBeInTheDocument();
   });
 
   test('genes tab filter narrows the list', async () => {

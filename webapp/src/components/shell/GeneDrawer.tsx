@@ -417,7 +417,7 @@ const xclose: React.CSSProperties = { marginLeft: 'auto', color: 'var(--faint)',
 const tabs: React.CSSProperties = { display: 'flex', gap: 4, marginTop: 12 };
 const tabBtn: React.CSSProperties = {
   padding: '12px 10px', fontSize: '0.82rem', fontWeight: 600, color: 'var(--fg-muted)',
-  borderBottom: '2px solid transparent', marginBottom: -1,
+  borderBottomWidth: 2, borderBottomStyle: 'solid', borderBottomColor: 'transparent', marginBottom: -1,
 };
 const tabBtnOn: React.CSSProperties = { color: 'var(--washu-red)', borderBottomColor: 'var(--washu-red)' };
 const drawerBody: React.CSSProperties = { overflowY: 'auto', padding: '20px 22px 60px', flex: 1 };

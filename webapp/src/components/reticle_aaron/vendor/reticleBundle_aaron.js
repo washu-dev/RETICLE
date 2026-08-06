@@ -70,11 +70,11 @@ const SHELL_CSS = `
 
 /** Vendored gene.html. Its own closure on purpose: the three pages were written independently
  *  and reuse short names ($, esc, fmt, COL, …) that would collide in a shared scope. */
-function run_gene(root, rxBody, APIBASE) {
+function run_gene(root, rxBody, APIBASE, locationSearch) {
   const exposed = [];
   // See SCOPE_STUBS in the generator for why these shadow the real globals.
   const history = { replaceState() {}, pushState() {}, back() {}, forward() {}, go() {} };
-  const location = { search: '', pathname: '/', hash: '', href: '', origin: window.location.origin };
+  const location = { search: locationSearch || '', pathname: '/', hash: '', href: '', origin: window.location.origin };
 // ---- begin vendored gene.html ----
 
 const $=s=>root.querySelector(s);
@@ -1006,11 +1006,11 @@ if(params.get('gene')){ $('#q').value=params.get('gene'); if(params.get('taxid')
 
 /** Vendored screen.html. Its own closure on purpose: the three pages were written independently
  *  and reuse short names ($, esc, fmt, COL, …) that would collide in a shared scope. */
-function run_screen(root, rxBody, APIBASE) {
+function run_screen(root, rxBody, APIBASE, locationSearch) {
   const exposed = [];
   // See SCOPE_STUBS in the generator for why these shadow the real globals.
   const history = { replaceState() {}, pushState() {}, back() {}, forward() {}, go() {} };
-  const location = { search: '', pathname: '/', hash: '', href: '', origin: window.location.origin };
+  const location = { search: locationSearch || '', pathname: '/', hash: '', href: '', origin: window.location.origin };
 // ---- begin vendored screen.html ----
 
 const $ = s => root.querySelector(s);
@@ -1147,11 +1147,11 @@ $('#qs').addEventListener('keydown',e=>{if(e.key==='Enter')findSimilar($('#qs').
 
 /** Vendored network.html. Its own closure on purpose: the three pages were written independently
  *  and reuse short names ($, esc, fmt, COL, …) that would collide in a shared scope. */
-function run_network(root, rxBody, APIBASE) {
+function run_network(root, rxBody, APIBASE, locationSearch) {
   const exposed = [];
   // See SCOPE_STUBS in the generator for why these shadow the real globals.
   const history = { replaceState() {}, pushState() {}, back() {}, forward() {}, go() {} };
-  const location = { search: '', pathname: '/', hash: '', href: '', origin: window.location.origin };
+  const location = { search: locationSearch || '', pathname: '/', hash: '', href: '', origin: window.location.origin };
   const $ = (s) => root.querySelector(s);
 // ---- begin vendored network.html ----
 
@@ -1893,6 +1893,20 @@ const RUNNERS = { gene: run_gene, screen: run_screen, network: run_network };
 const PAGE_CSS = { gene: CSS_GENE, screen: CSS_SCREEN, network: CSS_NETWORK };
 const MARKUP = { gene: MARKUP_GENE, screen: MARKUP_SCREEN, network: MARKUP_NETWORK };
 
+/** Build the virtual deep link consumed by each standalone page at startup. */
+export function reticleInitialSearch(key, target, organism) {
+  if (!target) return '';
+  const params = new URLSearchParams();
+  if (key === 'screen') {
+    params.set('screen', String(target));
+  } else {
+    params.set('gene', String(target));
+    if (key === 'network' && organism) params.set('organism', organism === 'mouse' ? 'mouse' : 'human');
+    if (key === 'gene' && organism) params.set('taxid', organism === 'mouse' ? '10090' : '9606');
+  }
+  return '?' + params.toString();
+}
+
 /** Load a CDN script once per document and resolve when its global is present. */
 function ensureGlobal(dep) {
   if (window[dep.global]) return Promise.resolve();
@@ -1949,6 +1963,11 @@ export function mountReticle(host, apiBase, opts) {
   const escId = (id) =>
     (window.CSS && typeof window.CSS.escape === 'function') ? window.CSS.escape(id) : id;
   const byId = (node, id) => node.querySelector('#' + escId(id));
+  const searchFromHref = (href) => {
+    const queryAt = href.indexOf('?');
+    const hashAt = href.indexOf('#', queryAt);
+    return queryAt < 0 ? '' : href.slice(queryAt, hashAt < 0 ? undefined : hashAt);
+  };
 
   const pageCss = byId(root, 'rx-page-css');
   const pageHost = byId(root, 'rx-page');
@@ -1974,7 +1993,7 @@ export function mountReticle(host, apiBase, opts) {
     return el;
   }
 
-  async function show(key) {
+  async function show(key, locationSearch = '') {
     if (disposed) return;
     const meta = PAGES.find((p) => p.key === key) || PAGES[0];
     active = meta.key;
@@ -2008,7 +2027,9 @@ export function mountReticle(host, apiBase, opts) {
         e.preventDefault();
         e.stopPropagation();   // do not let the page's own click delegate also see this
         const next = a.getAttribute('data-t');
-        if (next && next !== active) show(next);
+        // The page script rewrites this href with the current gene + species. Preserve that
+        // virtual deep link so a mouse wiki cannot silently fall back to the human network.
+        if (next && next !== active) show(next, searchFromHref(a.getAttribute('href') || ''));
       });
     });
     pageEl.querySelectorAll('[data-rx-home]').forEach((a) => {
@@ -2037,11 +2058,7 @@ export function mountReticle(host, apiBase, opts) {
       e.preventDefault();
       e.stopPropagation();
       const key = m[1];
-      const gene = (/[?&]gene=([^&#]*)/.exec(href) || [])[1];
-      const org = (/[?&]organism=([^&#]*)/.exec(href) || [])[1]
-        || ((/[?&]taxid=10090/.test(href)) ? 'mouse' : undefined);
-      show(key);
-      if (gene) openGene(decodeURIComponent(gene), org && decodeURIComponent(org));
+      show(key, searchFromHref(href));
     });
 
     // Drop the previous page's inline-handler globals before the next page installs its own —
@@ -2050,7 +2067,7 @@ export function mountReticle(host, apiBase, opts) {
     releaseGlobals();
 
     try {
-      exposedGlobals = RUNNERS[meta.key](pageEl, rxBody, APIBASE) || [];
+      exposedGlobals = RUNNERS[meta.key](pageEl, rxBody, APIBASE, locationSearch) || [];
     } catch (err) {
       pageHost.innerHTML =
         '<div class="rx-loading">This page failed to start: ' +
@@ -2069,36 +2086,8 @@ export function mountReticle(host, apiBase, opts) {
     });
   }
 
-  /* Drive the page that is mounted to a specific gene. Used by the cross-page links above and by
-     the host app, which lets the signed-in home page hand a symbol straight to the wiki instead of
-     making the user type it a second time on arrival.
-     Which entry point each page exposes is spelled out at the call below. */
-  function openGene(sym, organism) {
-    if (!sym) return;
-    // The wiki and network pages name their box #q; the screen page names its own #qs. Fill
-    // whichever is present so the value the host handed over is visible, not just acted on.
-    const box = byId(root, 'q') || byId(root, 'qs');
-    if (box) box.value = sym;
-    /* The wiki reads its species from a #tax select at call time, so setting it before lookup() is
-       what makes a mouse symbol resolve as mouse. The network page instead keeps species in a
-       module variable behind its own pills, whose handler resets the focal gene and reloads — so
-       it is deliberately NOT driven from here; clicking it and then jumping would race two loads.
-       A mouse gene reached through a cross-page link therefore lands on the human network. Known,
-       and it needs an entry point on that page rather than a bodge out here. */
-    if (organism) {
-      const tax = byId(root, 'tax');
-      if (tax) tax.value = organism === 'mouse' ? '10090' : '9606';
-    }
-    // Each page names its own entry point and only one of these exists at a time: the wiki has
-    // lookup(), the network has jump(), the screen page has findSimilar(). All three take the
-    // thing the box holds. load() is last and only as a fallback — it takes no argument on the
-    // network page, so preferring it would land on the previous gene.
-    const go = window.lookup || window.jump || window.findSimilar || window.load;
-    if (typeof go === 'function') { try { go(sym); } catch (err) { /* page shows its own error */ } }
-  }
-
-  show(options.initial || 'gene');
-  if (options.initialGene) openGene(String(options.initialGene), options.initialOrganism);
+  const initialKey = options.initial || 'gene';
+  show(initialKey, reticleInitialSearch(initialKey, options.initialGene, options.initialOrganism));
 
   return function cleanup() {
     disposed = true;

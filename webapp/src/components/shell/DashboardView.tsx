@@ -8,6 +8,7 @@ import {
   fetchPathways, pubmedUrl, orcsUrl,
   type QueryResponse, type PathwayResult, type MatchedScreen,
 } from '../../services/reticleApi';
+import { toReticleOrganism, type ReticleOrganism } from '../../utils/organism';
 
 /** The numeric BioGRID ORCS screen id for a matched screen (used to open its
  *  detail + external link). biogridId is the screen_id on real data; strip any
@@ -37,15 +38,36 @@ interface DashboardViewProps {
   options: { organism?: string; modalities?: string[]; algorithm?: string } | null;
   queryResults: QueryResponse | null;
   onNewAnalysis: () => void;
+  /** Host navigation into the complete gene profile. Falls back to GeneDrawer when omitted. */
+  onOpenGene?: (symbol: string, organism: ReticleOrganism) => void;
+  /** Host navigation into the complete screen-comparison page. */
+  onOpenScreen?: (screenId: string) => void;
 }
 
-export default function DashboardView({ genes, options, queryResults, onNewAnalysis }: DashboardViewProps) {
-  const [drawerGene, setDrawerGene] = useState<string | null>(null);
+export default function DashboardView({
+  genes,
+  options,
+  queryResults,
+  onNewAnalysis,
+  onOpenGene,
+  onOpenScreen,
+}: DashboardViewProps) {
+  const [drawerGene, setDrawerGene] = useState<{ symbol: string; organism: string } | null>(null);
   const [detailScreen, setDetailScreen] = useState<string | null>(null);
   const [numScreens, setNumScreens] = useState(false);
   const [numGenes, setNumGenes] = useState(false);
   const [pathways, setPathways] = useState<PathwayResult | null>(null);
-  const openGene = (symbol: string) => setDrawerGene(symbol);
+  const openGene = (symbol: string, organism = options?.organism) => {
+    const normalized = toReticleOrganism(organism);
+    if (onOpenGene) {
+      onOpenGene(symbol, normalized);
+      return;
+    }
+    setDrawerGene({
+      symbol,
+      organism: normalized === 'mouse' ? 'Mus musculus' : 'Homo sapiens',
+    });
+  };
 
   // Pathway enrichment over the query genes (Enrichr). Fails soft — the section
   // keeps its "coming" state if the endpoint is unavailable or returns nothing.
@@ -158,7 +180,10 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
                       <td><DirectionBadge d={s.directionality} /></td>
                       <td>
                         <span className="tnum" style={{ color: 'var(--fg-muted)' }}>{s.sharedGenes}/{s.totalGenes}</span>
-                        <SharedGeneChips symbols={s.sharedGeneSymbols} onOpen={openGene} />
+                        <SharedGeneChips
+                          symbols={s.sharedGeneSymbols}
+                          onOpen={(symbol) => openGene(symbol, s.organism)}
+                        />
                       </td>
                       <td><ScreenLinks pmid={s.pmid} screenId={screenIdOf(s)} /></td>
                       {numScreens && <td style={{ textAlign: 'right' }} className="tnum">{s.rho.toFixed(2)}</td>}
@@ -275,8 +300,13 @@ export default function DashboardView({ genes, options, queryResults, onNewAnaly
         screenId={detailScreen}
         onClose={() => setDetailScreen(null)}
         onOpenGene={openGene}
+        onOpenScreen={onOpenScreen}
       />
-      <GeneDrawer symbol={drawerGene} organism={options?.organism} onClose={() => setDrawerGene(null)} />
+      <GeneDrawer
+        symbol={drawerGene?.symbol ?? null}
+        organism={drawerGene?.organism ?? options?.organism}
+        onClose={() => setDrawerGene(null)}
+      />
     </>
   );
 }

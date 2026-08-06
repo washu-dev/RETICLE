@@ -46,8 +46,8 @@ export default function ReticlePage_aaron({
   /** Open straight on this symbol. The home page's search box hands it over so the user does not
    *  type the same gene twice — once to get here, once on arrival. */
   gene?: string;
-  /** Which species to resolve `gene` against. Honoured on the wiki tab; the network tab keeps its
-   *  own species pills (see openGene in the vendoring generator). */
+  /** Which species to resolve `gene` against. Passed through the page's virtual deep link so both
+   *  the wiki and network select the correct organism before their first request. */
   organism?: 'human' | 'mouse';
 }) {
   const hostRef = useRef<HTMLDivElement>(null);

@@ -194,6 +194,8 @@ export interface ScreenGene {
 export interface ScreenDetail {
   screenId: string;
   biogridUrl: string;
+  /** Whether this screen belongs to the precomputed 962-screen comparison pool. */
+  similarityAvailable: boolean;
   pmid?: string | null;
   pubmedUrl?: string | null;
   author?: string | null;

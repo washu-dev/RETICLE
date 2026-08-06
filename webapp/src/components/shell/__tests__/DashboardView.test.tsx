@@ -72,6 +72,14 @@ describe('DashboardView', () => {
     expect(screen.queryByRole('dialog', { name: 'Screen detail' })).not.toBeInTheDocument();
   });
 
+  test('host navigation opens a shared gene in the full mouse profile', () => {
+    const onOpenGene = jest.fn();
+    render(<DashboardView {...props} onOpenGene={onOpenGene} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Jak2' }));
+    expect(onOpenGene).toHaveBeenCalledWith('Jak2', 'mouse');
+    expect(screen.queryByRole('dialog', { name: 'Gene entity' })).not.toBeInTheDocument();
+  });
+
   test('matched-screen row links out to PubMed and BioGRID ORCS', () => {
     render(<DashboardView {...props} />);
     const pubmed = screen.getByTitle('Open the paper in PubMed');

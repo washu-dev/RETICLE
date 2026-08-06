@@ -150,7 +150,10 @@ export default function App() {
   } else if (screen === 'wiki') {
     screenEl = (
       <ReticlePage_aaron
-        onBack={handleHome}
+        // Preserve an uploaded analysis when the user drills into the full
+        // gene/screen view and then uses that view's Back control. The global
+        // Home action still intentionally clears transient analysis state.
+        onBack={() => queryResults ? setScreen('results') : handleHome()}
         initial={reticleTab}
         gene={reticleGene}
         organism={reticleOrg}
@@ -174,6 +177,8 @@ export default function App() {
         options={analysisOptions}
         queryResults={queryResults}
         onNewAnalysis={handleReset}
+        onOpenGene={(gene, organism) => openReticle('gene', gene, organism)}
+        onOpenScreen={(screenId) => openReticle('screen', screenId)}
       />
     );
   }
