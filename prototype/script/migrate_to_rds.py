@@ -193,7 +193,7 @@ def write_report(m):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--meta-only", action="store_true", help="只灌两张小表(快速验证)")
+    ap.add_argument("--meta-only", action="store_true", help="load only the two small tables (quick sanity check)")
     args = ap.parse_args()
 
     cfg = load_env()

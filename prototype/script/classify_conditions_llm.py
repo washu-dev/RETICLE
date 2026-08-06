@@ -142,8 +142,8 @@ def status_of(dec):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=MODEL_BEST)
-    ap.add_argument("--limit", type=int, default=0, help="只处理前 N 个(冒烟测试)")
-    ap.add_argument("--dry-run", action="store_true", help="打印一个 prompt,不调用")
+    ap.add_argument("--limit", type=int, default=0, help="process only the first N (smoke test)")
+    ap.add_argument("--dry-run", action="store_true", help="print one prompt and exit; make no API call")
     args = ap.parse_args()
 
     if not NEEDS_LLM_CSV.exists():
@@ -166,9 +166,9 @@ def main():
     try:
         client.chat([{"role": "user", "content": "ping"}], max_tokens=5)
     except Exception as e:
-        print("LLM preflight FAILED — 中止,未写文件。")
+        print("LLM preflight FAILED - aborting; nothing was written.")
         print(f"  {e}")
-        print("  若 403 Forbidden:连 WashU VPN(关 Cloudflare WARP)再重跑。")
+        print("  On 403 Forbidden: connect to the WashU VPN (turn Cloudflare WARP off) and re-run.")
         return
 
     results, counts = {}, {"auto": 0, "needs_review": 0}

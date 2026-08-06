@@ -1,265 +1,321 @@
 ================================================================================
-RETICLE — 处理过程日志 (log.txt)
+RETICLE — pipeline processing log (log.txt)
 ================================================================================
-记录对 pipeline 的重要改动、数据处理过程、以及关键决策的来龙去脉。
-新条目追加在文件末尾，按日期倒序阅读最方便往上看。
+Records material changes to the pipeline, how the data was processed, and the reasoning behind
+the decisions. New entries are appended at the end; reading bottom-up gives reverse-chronological
+order.
 
 
 ================================================================================
-[2026-06-17]  Directionality Mapping —— 用 LLM 解决 Phase 1 无法定向的 screen
+[2026-06-17]  Directionality Mapping — using an LLM on the screens Phase 1 could not orient
 ================================================================================
 
-背景
-----
-- 原始设计文件 (context/ 下的 proposal / 架构图 / slides) 把 "directionality"
-  列为 RETICLE 头号问题：BioGRID 只给 rank order，不给方向。架构图里有专门的
-  "Directionality Mapping" + "Biological Sanity Checks" 两个 agent。
-- Phase 1 (harmonize_scores.py) 用确定性规则解决了 86% 的 screen（score 自带方向，
-  如 log2FC/CERES）。但有 111 个解决不了：
-    * 100 个 AMBIGUOUS_SELECTION：只有无方向的显著性列（p-value/STARS/MaGeCK p 等），
-      且 SCREEN_TYPE 模糊（Phenotype Screen / Positive and Negative Selection）
-      -> 旧代码硬猜 sel=+1。
-    *  11 个 UNRESOLVED：根本没有可用效应列（只有 read counts / sgRNA number / rank）。
-- 实测发现 BioGRID 的 NOTES 字段（覆盖 96.3% 的 screen）常常明确写出极性，例如
-  screen 89: "negative MaGeCK score = cell-essential genes, KO -> decreased
-  proliferation"。这正是定向所需的信息。
+BACKGROUND
+----------
+- The original design documents (proposal / architecture diagram / slides, under context/) name
+  "directionality" as RETICLE's number-one problem: BioGRID gives rank order, not direction. The
+  architecture diagram has two dedicated agents for it, "Directionality Mapping" and "Biological
+  Sanity Checks".
+- Phase 1 (harmonize_scores.py) settled 86% of screens with deterministic rules, because the
+  score carries its own direction (log2FC, CERES, and so on). 111 screens it could not settle:
+    * 100 AMBIGUOUS_SELECTION: only an undirected significance column (p-value / STARS / MaGeCK
+      p / ...), and an unclear SCREEN_TYPE (Phenotype Screen, Positive and Negative Selection)
+      -> the old code simply guessed sel=+1.
+    *  11 UNRESOLVED: no usable effect column at all (only read counts / sgRNA number / rank).
+- BioGRID's NOTES field, present on 96.3% of screens, was found to state the polarity outright
+  surprisingly often. Screen 89, for example: "negative MaGeCK score = cell-essential genes,
+  KO -> decreased proliferation". That is exactly the information orientation needs.
 
-决策
-----
-1. LLM 在本项目的职责从 "control_comparison"（无下游用途）重新定位到 "directionality"。
-   - 删除 screen_metadata_curated 的 control_comparison / confidence_control 两列。
-   - llm_metadata_extractor.py 改为纯规则版（screen_type/selection/coverage），不再调 LLM。
-2. 架构：LLM 只跑一次，产出冻结的 JSON 产物 processed_data/directionality_overrides.json，
-   被 harmonize / apply_directionality 当确定性输入读取 —— Phase 1 仍是纯函数，
-   LLM 的非确定性被隔离在产物生成这一步。
-3. 低置信度(<0.7)或 UNDEFINED -> needs_review，不自动应用（人工裁决）。
-4. 锚点冲突的处理：先尝试升级模型（见下），仍冲突的用必需基因 ground truth 纠正。
+DECISIONS
+---------
+1. The LLM's job in this project moved from "control_comparison" (which had no downstream use)
+   to "directionality".
+   - Dropped control_comparison / confidence_control from screen_metadata_curated.
+   - llm_metadata_extractor.py became purely rule-based (screen_type / selection / coverage) and
+     no longer calls an LLM.
+2. Architecture: the LLM runs ONCE and emits a frozen JSON artifact,
+   processed_data/directionality_overrides.json, which harmonize / apply_directionality read as a
+   deterministic input. Phase 1 therefore stays a pure function and the model's
+   non-determinism is quarantined in the artifact-generation step.
+3. Low confidence (<0.7) or UNDEFINED -> needs_review, not applied automatically; a human rules.
+4. Anchor conflicts: first try a stronger model (below); anything still conflicting is corrected
+   against essential-gene ground truth.
 
-新增 / 改动文件
---------------
-- script/directionality_mapper.py   (新) LLM 方向裁决器 -> overrides.json
-- script/apply_directionality.py    (新) 非破坏性就地应用 override + 必需基因否决闸
-- script/harmonize_scores.py        抽出可复用函数(load_screen_df/add_rank_columns/
-                                     apply_override/load_overrides) + override 钩子
-                                     （仅当 overrides.json 存在时激活；重构经 screen 381
-                                     逐基因验证行为不变）
-- script/llm_metadata_extractor.py  改为纯规则版 (v4.0-rules-only)
-- processed_data/directionality_overrides.json  (新) 冻结产物
+FILES ADDED / CHANGED
+---------------------
+- script/directionality_mapper.py   (new) LLM direction ruling -> overrides.json
+- script/apply_directionality.py    (new) non-destructive in-place apply + essential-gene veto
+- script/harmonize_scores.py        extracted reusable functions (load_screen_df /
+                                    add_rank_columns / apply_override / load_overrides) and an
+                                    override hook (active only when overrides.json exists; the
+                                    refactor was verified gene-by-gene on screen 381 to be
+                                    behaviour-preserving)
+- script/llm_metadata_extractor.py  now rule-only (v4.0-rules-only)
+- processed_data/directionality_overrides.json  (new) the frozen artifact
 
-统一轴定义（LLM 对齐的）
-----------------------
-  +1 = loss-of-function 有利 / 被选择群体富集（基因正常时促进坏结局）
-  -1 = 基因必需 / 表型所需（KO 后耗竭，如核心必需基因）
-  注：CRISPRa 等扰动方向由 LLM 推理 NOTES 时一并折入，输出即最终符号。
+THE SHARED AXIS (what the LLM aligns to)
+----------------------------------------
+  +1 = loss of function is advantageous / enriched in the selected population (the gene normally
+       promotes the bad outcome)
+  -1 = the gene is essential / required for the phenotype (knockout depletes, as core essentials do)
+  Note: perturbation direction (CRISPRa and friends) is folded in by the LLM as it reasons over
+  NOTES, so the emitted value is already the final sign.
 
-运行结果（gpt-4o, temperature=0）
--------------------------------
-  目标: 111 (AMBIGUOUS=100, UNRESOLVED=11)
-  token: prompt≈87,545 + completion≈8,880  (~96K, 几分钱)
-  mapper 产出: auto=71  needs_review=29  binary_only=11
-  apply 应用: 71 (LLM_SINGLE=64 + LLM_PAIR=4 + ANCHOR=3)
-  全库 sanity check (validate_harmonization.py): PASS
-     —— 11 个分析方法的核心必需基因全部稳在负端，方向修正未破坏既有数据。
+RUN RESULT (gpt-4o, temperature=0)
+----------------------------------
+  target: 111 (AMBIGUOUS=100, UNRESOLVED=11)
+  tokens: prompt ~87,545 + completion ~8,880  (~96K, a few cents)
+  mapper output: auto=71  needs_review=29  binary_only=11
+  applied: 71 (LLM_SINGLE=64 + LLM_PAIR=4 + ANCHOR=3)
+  whole-database sanity check (validate_harmonization.py): PASS
+     — core essential genes stay on the negative end across all 11 analysis methods; the
+       direction corrections did not damage existing data.
 
-关键事故与处理
--------------
-1. gpt-4o-mini 把 screen 89 (PAIR) 判反，且 confidence=1.0。
-   - 表现：把 positive_column/negative_column 弄反，必需基因 mean_pct = +0.274（应为负）。
-   - 被 apply_directionality 的"必需基因否决闸"抓住（KO 增殖筛里必需基因落正端 = 方向反）。
-   - 结论：置信度门控不足以拦错；生物学 sanity check 是必需的。
-   - 处理：按用户决定升级到 gpt-4o。gpt-4o 把 89 判对 (+SCORE.3/-SCORE.1)，
-     且 172(BMP激活子)= -1 与 173(BMP抑制子)= +1 符号相反，一致性正确。
+INCIDENTS AND HOW THEY WERE HANDLED
+-----------------------------------
+1. gpt-4o-mini ruled screen 89 (a PAIR) backwards, and reported confidence=1.0.
+   - Symptom: positive_column / negative_column swapped; essential-gene mean_pct = +0.274, which
+     should have been negative.
+   - Caught by apply_directionality's essential-gene veto gate (essential genes on the positive
+     end of a KO proliferation screen means the direction is backwards).
+   - Conclusion: a confidence threshold is NOT sufficient to catch an error. The biological
+     sanity check is required.
+   - Action: upgraded to gpt-4o, per the user's decision. gpt-4o ruled 89 correctly
+     (+SCORE.3 / -SCORE.1), and gave 172 (a BMP activator) = -1 against 173 (a BMP inhibitor)
+     = +1 — opposite signs, which is the internally consistent answer.
 
-2. gpt-4o 仍有 3 个误判：screen 1050 / 1052 / 1053。
-   - 布局 {SCORE.1=MaGeCK Score, SCORE.2=p-Value, SCORE.3=FDR}，本是 SINGLE，
-     但模型误判为 PAIR (+SCORE.1/-SCORE.2)，把 p-Value 当成了独立富集列。
-   - 否决闸抓住（必需基因 mean_pct = +0.262/+0.312/+0.227）。
-   - 处理（用户批准）：用核心必需基因 ground truth 确定性定向。
-     这 3 个都是 KO 增殖筛、各含 10 个核心必需基因，方向铁律 = 必需基因必为负。
-     apply_directionality.py --anchor-resolve-conflicts：
-       重判为 SINGLE，符号取使必需基因落负端的那个 = sign -1。
-       结果 ess_mean_pct: 1050 -0.443 / 1052 -0.456 / 1053 -0.367 ✓
-     决定写回 overrides.json (resolution="essential-gene-anchor")，保证可复现。
+2. gpt-4o still misread three: screens 1050 / 1052 / 1053.
+   - Layout {SCORE.1=MaGeCK Score, SCORE.2=p-Value, SCORE.3=FDR}. These are SINGLE, but the model
+     called them PAIR (+SCORE.1 / -SCORE.2), treating the p-value as an independent enrichment
+     column.
+   - Caught by the veto gate (essential-gene mean_pct = +0.262 / +0.312 / +0.227).
+   - Action (user-approved): orient them deterministically from core essential genes. All three
+     are KO proliferation screens containing 10 core essential genes each, where the rule is
+     absolute — essential genes must be negative.
+     apply_directionality.py --anchor-resolve-conflicts:
+       re-ruled as SINGLE, taking whichever sign puts the essential genes on the negative end,
+       i.e. sign -1.
+       Resulting ess_mean_pct: 1050 -0.443 / 1052 -0.456 / 1053 -0.367  (correct)
+     The decision is written back into overrides.json (resolution="essential-gene-anchor") so the
+     result stays reproducible.
 
-最终方向状态（screen_metadata.SCORE_BASIS）
------------------------------------------
-   64  LLM_SINGLE          (gpt-4o 高置信单列定向)
-    4  LLM_PAIR            (gpt-4o 识别的 pos/neg 配对)
-    3  ANCHOR_SINGLE       (必需基因 ground truth 纠正: 1050,1052,1053)
-   29  仍 AMBIGUOUS         (needs_review，见下)
-   11  UNRESOLVED          (binary_only，见下)
-  其余 ~2046 个仍是 Phase 1 确定性结果，未改动。
+FINAL DIRECTION STATE (screen_metadata.SCORE_BASIS)
+---------------------------------------------------
+   64  LLM_SINGLE          (gpt-4o, high-confidence single-column orientation)
+    4  LLM_PAIR            (pos/neg pair identified by gpt-4o)
+    3  ANCHOR_SINGLE       (corrected from essential-gene ground truth: 1050, 1052, 1053)
+   29  still AMBIGUOUS     (needs_review, see below)
+   11  UNRESOLVED          (binary_only, see below)
+  The other ~2,046 remain Phase 1's deterministic result, untouched.
 
-待处理（outstanding）
---------------------
-- needs_review (29)：gpt-4o 返回 UNDEFINED——这些 screen 的 BioGRID 文本里确实没写极性。
+OUTSTANDING
+-----------
+- needs_review (29): gpt-4o returned UNDEFINED — the BioGRID text for these screens genuinely
+  does not state a polarity.
   screen ids: 1081,1082,1083,1441,1442,1443,1444,1445,1446,1447,1448,1697,1698,
               1699,1700,1701,1712,1718,2326,2328,2329,2330,2331,2336,2337,2338,
               2340,2341,2342
-  现仍停在旧的硬猜 sel=+1 状态。待定方案：(a) 路由到 binary 不进连续相关 /
-  (b) 维持现状 / (c) 抓论文 Methods 段再判。  —— 用户尚未决定。
-- binary_only (11)：UNRESOLVED，无连续效应列，应在 Phase 3 走 IS_HIT 集合(Jaccard/Fisher)。
+  They still sit at the old hard-guessed sel=+1. Options on the table: (a) route them to the
+  binary path and keep them out of continuous correlation, (b) leave as is, (c) fetch the paper's
+  Methods section and rule from that. Not yet decided by the user.
+- binary_only (11): UNRESOLVED, no continuous effect column. These belong on the IS_HIT set path
+  in Phase 3 (Jaccard / Fisher).
   screen ids: 145,630,690,1043,1044,1173,1174,1198,1211,1232,1742
 
-如何复现
---------
-  python3 script/directionality_mapper.py            # 重新生成 overrides.json (需 WashU VPN)
+HOW TO REPRODUCE
+----------------
+  python3 script/directionality_mapper.py            # regenerate overrides.json (needs WashU VPN)
   python3 script/apply_directionality.py --anchor-resolve-conflicts
   python3 script/validate_harmonization.py
 
 
 ================================================================================
-[2026-06-21]  assay_domain 分层 —— fitness / stress / reporter
+[2026-06-21]  assay_domain stratification — fitness / stress / reporter
 ================================================================================
 
-背景
-----
-- 发现 pooled 统计会把不同表型的屏混在一起，稀释信号。典型：POLA1 是泛必需基因，
-  但所有屏一起算 median 只有 -0.75；因为里面混进了药物/病毒/报告屏（POLA1 在那些屏里
-  不一定耗竭）。
-- 根因不在 harmonization：percentile 是屏内排名，对每个屏都正确。问题在于"跨屏汇总/
-  相关时把语义不同的轴混在一起"。harmonization 的符号数学对所有 survival 屏是同一套，
-  不需要也不该建多条轴；正确做法是打一个分层标签，下游按标签汇总/相关。
+BACKGROUND
+----------
+- Pooled statistics were mixing screens of different phenotype and diluting the signal. The
+  clearest case: POLA1 is pan-essential, yet its median across ALL screens is only -0.75, because
+  drug / virus / reporter screens are folded in, and POLA1 does not necessarily deplete there.
+- The root cause is NOT harmonization. Percentile is a within-screen rank and is correct for
+  every screen individually. The problem is aggregating or correlating ACROSS screens whose axes
+  mean different things. Harmonization's sign maths is one shared survival axis and should stay
+  that way; the right fix is a stratification label that downstream code groups by.
 
-决策
-----
-  给每个屏打 assay_domain（确定性规则，源自 PHENOTYPE，免费、无 LLM）：
-    fitness  — baseline 生长/活力。essentiality 在这里读；连续相关的干净池。
-    stress   — 施加压力下的存活（药/病毒/毒素…）。conditional fitness，主要在同压力内可比。
-    reporter — 按 marker(FACS)分选，不测存活。每个 marker 自成一轴 → 排除出定量轴和相关
-               网络，只用于 per-gene 功能注解。
-    other    — 兜底（同 reporter 处理）。
-  关键：harmonization 不变；标签只控制下游怎么"汇总/相关/展示"。
-
-改动文件
+DECISION
 --------
-- script/llm_metadata_extractor.py  新增 rule_assay_domain() + 两列
-  (assay_domain, confidence_domain)，prompt_version=v4.1-assay-domain
-- screen_metadata_curated 表        DROP 重建，全 2157 行回填
-- web/app.py                        /api/gene 改成 domain-aware：按 domain 拆分统计，
-  fitness 为主、stress 副、reporter 仅计数+功能探针；interpret prompt 也 domain-aware
-- web/index.html                    fitness 主视图(轴+直方图+context) / stress 紧凑副视图 /
-  reporter 一句话；fitness↔stress 符号相反时显示"翻转"提示
+  Tag every screen with an assay_domain (deterministic rule, derived from PHENOTYPE — free, no
+  LLM):
+    fitness  — baseline growth / viability. The only place essentiality is read, and the clean
+               pool for continuous correlation.
+    stress   — survival under an applied pressure (drug / virus / toxin ...). Conditional
+               fitness; mainly comparable within the same pressure.
+    reporter — sorted on a marker (FACS); does not measure survival. Each marker is its own axis,
+               so these are excluded from the quantitative axis and the correlation network, and
+               used only for per-gene functional annotation.
+    other    — fallback (handled like reporter).
+  The key point: harmonization does not change. The label only governs how downstream code
+  aggregates, correlates and displays.
 
-分布(2157 屏)
+FILES CHANGED
 -------------
+- script/llm_metadata_extractor.py  added rule_assay_domain() and two columns (assay_domain,
+                                    confidence_domain), prompt_version=v4.1-assay-domain
+- screen_metadata_curated table     dropped and rebuilt; all 2,157 rows backfilled
+- web/app.py                        /api/gene became domain-aware: statistics split by domain,
+                                    fitness primary, stress secondary, reporter counted plus used
+                                    as a functional probe. The interpret prompt is domain-aware too.
+- web/index.html                    fitness as the main view (axis + histogram + context), stress
+                                    as a compact secondary view, reporter as one line; shows a
+                                    "flipped" notice when fitness and stress disagree in sign.
+
+DISTRIBUTION (2,157 screens)
+----------------------------
   fitness=1227   stress=700   reporter=230
 
-验证(domain 拆开揭示真生物学)
-----------------------------
-  POLA1: pooled -0.75 → fitness -0.872(干净 essential) / stress -0.258 / reporter +0.417(稀释源)
-  KRAS : fitness -0.666(致癌依赖) / stress +0.064(某些药下丢了反而抗药 —— pooled 把这个糊掉)
-  TP53 : fitness +0.491(抑癌，loss 有利) / stress +0.186 / reporter ~0
+VALIDATION — splitting by domain reveals the real biology
+---------------------------------------------------------
+  POLA1: pooled -0.75 -> fitness -0.872 (cleanly essential) / stress -0.258 /
+         reporter +0.417 (the source of the dilution)
+  KRAS : fitness -0.666 (oncogene dependency) / stress +0.064 (losing it confers resistance to
+         some drugs — pooling smears this away)
+  TP53 : fitness +0.491 (tumour suppressor; loss is advantageous) / stress +0.186 / reporter ~0
 
-下游规则(建议)
---------------
-- essentiality 只从 fitness 读
-- correlation：fitness 一个干净池；stress 同压力内；reporter 完全排除(碎：203 屏跨 114 marker)
-- reporter 仍保留作精确功能注解(如 "Senescence genes" / "Regulators of mitophagy")
+DOWNSTREAM RULES (recommended)
+------------------------------
+- Read essentiality from fitness only.
+- Correlation: fitness is one clean pool; stress within the same pressure; reporter excluded
+  entirely (too fragmented — 203 screens spanning 114 markers).
+- Keep reporter for precise functional annotation ("Senescence genes", "Regulators of mitophagy").
 
 
 ================================================================================
-[2026-06-21]  外部源 + darkness rating + RAG（proposal Phase 4/5）
+[2026-06-21]  External sources + darkness rating + RAG (proposal Phase 4/5)
 ================================================================================
 
-目标
+GOAL
 ----
-  把 gene explorer 从"只基于 BioGRID"扩展成多源 RAG：NCBI/PubMed + GO + STRING，
-  并给每个基因打 proposal 的 "darkness rating"。
+  Grow the gene explorer from "BioGRID only" into a multi-source RAG — NCBI/PubMed + GO + STRING
+  — and give every gene the proposal's "darkness rating".
 
-数据源（需手动拿的）
-------------------
-  - NCBI E-utilities (PubMed 计数 + 摘要)：可选 NCBI_API_KEY（.env）→ 10/s（否则 3/s）。已配。
-  - MyGene.info (gene name/summary + GO terms)：无需 key。
-  - STRING (已知互作伙伴)：无需 key。
-  - WashU gateway (RAG 生成 gpt-4o)：已有。
+DATA SOURCES (the ones that had to be obtained by hand)
+-------------------------------------------------------
+  - NCBI E-utilities (PubMed counts + abstracts): optional NCBI_API_KEY in .env -> 10/s instead
+    of 3/s. Configured.
+  - MyGene.info (gene name / summary + GO terms): no key needed.
+  - STRING (known interaction partners): no key needed.
+  - WashU gateway (RAG generation, gpt-4o): already available.
 
-新增/改动
---------
-- script/external_sources.py  (新) 统一客户端：on-disk 缓存(processed_data/external_cache.db,
-  30 天 TTL) + 限速 + 可选 key。函数：gene_annotation(MyGene)、pubmed_count、pubmed_pmids、
-  pubmed_abstracts(efetch XML)、string_partners、darkness、enrich。全部 fail-soft。
-- darkness 公式：dark_pub=clamp(1-log10(P+1)/log10(1000)); dark_go=clamp(1-log10(G+1)/log10(50));
-  darkness = 10*(0.6*dark_pub + 0.4*dark_go)。0=well studied,10=dark matter。
-- web/app.py   新增 GET /api/context(enrich:darkness+summary+STRING,lazy+cached);
-  /api/interpret 升级为 RAG：拉 PubMed 摘要(esearch relevance→efetch)+ STRING + darkness，
-  喂 gpt-4o,要求引用 PMID,并在"暗基因却行为像已知通路"时显式标记脱孤候选。返回 sources(PMID)。
-- web/index.html  gene head 下新增 "Known to science + darkness" band(darkness 评分+条 +
-  NCBI summary + STRING 伙伴 chip,可点击跳转该基因);AI 解读显示 PMID 引用链接。
+ADDED / CHANGED
+---------------
+- script/external_sources.py (new) one client for all of them: on-disk cache
+  (processed_data/external_cache.db, 30-day TTL) + rate limiting + optional key. Functions:
+  gene_annotation (MyGene), pubmed_count, pubmed_pmids, pubmed_abstracts (efetch XML),
+  string_partners, darkness, enrich. Every one of them fails soft.
+- darkness formula: dark_pub = clamp(1 - log10(P+1)/log10(1000));
+                    dark_go  = clamp(1 - log10(G+1)/log10(50));
+                    darkness = 10 * (0.6*dark_pub + 0.4*dark_go).
+                    0 = well studied, 10 = dark matter.
+- web/app.py   added GET /api/context (enrich: darkness + summary + STRING, lazy and cached);
+  /api/interpret became RAG: pulls PubMed abstracts (esearch by relevance -> efetch) + STRING +
+  darkness, feeds gpt-4o, requires it to cite PMIDs, and asks it to flag de-orphaning candidates
+  explicitly when a dark gene behaves like a known pathway. Returns sources (PMIDs).
+- web/index.html  added a "Known to science + darkness" band under the gene head (darkness score
+  and bar + NCBI summary + STRING partner chips, each clickable through to that gene); the AI
+  reading shows PMID citation links.
 
-踩坑
-----
-  PubMed esearch 不认 txid9606[orgn]（phrasesnotfound）→ 必须用 human[orgn]/mouse[orgn]。已修。
+GOTCHA
+------
+  PubMed esearch does not accept txid9606[orgn] (phrasesnotfound) — it must be
+  human[orgn] / mouse[orgn]. Fixed.
 
-验证（darkness 对比）
--------------------
+VALIDATION (darkness contrast)
+------------------------------
   MYC 0.0 / TP53 0.0 / BRD4 0.1 (bright)  vs  C17orf80 9.0 / TMEM263 7.5 / FAM241B 7.0 (dark)
 
-端到端脱孤演示：C1orf109
------------------------
-  darkness 7.8/10(11 篇,0 GO)+ fitness median -0.906(强 essential,1389 屏)。
-  RAG 读出它与 SPATA5/SPATA5L1/CINP 同属 pre-60S 核糖体成熟复合体(引用 5 篇真实 PMID),
-  并判定"脱孤候选 + 可验证预测"。= proposal 核心交付的活样例。
+END-TO-END DE-ORPHANING DEMO: C1orf109
+--------------------------------------
+  darkness 7.8/10 (11 papers, 0 GO terms) with fitness median -0.906 (strongly essential across
+  1,389 screens). The RAG reads out that it belongs with SPATA5 / SPATA5L1 / CINP in the pre-60S
+  ribosome maturation complex, citing 5 real PMIDs, and calls it a de-orphaning candidate with a
+  testable prediction. This is a live example of the proposal's core deliverable.
 
-复现
-----
-  (.env 里设 NCBI_API_KEY 可选，提速 3x)
-  python3 script/external_sources.py C1orf109     # 看 enrich/darkness
-  python3 web/app.py                              # 网站；/api/context 不需 VPN，RAG 解读需 VPN
+REPRODUCE
+---------
+  (setting NCBI_API_KEY in .env is optional and gives a 3x speed-up)
+  python3 script/external_sources.py C1orf109     # inspect enrich / darkness
+  python3 web/app.py                              # the site; /api/context needs no VPN, the RAG
+                                                  # reading does
 
 
 ================================================================================
-[2026-06-22]  方向(sign)反转 bug 全库修复
+[2026-06-22]  Whole-database fix for a sign-inversion bug
 ================================================================================
 
-怎么发现的
-----------
-  网站上 POLR2A(RNA Pol II，泛必需)在 HL-60/K-562 等 fitness 屏里显示 +1.00
-  (knockout favored)——必需基因在活力屏里该是 -1。用核心必需基因 panel 当探针
-  全库审计，发现 971 个 fitness-KO 屏里有 39~42 个整屏 sign 反了。
+HOW IT WAS FOUND
+----------------
+  On the site, POLR2A (RNA Pol II, pan-essential) showed +1.00 in HL-60 / K-562 and other fitness
+  screens — "knockout favored" — when an essential gene in a viability screen must be negative.
+  Auditing the whole database using a panel of core essential genes as a probe found 39-42 of the
+  971 fitness-KO screens inverted in their entirety.
 
-根本原因(不是一个 bug)
-----------------------
-  directionality / signedness 无法从 SCORE.k_TYPE 名字可靠推出，同名 metric 不同
-  作者用相反约定，甚至 signed/unsigned 都不一样：
-   - 同名反约定: Dependency score([0,1]概率,高=必需) vs CERES(负=必需);
-     Essentiality Score(这批负=必需) ; Mean Depletion ; Z-score(62% 屏反)
-   - signed 被当 magnitude 还 clip(lower=0): RSA(全负)/CGI(51%负)/CasTLE Score
-     (屏18 signed 屏157 unsigned) —— clip 把必需信号抹成 0
-   - ambiguous/错标 selection: 纯显著性屏 sel 猜错
-  validate 之前没抓到：它按 ANALYSIS 跨屏平均，少数反转屏被稀释。
+ROOT CAUSE (not a single bug)
+-----------------------------
+  Directionality / signedness cannot be inferred reliably from the SCORE.k_TYPE name. Different
+  authors use opposite conventions for the same metric name, and even differ on whether it is
+  signed at all:
+   - same name, opposite convention: Dependency score ([0,1] probability, high = essential) vs
+     CERES (negative = essential); Essentiality Score (negative = essential in this batch);
+     Mean Depletion; Z-score (62% of screens inverted)
+   - signed values treated as magnitude and then clipped at 0: RSA (all negative) / CGI (51%
+     negative) / CasTLE Score (signed in screen 18, unsigned in screen 157) — clipping erases the
+     essential signal entirely
+   - ambiguous or mislabelled selection: pure-significance screens with a wrongly guessed sel
+  validate had not caught it because it averages across screens per ANALYSIS, and a minority of
+  inverted screens gets diluted away.
 
-修复(两层，确定性，非破坏性)
----------------------------
-  harmonize_scores.py registry 修正:
-    - DIR_POS 增 "mean depletion","essentiality score"; 去 "dependency score"
-    - DIR_NEG 改为 {"bayes factor","dependency score"}
-    - SIG_MAG 路径加【数据驱动 signedness】: 列里有实质负值(>5% 且 min<-0.5)→
-      判为 SIGNED_MAG，按 signed 用，不 clip(自动处理 RSA/CGI/CasTLE 因屏而异)
-  script/fix_directionality.py(新):
-    Phase 1 — 重算 30 个 registry 改了类型的屏(从原始文件，就地替换)
-    Phase 2 — 必需基因锚点，只对 FITNESS-KO 屏(stress 排除！见下),
-              ≥3 个核心必需基因且 panel 均值>0 → 整屏 negate(精确取反),
-              SCORE_BASIS 标 [ANCHOR_FLIP]。共翻 32 个。
+FIX (two layers, deterministic, non-destructive)
+------------------------------------------------
+  harmonize_scores.py registry corrections:
+    - DIR_POS gains "mean depletion" and "essentiality score"; loses "dependency score"
+    - DIR_NEG becomes {"bayes factor", "dependency score"}
+    - the SIG_MAG path gains DATA-DRIVEN SIGNEDNESS: if a column carries substantive negative
+      values (>5% of rows and min < -0.5) it is treated as SIGNED_MAG, used as signed, and not
+      clipped. This handles RSA / CGI / CasTLE automatically, screen by screen.
+  script/fix_directionality.py (new):
+    Phase 1 — recompute the 30 screens whose type the registry changed (from the raw files,
+              replaced in place)
+    Phase 2 — essential-gene anchoring, applied ONLY to FITNESS-KO screens (stress excluded, see
+              below): >= 3 core essential genes and a panel mean > 0 -> negate the whole screen
+              (exact negation) and mark SCORE_BASIS with [ANCHOR_FLIP]. 32 screens flipped.
 
-为什么 stress 不用锚点
----------------------
-  stress(尤其正选择抗性屏)的必需基因在处理/对照两组都耗竭、相互抵消，本就近 0
-  (分布中心在 0，不是 -1)。拿"必需基因须负"去翻 stress 会制造新错。故只锚 fitness。
-  fitness 分布: 885/971 在 <=-0.5(正确)，正端 42 个=真反转。
+WHY STRESS IS NOT ANCHORED
+--------------------------
+  In a stress screen — particularly a positive-selection resistance screen — essential genes
+  deplete in both the treated and the control arm and cancel out, so they legitimately sit near
+  zero (the distribution is centred on 0, not on -1). Applying "essential genes must be negative"
+  to stress would manufacture new errors. Only fitness is anchored.
+  Fitness distribution: 885 of 971 at <= -0.5 (correct); the 42 on the positive end are the real
+  inversions.
 
-结果
-----
-  validate_harmonization: PASS;  fitness-KO panel 仍为正: 42 → 0/971
-  POLR2A fitness median -0.985;  POLR2A fitness >0.9: 12 → 3(残留是真实离群,panel 仍负)
-  没有过度修复: stress 不动、近零 borderline 不动。
-  ⚠ 必需基因 panel 起初只有人源大写符号 → 漏了小鼠(Polr2a)。补 mouse ortholog 后
-    再跑:小鼠 fitness-KO 反转 16 → 0。最终 人源 0/971 + 小鼠 0/70 全部达标。
-  边界:KO fitness 两物种已锚点验证;stress(必需基因近0,不可锚)+ CRISPRa/i 靠 registry。
+RESULT
+------
+  validate_harmonization: PASS; fitness-KO panel still positive: 42 -> 0 of 971
+  POLR2A fitness median -0.985; POLR2A fitness > 0.9: 12 -> 3 (the remainder are genuine
+  outliers; the panel is still negative)
+  No over-correction: stress untouched, near-zero borderline cases untouched.
+  WARNING: the essential-gene panel initially held only human uppercase symbols, so it missed
+  mouse (Polr2a). After adding the mouse orthologs and re-running, mouse fitness-KO inversions
+  went 16 -> 0. Final state: human 0/971 and mouse 0/70, both clean.
+  Boundaries: KO fitness is anchor-verified in both species; stress cannot be anchored (essential
+  genes sit near zero there) and CRISPRa/i rely on the registry.
 
-遗留 / 待办
-----------
-  - correlation_analysis 是基于旧(部分反转)分数建的，受影响的 62 个屏的相关需重算
-    → 下次重跑 compute_correlations.py(建议先改成 domain-aware)
-  - 复现: python3 script/fix_directionality.py  (registry 改动已在 harmonize_scores.py，
-    将来全量重建 harmonize 会自动带上；fix_directionality 处理就地修正)
+LEFT OVER / TODO
+----------------
+  - correlation_analysis was built on the old (partly inverted) scores. The correlations for the
+    62 affected screens need recomputing -> re-run compute_correlations.py next time, ideally
+    after making it domain-aware.
+  - Reproduce: python3 script/fix_directionality.py  (the registry changes already live in
+    harmonize_scores.py, so a future full harmonize rebuild picks them up automatically;
+    fix_directionality handles the in-place correction.)

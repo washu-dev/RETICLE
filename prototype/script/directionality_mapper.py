@@ -1,40 +1,44 @@
 """
 RETICLE — Directionality Mapper (LLM, one-shot artifact generator)
 ==================================================================
-对 Phase 1 里**方向无法确定**的 screen（SCORE_BASIS 含 AMBIGUOUS_SELECTION，或
-UNRESOLVED），用 LLM 读 BioGRID 的 NOTES + SIGNIFICANCE_CRITERIA + RATIONALE，
-裁决该 screen 在 RETICLE 统一 loss-of-function 轴上的符号，产出一个**冻结的 JSON
-产物** processed_data/directionality_overrides.json。
+For the screens Phase 1 could NOT orient (SCORE_BASIS contains AMBIGUOUS_SELECTION, or
+UNRESOLVED), an LLM reads BioGRID's NOTES + SIGNIFICANCE_CRITERIA + RATIONALE and rules on that
+screen's sign along RETICLE's single loss-of-function axis. The output is a FROZEN JSON artifact:
+processed_data/directionality_overrides.json.
 
-为什么是「一次性冻结产物」
-------------------------
-  LLM 是非确定性、要花钱、要联网的。把它的输出冻结成一个可提交、可人工抽查的
-  文件，让 harmonize / apply_directionality 把这个文件当**确定性输入**读取——
-  Phase 1 因此仍是纯函数（相同原始数据 + 相同 override → 相同结果），LLM 的随机性
-  被隔离在这一步里。
+WHY A FROZEN ONE-SHOT ARTIFACT
+------------------------------
+  An LLM is non-deterministic, costs money, and needs the network. Freezing its output into a
+  committed, hand-auditable file lets harmonize / apply_directionality read that file as a
+  DETERMINISTIC INPUT. Phase 1 therefore stays a pure function -- same raw data + same overrides
+  produce the same result -- and the model's randomness is quarantined in this one step.
 
-统一轴定义（LLM 必须对齐）
-------------------------
-  +  : 基因功能丧失(loss-of-function) 是有利的 / 被选择群体所富集
-       （该基因正常时抑制所测表型 / KO 后存活、富集）
-  -  : 基因是必需的 / 所测表型所需（KO 后耗竭、缺失）
-  注：CRISPRa 等扰动方向已被 LLM 在推理 NOTES 时一并考虑，输出即为
-      HARMONIZED_SCORE 的最终符号，apply_directionality 不再单独乘 perturbation_mult。
+THE SHARED AXIS (what the LLM must align to)
+--------------------------------------------
+  +  : loss of function is ADVANTAGEOUS / enriched in the selected population
+       (the gene normally suppresses the measured phenotype; knocking it out survives, enriches)
+  -  : the gene is REQUIRED for the measured phenotype (knockout depletes, drops out)
+  Note: perturbation direction (CRISPRa and friends) is already folded in by the LLM while it
+  reasons over NOTES, so the emitted sign IS the final HARMONIZED_SCORE sign. apply_directionality
+  does not multiply by perturbation_mult a second time.
 
-输出（每个 screen 一条）
-----------------------
-  mode = SINGLE : 单个无方向显著性列 → 给出 sign(+1/-1)
-  mode = PAIR   : 隐藏的 pos/neg 配对 → 指明哪列是 +(positive_column) 哪列是 -(negative_column)
-  mode = UNDEFINED : 文本里读不出极性
-  低置信度(< THRESHOLD) 或 UNDEFINED → status="needs_review"，不自动应用，等人工裁决。
-  UNRESOLVED 桶(无可用效应列) → status="binary_only"，只记录生物学方向供 binary 模式参考。
+OUTPUT (one record per screen)
+------------------------------
+  mode = SINGLE    : a single undirected significance column -> emit sign (+1/-1)
+  mode = PAIR      : a hidden pos/neg pair -> name which column is + (positive_column) and
+                     which is - (negative_column)
+  mode = UNDEFINED : polarity cannot be read out of the text
+  Low confidence (< THRESHOLD) or UNDEFINED -> status="needs_review": not applied automatically,
+  left for a human to rule on.
+  The UNRESOLVED bucket (no usable effect column) -> status="binary_only": the biological
+  direction is recorded for the binary mode to consult, nothing more.
 
 RUN
 ---
-  python3 script/directionality_mapper.py --show-prompt        # 看第一条 prompt，不调 LLM
-  python3 script/directionality_mapper.py --dry-run            # 打印将处理的 screen，不调 LLM
-  python3 script/directionality_mapper.py --limit 5            # 需要 WashU VPN
-  python3 script/directionality_mapper.py                      # 全部 111 个
+  python3 script/directionality_mapper.py --show-prompt        # show the first prompt, no LLM call
+  python3 script/directionality_mapper.py --dry-run            # list the screens, no LLM call
+  python3 script/directionality_mapper.py --limit 5            # needs the WashU VPN
+  python3 script/directionality_mapper.py                      # all 111
 """
 
 import argparse
@@ -216,7 +220,7 @@ def _undef(reason: str) -> dict:
 
 def classify_status(decision: dict, is_unresolved: bool) -> str:
     if is_unresolved:
-        return "binary_only"               # 无连续效应列，不进连续轴
+        return "binary_only"               # no continuous effect column - stays off that axis
     if decision["mode"] == "UNDEFINED":
         return "needs_review"
     if decision["confidence"] < CONFIDENCE_THRESHOLD:
@@ -248,9 +252,9 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--screen-ids", type=str, default="")
     ap.add_argument("--model", type=str, default=MODEL_BEST,
-                    help="方向裁决用的模型（默认 claude-opus-4-7）")
-    ap.add_argument("--dry-run", action="store_true", help="列出将处理的 screen，不调 LLM")
-    ap.add_argument("--show-prompt", action="store_true", help="打印第一条 prompt 后退出")
+                    help="model used for the directionality ruling (default claude-opus-4-7)")
+    ap.add_argument("--dry-run", action="store_true", help="list the screens that would be processed; make no LLM call")
+    ap.add_argument("--show-prompt", action="store_true", help="print the first prompt and exit")
     args = ap.parse_args()
 
     db = sqlite3.connect(str(paths.DB))
@@ -285,9 +289,9 @@ def main():
     try:
         client.chat([{"role": "user", "content": "ping"}], max_tokens=5)
     except Exception as e:
-        log("LLM preflight FAILED — 中止，未写任何文件。")
+        log("LLM preflight FAILED - aborting; nothing was written.")
         log(f"  {e}")
-        log("  若 403 Forbidden：关 Cloudflare WARP、连 WashU VPN，再重跑。")
+        log("  On 403 Forbidden: turn Cloudflare WARP off, connect to the WashU VPN, and re-run.")
         return
 
     results = {}
@@ -350,7 +354,7 @@ def main():
         f"binary_only={counts['binary_only']}")
     log(f"  tokens: prompt={tok_p:,} completion={tok_c:,}")
     if counts["needs_review"]:
-        log("  人工裁决清单（status=needs_review）:")
+        log("  Awaiting a human ruling (status=needs_review):")
         for sid, r in results.items():
             if r["status"] == "needs_review":
                 log(f"    screen {sid}: mode={r['mode']} conf={r['confidence']:.2f} "

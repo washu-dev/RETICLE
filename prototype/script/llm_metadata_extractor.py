@@ -1,25 +1,28 @@
 """
 RETICLE — Rule-based Metadata Curation (Phase 2)
 ================================================
-从 BioGRID 结构化字段中提取规范化元数据，写入 screen_metadata_curated 表。
-**全自动化、纯规则、不调 LLM。**
+Extracts normalised metadata from BioGRID's structured fields into the screen_metadata_curated
+table. FULLY AUTOMATED, PURELY RULE-BASED, NO LLM CALL.
 
-历史说明
---------
-  早期版本曾用 LLM 提取 control_comparison，但该字段无任何下游用途，已于
-  方案调整时移除（连同 control_comparison / confidence_control 两列）。
-  LLM 在本项目的职责已重新定位到「方向性裁决」，见 directionality_mapper.py。
+HISTORY -- why the filename says LLM and the code does not
+----------------------------------------------------------
+  An early version used an LLM to extract control_comparison. That field had no downstream
+  consumer, so it was dropped in a scope revision (along with the control_comparison and
+  confidence_control columns). The LLM's job in this project was re-scoped to ruling on
+  DIRECTIONALITY instead -- see directionality_mapper.py. The filename is kept because other
+  scripts and the pipeline log refer to it.
 
-  本脚本现在只做三件确定性的事（confidence 1.0 = 规则确定；<1.0 = 启发式）：
-    screen_type      — METHODOLOGY + LIBRARY_TYPE + ENZYME
-    selection_method — SCREEN_TYPE
-    coverage_type    — FULL_SIZE + FULL_SIZE_AVAILABLE
-  这三个规范化标签供下游 Phase 3 按 screen_type / selection_method 分层使用。
+  What remains here is three deterministic decisions (confidence 1.0 = the rule is certain;
+  < 1.0 = a heuristic):
+    screen_type      -- METHODOLOGY + LIBRARY_TYPE + ENZYME
+    selection_method -- SCREEN_TYPE
+    coverage_type    -- FULL_SIZE + FULL_SIZE_AVAILABLE
+  Phase 3 downstream stratifies on screen_type / selection_method using these three labels.
 
 RUN
 ---
   python3 script/llm_metadata_extractor.py --dry-run --limit 5
-  python3 script/llm_metadata_extractor.py            # 全量（无网络请求）
+  python3 script/llm_metadata_extractor.py            # everything (makes no network request)
   python3 script/llm_metadata_extractor.py --screen-ids 89,381 --rerun
 """
 
@@ -41,10 +44,10 @@ import paths
 DB = paths.DB
 BIOGRID_JSON = paths.BIOGRID_METADATA
 
-PROMPT_VERSION = "v4.1-assay-domain"   # v4.1: 增加 assay_domain（fitness/stress/reporter）
+PROMPT_VERSION = "v4.1-assay-domain"   # v4.1: added assay_domain (fitness/stress/reporter)
 
 # --------------------------------------------------------------------------
-# DB Schema —— 纯规则，无 control_comparison / confidence_control
+# DB schema -- rule-only; no control_comparison / confidence_control
 # --------------------------------------------------------------------------
 
 DDL = """
@@ -54,18 +57,18 @@ CREATE TABLE IF NOT EXISTS screen_metadata_curated (
 
     screen_type            TEXT,   -- KO | CRISPRi | CRISPRa | RNAi | Other
     selection_method       TEXT,   -- Negative | Positive | Bidirectional | Phenotype | Unknown
-    coverage_type          TEXT,   -- Genome-wide | Focused | Unknown  (筛选范围，不同于 screen_metadata.COVERAGE_TYPE 的数据可得性)
-    assay_domain           TEXT,   -- fitness | stress | reporter | other  (控制跨屏可比性的大类)
+    coverage_type          TEXT,   -- Genome-wide | Focused | Unknown  (library SCOPE; distinct from screen_metadata.COVERAGE_TYPE, which is data AVAILABILITY)
+    assay_domain           TEXT,   -- fitness | stress | reporter | other  (the class that governs cross-screen comparability)
 
-    confidence_screen_type    REAL,  -- 1.0 = 规则确定；<1.0 = 启发式/有歧义
+    confidence_screen_type    REAL,  -- 1.0 = the rule is certain; <1.0 = heuristic or ambiguous
     confidence_selection      REAL,
     confidence_coverage       REAL,
     confidence_domain         REAL,
 
-    notes                  TEXT,   -- 机器备注（base-edited 标注等）
+    notes                  TEXT,   -- machine notes (base-edited flags and the like)
 
-    -- 溯源
-    llm_model              TEXT,   -- 恒为 'rule-only'
+    -- provenance
+    llm_model              TEXT,   -- always 'rule-only'
     prompt_version         TEXT,
     extraction_timestamp   TEXT
 )
@@ -86,7 +89,7 @@ _COLUMNS = [
 ]
 
 # --------------------------------------------------------------------------
-# 加载 BioGRID JSON
+# Load the BioGRID JSON
 # --------------------------------------------------------------------------
 
 _biogrid_index: dict[str, dict] = {}
@@ -110,34 +113,36 @@ def get_bio(screen_id: str) -> dict:
 
 
 # --------------------------------------------------------------------------
-# 规则提取（确定性，不调 LLM）
+# Rule extraction (deterministic, no LLM)
 # --------------------------------------------------------------------------
 
 def rule_screen_type(bio: dict, db_row: dict) -> tuple[str, float]:
-    """从 METHODOLOGY / LIBRARY_TYPE / ENZYME 确定 screen_type。
+    """Decide screen_type from METHODOLOGY / LIBRARY_TYPE / ENZYME.
 
-    BioGRID 的 METHODOLOGY 取值就三种：Knockout / Activation / Inhibition
-    (外加 Cytosine Base Editing…)；LIBRARY_TYPE 是 CRISPRn / CRISPRa / CRISPRi。
+    BioGRID's METHODOLOGY takes only three values -- Knockout / Activation / Inhibition (plus
+    Cytosine Base Editing and friends); LIBRARY_TYPE is CRISPRn / CRISPRa / CRISPRi.
     """
     methodology  = (bio.get("METHODOLOGY") or db_row.get("METHODOLOGY") or "").lower()
     library_type = (bio.get("LIBRARY_TYPE") or "").lower()
     enzyme       = (bio.get("ENZYME") or "").lower()
 
-    # Base editing → 功能性敲除（RETICLE 分类决定：碱基编辑引入终止密码子 = loss-of-function = KO）
+    # Base editing -> a functional knockout. RETICLE classification decision: base editing that
+    # introduces a stop codon is loss-of-function, i.e. KO.
     if "base editing" in library_type:
         return "KO", 1.0
-    # CRISPRi（转录抑制）
+    # CRISPRi (transcriptional repression)
     if "crispri" in library_type or "inhibition" in methodology or "krab" in enzyme:
         return "CRISPRi", 1.0
-    # CRISPRa（转录激活）
+    # CRISPRa (transcriptional activation)
     if "crispra" in library_type or "activation" in methodology:
         return "CRISPRa", 1.0
     if "dcas9" in enzyme and "krab" not in enzyme:
-        return "CRISPRa", 0.7   # 启发式：dCas9 无 KRAB 多为激活，但不确定 → 低置信
+        return "CRISPRa", 0.7   # heuristic: dCas9 without KRAB is usually activation, but not
+                                # certain -> low confidence
     # RNAi
     if any(k in methodology for k in ("rnai", "shrna", "sirna")):
         return "RNAi", 1.0
-    # KO（CRISPRn / 核酸酶活性 Cas9 敲除）—— 注意是 "crisprn" 不是 "crispn"
+    # KO (CRISPRn / nuclease-active Cas9). Note the spelling is "crisprn", not "crispn".
     if "crisprn" in library_type or "knockout" in methodology:
         return "KO", 1.0
     if "cas9" in enzyme and "dcas9" not in enzyme:
@@ -146,7 +151,7 @@ def rule_screen_type(bio: dict, db_row: dict) -> tuple[str, float]:
 
 
 def rule_selection_method(bio: dict, db_row: dict) -> tuple[str, float]:
-    """从 SCREEN_TYPE 确定 selection_method。"""
+    """Decide selection_method from SCREEN_TYPE."""
     screen_type = (bio.get("SCREEN_TYPE") or db_row.get("SCREEN_TYPE") or "").strip()
     st = screen_type.lower()
 
@@ -158,7 +163,7 @@ def rule_selection_method(bio: dict, db_row: dict) -> tuple[str, float]:
         return "Bidirectional", 1.0
     if st == "phenotype screen":
         return "Phenotype", 1.0
-    # 模糊匹配兜底
+    # fuzzy-match fallback
     if "negative" in st and "positive" not in st:
         return "Negative", 0.9
     if "positive" in st and "negative" not in st:
@@ -207,7 +212,7 @@ def rule_assay_domain(bio: dict, db_row: dict) -> tuple[str, float]:
 
 
 def rule_coverage_type(bio: dict) -> tuple[str, float]:
-    """从 FULL_SIZE 和 FULL_SIZE_AVAILABLE 确定 coverage_type（筛选范围）。"""
+    """Decide coverage_type (library scope) from FULL_SIZE and FULL_SIZE_AVAILABLE."""
     available = (bio.get("FULL_SIZE_AVAILABLE") or "").strip().lower()
     full_size_str = bio.get("FULL_SIZE") or ""
     try:
@@ -218,7 +223,7 @@ def rule_coverage_type(bio: dict) -> tuple[str, float]:
     if available == "yes" and full_size >= 10000:
         return "Genome-wide", 1.0
     if available == "no":
-        # 只存了 hits，但 screen 本身可能是 genome-wide（看 FULL_SIZE）
+        # Only hits were deposited, but the screen itself may still be genome-wide -- FULL_SIZE says
         if full_size >= 10000:
             return "Genome-wide", 0.8
         return "Unknown", 0.6
@@ -230,7 +235,7 @@ def rule_coverage_type(bio: dict) -> tuple[str, float]:
 
 
 # --------------------------------------------------------------------------
-# DB 写入
+# DB write
 # --------------------------------------------------------------------------
 
 def insert_row(db: sqlite3.Connection, record: dict, dry_run: bool):
@@ -263,7 +268,7 @@ def main():
     parser.add_argument("--screen-ids", type=str, default="")
     parser.add_argument("--rerun",      action="store_true")
     parser.add_argument("--dry-run",    action="store_true",
-                        help="只打印，不写库")
+                        help="print only; write nothing to the database")
     args = parser.parse_args()
 
     db = sqlite3.connect(DB)

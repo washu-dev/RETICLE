@@ -1,101 +1,133 @@
-# RETICLE Gene Explorer — 数据源说明
+# RETICLE Gene Explorer — where the data comes from
 
-> 这个网站每搜一个基因，会发 **3 个请求**，分别打不同的数据源。本文说明
-> **STRING / PubMed / NCBI / GO / BioGRID** 各自用在哪、出现在界面的哪一块、对应哪段代码。
+> Every gene search on this site fires **three requests**, each hitting a different set of
+> sources. This document says what **STRING / PubMed / NCBI / GO / BioGRID** each contribute,
+> which part of the interface they appear in, and which code produces them.
 
-代码位置：后端 `web/app.py` + `script/external_sources.py`；前端 `web/index.html`。
+Code: backend `web/app.py` + `script/external_sources.py`; frontend `web/index.html`.
 
 ---
 
-## 一张总表
+## The summary table
 
-| 数据源 | 提供什么 | 后端入口 | 界面上你看到的 |
+| Source | What it provides | Backend entry point | What you see in the UI |
 |---|---|---|---|
-| **BioGRID**（本地 DB） | 整个**定量报告**：fitness / stress / reporter 三条轴、percentile 分布、hit、cell line、context、verdict | `/api/gene` → `gene_payload()` | 基因名下方所有图表（双极轴、直方图、"where it matters most"、翻转提示） |
-| **PubMed**（经 NCBI E-utilities） | ① 论文**数量** → darkness；② 论文**摘要** → RAG 证据 | `/api/context`（计数）<br>`/api/interpret`（摘要） | darkness 卡里的 "N papers"；AI reading 底部的 **PMID 引用链接** |
-| **NCBI**（基因注解，经 MyGene.info） | 基因名 + **RefSeq 功能摘要** | `/api/context` → `gene_annotation()` | "Known to science" 那段说明文字 |
-| **GO**（Gene Ontology，经 MyGene.info） | GO 注解**条数** → darkness 的另一半 | `/api/context` → `gene_annotation()` | darkness 卡里的 "N GO terms" + darkness 评分 |
-| **STRING** | 已知**功能伙伴** | `/api/context` + `/api/interpret` | "Known to science" 里可点击的 partner chip；也喂给 AI |
-| **WashU gpt-4o**（不是数据源，是合成器） | 把上面所有东西综合成一段解读 | `/api/interpret` → `interpret()` | "AI reading" 那段文字 |
+| **BioGRID** (local DB) | The entire **quantitative report**: the fitness / stress / reporter axes, percentile distribution, hits, cell line, context, verdict | `/api/gene` → `gene_payload()` | Every chart below the gene name (bipolar axis, histogram, "where it matters most", the flip notice) |
+| **PubMed** (via NCBI E-utilities) | (1) paper **count** → darkness; (2) paper **abstracts** → RAG evidence | `/api/context` (count)<br>`/api/interpret` (abstracts) | "N papers" on the darkness card; the **PMID citation links** under the AI reading |
+| **NCBI** (gene annotation, via MyGene.info) | Gene name + **RefSeq functional summary** | `/api/context` → `gene_annotation()` | The prose in the "Known to science" section |
+| **GO** (Gene Ontology, via MyGene.info) | **Number** of GO annotations → the other half of darkness | `/api/context` → `gene_annotation()` | "N GO terms" on the darkness card, and the darkness score itself |
+| **STRING** | Known **functional partners** | `/api/context` + `/api/interpret` | The clickable partner chips in "Known to science"; also fed to the model |
+| **WashU gpt-4o** (not a source — a synthesiser) | Combines everything above into one reading | `/api/interpret` → `interpret()` | The "AI reading" paragraph |
 
-> ⚠️ 澄清两点常见误解：
-> 1. **PubMed 就是 NCBI 的一个数据库**——网站访问 PubMed 走的是 NCBI E-utilities（`esearch` / `efetch`）。所以"PubMed"和"NCBI"是同一套基础设施。
-> 2. 表里那条 "NCBI 基因注解"（名字 + RefSeq 摘要）和 GO 条数，**实际是通过 MyGene.info 拿的**（它聚合了 NCBI/Entrez 的 RefSeq + GO），不是直接打 NCBI E-utilities。数据**来源**是 NCBI/GO，**取数通道**是 MyGene。
+> Two common misunderstandings worth clearing up:
+> 1. **PubMed IS one of NCBI's databases.** The site reaches PubMed through NCBI E-utilities
+>    (`esearch` / `efetch`), so "PubMed" and "NCBI" are the same infrastructure.
+> 2. The "NCBI gene annotation" row (name + RefSeq summary) and the GO count are **actually
+>    fetched through MyGene.info**, which aggregates NCBI/Entrez RefSeq and GO — not by calling
+>    NCBI E-utilities directly. The **origin** of the data is NCBI/GO; the **channel** is MyGene.
 
 ---
 
-## 搜一个基因时，3 个请求各打了谁
+## What the three requests hit, for one gene search
 
 ```
-用户搜 "C1orf109"
+user searches "C1orf109"
 │
-├─ 1. GET /api/gene?symbol=C1orf109          ── 只用 BioGRID（本地，秒回）
-│      gene_payload(): 查 harmonized_scores + screen_metadata + screen_metadata_curated
-│      → fitness/stress/reporter 三块 + verdict
-│      → 渲染：基因名、双极轴、直方图、context 列、翻转提示
+├─ 1. GET /api/gene?symbol=C1orf109          ── BioGRID only (local, instant)
+│      gene_payload(): reads harmonized_scores + screen_metadata + screen_metadata_curated
+│      → the fitness / stress / reporter blocks + verdict
+│      → renders: gene name, bipolar axis, histogram, context column, flip notice
 │
-├─ 2. GET /api/context?symbol=C1orf109       ── MyGene + NCBI(PubMed) + STRING（带缓存）
+├─ 2. GET /api/context?symbol=C1orf109       ── MyGene + NCBI(PubMed) + STRING (cached)
 │      ex.enrich():
-│        · gene_annotation()  → MyGene：名字 + RefSeq summary + GO 条数
-│        · darkness()         → pubmed_count()[NCBI esearch] + GO 条数 → 0–10 分
-│        · string_partners()  → STRING：已知伙伴
-│      → 渲染："Known to science + darkness" 那一条带
+│        · gene_annotation()  → MyGene: name + RefSeq summary + GO count
+│        · darkness()         → pubmed_count() [NCBI esearch] + GO count → a 0-10 score
+│        · string_partners()  → STRING: known partners
+│      → renders: the "Known to science + darkness" band
 │
-└─ 3. POST /api/interpret                      ── 复用上面的 enrich + 拉 PubMed 摘要 + gpt-4o
-       interpret():
-         · ex.enrich()                         → darkness/summary/partners（缓存命中，不重复打网）
-         · pubmed_abstracts(pubmed_pmids())    → NCBI efetch：top-5 相关论文摘要（= RAG 检索）
-         · WashU gpt-4o                        → 把 BioGRID 信号 + darkness + STRING + 摘要 合成
-       → 渲染："AI reading" 文字 + PMID 引用链接
+└─ 3. POST /api/interpret                     ── reuses the enrich above + pulls PubMed abstracts
+       interpret():                              + gpt-4o
+         · ex.enrich()                         → darkness / summary / partners (cache hit; no
+                                                 second network call)
+         · pubmed_abstracts(pubmed_pmids())    → NCBI efetch: the top-5 relevant abstracts
+                                                 (this is the RAG retrieval step)
+         · WashU gpt-4o                        → synthesises BioGRID signal + darkness + STRING
+                                                 + abstracts
+       → renders: the "AI reading" text + PMID citation links
 ```
 
 ---
 
-## 逐源详解
+## Source by source
 
-### 1. BioGRID —— 网站的定量核心
-- **是什么**：你自己 pipeline 产出的本地 SQLite (`processed_data/reticle_master.db`)：`harmonized_scores`（28.2M 行）+ `screen_metadata` + `screen_metadata_curated`（含 `assay_domain`）。
-- **用在哪**：`/api/gene` 的 `gene_payload()`。它是**唯一离线、秒回**的源。
-- **界面**：基因名、verdict、fitness/stress 两块（双极轴 + 4 个统计卡 + 直方图 + "where it matters most"）、reporter 计数、翻转提示——**全部来自 BioGRID**。
-- **不需要网络/key**。
+### 1. BioGRID — the site's quantitative core
+- **What it is**: the local SQLite your own pipeline produced
+  (`processed_data/reticle_master.db`): `harmonized_scores` (28.2M rows) + `screen_metadata` +
+  `screen_metadata_curated` (which carries `assay_domain`).
+- **Where it is used**: `gene_payload()` behind `/api/gene`. It is the **only** offline,
+  instant source.
+- **In the UI**: gene name, verdict, the fitness and stress blocks (bipolar axis + four stat
+  cards + histogram + "where it matters most"), the reporter count, the flip notice — **all of
+  it comes from BioGRID**.
+- **Needs no network and no key.**
 
-### 2. PubMed（经 NCBI E-utilities）—— 两处用途
-- **论文计数**：`pubmed_count()` 用 `esearch`（`{gene}[gene] AND human[orgn]`）拿总数。→ **darkness 评分**的主成分 + darkness 卡里的 "N papers"。
-- **论文摘要**：`pubmed_abstracts(pubmed_pmids())` 用 `esearch`(按相关性取 top-5 PMID) + `efetch`(取摘要)。→ 喂给 gpt-4o 当 **RAG 证据**，AI reading 底部列出这些 PMID 作为引用。
-- **key**：`.env` 里的 `NCBI_API_KEY`（你已设）→ 10 请求/秒（否则 3/秒）。
+### 2. PubMed (via NCBI E-utilities) — two distinct uses
+- **Paper count**: `pubmed_count()` uses `esearch` (`{gene}[gene] AND human[orgn]`) for the
+  total. This is the dominant term in the **darkness score**, and the "N papers" on the card.
+- **Abstracts**: `pubmed_abstracts(pubmed_pmids())` uses `esearch` (top-5 PMIDs by relevance)
+  then `efetch` (the abstracts). These are fed to gpt-4o as **RAG evidence**, and the AI reading
+  lists those PMIDs as its citations.
+- **Key**: `NCBI_API_KEY` in `.env` (already set) raises the rate limit to 10 requests/second
+  from 3.
 
-### 3. NCBI 基因注解（经 MyGene.info）
-- **是什么**：`gene_annotation()` 打 MyGene.info，拿 `entrezgene` + `name` + **RefSeq summary** + GO terms。
-- **界面**："Known to science" 那段功能描述文字（暗基因没有 summary 时显示"Poorly characterized…"）。
-- **无需 key**。
+### 3. NCBI gene annotation (via MyGene.info)
+- **What it is**: `gene_annotation()` calls MyGene.info for `entrezgene` + `name` + the
+  **RefSeq summary** + GO terms.
+- **In the UI**: the functional description in "Known to science" (a dark gene with no summary
+  shows "Poorly characterized...").
+- **No key needed.**
 
-### 4. GO（Gene Ontology，经 MyGene.info）
-- **是什么**：上面同一个 MyGene 调用里的 GO 条数（BP+MF+CC）= `go_total`。
-- **用在哪**：**darkness 评分的另一半**（注解越少越暗）+ darkness 卡里的 "N GO terms"。
-- **无需 key**。
+### 4. GO (Gene Ontology, via MyGene.info)
+- **What it is**: the GO count (BP+MF+CC) = `go_total`, from the same MyGene call as above.
+- **Where it is used**: the **other half of the darkness score** (fewer annotations = darker),
+  and the "N GO terms" on the card.
+- **No key needed.**
 
-### 5. STRING —— 已知功能伙伴
-- **是什么**：`string_partners()` 打 STRING API，拿 top 互作/功能伙伴。
-- **界面**："Known to science" 里那排可点击的 partner chip（点一下就 explore 那个基因）。
-- **也喂给 AI**：interpret 的 prompt 里有 "KNOWN PARTNERS (STRING)"，让模型判断"暗基因是否和已知伙伴行为一致 → 脱孤候选"。
-- **无需 key**。
+### 5. STRING — known functional partners
+- **What it is**: `string_partners()` calls the STRING API for the top interaction/functional
+  partners.
+- **In the UI**: the row of clickable partner chips in "Known to science" (clicking one explores
+  that gene).
+- **Also fed to the model**: the interpret prompt carries a "KNOWN PARTNERS (STRING)" section, so
+  the model can judge whether a dark gene behaves consistently with known partners — i.e.
+  whether it is a de-orphaning candidate.
+- **No key needed.**
 
-### 6. WashU gpt-4o —— 合成器（不是数据源）
-- 把 BioGRID 信号 + darkness + STRING + PubMed 摘要综合成一段解读，要求**引用 PMID**、不编造。
-- 走 `script/llm_client.py`（WashU gateway），**需连 WashU VPN**。
+### 6. WashU gpt-4o — the synthesiser, not a source
+- Combines the BioGRID signal + darkness + STRING + PubMed abstracts into one reading, under
+  instructions to **cite PMIDs** and invent nothing.
+- Goes through `script/llm_client.py` (the WashU gateway), which **requires the WashU VPN**.
 
 ---
 
-## darkness 评分用了哪些源
+## Which sources feed the darkness score
+
 darkness = `10 × (0.6·dark_pub + 0.4·dark_go)`
-- `dark_pub` ← **PubMed 论文数**（NCBI esearch）
-- `dark_go`  ← **GO 注解条数**（MyGene/GO）
+- `dark_pub` ← the **PubMed paper count** (NCBI esearch)
+- `dark_go`  ← the **number of GO annotations** (MyGene/GO)
 
-即 **darkness = PubMed + GO 两个源的组合**。BioGRID 和 STRING 不参与 darkness 计算。
+So **darkness combines exactly two sources, PubMed and GO**. BioGRID and STRING do not enter the
+darkness calculation at all.
 
 ---
 
-## 缓存与离线行为
-- 所有外部源（NCBI/MyGene/STRING）结果缓存在 `processed_data/external_cache.db`（30 天 TTL），第二次查同一基因**秒回、不再打网**。
-- **离线/无 VPN 时**：`/api/gene`（BioGRID）照常工作；`/api/context` 取决于公网（NCBI/MyGene/STRING 是公网，通常可达）；`/api/interpret` 的 gpt-4o 需要 WashU VPN，否则优雅报错提示连 VPN。
-- 外部源全部 **fail-soft**：某个源挂了返回空/None，不会让页面崩溃。
+## Caching and offline behaviour
+- Every external result (NCBI / MyGene / STRING) is cached in
+  `processed_data/external_cache.db` with a 30-day TTL, so the second lookup of the same gene is
+  **instant and makes no network call**.
+- **Offline or without the VPN**: `/api/gene` (BioGRID) works as normal; `/api/context` depends
+  on the public internet (NCBI / MyGene / STRING are public and usually reachable);
+  `/api/interpret` needs the WashU VPN for gpt-4o, and otherwise fails gracefully with a message
+  telling you to connect.
+- All external sources **fail soft**: a source that is down returns empty/None rather than
+  taking the page down with it.

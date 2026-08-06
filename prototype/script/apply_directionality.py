@@ -1,26 +1,28 @@
 """
 RETICLE — Apply Directionality Overrides (non-destructive, in-place)
 ====================================================================
-读取冻结产物 processed_data/directionality_overrides.json（status=="auto" 的条目），
-对这些 screen **从原始文件重新 harmonize**，就地替换它们在 harmonized_scores 的行，
-并更新 screen_metadata 的 SCORE_BASIS / IS_DIRECTIONAL。
+Reads the frozen artifact processed_data/directionality_overrides.json (only the entries with
+status=="auto"), RE-HARMONIZES those screens FROM THE RAW FILES, replaces their rows in
+harmonized_scores in place, and updates SCORE_BASIS / IS_DIRECTIONAL in screen_metadata.
 
-为什么不直接重跑 harmonize_scores.py
------------------------------------
-  harmonize_scores.py 的 main() 会 os.remove() 整个 2.2GB 库（连 correlation_analysis
-  和 screen_metadata_curated 一起删）。本脚本只动 override 涉及的那 ~100 个 screen 的
-  行，28M 行里的其余部分、以及别的表，一律不碰。
+WHY NOT JUST RE-RUN harmonize_scores.py
+---------------------------------------
+  harmonize_scores.py's main() does os.remove() on the entire 2.2 GB database -- taking
+  correlation_analysis and screen_metadata_curated with it. This script touches only the rows
+  belonging to the ~100 screens an override names; the rest of the 28M rows, and every other
+  table, are left alone.
 
-幂等性
-------
-  每次都从原始数据按 override 重算后 REPLACE，重复运行结果一致，不存在「翻转两次又翻
-  回去」的风险。注意：本脚本只处理 overrides.json 里 status=="auto" 的 screen；
-  被降级为 needs_review 的 screen 不会被自动恢复成 AMBIGUOUS 默认（那需要重跑 harmonize）。
+IDEMPOTENCE
+-----------
+  Every run recomputes from the raw data under the override and REPLACEs, so repeated runs give
+  the same result -- there is no "flipped twice, back where it started" hazard. Note that only
+  screens with status=="auto" are processed: a screen demoted to needs_review is NOT restored to
+  the AMBIGUOUS default automatically (that would need a full harmonize re-run).
 
 RUN
 ---
-  python3 script/apply_directionality.py --dry-run    # 算并报告，不写库
-  python3 script/apply_directionality.py              # 就地应用
+  python3 script/apply_directionality.py --dry-run    # compute and report, write nothing
+  python3 script/apply_directionality.py              # apply in place
 """
 
 import argparse
@@ -53,7 +55,7 @@ def is_viability_ko(meta: dict) -> bool:
 
 def load_auto_overrides():
     if not H.OVERRIDES_PATH.exists():
-        sys.exit(f"找不到 {H.OVERRIDES_PATH} —— 先跑 directionality_mapper.py 生成它。")
+        sys.exit(f"{H.OVERRIDES_PATH} not found - run directionality_mapper.py to generate it first.")
     data = json.loads(H.OVERRIDES_PATH.read_text())
     return {str(s): ov for s, ov in data.get("overrides", {}).items()
             if ov.get("status") == "auto"}
@@ -86,22 +88,23 @@ def load_meta():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dry-run", action="store_true", help="算并报告，不写库")
+    ap.add_argument("--dry-run", action="store_true", help="compute and report; write nothing")
     ap.add_argument("--anchor-resolve-conflicts", action="store_true",
-                    help="对 KO 活力筛的方向冲突，用核心必需基因（确定性 ground truth）"
-                         "定向：把符号设为使必需基因落负端的那个，并把决定写回 overrides.json")
+                    help="resolve a direction conflict in a KO viability screen using core "
+                         "essential genes as deterministic ground truth: pick the sign that puts "
+                         "them on the negative end, and write that decision back to overrides.json")
     args = ap.parse_args()
 
     overrides = load_auto_overrides()
     if not overrides:
-        print("overrides.json 里没有 status=='auto' 的条目，无事可做。")
+        print("No status=='auto' entries in overrides.json - nothing to do.")
         return
     raw_idx = build_raw_index()
     meta_idx = load_meta()
 
     con = sqlite3.connect(str(paths.DB))
-    print(f"将应用 {len(overrides)} 个 auto override"
-          + ("（dry-run，不写库）" if args.dry_run else "") + "\n")
+    print(f"Applying {len(overrides)} auto overrides"
+          + (" (dry-run - nothing written)" if args.dry_run else "") + "\n")
 
     applied = skipped = 0
     conflicts = []
@@ -110,13 +113,13 @@ def main():
         raw = raw_idx.get(sid)
         meta = meta_idx.get(sid)
         if raw is None or meta is None:
-            print(f"  ! screen {sid}: 找不到原始文件或 metadata，跳过")
+            print(f"  ! screen {sid}: raw file or metadata not found - skipped")
             skipped += 1
             continue
 
         df, col_types = H.load_screen_df(raw, meta)
         if df is None:
-            print(f"  ! screen {sid}: 原始文件读取失败，跳过")
+            print(f"  ! screen {sid}: raw file could not be read - skipped")
             skipped += 1
             continue
 
@@ -128,8 +131,10 @@ def main():
                           (sid,)).fetchone()
         old_basis = old[0] if old else "?"
 
-        # 核心必需基因否决闸：只在 KO 活力/增殖筛里有效。这类筛必需基因必然在负端，
-        # 若 override 让它们落到正端 -> 方向被判反 -> 拒绝应用，列入冲突清单等人工/换模型。
+        # Core-essential veto gate. Only meaningful in a KO viability/proliferation screen,
+        # where essential genes MUST land on the negative end. If the override puts them on the
+        # positive end the direction was ruled backwards: refuse to apply, and list the screen as
+        # a conflict for a human (or a different model) to settle.
         ess = df[df["OFFICIAL_SYMBOL"].astype(str).isin(CORE_ESSENTIAL)]
         ess_p = ess["PERCENTILE_SCORE"].dropna()
         ess_note = f"  ess_genes={len(ess_p)} mean_pct={ess_p.mean():.3f}" if len(ess_p) else ""
@@ -137,7 +142,7 @@ def main():
 
         mode_desc = (f"SINGLE sign={ov['sign']}" if ov["mode"] == "SINGLE"
                      else f"PAIR +{ov['positive_column']}/-{ov['negative_column']}")
-        flag = "  ✗CONFLICT(必需基因在正端，拒绝应用)" if is_conflict else ""
+        flag = "  x CONFLICT (essential genes on the positive end - refused)" if is_conflict else ""
         print(f"  screen {sid}: {mode_desc} conf={ov['confidence']:.2f}  "
               f"rows={len(df)}{ess_note}{flag}")
         print(f"      basis: {old_basis}  ->  {basis}")
@@ -199,22 +204,23 @@ def main():
         con.commit()
     con.close()
 
-    # 把锚点决定写回冻结产物，保证未来重建 harmonize 时复现同一结果
+    # Write the anchor decisions back into the frozen artifact, so a future harmonize rebuild
+    # reproduces exactly this result
     if anchor_updates and not args.dry_run:
         data = json.loads(H.OVERRIDES_PATH.read_text())
         data["overrides"].update(anchor_updates)
         data.setdefault("_meta", {})["anchor_resolved"] = sorted(anchor_updates, key=int)
         H.OVERRIDES_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False))
-        print(f"\n↳ 已把 {len(anchor_updates)} 个锚点决定写回 {H.OVERRIDES_PATH.name}")
+        print(f"\n-> wrote {len(anchor_updates)} anchor decisions back to {H.OVERRIDES_PATH.name}")
 
-    print(f"\n{'(dry-run) 将应用' if args.dry_run else '已应用'}: {applied}   "
-          f"跳过/冲突: {skipped}   锚点纠正: {len(anchor_updates)}")
+    print(f"\n{'(dry-run) would apply' if args.dry_run else 'applied'}: {applied}   "
+          f"skipped/conflicted: {skipped}   anchor corrections: {len(anchor_updates)}")
     if conflicts:
-        print(f"\n✗ {len(conflicts)} 个方向冲突（必需基因落正端，未应用）:")
+        print(f"\nx {len(conflicts)} direction conflicts (essential genes on the positive end - not applied):")
         for sid, mp, desc in conflicts:
-            print(f"    screen {sid}: {desc}  必需基因 mean_pct={mp:+.3f}")
+            print(f"    screen {sid}: {desc}  essential-gene mean_pct={mp:+.3f}")
     if not args.dry_run:
-        print("\n建议接着跑：python3 script/validate_harmonization.py")
+        print("\nSuggested next step: python3 script/validate_harmonization.py")
 
 
 if __name__ == "__main__":
