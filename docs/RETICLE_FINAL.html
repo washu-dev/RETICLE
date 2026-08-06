@@ -265,6 +265,58 @@ h2 .em.adv{color:var(--adv)}
 /* no SVG, no new palette: only --ess, --adv, --grid, --mute.    */
 /* ============================================================ */
 
+/* ── 03 · the build animation ───────────────────────────────────────────
+   Replaces two slides of method prose. The claim it has to carry is the one
+   non-obvious thing about how this network is made: two genes are joined when
+   their knockout profiles rise and fall together ACROSS screens, and the edge
+   is kept only if each gene is the other's best match.
+
+   So the figure is four profile strips and a gate. Each strip is one gene's
+   rank in sixteen screens, teal where the knockout killed and ochre where it
+   helped -- the same two poles the ruler two slides back established. FANCA's
+   strip is deliberately near-identical to FANCD2's and the other two are not,
+   because "these two rows look the same" is an argument a room can read in a
+   second and a correlation coefficient is not.
+
+   Timed off .is-active so it replays every time the slide is reached, which is
+   what a presenter needs when they go back a slide. Pure CSS, like every other
+   figure here -- no SVG, no script. */
+.build{margin-top:30px; display:grid; grid-template-columns:auto 1fr auto; gap:9px 16px; align-items:center}
+.build .bname{font-family:var(--mono); font-size:14px; color:var(--ink); white-space:nowrap}
+.build .bname i{font-style:normal; color:var(--mute); font-size:12px; margin-left:7px}
+.build .bstrip{height:26px; border-radius:3px; border:1px solid var(--grid); background:#fff;
+  background-size:0% 100%; background-repeat:no-repeat}
+.build .bverdict{font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; white-space:nowrap;
+  opacity:0; padding:3px 10px; border-radius:20px; border:1px solid var(--grid); color:var(--mute)}
+.build .bverdict.keep{color:var(--ess); border-color:var(--ess); background:var(--ess-soft)}
+
+/* the four profiles. A and B share thirteen of sixteen cells; C and D do not. */
+.build .p-d2{background-image:linear-gradient(90deg,
+  var(--ess) 0 12.5%,#fff 12.5% 18.75%,var(--ess) 18.75% 31.25%,#fff 31.25% 43.75%,
+  var(--adv) 43.75% 50%,#fff 50% 62.5%,var(--ess) 62.5% 75%,#fff 75% 81.25%,var(--ess) 81.25% 100%)}
+.build .p-fa{background-image:linear-gradient(90deg,
+  var(--ess) 0 12.5%,#fff 12.5% 18.75%,var(--ess) 18.75% 31.25%,#fff 31.25% 37.5%,
+  var(--adv) 37.5% 50%,#fff 50% 62.5%,var(--ess) 62.5% 75%,#fff 75% 87.5%,var(--ess) 87.5% 100%)}
+.build .p-rp{background-image:linear-gradient(90deg,
+  var(--ess) 0 6.25%,#fff 6.25% 12.5%,var(--ess) 12.5% 18.75%,#fff 18.75% 25%,
+  var(--ess) 25% 37.5%,#fff 37.5% 56.25%,var(--ess) 56.25% 68.75%,#fff 68.75% 100%)}
+.build .p-ac{background-image:linear-gradient(90deg,
+  #fff 0 18.75%,var(--adv) 18.75% 25%,#fff 25% 43.75%,var(--ess) 43.75% 50%,
+  #fff 50% 68.75%,var(--adv) 68.75% 81.25%,#fff 81.25% 100%)}
+
+/* beat 1 · the profiles wipe in, query first */
+.slide.is-active .build .bstrip{animation:bwipe .85s cubic-bezier(.22,.68,.28,1) both;
+  animation-delay:calc(var(--i,0)*280ms + 700ms)}
+@keyframes bwipe{from{background-size:0% 100%} to{background-size:100% 100%}}
+
+/* beat 2 · every candidate is tested, then all but the mutual best are dropped */
+.slide.is-active .build .bverdict{animation:bcull 1.5s ease both;
+  animation-delay:calc(var(--i,0)*280ms + 1700ms)}
+.slide.is-active .build .bverdict.keep{animation:bkeep 1.5s ease both; animation-delay:2540ms}
+@keyframes bcull{0%{opacity:0} 22%{opacity:.9} 68%{opacity:.9} 100%{opacity:.34}}
+@keyframes bkeep{0%{opacity:0} 22%{opacity:.85} 100%{opacity:1}}
+
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -616,17 +668,17 @@ h2 .em.adv{color:var(--adv)}
     <div class="fails" data-anim style="--d:2">
       <div class="fail">
         <div class="who">google</div>
-        <div class="what">A dozen databases, each authoritative about a different slice.</div>
+        <div class="what">A dozen databases, each right about a different slice.</div>
         <div class="verdict">Which one is right?</div>
       </div>
       <div class="fail">
         <div class="who">wikipedia</div>
-        <div class="what">Fine for TP53. For a gene nobody has studied, there is often no article at all.</div>
+        <div class="what">Fine for TP53. Nothing for a gene nobody studied.</div>
         <div class="verdict">Nothing there</div>
       </div>
       <div class="fail">
         <div class="who">chatgpt</div>
-        <div class="what">Fluent, confident, and unable to tell you which parts it made up.</div>
+        <div class="what">Fluent, confident, unsourced.</div>
         <div class="verdict">No provenance</div>
       </div>
     </div>
@@ -651,9 +703,9 @@ h2 .em.adv{color:var(--adv)}
       <div>
         <div class="exread">a sample of 24 real genes</div>
         <ul class="exmini">
-          <li><span class="ek">studied</span>Of 12 well-published genes, <b>1</b> had a real article. CYLD — 355 papers — gets 125 characters.</li>
+          <li><span class="ek">studied</span>Of 12 well-published genes, <b>1</b> had a real article.</li>
           <li><span class="ek">unstudied</span>Of 12 barely-published genes, <b>10 had no article at all</b>.</li>
-          <li><span class="ek">stale</span>H3-3A redirects to <b>H3F3A</b> — the retired symbol. GGCT lands on a list of schools.</li>
+          <li><span class="ek">stale</span>H3-3A redirects to <b>H3F3A</b>, a retired symbol. GGCT lands on a list of schools.</li>
         </ul>
       </div>
     </div>
@@ -661,6 +713,24 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- 03.3 · THE WIKI -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the second problem</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:31ch">Every written source inherits the same blind spot.</h2>
+    <div class="lit" data-anim style="--d:2">
+      <div class="litband"><i class="hot"></i><i class="rest"></i></div>
+      <div class="litmark">
+        <span><b>2,000 genes</b> — 9.7%</span>
+        <span>the other <b>18,620</b></span>
+      </div>
+      <div class="litnote">Those 2,000 hold <b>52%</b> of every gene-to-paper link in the literature. The top 5,000 hold 74%.</div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">Attention was never evenly spread. <b style="color:var(--ink)">For most of the genome, the page would be blank.</b></p>
+  </div>
+</section>
+
+<!-- 03.5 · THE HINGE -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
@@ -678,29 +748,11 @@ h2 .em.adv{color:var(--adv)}
       <div class="srcrow"><div class="nm">Ensembl</div><div class="tr"><i style="width:96%"></i></div><div class="pc">96%</div></div>
       <div class="srcrow"><div class="nm">BioGRID ORCS</div><div class="tr"><i style="width:100%"></i></div><div class="pc">2,157</div></div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:24px">Bars are the share of human protein-coding genes each source actually covers. <b style="color:var(--ink)">Assembled offline, so the page answers in a quarter of a second.</b></p>
+    <p class="tag" data-anim style="--d:3; margin-top:24px">Bars are the share of protein-coding genes each source covers. <b style="color:var(--ink)">Ten sources, and the dark half is still dark.</b></p>
   </div>
 </section>
 
 <!-- 03.4 · THE SECOND PROBLEM — DARK GENES  (signature figure) -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — the second problem</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:31ch">Every source we just listed inherits the same blind spot.</h2>
-    <div class="lit" data-anim style="--d:2">
-      <div class="litband"><i class="hot"></i><i class="rest"></i></div>
-      <div class="litmark">
-        <span><b>2,000 genes</b> — 9.7%</span>
-        <span>the other <b>18,620</b></span>
-      </div>
-      <div class="litnote">Those 2,000 hold <b>52%</b> of every gene-to-paper link in the literature. The top 5,000 hold 74%.</div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">A wiki can only report what has been written, and attention has never been evenly spread. <b style="color:var(--ink)">For most of the genome, the page would be blank.</b></p>
-  </div>
-</section>
-
-<!-- 03.5 · THE HINGE -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
@@ -712,40 +764,33 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- 03.6 · HARMONISATION -->
+<!-- 03.6 · HOW THE NETWORK IS BUILT (animated) -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — step one</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">First we had to make 2,157 screens say the same thing.</h2>
-    <div class="ruler" data-anim style="--d:2">
-      <div class="rulertrack"></div>
-      <div class="rulercaps">
-        <span><b>−1</b>knockout kills the cell</span>
-        <span><b>0</b>no effect</span>
-        <span><b>+1</b>knockout helps</span>
-      </div>
+    <div class="eyebrow" data-anim><b>03</b> — how it is built</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:26ch">Two genes are linked when they die in the same screens.</h2>
+    <div class="build" data-anim style="--d:2">
+      <div class="bname">FANCD2 <i>query</i></div>
+      <div class="bstrip p-d2" style="--i:0"></div>
+      <div class="bverdict"></div>
+
+      <div class="bname">FANCA</div>
+      <div class="bstrip p-fa" style="--i:1"></div>
+      <div class="bverdict keep" style="--i:1">mutual best · tier 1</div>
+
+      <div class="bname">RPL13</div>
+      <div class="bstrip p-rp" style="--i:2"></div>
+      <div class="bverdict" style="--i:2">essential everywhere</div>
+
+      <div class="bname">ACTB</div>
+      <div class="bstrip p-ac" style="--i:3"></div>
+      <div class="bverdict" style="--i:3">no agreement</div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:30px">Labs score with MaGeCK, CERES, CasTLE, log2FC — magnitudes that cannot be compared, and signs that disagree about which direction is bad. <b style="color:var(--ink)">We convert every screen to a signed within-screen rank: one ruler, 28.2 million measurements.</b></p>
+    <p class="tag" data-anim style="--d:6; margin-top:26px">Each strip is one gene across sixteen screens — <b style="color:var(--ess)">teal where the knockout killed</b>, <b style="color:var(--adv)">ochre where it helped</b>. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b>, which is what stops a ribosomal gene bonding with everything.</p>
   </div>
 </section>
 
-<!-- 03.7 · BUILDING THE NETWORK -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — step two</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:34ch">Genes that fail together across 1,375 screens are probably doing one job.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">fingerprint</div><div class="body">One row per gene — its rank in <b>every</b> screen.</div></div>
-      <div class="nf"><div class="step">correlate</div><div class="body"><b>Pearson r</b> between two rows: do they rise and fall together?</div></div>
-      <div class="nf"><div class="step">strip the obvious</div><div class="body">Remove the axis that makes <b>all</b> essential genes look alike.</div></div>
-      <div class="nf"><div class="step">keep mutual</div><div class="body">An edge survives only if each gene is in the <b>other's top 25</b>.</div></div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">The last two steps are what stop a ribosomal gene bonding with everything. <b style="color:var(--ink)">109,412 edges over 5,269 genes — no literature consulted at any point.</b></p>
-  </div>
-</section>
-
-<!-- 03.8 · EVIDENCE TIERS (signature 2) -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
@@ -764,7 +809,7 @@ h2 .em.adv{color:var(--adv)}
       <div class="tcell"><div><div class="tn">tier 3 · co-hit</div><div class="pr">17.7%</div></div><div class="sh">7,740 edges · 7.1%</div></div>
       <div class="tcell"><div><div class="tn">tier 4 · correlation</div><div class="pr">4.9%</div></div><div class="sh">91,767 edges · 83.9%</div></div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">Percentages are how often an edge turns out to be a real CORUM protein complex — against <b style="color:var(--ink)">0.6% for a random pair</b>. The best tier is the rarest, and the user is told which tier they are looking at.</p>
+    <p class="tag" data-anim style="--d:3; margin-top:22px">How often an edge is a real CORUM complex, against <b style="color:var(--ink)">0.6% for a random pair</b>. We tell the user which tier they are seeing.</p>
   </div>
 </section>
 
@@ -801,12 +846,12 @@ h2 .em.adv{color:var(--adv)}
     <div class="eyebrow" data-anim><b>03</b> — step four</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">If we trust the neighbours, we can name what a dark gene does.</h2>
     <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">1 · gather</div><div class="body">The gene's co-essential neighbours, with <b>their</b> known functions.</div></div>
-      <div class="nf"><div class="step">2 · propose</div><div class="body">The model names a shared process the gene is <b>not yet annotated with</b>.</div></div>
-      <div class="nf"><div class="step">3 · verify</div><div class="body">The server re-checks novelty and <b>every cited neighbour</b>.</div></div>
+      <div class="nf"><div class="step">1 · gather</div><div class="body">Its co-essential neighbours and <b>their</b> known functions.</div></div>
+      <div class="nf"><div class="step">2 · propose</div><div class="body">A shared process it is <b>not yet annotated with</b>.</div></div>
+      <div class="nf"><div class="step">3 · verify</div><div class="body">Re-checked: novelty, and <b>every cited neighbour</b>.</div></div>
       <div class="nf"><div class="step">4 · label</div><div class="body">Ships as <b>verified</b>, single-supporter, or rejected.</div></div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">The model is never trusted to comply — a cited partner that is not really in the neighbourhood is dropped before the user sees it. <b style="color:var(--ink)">A leave-one-out backtest shows the signal is real and not circular.</b></p>
+    <p class="tag" data-anim style="--d:3; margin-top:26px">A cited partner that is not really in the neighbourhood is dropped before you see it. <b style="color:var(--ink)">Leave-one-out says the signal is real, not circular.</b></p>
   </div>
 </section>
 
@@ -826,7 +871,7 @@ h2 .em.adv{color:var(--adv)}
     <div class="eyebrow" data-anim><b>04</b> — goal one</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Take one prediction to the bench and find out if we are right.</h2>
     <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>Every prediction already ships as a <b>testable claim</b>: this gene participates in that process, because these named partners do.</span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">CORUM tells us how often an edge is a real complex. It cannot tell us whether a <b style="color:var(--ink)">new</b> claim about a dark gene is true — only an experiment can. <b style="color:var(--ink)">Nobody has run one yet, and that is the single most valuable thing left to do.</b></p>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">CORUM says how often an edge is a real complex. Only an experiment says whether a <b style="color:var(--ink)">new</b> claim is true. <b style="color:var(--ink)">Nobody has run one yet.</b></p>
   </div>
 </section>
 
@@ -838,9 +883,9 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Every new screen makes the network sharper for everyone.</h2>
     <div class="netflow" data-anim style="--d:2">
       <div class="nf"><div class="step">today</div><div class="body"><b>2,157</b> published screens · <b>5,077</b> genes reach the network.</div></div>
-      <div class="nf"><div class="step">the gap</div><div class="body">The other <b>15,500</b> genes have too little signal in the current corpus.</div></div>
-      <div class="nf"><div class="step">the fix</div><div class="body">Unpublished screens from labs like ours — the same harmonisation applies.</div></div>
-      <div class="nf"><div class="step">the return</div><div class="body">A lab that contributes gets its screen <b>placed in context</b> against all the rest.</div></div>
+      <div class="nf"><div class="step">the gap</div><div class="body">Another <b>15,500</b> genes have too little signal yet.</div></div>
+      <div class="nf"><div class="step">the fix</div><div class="body">Unpublished screens from labs like ours.</div></div>
+      <div class="nf"><div class="step">the return</div><div class="body">A contributing lab sees its screen <b>placed in context</b>.</div></div>
     </div>
     <p class="tag" data-anim style="--d:3; margin-top:26px">This is the part that compounds. <b style="color:var(--ink)">Coverage is not a software problem — it is a collaboration problem.</b></p>
   </div>
@@ -853,7 +898,7 @@ h2 .em.adv{color:var(--adv)}
     <div class="eyebrow" data-anim><b>04</b> — goal three</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Open the API so other tools can ask our questions.</h2>
     <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>The whole product is already a REST API — the website is just its first client. <b>Documenting and opening it is a small step with a large reach.</b></span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">A pipeline could score its hits against 2,157 screens automatically; another tool could pull a gene's co-essential neighbourhood without a browser. <b style="color:var(--ink)">The data is only useful if it can leave the page.</b></p>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">A pipeline could score its hits against 2,157 screens without a browser. <b style="color:var(--ink)">The data is only useful if it can leave the page.</b></p>
   </div>
 </section>
 
