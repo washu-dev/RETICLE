@@ -421,8 +421,13 @@ function applyEdgeScope(){
 }
 
 async function loadContexts(){
-  const r=await fetch('/api/net_contexts?organism='+ORG);const j=await r.json();
-  CONTEXTS=j.contexts||[];
+  /* Unguarded this rejected on an unreachable API, and since nothing awaits loadContexts for its
+     value that surfaced as an unhandled rejection with no context pills and no explanation. An
+     empty list is the honest fallback: the default context still loads. */
+  let j=null;
+  try{ const r=await fetch('/api/net_contexts?organism='+ORG); if(r.ok) j=JSON.parse(await r.text()); }
+  catch(e){}
+  CONTEXTS=(j&&j.contexts)||[];
   const box=document.getElementById('ctxpills');box.innerHTML='';
   CONTEXTS.forEach(c=>{
     const b=document.createElement('button');b.className='pill'+(c.value===CTX?' on':'');
@@ -448,8 +453,24 @@ function status(t){const s=document.getElementById('status');s.textContent=t||''
 async function load(){
   status('mapping '+FOCUS+' …');
   const u=`/api/screen_net?gene=${encodeURIComponent(FOCUS)}&context=${encodeURIComponent(CTX)}&reciprocal=${RECIP?1:0}&organism=${ORG}`;
-  let j;try{j=await (await fetch(u)).json();}catch(e){status('request failed');return;}
-  if(j.error){status(j.error);if(CY)CY.elements().remove();renderPanel(null);return;}
+  /* Body once as text, parsed after the status check — the same shape predictFn uses, and for the
+     same reason. fetch does not reject on 4xx, and the API reports a refusal as `detail`, not
+     `error`, so checking only j.error let a 404 fall through to j.nodes.map below and throw
+     "Cannot read properties of undefined". The server's own sentence -- e.g. "'PEN' has no
+     co-essentiality edges in this context" -- is the useful thing to show, and it was being
+     replaced by a crash. detail is a string for our own aborts but an array for FastAPI's
+     validation errors, so only a string is ever rendered. */
+  let r,body;
+  try{ r=await fetch(u); body=await r.text(); }catch(e){ status('request failed'); return; }
+  let j=null; try{ j=JSON.parse(body); }catch(_){}
+  const bad = !r.ok || !j || j.error || !Array.isArray(j.nodes) || !Array.isArray(j.edges);
+  if(bad){
+    const m = j && (j.error || j.detail);
+    status(typeof m==='string' ? m
+      : r.status>=500 ? 'RETICLE is not responding right now — try again in a moment.'
+      : 'No network could be drawn for this gene.');
+    if(CY)CY.elements().remove();renderPanel(null);return;
+  }
   status('');FOCUS=j.focus;document.getElementById('q').placeholder=j.focus;window.__NETJ=j;
   const els=[
     ...j.nodes.map(n=>({data:{id:n.id,label:n.label,lean:String(n.lean),focus:n.focus,degree:n.degree,mean_percentile:n.mean_percentile}})),
