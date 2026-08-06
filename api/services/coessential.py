@@ -18,6 +18,8 @@ from typing import Any
 
 import numpy as np
 
+from services.execution import offload
+
 ORG2TAX = {"Homo sapiens": 9606, "Mus musculus": 10090}
 
 # taxid -> {"R": np.ndarray, "genes": list[str], "lean": np.ndarray, "n_screens": int}
@@ -62,7 +64,7 @@ def build_matrix(rows: list) -> tuple[np.ndarray, list[str], np.ndarray, int]:
         n_screens: number of distinct fitness screens (S)
     """
     def _cell(row: Any, key: str, idx: int) -> Any:
-        if hasattr(row, "__getitem__") and not isinstance(row, (list, tuple)):
+        if hasattr(row, "__getitem__") and not isinstance(row, list | tuple):
             try:
                 return row[key]
             except (KeyError, TypeError, IndexError):
@@ -233,7 +235,8 @@ def _get_matrix(taxid: int) -> dict[str, Any]:
     return cached
 
 
-async def coessential_network(
+@offload("cpu")
+def coessential_network(
     symbol: str,
     taxid: int,
     top: int = 14,

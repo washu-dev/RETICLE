@@ -58,6 +58,7 @@ def _mock_screen_detail(screen_id: str) -> ScreenDetail:
     return ScreenDetail(
         screen_id=str(screen_id),
         biogrid_url=f"{BIOGRID_SCREEN_URL}{screen_id}",
+        similarity_available=known is not None,
         pmid=pmid,
         pubmed_url=f"{PUBMED_URL}{pmid}" if pmid else None,
         author=entry["author"],
@@ -102,7 +103,11 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
                   sm.organism_official, sm.screen_rationale, sm.coverage_type,
                   sm.score_basis, sm.is_directional,
                   smc.pmid, smc.assay_domain, smc.selection_method,
-                  smc.condition_name, smc.growth_direction
+                  smc.condition_name, smc.growth_direction,
+                  EXISTS (
+                      SELECT 1 FROM screen_sim_meta sim
+                      WHERE CAST(sim.screen_id AS TEXT) = CAST(sm.screen_id AS TEXT)
+                  ) AS similarity_available
            FROM screen_metadata sm
            LEFT JOIN screen_metadata_curated smc ON sm.screen_id = smc.screen_id
            WHERE sm.screen_id = ?
@@ -148,6 +153,7 @@ def get_screen_detail(screen_id: str, gene_cap: int = GENE_CAP) -> ScreenDetail 
     return ScreenDetail(
         screen_id=sid,
         biogrid_url=f"{BIOGRID_SCREEN_URL}{sid}",
+        similarity_available=bool(m["similarity_available"]),
         pmid=pmid,
         pubmed_url=f"{PUBMED_URL}{pmid}" if pmid else None,
         author=_s(m["author"]),

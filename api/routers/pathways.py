@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from services.enrichment import enrich_pathways
+from services.execution import run_blocking
 
 logger = logging.getLogger(__name__)
 
@@ -68,5 +69,7 @@ async def pathways(body: PathwaysRequest) -> Any:
     """Pathway enrichment for a gene list via Enrichr."""
     genes = _validate_genes(body.genes)
     logger.info("POST /api/pathways called with %d genes", len(genes))
-    terms = enrich_pathways(genes, body.library)
+    terms = await run_blocking(
+        enrich_pathways, genes, body.library, workload="external"
+    )
     return {"library": body.library, "terms": terms}

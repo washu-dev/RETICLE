@@ -17,6 +17,7 @@ from collections import defaultdict
 import numpy as np
 
 from services.db_service import USE_PG, db_fetchall
+from services.execution import offload
 
 HIST_BINS = 26  # over [-1, 1]
 
@@ -223,7 +224,7 @@ def reporter_ledger(rows: list) -> list:
     return ledger
 
 
-def _mock_gene_payload(symbol: str) -> dict:
+def _mock_gene_payload(symbol: str, org: str = "Homo sapiens") -> dict:
     """Offline sample payload (USE_PG false) so the gene drawer/Explorer populate
     without a database. Deterministic and clearly synthetic — the real shape is
     produced by get_gene_payload below."""
@@ -262,18 +263,27 @@ def _mock_gene_payload(symbol: str) -> dict:
         }],
     }
     return {
-        "symbol": symbol, "query": symbol, "organism": "Homo sapiens",
+        "symbol": symbol, "query": symbol, "organism": org,
         "n_total": 30,  # 18 fitness + 8 stress + 4 reporter
         "primary": "fitness", "fitness": fitness, "stress": stress, "reporter": reporter,
     }
 
 
-async def get_gene_payload(symbol: str) -> dict | None:
-    """Build the full Explorer payload for one gene symbol, or None if unknown."""
+@offload("db")
+def get_gene_payload(symbol: str, org: str | None = None) -> dict | None:
+    """Build one gene's Explorer payload, optionally constrained by organism.
+
+    ``org=None`` retains the original auto-detection behavior for callers that
+    predate the species parameter.  When an organism is supplied, the database
+    filters before aggregation so a mouse request can never be satisfied with
+    the more numerous human rows for the same symbol.
+    """
     if not USE_PG:
-        return _mock_gene_payload(symbol)
+        return _mock_gene_payload(symbol, org or "Homo sapiens")
     variants = resolve_symbol_variants(symbol)
     ph = ",".join("?" * len(variants))
+    org_clause = " AND m.ORGANISM_OFFICIAL = ?" if org is not None else ""
+    params = tuple(variants) + ((org,) if org is not None else ())
     rows = db_fetchall(
         f"""SELECT h.SCREEN_ID, h.GENE_SYMBOL, h.PERCENTILE_SCORE AS pct,
                    h.IS_HIT AS is_hit, h.HARMONIZED_SCORE AS harm,
@@ -287,9 +297,10 @@ async def get_gene_payload(symbol: str) -> dict | None:
             LEFT JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
             WHERE h.GENE_SYMBOL IN ({ph})
               AND h.PERCENTILE_SCORE IS NOT NULL
+              {org_clause}
             ORDER BY h.SCREEN_ID, h.GENE_SYMBOL, h.PERCENTILE_SCORE,
                      c.condition_name""",
-        tuple(variants),
+        params,
     )
     if not rows:
         return None

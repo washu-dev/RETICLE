@@ -4,8 +4,9 @@ import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Import config FIRST: importing it pulls the RETICLE/* secrets from AWS Secrets
@@ -26,6 +27,7 @@ from routers.screen import router as screen_router
 from routers.screen_similar import router as screen_similar_router
 from routers.screens_aaron import router as screens_aaron_router
 from routers.wiki_aaron import router as wiki_aaron_router
+from services.execution import ServiceOverloaded
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +105,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(ServiceOverloaded)
+async def service_overloaded_handler(
+    _request: Request, exc: ServiceOverloaded
+) -> JSONResponse:
+    """Fail fast when a bounded worker queue is saturated.
+
+    A 503 keeps overload local to the expensive feature instead of allowing its
+    backlog to make every endpoint (including health checks) time out.
+    """
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={"detail": str(exc), "workload": exc.workload},
+        headers={"Retry-After": str(exc.retry_after)},
+    )
+
 app.include_router(auth_router)
 app.include_router(query_router)
 app.include_router(corpus_router)
@@ -165,6 +183,5 @@ if __name__ == "__main__":
         host="0.0.0.0",  # nosec B104 — intentional for containerized deployment
         port=8000,
     )
-
 
 

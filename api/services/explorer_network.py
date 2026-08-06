@@ -7,6 +7,7 @@ lookup of each node's median fitness percentile.
 
 from services import external_sources as ex
 from services.db_service import db_fetchall
+from services.execution import offload
 
 ORG2TAX = {"Homo sapiens": 9606, "Mus musculus": 10090}
 
@@ -17,7 +18,8 @@ def _lean(m: float | None) -> str | None:
     return "essential" if m < -0.15 else "advantageous" if m > 0.15 else "mixed"
 
 
-async def get_network(symbol: str, org: str) -> dict:
+@offload("external")
+def get_network(symbol: str, org: str) -> dict:
     """STRING subnetwork colored by CRISPR fitness. Empty graph if no partners."""
     taxid = ORG2TAX.get(org, 9606)
     net = ex.string_network(symbol, taxid)
@@ -29,11 +31,13 @@ async def get_network(symbol: str, org: str) -> dict:
     rows = db_fetchall(
         f"""SELECT h.GENE_SYMBOL AS g, AVG(h.PERCENTILE_SCORE) AS m
             FROM harmonized_scores h
+            JOIN screen_metadata sm ON h.SCREEN_ID = sm.SCREEN_ID
             JOIN screen_metadata_curated c ON h.SCREEN_ID = c.screen_id
             WHERE h.GENE_SYMBOL IN ({ph}) AND c.assay_domain = 'fitness'
+              AND sm.ORGANISM_OFFICIAL = ?
               AND h.PERCENTILE_SCORE IS NOT NULL
             GROUP BY h.GENE_SYMBOL""",
-        tuple(nodes),
+        tuple(nodes) + (org,),
     )
     med = {r["g"]: float(r["m"]) for r in rows if r["m"] is not None}
 

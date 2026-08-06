@@ -35,6 +35,7 @@ from typing import Any
 import numpy as np
 
 from services.db_service import db_fetchall
+from services.execution import offload
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,8 @@ logger = logging.getLogger(__name__)
 MIN_OVERLAP = 2000
 
 
-async def get_screen_similar(
+@offload("db")
+def get_screen_similar(
     screen_id: str,
     limit: int = 50,
     offset: int = 0,

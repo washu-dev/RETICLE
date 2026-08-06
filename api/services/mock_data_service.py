@@ -24,6 +24,7 @@ from models.query import (
     QueryResponse,
     QueryStats,
 )
+from services.execution import offload
 from services.reference_screens import REFERENCE_SCREENS, citation_for
 
 # ---------------------------------------------------------------------------
@@ -303,7 +304,8 @@ def _verify_citations(screens: list[MatchedScreen]) -> None:
                 s.article_title = meta["title"]
 
 
-async def run_query(request: QueryRequest) -> QueryResponse:
+@offload("cpu")
+def run_query(request: QueryRequest) -> QueryResponse:
     from services.corpus_service import build_corpus_where, corpus_count
     from services.db_service import USE_PG, db_fetchall
 
@@ -498,7 +500,8 @@ async def run_query(request: QueryRequest) -> QueryResponse:
     )
 
 
-async def get_gene_detail(symbol: str) -> GeneDetail | None:
+@offload("cpu")
+def get_gene_detail(symbol: str) -> GeneDetail | None:
     from services.db_service import USE_PG, db_fetchall
 
     if not USE_PG:
@@ -587,4 +590,3 @@ async def get_gene_detail(symbol: str) -> GeneDetail | None:
         hypothesis=hypothesis,
         citations=citations,
     )
-

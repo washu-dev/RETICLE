@@ -1,22 +1,82 @@
-"""Tests for GET /api/screen_similar and the pure weighted-Pearson math.
-
-Runs offline (USE_PG is False under conftest): the endpoint exercises the mock
-branch, and the ranking metric `weighted_pearson` is unit-tested against a
-hand-computed value on two tiny synthetic vectors.
-"""
+"""Tests for the canonical fast screen route and legacy pure similarity math."""
 
 import numpy as np
+from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 
+import routers.screen_similar as screen_similar_router
+import routers.screens_aaron as screens_aaron_router
+from main import app
 from services.screen_sim import plain_pearson, screen_similar, weighted_pearson
 
 
+def _fast_payload(screen: str) -> dict:
+    return {
+        "query": {
+            "screen_id": screen,
+            "author": "Orvedahl",
+            "cell_line": "HeLa",
+            "pmid": "31097699",
+            "n_genes": 18470,
+        },
+        "n_pool": 962,
+        "n_total": 2,
+        "offset": 0,
+        "background": {"mean_r": 0.01, "sd_r": 0.1},
+        "n_same_study": 1,
+        "exclude_same_study": False,
+        "results": [
+            {
+                "screen_id": "2123",
+                "r": 0.71,
+                "z": 7.0,
+                "overlap": 16000,
+                "same_study": True,
+                "author": "Behan",
+                "cell_line": "KMS-12-BM",
+                "pmid": "30971826",
+                "n_genes": 18100,
+            },
+            {
+                "screen_id": "1999",
+                "r": 0.52,
+                "z": 5.1,
+                "overlap": 15800,
+                "same_study": False,
+                "author": "Dharma",
+                "cell_line": "Calu-3",
+                "pmid": "12345678",
+                "n_genes": 17700,
+            },
+        ],
+    }
+
+
 class TestScreenSimilarEndpoint:
-    def test_offline_returns_200_and_shape(self, client: TestClient) -> None:
+    def test_canonical_route_uses_precomputed_service(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        calls = []
+
+        async def fake_get_screen_similar(
+            screen: str,
+            limit: int,
+            offset: int,
+            exclude_same_study: bool,
+        ) -> dict:
+            calls.append((screen, limit, offset, exclude_same_study))
+            return _fast_payload(screen)
+
+        monkeypatch.setattr(
+            screen_similar_router,
+            "get_screen_similar",
+            fake_get_screen_similar,
+        )
         r = client.get("/api/screen_similar", params={"screen": "12345"})
         assert r.status_code == 200
         data = r.json()
-        assert set(data.keys()) == {"query", "n_pool", "n_total", "offset", "results"}
+        assert calls == [("12345", 50, 0, False)]
 
         q = data["query"]
         assert set(q.keys()) == {"screen_id", "author", "cell_line", "pmid", "n_genes"}
@@ -27,24 +87,132 @@ class TestScreenSimilarEndpoint:
 
         assert isinstance(data["results"], list) and len(data["results"]) > 0
         row = data["results"][0]
-        assert set(row.keys()) == {
-            "screen_id", "weighted", "plain", "overlap",
-            "author", "cell_line", "pmid", "n_genes",
-        }
+        assert row["r"] == 0.71
+        assert row["z"] == 7.0
+        # Compatibility fields keep the legacy Explorer from crashing while
+        # it transitions to the precomputed response contract.
+        assert row["weighted"] == row["r"]
+        assert row["plain"] == row["r"]
         assert isinstance(row["overlap"], int)
 
-    def test_offline_results_sorted_by_weighted_desc(self, client: TestClient) -> None:
-        data = client.get("/api/screen_similar", params={"screen": "77"}).json()
-        weights = [r["weighted"] for r in data["results"]]
-        assert weights == sorted(weights, reverse=True)
+    def test_query_options_are_forwarded(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        calls = []
 
-    def test_pagination_params_respected(self, client: TestClient) -> None:
-        data = client.get(
+        async def fake_get_screen_similar(
+            screen: str,
+            limit: int,
+            offset: int,
+            exclude_same_study: bool,
+        ) -> dict:
+            calls.append((screen, limit, offset, exclude_same_study))
+            payload = _fast_payload(screen)
+            payload["offset"] = offset
+            payload["results"] = payload["results"][offset : offset + limit]
+            payload["exclude_same_study"] = exclude_same_study
+            return payload
+
+        monkeypatch.setattr(
+            screen_similar_router,
+            "get_screen_similar",
+            fake_get_screen_similar,
+        )
+        response = client.get(
             "/api/screen_similar",
-            params={"screen": "77", "limit": 1, "offset": 1},
-        ).json()
+            params={
+                "screen": "77",
+                "limit": 1,
+                "offset": 1,
+                "exclude_same_study": "true",
+            },
+        )
+        data = response.json()
+        assert response.status_code == 200
+        assert calls == [("77", 1, 1, True)]
         assert data["offset"] == 1
-        assert len(data["results"]) <= 1
+        assert len(data["results"]) == 1
+
+    def test_missing_precomputed_screen_returns_404(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        async def fake_get_screen_similar(
+            screen: str,
+            limit: int,
+            offset: int,
+            exclude_same_study: bool,
+        ) -> None:
+            return None
+
+        monkeypatch.setattr(
+            screen_similar_router,
+            "get_screen_similar",
+            fake_get_screen_similar,
+        )
+        response = client.get("/api/screen_similar", params={"screen": "42"})
+        assert response.status_code == 404
+
+    def test_compatibility_alias_still_uses_fast_contract(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        async def fake_get_screen_similar(
+            screen: str,
+            limit: int,
+            offset: int,
+            exclude_same_study: bool,
+        ) -> dict:
+            return _fast_payload(screen)
+
+        monkeypatch.setattr(
+            screen_similar_router,
+            "get_screen_similar",
+            fake_get_screen_similar,
+        )
+        monkeypatch.setattr(
+            screens_aaron_router,
+            "get_screen_similar",
+            fake_get_screen_similar,
+        )
+
+        canonical = client.get(
+            "/api/screen_similar",
+            params={"screen": "2123", "exclude_same_study": "true"},
+        )
+        compatibility = client.get(
+            "/api/screen_similar_aaron",
+            params={"screen": "2123", "exclude_same_study": "true"},
+        )
+        assert canonical.status_code == compatibility.status_code == 200
+        canonical_payload = canonical.json()
+        compatibility_payload = compatibility.json()
+        assert canonical_payload["query"] == compatibility_payload["query"]
+        assert canonical_payload["background"] == compatibility_payload["background"]
+        for canonical_row, compatibility_row in zip(
+            canonical_payload["results"],
+            compatibility_payload["results"],
+            strict=True,
+        ):
+            canonical_row.pop("weighted")
+            canonical_row.pop("plain")
+            assert canonical_row == compatibility_row
+
+    def test_openapi_has_one_canonical_and_one_compatibility_route(
+        self, client: TestClient
+    ) -> None:
+        schema = client.get("/api/openapi.json").json()
+        assert "get" in schema["paths"]["/api/screen_similar"]
+        assert "get" in schema["paths"]["/api/screen_similar_aaron"]
+
+        paths = [
+            route.path
+            for route in app.routes
+            if isinstance(route, APIRoute)
+            and "GET" in route.methods
+            and route.path
+            in {"/api/screen_similar", "/api/screen_similar_aaron"}
+        ]
+        assert paths.count("/api/screen_similar") == 1
+        assert paths.count("/api/screen_similar_aaron") == 1
 
 
 class TestScreenSimilarValidation:

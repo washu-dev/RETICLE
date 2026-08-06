@@ -26,6 +26,7 @@ class TestScreenDetailEndpoint:
         # camelCase aliases on the wire
         assert data["screenId"] == "833"
         assert data["biogridUrl"].endswith("/Screen/833")
+        assert data["similarityAvailable"] is True
         # Link-out and citation are derived from the same verified pmid.
         assert data["pubmedUrl"] == "https://pubmed.ncbi.nlm.nih.gov/30971826"
         assert data["pmid"] == "30971826"
@@ -47,6 +48,7 @@ class TestScreenDetailEndpoint:
         assert data["biogridUrl"].endswith("/Screen/999999")
         assert data["pmid"] is None
         assert data["pubmedUrl"] is None
+        assert data["similarityAvailable"] is False
 
 
 class TestScreenValidation:

@@ -28,6 +28,7 @@ from collections import defaultdict
 from typing import Any
 
 from services.db_service import db_fetchall
+from services.execution import offload
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,8 @@ class SuggestUnavailable(Exception):
     """
 
 
-async def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
+@offload("db")
+def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
     """Ranked gene suggestions for a typed prefix, from the precomputed gene_search table.
 
     prototype/script/build_gene_search.py carries the reasoning and the measurements; the short
@@ -134,8 +136,15 @@ async def get_gene_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[di
     return out
 
 
-async def get_screen_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
-    """Ranked screen suggestions. kb_screen is 2,157 rows, so no precomputed table is needed.
+@offload("db")
+def get_screen_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[dict[str, Any]]:
+    """Ranked suggestions from the screen-similarity comparable pool.
+
+    ``kb_screen`` has 2,157 screens, but only the 962 rows in ``screen_sim_meta``
+    can be opened by the screen-comparison page. Suggesting an unsupported row
+    sent users directly into a guaranteed 404, so this search intentionally
+    joins the precomputed pool. The full corpus remains available through the
+    upload/results and screen-detail flows.
 
     Matches what a person remembers a screen BY — cell line, condition, phenotype, first author, or
     the BioGRID id. Two things the raw columns get wrong, both fixed here rather than in the data:
@@ -152,16 +161,19 @@ async def get_screen_suggest(q: str, taxid: int = 9606, limit: int = 8) -> list[
     like = f"%{q.lower()}%"
     squashed = "%" + "".join(c for c in q.lower() if c.isalnum()) + "%"
     limit = max(1, min(int(limit), 25))
-    sq = "REPLACE(REPLACE(LOWER(cell_line), '-', ''), ' ', '')"
+    sq = "REPLACE(REPLACE(LOWER(k.cell_line), '-', ''), ' ', '')"
     try:
         rows = db_fetchall(
-            "SELECT screen_id, cell_line, condition_name, phenotype, author, pmid, "
-            "       number_of_hits "
-            "FROM kb_screen WHERE taxid = ? AND ("
-            f"     {sq} LIKE ? OR LOWER(condition_name) LIKE ? "
-            "  OR LOWER(phenotype) LIKE ? OR LOWER(author) LIKE ? "
-            "  OR CAST(screen_id AS TEXT) LIKE ?) "
-            "ORDER BY CAST(number_of_hits AS INTEGER) DESC LIMIT ?",
+            "SELECT k.screen_id, k.cell_line, k.condition_name, k.phenotype, k.author, k.pmid, "
+            "       k.number_of_hits "
+            "FROM kb_screen k "
+            "JOIN screen_sim_meta sim "
+            "  ON CAST(sim.screen_id AS TEXT) = CAST(k.screen_id AS TEXT) "
+            "WHERE k.taxid = ? AND ("
+            f"     {sq} LIKE ? OR LOWER(k.condition_name) LIKE ? "
+            "  OR LOWER(k.phenotype) LIKE ? OR LOWER(k.author) LIKE ? "
+            "  OR CAST(k.screen_id AS TEXT) LIKE ?) "
+            "ORDER BY CAST(k.number_of_hits AS INTEGER) DESC LIMIT ?",
             (taxid, squashed, like, like, like, f"{q}%", limit),
         )
     except Exception as exc:
@@ -199,7 +211,8 @@ def _kb_resolve(gene: str, taxid: int) -> dict | None:
 # ─────────────────────────── /api/gene_wiki ────────────────────────────────
 
 
-async def get_gene_wiki(gene: str, taxid: int = 9606) -> dict[str, Any] | None:
+@offload("db")
+def get_gene_wiki(gene: str, taxid: int = 9606) -> dict[str, Any] | None:
     """Everything the KB knows about one gene. Pure retrieval — no LLM, no directionality."""
     r = _kb_resolve(gene, taxid)
     if not r:
@@ -406,7 +419,8 @@ def _histogram(vals: list[float], focal: float, nbins: int = 40,
     }
 
 
-async def get_gene_screen_distribution(
+@offload("db")
+def get_gene_screen_distribution(
     gene: str,
     taxid: int = 9606,
     screen: str | None = None,
@@ -558,7 +572,8 @@ def _resolve_structures(uniprot_acc: str) -> dict[str, Any]:
     return out
 
 
-async def get_gene_structure(gene: str, taxid: int = 9606) -> dict[str, Any]:
+@offload("external")
+def get_gene_structure(gene: str, taxid: int = 9606) -> dict[str, Any]:
     r = _kb_resolve(gene, taxid)
     if not r:
         return {"available": False}
@@ -705,7 +720,8 @@ def _format_prediction(
     }
 
 
-async def get_gene_predictions(gene: str, taxid: int = 9606, top: int = 8) -> dict[str, Any]:
+@offload("db")
+def get_gene_predictions(gene: str, taxid: int = 9606, top: int = 8) -> dict[str, Any]:
     """Guilt-by-association GO predictions the gene is NOT already annotated with."""
     r = _kb_resolve(gene, taxid)
     if not r:

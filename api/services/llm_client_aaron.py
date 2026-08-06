@@ -54,7 +54,7 @@ BUDGET: every 200 carries ``apiQuotaRemaining``. It is logged, because the failu
 prepaid pool is that it silently drains and then every caller breaks at once.
 
 Everything here is SYNCHRONOUS on purpose — the service layer calls it through
-``starlette.concurrency.run_in_threadpool``.
+the bounded ``services.execution`` LLM worker pool.
 """
 
 import json
@@ -114,6 +114,32 @@ class _TokenTransportError(LLMUnavailable):
     """
 
 
+class _RequestDeadline:
+    """One wall-clock budget shared by every attempt and retry delay."""
+
+    def __init__(self, seconds: float) -> None:
+        self.seconds = seconds
+        self.deadline = time.monotonic() + seconds
+
+    def remaining(self, status: int | None) -> float:
+        left = self.deadline - time.monotonic()
+        if left <= 0:
+            raise LLMUnavailable(
+                f"Chat request exceeded the {self.seconds:g}s total timeout",
+                status=status,
+            )
+        return left
+
+    def sleep(self, delay: float, status: int | None) -> None:
+        left = self.remaining(status)
+        if delay >= left:
+            raise LLMUnavailable(
+                f"Chat request exceeded the {self.seconds:g}s total timeout",
+                status=status,
+            )
+        time.sleep(delay)
+
+
 def _cfg(name: str, default: str = "", *, required: bool = False) -> str:
     """Resolve one setting: ``SECURE_API_<name>`` (cloud) -> ``WASHU_<name>`` (local dev) ->
     ``default``. Read lazily (never at import time) so config.py's secret load always wins the
@@ -148,11 +174,12 @@ def _api_key() -> str:
 
 
 # Tunables (override via SECURE_API_* / WASHU_* if ever needed)
-REQUEST_TIMEOUT = float(_cfg("TIMEOUT", "90"))
-MAX_RETRIES = int(_cfg("MAX_RETRIES", "4"))
+REQUEST_TIMEOUT = max(1.0, float(_cfg("TIMEOUT", "25")))
+MAX_RETRIES = max(1, int(_cfg("MAX_RETRIES", "2")))
+TOTAL_TIMEOUT = max(1.0, float(_cfg("TOTAL_TIMEOUT", "45")))
 TOKEN_EXPIRY_MARGIN = 60.0  # refresh this many seconds before the token expires
 TOKEN_TIMEOUT = 15.0  # the Azure AD hop runs under a lock — keep it well under REQUEST_TIMEOUT
-MAX_RETRY_AFTER = 30.0  # cap on an honoured Retry-After (seconds)
+MAX_RETRY_AFTER = 5.0  # keep one gateway call inside TOTAL_TIMEOUT
 
 # One pool for the whole process: the gateway is a single host and a fresh Client per request would
 # pay TLS setup every time. httpx.Client is thread-safe.
@@ -297,7 +324,7 @@ class WashULLMClientAaron:
             return str(cached)
         return None
 
-    def _get_token(self) -> str:
+    def _get_token(self, timeout: float = TOKEN_TIMEOUT) -> str:
         """Return a valid bearer token, fetching a fresh one only when the cached one is missing
         or about to expire.
 
@@ -327,7 +354,7 @@ class WashULLMClientAaron:
                     },
                     # Shorter than REQUEST_TIMEOUT: this hop is a small Azure AD call, and it runs
                     # under the lock, so it must never park other threads for a full minute.
-                    timeout=TOKEN_TIMEOUT,
+                    timeout=max(0.1, min(TOKEN_TIMEOUT, timeout)),
                 )
             except httpx.RequestError as exc:
                 raise _TokenTransportError(
@@ -439,13 +466,14 @@ class WashULLMClientAaron:
             )
         return text
 
-    def chat_json(self, messages: list[dict], *, retries: int = 1, **kw: Any) -> dict:
+    def chat_json(self, messages: list[dict], *, retries: int = 0, **kw: Any) -> dict:
         """Like chat(), but expect and return a parsed JSON object.
 
         There is no server-side JSON mode on this API, so the contract is carried by the prompt.
         Validated in practice: with a system prompt that says "reply with ONLY a single valid JSON
-        object", Claude returns bare JSON with no markdown fences. The fence-stripping fallback and
-        the corrective retry are kept for the cases where it does not.
+        object", Claude returns bare JSON with no markdown fences. Fence stripping remains the
+        fallback; callers may explicitly request a corrective retry, but request paths default to
+        zero so one malformed answer cannot double the total gateway wall clock.
         """
         kw.pop("response_format", None)
         convo = list(messages)
@@ -490,13 +518,22 @@ class WashULLMClientAaron:
         backoff = 1.0
         auth_retry_used = False
         last_status: int | None = None
+        budget = _RequestDeadline(TOTAL_TIMEOUT)
 
         for attempt in range(MAX_RETRIES):
             last = attempt == MAX_RETRIES - 1
             try:
                 # Inside the try, as before: a connect blip on either hop is transient.
-                token = self._get_token()
-                resp = _HTTP.post(self.messages_url, headers=self._headers(token), json=body)
+                token = self._get_token(budget.remaining(last_status))
+                resp = _HTTP.post(
+                    self.messages_url,
+                    headers=self._headers(token),
+                    json=body,
+                    timeout=max(
+                        0.1,
+                        min(REQUEST_TIMEOUT, budget.remaining(last_status)),
+                    ),
+                )
             except (httpx.RequestError, _TokenTransportError) as exc:
                 if last:
                     if isinstance(exc, LLMUnavailable):
@@ -504,7 +541,7 @@ class WashULLMClientAaron:
                     raise LLMUnavailable(
                         f"Chat request failed (transport): {_scrub(str(exc))}"
                     ) from exc
-                time.sleep(backoff)
+                budget.sleep(backoff, last_status)
                 backoff *= 2
                 continue
 
@@ -541,7 +578,7 @@ class WashULLMClientAaron:
                 "WashU gateway returned %s (attempt %d/%d) — retrying",
                 resp.status_code, attempt + 1, MAX_RETRIES,
             )
-            time.sleep(_retry_delay(resp, backoff))
+            budget.sleep(_retry_delay(resp, backoff), last_status)
             backoff *= 2
 
         raise LLMUnavailable("Chat request failed: exhausted retries", status=last_status)

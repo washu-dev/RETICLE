@@ -32,7 +32,8 @@ FOUR THINGS THAT ARE EASY TO BREAK HERE
    query, services.external_sources uses urllib plus a real time.sleep() for NCBI rate limiting,
    and the gateway POST has a 60 s timeout retried up to 4 times (and up to twice more for JSON
    repair). Each public function is therefore an `async def` whose body does nothing but
-   `await run_in_threadpool(<sync worker>)`. Never call the sync workers from the event loop.
+   `await run_blocking(<sync worker>, workload="llm")`. Never call the sync workers from the
+   event loop.
 
 4. THE PAYLOADS ARE BRANCH-SHAPED ON PURPOSE. screen_analysis has three different 200 bodies and
    reporter_explain has two, differing by which keys are PRESENT (see each docstring). The ported
@@ -52,13 +53,10 @@ exactly this reason — never "tidy" it back. Condition names in the DATA may co
 #   The prompt constants and prompt builders below are copied verbatim from the prototype; hard-
 #   wrapping them to 100 columns would change the exact strings the model sees.
 
-import asyncio
 import logging
 import re
 import threading
 from typing import Any
-
-from starlette.concurrency import run_in_threadpool
 
 from services import external_sources as ex
 from services.coessential_network_aaron import (
@@ -71,6 +69,7 @@ from services.coessential_network_aaron import (
     edge_tier,
 )
 from services.db_service import db_fetchall
+from services.execution import blocking_target, run_blocking
 from services.external_sources import TAXID as ORG2TAX
 from services.gene_wiki_aaron import (
     _GO_POSITIVE,
@@ -118,7 +117,7 @@ def _cache_get(cache: dict[Any, dict], key: Any) -> dict[str, Any] | None:
     `if key in cache: return cache[key]` is two operations, and _cache_put evicts
     `next(iter(cache))` once the cap is reached — so a concurrent writer can drop the very key
     that was just confirmed present, and the read raises KeyError. These caches are read from
-    starlette's threadpool (all four LLM routes), so that window is real. A single .get() is
+    the bounded LLM worker pool (all four LLM routes), so that window is real. A single .get() is
     atomic under the GIL.
 
     None is an unambiguous miss marker rather than a sentinel object because _cache_put only
@@ -224,7 +223,9 @@ def _screen_analysis_sync(gene: str, taxid: int) -> dict[str, Any]:
     # than on the request loop. It costs ~13 queries this analysis never reads — that is the
     # prototype's cost too, and re-implementing just the resolve + screens subset would fork
     # behaviour from the endpoint that owns it.
-    w = asyncio.run(get_gene_wiki(gene, taxid))
+    # This function already runs inside the dedicated LLM worker pool. Calling
+    # the sync target avoids nesting an event loop and a second worker thread.
+    w = blocking_target(get_gene_wiki)(gene, taxid)
     if not w:
         # A 200 whose ONLY key is found:false. Deliberately not a 404 (unlike /api/gene_wiki).
         return {"found": False}
@@ -270,7 +271,7 @@ async def get_screen_analysis(gene: str, taxid: int = 9606) -> dict[str, Any]:
 
     Raises on any gateway/DB failure; the router turns that into the 502 contract.
     """
-    return await run_in_threadpool(_screen_analysis_sync, gene, taxid)
+    return await run_blocking(_screen_analysis_sync, gene, taxid, workload="llm")
 
 
 # ═══════════════════════════ GET /api/reporter_explain ══════════════════════════════
@@ -403,7 +404,9 @@ async def get_reporter_explain(symbol: str, screen_ids: list[str]) -> dict[str, 
     must be non-empty. Two 200 shapes: the full payload {text, process, darkness, sources}, and —
     when no id matches a curated screen — {text: "", sources: [], process: ""} with NO "darkness".
     """
-    return await run_in_threadpool(_reporter_explain_sync, symbol, list(screen_ids))
+    return await run_blocking(
+        _reporter_explain_sync, symbol, list(screen_ids), workload="llm"
+    )
 
 
 # ═════════════════════════════ GET /api/net_predict ═════════════════════════════════
@@ -837,8 +840,15 @@ async def get_net_predict(gene: str, context: str, organism: str = "human", top:
     `reciprocal_only` is the caller's DISPLAY state. It no longer selects the dossier — that is
     always the tier-graded union — and only feeds the reported `n_beyond_view`.
     """
-    return await run_in_threadpool(_net_predict_sync, gene, context, organism, top,
-                                   reciprocal_only)
+    return await run_blocking(
+        _net_predict_sync,
+        gene,
+        context,
+        organism,
+        top,
+        reciprocal_only,
+        workload="llm",
+    )
 
 
 # ═══════════════════════════════ POST /api/interpret ════════════════════════════════
@@ -958,4 +968,4 @@ async def get_interpret(payload: dict) -> dict[str, Any]:
     router turns into the prototype's 502 (e.g. "Interpretation unavailable: 'symbol'"). No result
     caching: every POST is a paid gateway call, as in the prototype.
     """
-    return await run_in_threadpool(_interpret_sync, payload)
+    return await run_blocking(_interpret_sync, payload, workload="llm")

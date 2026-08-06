@@ -3,9 +3,11 @@ Ported from prototype/web/app.py's /api/context handler (delegates to
 services.external_sources.enrich)."""
 
 from services import external_sources as ex
+from services.execution import offload
 
 ORG2TAX = {"Homo sapiens": 9606, "Mus musculus": 10090}
 
 
-async def get_context(symbol: str, org: str) -> dict:
+@offload("external")
+def get_context(symbol: str, org: str) -> dict:
     return ex.enrich(symbol, ORG2TAX.get(org, 9606))

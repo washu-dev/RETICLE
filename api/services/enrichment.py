@@ -62,10 +62,10 @@ def map_enrichr_rows(rows: Any) -> list[dict]:
 
     for row in rows:
         # A well-formed row needs at least through the adj_pvalue at index 6.
-        if not isinstance(row, (list, tuple)) or len(row) < 7:
+        if not isinstance(row, list | tuple) or len(row) < 7:
             continue
         genes = row[5]
-        overlap = [str(g) for g in genes] if isinstance(genes, (list, tuple)) else []
+        overlap = [str(g) for g in genes] if isinstance(genes, list | tuple) else []
         adj_p = _to_float(row[6])
         if adj_p > ADJ_P_CUTOFF:
             continue

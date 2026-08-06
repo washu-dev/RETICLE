@@ -11,6 +11,7 @@ from fastapi import APIRouter, Query
 
 from models.query import CorpusFilters
 from services.corpus_service import corpus_count
+from services.execution import run_blocking
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,6 @@ async def corpus_count_endpoint(
         modalities=modalities,
         min_shared_genes=min_shared_genes,
     )
-    count = corpus_count(filters)
+    count = await run_blocking(corpus_count, filters, workload="db")
     logger.info("GET /api/corpus/count → %d", count)
     return {"count": count}

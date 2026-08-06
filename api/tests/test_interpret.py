@@ -8,15 +8,22 @@ throwaway FastAPI app so the tests don't depend on main.py registration.
 """
 
 from typing import Any
-from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from routers import interpret as interpret_router
 from routers.interpret import router
 from services import interpret as interpret_service
-from services.llm_client import LlmUnavailable, WashULLMClient, _is_reasoning_model
+from services.llm_client import (
+    LlmUnavailable as LegacyLlmUnavailable,
+)
+from services.llm_client import (
+    WashULLMClient,
+    _is_reasoning_model,
+)
+from services.llm_client_aaron import LLMUnavailable
 
 CANNED = (
     "This gene shows a coherent cross-screen fitness footprint suggesting a role "
@@ -46,30 +53,51 @@ def client() -> TestClient:
 # --------------------------------------------------------------------------
 
 class TestInterpretEndpoint:
-    def test_returns_200_with_contract_shape(self, client: TestClient) -> None:
-        with patch.object(interpret_service.client, "chat", return_value=CANNED):
-            resp = client.post("/api/interpret", json=FOOTPRINT)
+    def test_returns_200_with_contract_shape(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def fake_interpret(_payload: dict[str, Any]) -> dict[str, Any]:
+            return {"model": "claude-opus-4-7", "text": CANNED, "sources": []}
+
+        monkeypatch.setattr(interpret_router, "get_interpret", fake_interpret)
+        resp = client.post("/api/interpret", json=FOOTPRINT)
         assert resp.status_code == 200
         data = resp.json()
         assert set(data.keys()) == {"model", "text", "sources"}
         assert data["text"] == CANNED
-        assert data["model"] == interpret_service.client.model
+        assert data["model"] == "claude-opus-4-7"
         assert data["sources"] == []
 
-    def test_sparse_payload_still_ok(self, client: TestClient) -> None:
-        with patch.object(interpret_service.client, "chat", return_value=CANNED):
-            resp = client.post("/api/interpret", json={"symbol": "ATG5"})
+    def test_sparse_payload_still_ok(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        captured: dict[str, Any] = {}
+
+        async def fake_interpret(payload: dict[str, Any]) -> dict[str, Any]:
+            captured.update(payload)
+            return {"model": "claude-opus-4-7", "text": CANNED, "sources": []}
+
+        monkeypatch.setattr(interpret_router, "get_interpret", fake_interpret)
+        resp = client.post("/api/interpret", json={"symbol": "ATG5"})
         assert resp.status_code == 200
         assert resp.json()["text"] == CANNED
+        assert captured["organism"] == "Homo sapiens"
+        assert captured["reporter"] == {"n": 0, "ledger": []}
 
-    def test_llm_unavailable_returns_503(self, client: TestClient) -> None:
-        with patch.object(
-            interpret_service.client, "chat",
-            side_effect=LlmUnavailable("not configured"),
-        ):
-            resp = client.post("/api/interpret", json=FOOTPRINT)
+    def test_llm_unavailable_returns_503(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def unavailable(_payload: dict[str, Any]) -> dict[str, Any]:
+            raise LLMUnavailable("not configured")
+
+        monkeypatch.setattr(interpret_router, "get_interpret", unavailable)
+        resp = client.post("/api/interpret", json=FOOTPRINT)
         assert resp.status_code == 503
         assert "error" in resp.json()
+
+    def test_missing_symbol_is_rejected(self, client: TestClient) -> None:
+        resp = client.post("/api/interpret", json={})
+        assert resp.status_code == 422
 
 
 # --------------------------------------------------------------------------
@@ -77,11 +105,16 @@ class TestInterpretEndpoint:
 # --------------------------------------------------------------------------
 
 class TestReporterExplainEndpoint:
-    def test_returns_200_with_contract_shape(self, client: TestClient) -> None:
-        with patch.object(interpret_service.client, "chat", return_value=CANNED):
-            resp = client.get(
-                "/api/reporter_explain", params={"symbol": "CCDC6", "screens": "s1,s2"}
-            )
+    def test_returns_200_with_contract_shape(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def fake_explain(_symbol: str, _screens: list[str]) -> dict[str, Any]:
+            return {"text": CANNED, "process": "autophagy", "darkness": None, "sources": []}
+
+        monkeypatch.setattr(interpret_router, "get_reporter_explain", fake_explain)
+        resp = client.get(
+            "/api/reporter_explain", params={"symbol": "CCDC6", "screens": "1,2"}
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert set(data.keys()) == {"text", "process", "darkness", "sources"}
@@ -90,11 +123,16 @@ class TestReporterExplainEndpoint:
         assert data["darkness"] is None
         assert data["sources"] == []
 
-    def test_llm_unavailable_returns_503(self, client: TestClient) -> None:
-        with patch.object(
-            interpret_service.client, "chat", side_effect=LlmUnavailable("down")
-        ):
-            resp = client.get("/api/reporter_explain", params={"symbol": "CCDC6"})
+    def test_llm_unavailable_returns_503(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        async def unavailable(_symbol: str, _screens: list[str]) -> dict[str, Any]:
+            raise LLMUnavailable("down")
+
+        monkeypatch.setattr(interpret_router, "get_reporter_explain", unavailable)
+        resp = client.get(
+            "/api/reporter_explain", params={"symbol": "CCDC6", "screens": "1"}
+        )
         assert resp.status_code == 503
         assert "error" in resp.json()
 
@@ -104,23 +142,26 @@ class TestReporterExplainEndpoint:
         )
         assert resp.status_code == 422
 
-    def test_screens_capped_to_six(self, client: TestClient) -> None:
-        captured: dict[str, Any] = {}
+    def test_screens_capped_to_six(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        captured: list[str] = []
 
-        def fake_chat(messages: object, **kw: object) -> str:
-            captured["messages"] = messages
-            return CANNED
+        async def fake_explain(_symbol: str, screens: list[str]) -> dict[str, Any]:
+            captured.extend(screens)
+            return {"text": CANNED, "process": "autophagy", "darkness": None, "sources": []}
 
-        many = ",".join(f"s{i}" for i in range(10))
-        with patch.object(interpret_service.client, "chat", side_effect=fake_chat):
-            resp = client.get(
-                "/api/reporter_explain", params={"symbol": "CCDC6", "screens": many}
-            )
+        monkeypatch.setattr(interpret_router, "get_reporter_explain", fake_explain)
+        many = ",".join(str(i) for i in range(10))
+        resp = client.get(
+            "/api/reporter_explain", params={"symbol": "CCDC6", "screens": many}
+        )
         assert resp.status_code == 200
-        user_msg = captured["messages"][-1]["content"]
-        # s0..s5 present, s6+ dropped by the 6-screen cap.
-        assert "s5" in user_msg
-        assert "s6" not in user_msg
+        assert captured == ["0", "1", "2", "3", "4", "5"]
+
+    def test_missing_screens_is_rejected(self, client: TestClient) -> None:
+        resp = client.get("/api/reporter_explain", params={"symbol": "CCDC6"})
+        assert resp.status_code == 422
 
 
 # --------------------------------------------------------------------------
@@ -167,5 +208,5 @@ class TestClientFailSoft:
         ):
             monkeypatch.delenv(var, raising=False)
         c = WashULLMClient()
-        with pytest.raises(LlmUnavailable):
+        with pytest.raises(LegacyLlmUnavailable):
             c.chat([{"role": "user", "content": "hi"}])

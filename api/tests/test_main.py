@@ -300,9 +300,8 @@ class TestOrganismNormalisation:
     def test_coessential_accepts_the_org_alias(self, client: TestClient) -> None:
         """`org=` is what the shipped pages send; it must not be silently discarded.
 
-        The path carries the _aaron suffix because routers/coessential.py serves the plain
-        /api/coessential for the Explorer from a different implementation, and main.py includes
-        it first — so the plain path is NOT this route.
+        The compatibility path retains the _aaron suffix, but both it and the canonical path now
+        use the same precomputed net_edge implementation.
         """
         bad = client.get("/api/coessential_aaron",
                          params={"symbol": "Cars", "org": "Rattus norvegicus"})
@@ -313,13 +312,11 @@ class TestOrganismNormalisation:
         assert bad.status_code == 422
 
     def test_aaron_routes_are_not_shadowed(self, client: TestClient) -> None:
-        """Regression guard for the collision itself.
+        """Regression guard against reintroducing a route collision.
 
-        Four _aaron routes were silently dead after routers/coessential.py, screen_similar.py
-        and interpret.py landed: FastAPI matches the FIRST registered route and main.py includes
-        those before the _aaron routers, so the plain paths resolved to the other implementation.
-        Nothing errored — /api/coessential just returned edges with no `tier` or `direct`, which
-        the gene wiki's evidence lane silently draws as an untiered graph.
+        FastAPI matches the first registered path, so accidentally registering a second handler
+        under the same URL leaves the latter silently dead.  Canonical and compatibility aliases
+        must remain distinct even though they now share their service implementation.
         """
         from main import app
 

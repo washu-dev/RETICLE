@@ -1,46 +1,174 @@
-"""Tests for GET /api/coessential and the pure co-essentiality math.
-
-Runs offline (USE_PG is False under conftest): the endpoint exercises the mock
-branch, and the pure `network_from_matrix` is unit-tested on a hand-built R.
-"""
+"""Tests for the canonical fast co-essentiality route and legacy pure math."""
 
 import numpy as np
+from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 
+import routers.coessential as coessential_router
+import routers.screens_aaron as screens_aaron_router
+from main import app
 from services.coessential import build_matrix, network_from_matrix
 
 
+def _fast_payload(symbol: str) -> dict:
+    return {
+        "symbol": symbol,
+        "nodes": [
+            {"name": symbol, "lean": "essential", "focus": True},
+            {"name": "ATG7", "lean": "essential", "focus": False},
+        ],
+        "edges": [
+            {
+                "a": symbol,
+                "b": "ATG7",
+                "r": 0.82,
+                "score": 0.82,
+                "tier": 1,
+                "direct": True,
+            }
+        ],
+        "n_screens": 962,
+        "context_label": "All screens - pooled",
+        "tiers": {"1": 1, "2": 0, "3": 0, "4": 0},
+        "cohit_available": True,
+    }
+
+
 class TestCoessentialEndpoint:
-    def test_offline_returns_200_and_shape(self, client: TestClient) -> None:
+    def test_canonical_route_uses_precomputed_service(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        calls = []
+
+        async def fake_get_coessential(symbol: str, organism: str) -> dict:
+            calls.append((symbol, organism))
+            return _fast_payload(symbol)
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
         r = client.get("/api/coessential", params={"symbol": "ATG5"})
         assert r.status_code == 200
         data = r.json()
-        assert set(data.keys()) == {"symbol", "nodes", "edges", "n_screens"}
+        assert calls == [("ATG5", "human")]
         assert data["symbol"] == "ATG5"
         assert isinstance(data["nodes"], list) and len(data["nodes"]) > 0
         assert isinstance(data["edges"], list)
         assert isinstance(data["n_screens"], int)
+        assert data["edges"][0]["tier"] == 1
 
-    def test_offline_focus_node_present(self, client: TestClient) -> None:
+    def test_focus_node_present(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        async def fake_get_coessential(symbol: str, organism: str) -> dict:
+            return _fast_payload(symbol)
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
         data = client.get("/api/coessential", params={"symbol": "TP53"}).json()
         focus = [n for n in data["nodes"] if n["focus"]]
         assert len(focus) == 1
         assert focus[0]["name"] == "TP53"
-        # Every node carries a lean label.
         assert all("lean" in n for n in data["nodes"])
 
-    def test_org_defaults_when_unknown(self, client: TestClient) -> None:
+    def test_unknown_org_is_rejected(self, client: TestClient) -> None:
         r = client.get(
             "/api/coessential", params={"symbol": "ATG5", "org": "Klingon"}
         )
-        assert r.status_code == 200
+        assert r.status_code == 422
 
-    def test_mouse_org_accepted(self, client: TestClient) -> None:
+    def test_mouse_org_is_forwarded_to_fast_service(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        calls = []
+
+        async def fake_get_coessential(symbol: str, organism: str) -> dict:
+            calls.append((symbol, organism))
+            return _fast_payload(symbol)
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
         r = client.get(
             "/api/coessential",
             params={"symbol": "Atg5", "org": "Mus musculus"},
         )
         assert r.status_code == 200
+        assert calls == [("Atg5", "mouse")]
+
+    def test_organism_alias_is_accepted(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        calls = []
+
+        async def fake_get_coessential(symbol: str, organism: str) -> dict:
+            calls.append((symbol, organism))
+            return _fast_payload(symbol)
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
+        r = client.get(
+            "/api/coessential",
+            params={"symbol": "Cars", "organism": "10090"},
+        )
+        assert r.status_code == 200
+        assert calls == [("Cars", "mouse")]
+
+    def test_missing_precomputed_gene_returns_404(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        async def fake_get_coessential(symbol: str, organism: str) -> None:
+            return None
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
+        r = client.get("/api/coessential", params={"symbol": "UNKNOWN"})
+        assert r.status_code == 404
+
+    def test_canonical_and_compatibility_alias_share_fast_contract(
+        self, client: TestClient, monkeypatch: MonkeyPatch
+    ) -> None:
+        async def fake_get_coessential(symbol: str, organism: str) -> dict:
+            return _fast_payload(symbol)
+
+        monkeypatch.setattr(
+            coessential_router, "get_coessential", fake_get_coessential
+        )
+        monkeypatch.setattr(
+            screens_aaron_router, "get_coessential", fake_get_coessential
+        )
+
+        canonical = client.get(
+            "/api/coessential", params={"symbol": "Cars", "org": "Mus musculus"}
+        )
+        compatibility = client.get(
+            "/api/coessential_aaron",
+            params={"symbol": "Cars", "org": "Mus musculus"},
+        )
+        assert canonical.status_code == compatibility.status_code == 200
+        assert canonical.json() == compatibility.json()
+
+    def test_openapi_has_one_canonical_and_one_compatibility_route(
+        self, client: TestClient
+    ) -> None:
+        schema = client.get("/api/openapi.json").json()
+        assert "get" in schema["paths"]["/api/coessential"]
+        assert "get" in schema["paths"]["/api/coessential_aaron"]
+
+        paths = [
+            route.path
+            for route in app.routes
+            if isinstance(route, APIRoute)
+            and "GET" in route.methods
+            and route.path
+            in {"/api/coessential", "/api/coessential_aaron"}
+        ]
+        assert paths.count("/api/coessential") == 1
+        assert paths.count("/api/coessential_aaron") == 1
 
 
 class TestCoessentialValidation:

@@ -96,6 +96,10 @@ class ScreenDetail(CamelModel):
 
     screen_id: str
     biogrid_url: str
+    # Only screens present in the precomputed screen_sim_meta pool can enter
+    # the full screen-comparison flow.  Surfacing this explicitly prevents the
+    # UI from offering a guaranteed-404 action for the rest of the corpus.
+    similarity_available: bool = False
     pmid: str | None = None
     pubmed_url: str | None = None
     author: str | None = None

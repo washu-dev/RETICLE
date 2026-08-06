@@ -32,6 +32,19 @@ load_dotenv()
 _AWS_HOST = os.getenv("AWS_DB_HOST", "")
 USE_PG = bool(_AWS_HOST)
 
+
+def _timeout_ms(name: str, default: int) -> int:
+    """Read a positive Postgres timeout without allowing an invalid env to break startup."""
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+_STATEMENT_TIMEOUT_MS = _timeout_ms("RETICLE_PG_STATEMENT_TIMEOUT_MS", 20_000)
+_LOCK_TIMEOUT_MS = _timeout_ms("RETICLE_PG_LOCK_TIMEOUT_MS", 3_000)
+
 _PG_PARAMS = (
     {
         "host": _AWS_HOST,
@@ -58,7 +71,14 @@ _PG_PARAMS = (
         # query, so it cost a full round-trip each time — 14 of them on one /api/gene_wiki.
         # NO SPACE after the comma: libpq splits the options string on unescaped spaces, so
         # "reticle, public" would be read as a second option " public" and the connect fails.
-        "options": "-c search_path=reticle,public",
+        # Bound an already-connected query as well as connection establishment.
+        # Without statement_timeout, a wedged RDS query can occupy a worker and
+        # pool slot forever; async cancellation cannot terminate its thread.
+        "options": (
+            "-c search_path=reticle,public "
+            f"-c statement_timeout={_STATEMENT_TIMEOUT_MS} "
+            f"-c lock_timeout={_LOCK_TIMEOUT_MS}"
+        ),
     }
     if USE_PG
     else None
@@ -74,10 +94,10 @@ _PG_PARAMS = (
 # Sizing. max_connections on the instance is 81 and roughly 9 backends are in use by other
 # clients. The ECS service runs a single task (inferred from concurrency: 4 simultaneous
 # /api/gene_wiki requests return as a 4-step staircase, implying ~1.3 effective workers).
-# The four routes in routers/llm_aaron.py already dispatch through starlette's
-# run_in_threadpool, whose anyio limiter defaults to 40 — so TODAY, without a pool, up to 40
-# threads can each hold their own connection. maxconn=16 therefore LOWERS the ceiling rather
-# than raising it: worst case 16 + 9 = 25, comfortably under 81.
+# Blocking database and LLM work dispatches through services.execution.  Its combined workload
+# ceilings remain below this pool's maxconn, and the pool is still the final guard if deployment
+# overrides widen those quotas. maxconn=16 therefore bounds the API's database footprint: worst
+# case 16 + roughly 9 other clients = 25, comfortably under the current 81-connection limit.
 #
 # Note that getconn RAISES PoolError("connection pool exhausted") at maxconn rather than
 # blocking, so a burst past 16 surfaces as a 500 rather than as queueing. That is the correct
@@ -87,6 +107,11 @@ _PG_PARAMS = (
 _POOL_WARM = int(os.getenv("RETICLE_PG_POOL_WARM", "1"))
 _POOL_MAX = int(os.getenv("RETICLE_PG_POOL_MAX", "16"))
 
+# Do not retry a query the server deliberately canceled. Retrying a statement
+# timeout would merely double its wall clock; lock contention is equally
+# unlikely to disappear within the same request.
+_NO_RETRY_SQLSTATES = {"57014", "55P03"}
+
 _pg_pool: Any = None
 _pg_pool_lock = threading.Lock()
 
@@ -94,8 +119,9 @@ _pg_pool_lock = threading.Lock()
 def _get_pool() -> Any:
     """Process-wide pool, built on first use.
 
-    Lazy, never at import: tests run with AWS_DB_HOST unset and must not open a socket, and
-    config.py loads AWS secrets into the environment *after* this module is imported.
+    Lazy, never at import: tests run with AWS_DB_HOST unset and must not open a socket. The
+    application imports config.py before any router imports this module, so AWS secrets are
+    already available when the connection parameters above are constructed.
     """
     global _pg_pool
     if _pg_pool is None:
@@ -190,13 +216,13 @@ def db_fetchall(sql: str, params: tuple = ()) -> list[_Row]:
                     with con.cursor(cursor_factory=RealDictCursor) as cur:
                         cur.execute(stmt, params)
                         return [_Row(r) for r in cur.fetchall()]
-            except (psycopg2.OperationalError, psycopg2.InterfaceError):
+            except (psycopg2.OperationalError, psycopg2.InterfaceError) as exc:
                 # A pooled connection that RDS closed while it sat idle fails on first USE, not
                 # on checkout — the pool has no way to know before handing it over. _checkout
                 # has already discarded it, so one retry lands on a fresh one.
                 # Only connection-level errors are retried: a ProgrammingError or DataError is
                 # the query's own fault and would fail identically the second time.
-                if attempt:
+                if getattr(exc, "pgcode", None) in _NO_RETRY_SQLSTATES or attempt:
                     raise
 
     con = sqlite3.connect(str(_SQLITE_PATH))
@@ -228,8 +254,8 @@ def db_execute(sql: str, params: tuple = ()) -> None:
                         # no multi-statement transaction to preserve.
                         cur.execute(stmt, params)
                 return
-            except (psycopg2.OperationalError, psycopg2.InterfaceError):
-                if attempt:
+            except (psycopg2.OperationalError, psycopg2.InterfaceError) as exc:
+                if getattr(exc, "pgcode", None) in _NO_RETRY_SQLSTATES or attempt:
                     raise
 
     con = sqlite3.connect(str(_SQLITE_PATH))
@@ -238,5 +264,3 @@ def db_execute(sql: str, params: tuple = ()) -> None:
         con.commit()
     finally:
         con.close()
-
-

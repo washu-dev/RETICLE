@@ -9,6 +9,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
+from services.execution import run_blocking
 from services.screen_detail import get_screen_detail
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ async def screen_detail_endpoint(screen_id: str) -> Any:
             detail="Invalid screen id",
         )
     logger.info("GET /api/screen/%s", sid)
-    detail = get_screen_detail(sid)
+    detail = await run_blocking(get_screen_detail, sid, workload="db")
     if detail is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -33,7 +33,7 @@ def _num(value: Any) -> Any:
     """Coerce to int/float for prompt text; return None if not a number."""
     if isinstance(value, bool):
         return None
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return value
     return None
 
@@ -44,7 +44,7 @@ def _summarize_block(label: str, block: Any) -> str:
         return f"- {label}: no data"
     parts = []
     for key, val in block.items():
-        if isinstance(val, (str, int, float)) and not isinstance(val, bool):
+        if isinstance(val, str | int | float) and not isinstance(val, bool):
             parts.append(f"{key}={val}")
     detail = ", ".join(parts) if parts else "present"
     return f"- {label}: {detail}"

@@ -33,6 +33,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # The default network context ("all" / "mouse") is owned by the network service — reuse it rather
 # than restating the mapping, since get_net_predict() takes a concrete context, not None.
 from services.coessential_network_aaron import _default_context
+from services.execution import ServiceOverloaded
 from services.llm_analysis_aaron import (
     get_interpret,
     get_net_predict,
@@ -200,6 +201,8 @@ async def screen_analysis(
         return _gateway_error("Screen analysis unavailable: ", exc)
     except HTTPException:
         raise
+    except ServiceOverloaded:
+        raise
     except Exception as exc:
         return _gateway_error("Screen analysis unavailable: ", exc)
 
@@ -230,6 +233,8 @@ async def reporter_explain(
         return _gateway_error("Explanation unavailable: ", exc)
     except HTTPException:
         raise
+    except ServiceOverloaded:
+        raise
     except Exception as exc:
         return _gateway_error("Explanation unavailable: ", exc)
 
@@ -259,6 +264,8 @@ async def net_predict(
     except LLMUnavailable as exc:
         return _gateway_error("Function prediction unavailable: ", exc)
     except HTTPException:
+        raise
+    except ServiceOverloaded:
         raise
     except Exception as exc:
         return _gateway_error("Function prediction unavailable: ", exc)
@@ -291,6 +298,8 @@ async def interpret(payload: InterpretRequest) -> Any:
     except LLMUnavailable as exc:
         return _gateway_error("Interpretation unavailable: ", exc)
     except HTTPException:
+        raise
+    except ServiceOverloaded:
         raise
     except Exception as exc:
         return _gateway_error("Interpretation unavailable: ", exc)

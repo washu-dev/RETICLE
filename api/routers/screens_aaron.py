@@ -13,19 +13,17 @@ Currently exposed:
   GET /api/screen_net            — one gene's co-essentiality neighbourhood (the Network page)
   GET /api/coessential_aaron     — the gene wiki's inline co-essentiality graph
 
-WHY TWO OF THESE CARRY AN _aaron SUFFIX IN THE PATH, NOT JUST THE FILENAME
--------------------------------------------------------------------------
-routers/coessential.py and routers/screen_similar.py serve /api/coessential and
-/api/screen_similar from a DIFFERENT implementation (cosine similarity over L2-normalised
-fitness profiles) for the Explorer. FastAPI matches the first registered route, and main.py
-includes those before this module — so these two were silently dead after that landed, and
-anything calling the plain path got the other implementation.
+WHY TWO OF THESE RETAIN AN _aaron SUFFIX IN THE PATH
+---------------------------------------------------
+The suffixes are compatibility aliases for the already-shipped gene and screen pages.  The
+canonical /api/coessential and /api/screen_similar routes now call these same precomputed
+services: net_edge for gene neighbours and screen_similarity for screen pairs.  The old canonical
+implementations built dense matrices from raw harmonized_scores in the request path and could
+block the sole event loop for more than a minute, so they are no longer registered anywhere.
 
-The payloads are not interchangeable. The Explorer's edges are {a, b, r, score}; these carry
-`tier`, `tier_label`, `direct` and a `tiers` histogram, which is exactly what the gene wiki's
-evidence lane draws with. Serving one where the other is expected does not error, it just
-renders an untiered graph — so the paths are distinct rather than merged, and the Explorer's
-routes are left alone.
+Both co-essentiality paths expose the evidence-tier fields as a backwards-compatible superset of
+the original {a, b, r, score} edges.  The canonical screen route additionally supplies legacy
+weighted/plain aliases so the older Explorer renderer remains usable during the transition.
 
 Still to port from prototype/web/app.py (all RDS-backed and ready):
   /api/gene_wiki, /api/gene_predictions        (reticle.kb_*)

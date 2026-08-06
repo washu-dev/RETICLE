@@ -31,6 +31,7 @@ import logging
 from typing import Any
 
 from services.db_service import db_fetchall
+from services.execution import offload
 
 logger = logging.getLogger(__name__)
 
@@ -274,7 +275,8 @@ def _resolve_seed(gene: str, tbl: str, context: str) -> str | None:
     return None
 
 
-async def get_net_contexts(organism: str = "human") -> list[dict[str, Any]]:
+@offload("db")
+def get_net_contexts(organism: str = "human") -> list[dict[str, Any]]:
     """Available network contexts with edge/node counts."""
     tbl = _edge_table(organism)
     out = []
@@ -326,7 +328,8 @@ def _neighbourhood(
     return rows, fellback, clause
 
 
-async def get_screen_net(
+@offload("db")
+def get_screen_net(
     gene: str,
     context: str | None = None,
     reciprocal_only: bool = True,
@@ -418,7 +421,8 @@ async def get_screen_net(
     }
 
 
-async def get_coessential(
+@offload("db")
+def get_coessential(
     symbol: str, organism: str = "human", top: int = 14
 ) -> dict[str, Any] | None:
     """The gene wiki's inline co-essentiality graph.
