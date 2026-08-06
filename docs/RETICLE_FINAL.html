@@ -317,6 +317,34 @@ h2 .em.adv{color:var(--adv)}
 @keyframes bkeep{0%{opacity:0} 22%{opacity:.85} 100%{opacity:1}}
 
 
+/* ── 03 · the turn, with a real screen beside it ─────────────────────── */
+.turnrow{display:grid; grid-template-columns:1.15fr .85fr; gap:30px; align-items:center; margin-top:26px}
+.turnrow .callout{display:flex; width:100%}
+.turnrow .callout + .callout{margin-top:14px}
+
+/* ── 03 · the harmonisation pipeline ──────────────────────────────────
+   The panels arrive left to right on .is-active, so the slide performs the
+   sentence the presenter is saying: raw numbers, then the screen's own words
+   about them, then the one judgement a model makes, then a scale everything
+   else can be compared on. Same four-panel frame as the prediction figure --
+   this is a pipeline too, and it should not look like a different kind of
+   object. */
+.pipe .nf{opacity:0; transform:translateY(12px)}
+.slide.is-active .pipe .nf{animation:pipein .6s cubic-bezier(.22,.68,.28,1) both;
+  animation-delay:calc(var(--i,0)*520ms + 600ms)}
+@keyframes pipein{to{opacity:1; transform:none}}
+.pipe .rows{font-family:var(--mono); font-size:14px; line-height:1.75; color:#2C3037}
+.pipe .rows span{color:var(--ess)}
+.pipe .meta{font-family:var(--mono); font-size:13px; line-height:1.7; color:var(--mute)}
+.pipe .meta b{color:var(--ink); font-weight:500}
+.pipe .ask{font-family:var(--disp); font-size:21px; line-height:1.3; color:var(--ink)}
+.pipe .outruler{height:12px; border-radius:6px; margin:12px 0 8px;
+  background:linear-gradient(90deg,var(--ess),#E6E3DC 52%,var(--adv));
+  transform:scaleX(0); transform-origin:left}
+.slide.is-active .pipe .outruler{animation:outdraw .9s cubic-bezier(.22,.68,.28,1) both; animation-delay:2760ms}
+@keyframes outdraw{to{transform:none}}
+.pipe .outcap{display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--mute)}
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -727,18 +755,77 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- 03.4 · THE SECOND PROBLEM — DARK GENES  (signature figure) -->
+<!-- 03.4 · THE RAG -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — how the wiki is built</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:28ch">Ten sources, joined offline on one key.</h2>
+    <div class="netflow" data-anim style="--d:2">
+      <div class="nf"><div class="step">1 · fetch</div><div class="body">All ten pulled in <b>full</b>, not per request.</div></div>
+      <div class="nf"><div class="step">2 · join</div><div class="body">Every record keyed on one <b>GeneID</b>, so the ten agree which gene they mean.</div></div>
+      <div class="nf"><div class="step">3 · embed</div><div class="body">Chunked and embedded into <b>pgvector</b>, beside the screens.</div></div>
+      <div class="nf"><div class="step">4 · retrieve</div><div class="body">The page answers from that, in <b>a quarter of a second</b>.</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:6; margin-top:26px">Nothing is fetched while you wait, so ten sources cost what one does — and <b style="color:var(--ink)">every sentence keeps the source it came from</b>, which is what a summary alone cannot give you.</p>
+  </div>
+</section>
+
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the turn</div>
     <h2 data-anim style="--d:1; font-size:clamp(32px,5.2vw,64px); max-width:26ch">But a CRISPR screen never played favourites.</h2>
-    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>CRISPR screens carry the evidence about <b>dark genes</b> — but 2,157 of them, scored four different ways, cannot simply be read.</span></div>
-    <div class="callout" data-anim style="--d:3; margin-top:16px"><span class="dot"></span><span>A model resolves what each screen's numbers <b>mean</b>. What comes out of that is measured, not written.</span></div>
+    <div class="turnrow">
+      <div data-anim style="--d:2">
+        <div class="shotwrap">
+          <img class="shot" src="assets/uijttewaal_2024_screen.png" alt="A BioGRID ORCS screen record"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">BioGRID ORCS screenshot<br><code>assets/uijttewaal_2024_screen.png</code></div>
+        </div>
+        <div class="shotcap"><b>Uijttewaal 2024</b> · 538 genes, 139 hits, one melanoma model — and every number a lab needs to say what it meant</div>
+      </div>
+      <div>
+        <div class="callout" data-anim style="--d:3"><span class="dot"></span><span>Screens like this one carry the evidence about <b>dark genes</b> — and 2,157 of them are published.</span></div>
+        <div class="callout" data-anim style="--d:4"><span class="dot"></span><span>Scored four different ways, they <b>cannot simply be read together</b>.</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- 03.6 · HARMONISATION -->
 <!-- 03.6 · HOW THE NETWORK IS BUILT (animated) -->
+<!-- 03.6 · THE HARMONISATION PIPELINE (animated) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — making it readable</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">One judgement turns a screen into something comparable.</h2>
+    <div class="netflow pipe" data-anim style="--d:2">
+      <div class="nf" style="--i:0">
+        <div class="step">the numbers</div>
+        <div class="rows" style="margin-top:9px">Atp2b1 <span>−7.3372</span><br>Psmb3 <span>−6.9543</span><br>Cklf <span>−6.5744</span><br>Hspa5 <span>−6.1596</span></div>
+      </div>
+      <div class="nf" style="--i:1">
+        <div class="step">what the screen says</div>
+        <div class="meta" style="margin-top:9px">Score.1 · <b>Log2FC</b><br>Knockout · Cas9<br>Cell proliferation<br>significant if <b>&lt; −1.5</b></div>
+      </div>
+      <div class="nf" style="--i:2">
+        <div class="step">the one question</div>
+        <div class="ask" style="margin-top:9px">Which direction means the cell died?</div>
+        <div class="meta" style="margin-top:10px">Read from the screen's own words, then anchored against genes already known to be essential.</div>
+      </div>
+      <div class="nf" style="--i:3">
+        <div class="step">comparable</div>
+        <div class="outruler"></div>
+        <div class="outcap"><span>−1 died</span><span>+1 grew</span></div>
+        <div class="meta" style="margin-top:9px">Every screen on one scale — <b>28.2 million</b> measurements.</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:7; margin-top:24px">Labs score with MaGeCK, CERES, CasTLE and raw log2FC. The magnitudes cannot be compared and <b style="color:var(--ink)">the signs disagree about which direction is bad</b> — that is the whole obstacle, and it is the only place a model is used.</p>
+  </div>
+</section>
+
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
