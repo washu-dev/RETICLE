@@ -102,7 +102,6 @@ const CSS = `
 .rxhome.anim .r2{animation-delay:.13s}
 .rxhome.anim .r3{animation-delay:.22s}
 .rxhome.anim .r4{animation-delay:.30s}
-.rxhome.anim .r5{animation-delay:.40s}
 
 @media (prefers-reduced-motion:reduce){
   .rxhome::before{animation:none; opacity:.28}
@@ -110,10 +109,15 @@ const CSS = `
   .rxhome .rise,
   .rxhome.anim .rise{opacity:1; transform:none; animation:none}
 }
+/* The gap is the SUBORDINATE step, not the only one. Everything here used to sit 26px apart, which
+   made five equal items out of a page that has two: a search (its scope pill and its box are one
+   thing) and, under a real break, the other half of the product. Spacing is the only thing telling
+   a reader which of those they are looking at, so the group break is set on the elements that start
+   a group rather than shared out evenly down the column. */
 .rxhome .stage{
   position:relative; z-index:1;
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:24px clamp(20px,5vw,48px) 96px; gap:26px;
+  padding:24px clamp(20px,5vw,48px) 96px; gap:12px;
 }
 .rxhome .mark{
   font-family:var(--serif); font-weight:500; font-size:clamp(34px,5vw,46px); letter-spacing:-.02em;
@@ -132,7 +136,7 @@ const CSS = `
    element with opacity paints in the same layer as a positioned one. Being later in the document,
    they started landing on top of the list. Stating the order stops that from depending on whether
    a sibling happens to be animated. */
-.rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:660px}
+.rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:660px; margin-top:18px}
 .rxhome .box{
   display:flex; align-items:center; gap:8px; padding:7px 7px 7px 8px;
   border:1px solid var(--line); border-radius:16px; background:var(--card);
@@ -211,11 +215,10 @@ const CSS = `
   font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--faint);
   margin-left:auto; flex:0 0 auto; padding-left:10px;
 }
-.rxhome .hint{
-  font-size:12.5px; color:var(--muted); text-align:center; margin:0;
-}
+/* 660 to match the search box exactly. At 620 it sat 20px inside the box's edges — close enough to
+   look like a mistake rather than a distinction, and these two are peers, not parent and child. */
 .rxhome .handoff{
-  width:100%; max-width:620px; margin:26px auto 0; display:flex; align-items:center; gap:20px;
+  width:100%; max-width:660px; margin:34px auto 0; display:flex; align-items:center; gap:20px;
   padding:16px 18px; border:1px solid var(--line); border-left:2px solid var(--eviq);
   border-radius:12px; background:var(--card); text-align:left;
 }
@@ -237,11 +240,6 @@ const CSS = `
   .handoff{flex-direction:column; align-items:stretch; gap:13px}
   .handoff-go{width:100%}
 }
-.hint button{
-  border:0; background:none; padding:0; cursor:pointer; color:var(--know); font:inherit;
-  text-decoration:underline; text-underline-offset:3px;
-}
-.rxhome .hint button:hover{color:var(--ink)}
 .rxhome .orgs{display:flex; gap:7px; justify-content:center}
 .rxhome .orgs button{
   font-family:var(--sans); font-size:12px; padding:4px 12px; border-radius:16px;
@@ -512,17 +510,21 @@ export default function HomeLanding_aaron({
           )}
         </div>
 
-        <p className="hint rise r4">
-          Type a symbol to look one up, or hand over a whole screen below.
-        </p>
       {/* The product has two halves and this page used to present only one. Looking a gene up and
           comparing your own screen are peers, so the second one gets a real affordance rather than
           an underlined word in a caption.
           Ochre, not teal: in this palette teal is what is already established and ochre is what the
           screens measured — which is exactly what lies on the other side of this button.
           The count is fetched live from the same endpoint the comparison page uses, so the button
-          states its own value and is never stale. */}
-      <div className="handoff rise r5">
+          states its own value and is never stale.
+
+          A caption used to sit between the toggle and this card, reading "Type a symbol to look one
+          up, or hand over a whole screen below." It is gone rather than shortened: the first half
+          restated the placeholder, and the second narrated this card, which carries its own label
+          and its own sentence. It also blurred the one distinction on this page worth keeping
+          sharp — searching a PUBLISHED screen is the mode chip, handing over YOUR OWN is this card,
+          and "a whole screen below" sat between the two meaning neither cleanly. */}
+      <div className="handoff rise r4">
         <div className="handoff-copy">
           <div className="handoff-k">your own screen</div>
           <p>Already ran one? Land it against everything published and see which screens agree.</p>
