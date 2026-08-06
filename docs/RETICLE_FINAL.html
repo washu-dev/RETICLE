@@ -259,6 +259,71 @@ h2 .em.adv{color:var(--adv)}
   *{transition-duration:.001s!important; animation:none!important}
   .is-active [data-anim]{transition-delay:0s!important}
 }
+
+/* ============================================================ */
+/* 03/04 · data figures. CSS-drawn like the rest of this deck —  */
+/* no SVG, no new palette: only --ess, --adv, --grid, --mute.    */
+/* ============================================================ */
+
+/* three ways the search fails today */
+.fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
+.fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
+.fail .who{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink); margin-bottom:9px}
+.fail .what{font-size:16.5px; line-height:1.45; color:#2C3037}
+.fail .verdict{margin-top:13px; padding-top:11px; border-top:1px solid var(--grid-soft);
+  font-family:var(--mono); font-size:12.5px; color:var(--adv)}
+
+/* SIGNATURE — the literature is concentrated. one band = every human gene. */
+.lit{margin-top:30px}
+.litband{position:relative; height:64px; border-radius:8px; overflow:hidden;
+  border:1px solid var(--grid); background:var(--grid-soft); display:flex}
+.litband i{display:block; height:100%}
+.litband .hot{background:var(--ess); flex:0 0 9.7%}
+.litband .rest{background:repeating-linear-gradient(90deg,#fff 0 3px,var(--grid-soft) 3px 4px); flex:1}
+.litmark{display:flex; justify-content:space-between; margin-top:11px;
+  font-family:var(--mono); font-size:13px; color:var(--mute)}
+.litmark b{color:var(--ink); font-weight:500}
+.litnote{margin-top:8px; font-family:var(--mono); font-size:12.5px; color:var(--ess)}
+
+/* data-source coverage */
+.srcs{display:grid; grid-template-columns:1fr 1fr; gap:10px 34px; margin-top:24px}
+.srcrow{display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:12px}
+.srcrow .nm{font-family:var(--mono); font-size:12.5px; color:var(--ink)}
+.srcrow .tr{height:9px; border-radius:5px; background:var(--grid-soft); overflow:hidden}
+.srcrow .tr i{display:block; height:100%; background:var(--ess); border-radius:5px}
+.srcrow .pc{font-family:var(--mono); font-size:12.5px; color:var(--mute); text-align:right}
+
+/* the shared ruler that makes screens comparable */
+.ruler{margin-top:28px}
+.rulertrack{height:12px; border-radius:7px;
+  background:linear-gradient(90deg,var(--ess),#EDEBE6 50%,var(--adv))}
+.rulercaps{display:flex; justify-content:space-between; margin-top:10px;
+  font-family:var(--mono); font-size:13px; color:var(--mute)}
+.rulercaps b{display:block; color:var(--ink); font-weight:500; font-size:14px}
+
+/* how an edge is built */
+.netflow{display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:26px}
+.nf{border:1px solid var(--grid); border-right:0; background:#fff; padding:20px 18px; position:relative}
+.netflow .nf:last-child{border-right:1px solid var(--grid); border-radius:0 10px 10px 0}
+.netflow .nf:first-child{border-radius:10px 0 0 10px}
+.nf .step{font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--mute)}
+.nf .body{margin-top:9px; font-size:16px; line-height:1.42; color:#2C3037}
+.nf .body b{color:var(--ess); font-weight:600}
+
+/* SIGNATURE 2 — the tier 2x2, sized by share, coloured by precision */
+.tg{display:grid; grid-template-columns:132px 1fr 1fr; grid-template-rows:auto 1fr 1fr;
+  gap:9px; margin-top:24px}
+.tg .axl{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--mute); display:flex; align-items:center}
+.tg .colh{font-family:var(--mono); font-size:12px; color:var(--ink); text-align:center; padding-bottom:2px}
+.tcell{border:1px solid var(--grid); border-radius:10px; padding:16px 18px; background:#fff;
+  display:flex; flex-direction:column; justify-content:space-between; min-height:104px}
+.tcell.on{border-color:var(--ess); background:var(--ess-soft)}
+.tcell .tn{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute)}
+.tcell .pr{font-family:var(--disp); font-size:34px; line-height:1; color:var(--ink); margin-top:4px}
+.tcell.on .pr{color:var(--ess)}
+.tcell .sh{font-family:var(--mono); font-size:12px; color:var(--mute); margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -537,9 +602,211 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="partno" data-anim>03 — since the MVP · Aaron</div>
-    <h2 data-anim style="--d:1">Single-gene</h2>
-    <p class="lede" data-anim style="--d:2">What's new in the gene drawer, then the demo.</p>
-    <div class="stubtag" data-anim style="--d:3"><span></span>to be drafted · ~2:00</div>
+    <h2 data-anim style="--d:1">Single gene</h2>
+    <p class="lede" data-anim style="--d:2">One question — what does this gene do — and why it is still hard to answer.</p>
+  </div>
+</section>
+
+<!-- 03.1 · WHERE YOU GO NOW -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the search</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">You have a gene. You want to know what it does.</h2>
+    <div class="fails" data-anim style="--d:2">
+      <div class="fail">
+        <div class="who">google</div>
+        <div class="what">A dozen databases, each authoritative about a different slice.</div>
+        <div class="verdict">Which one is right?</div>
+      </div>
+      <div class="fail">
+        <div class="who">wikipedia</div>
+        <div class="what">Fine for TP53. For a gene nobody has studied, there is often no article at all.</div>
+        <div class="verdict">Nothing there</div>
+      </div>
+      <div class="fail">
+        <div class="who">chatgpt</div>
+        <div class="what">Fluent, confident, and unable to tell you which parts it made up.</div>
+        <div class="verdict">No provenance</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:26px">Every one of them summarises <b style="color:var(--ink)">what has been written</b>. None of them reads the experiments.</p>
+  </div>
+</section>
+
+<!-- 03.2 · WIKIPEDIA, SHOWN -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the search</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Wikipedia is most detailed exactly where you already know the answer.</h2>
+    <div class="ex2" data-anim style="--d:2; margin-top:26px">
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="assets/wikipedia_miss.png" alt="Wikipedia search for an understudied gene returns nothing"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss">Wikipedia search — understudied gene, no article<br><code>assets/wikipedia_miss.png</code></div>
+        </div>
+      </div>
+      <div>
+        <div class="exread">a sample of 24 real genes</div>
+        <ul class="exmini">
+          <li><span class="ek">studied</span>Of 12 well-published genes, <b>1</b> had a real article. CYLD — 355 papers — gets 125 characters.</li>
+          <li><span class="ek">unstudied</span>Of 12 barely-published genes, <b>10 had no article at all</b>.</li>
+          <li><span class="ek">stale</span>H3-3A redirects to <b>H3F3A</b> — the retired symbol. GGCT lands on a list of schools.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03.3 · THE WIKI -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the answer</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">RETICLE Wiki: ten trusted sources, assembled into one page.</h2>
+    <div class="srcs" data-anim style="--d:2">
+      <div class="srcrow"><div class="nm">NCBI Gene</div><div class="tr"><i style="width:92%"></i></div><div class="pc">92%</div></div>
+      <div class="srcrow"><div class="nm">Reactome</div><div class="tr"><i style="width:98%"></i></div><div class="pc">98%</div></div>
+      <div class="srcrow"><div class="nm">UniProt</div><div class="tr"><i style="width:81%"></i></div><div class="pc">81%</div></div>
+      <div class="srcrow"><div class="nm">STRING</div><div class="tr"><i style="width:87%"></i></div><div class="pc">87%</div></div>
+      <div class="srcrow"><div class="nm">Gene Ontology</div><div class="tr"><i style="width:83%"></i></div><div class="pc">83%</div></div>
+      <div class="srcrow"><div class="nm">DepMap</div><div class="tr"><i style="width:87%"></i></div><div class="pc">87%</div></div>
+      <div class="srcrow"><div class="nm">PubMed</div><div class="tr"><i style="width:94%"></i></div><div class="pc">94%</div></div>
+      <div class="srcrow"><div class="nm">AlphaFold · PDBe</div><div class="tr"><i style="width:90%"></i></div><div class="pc">90%</div></div>
+      <div class="srcrow"><div class="nm">Ensembl</div><div class="tr"><i style="width:96%"></i></div><div class="pc">96%</div></div>
+      <div class="srcrow"><div class="nm">BioGRID ORCS</div><div class="tr"><i style="width:100%"></i></div><div class="pc">2,157</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:24px">Bars are the share of human protein-coding genes each source actually covers. <b style="color:var(--ink)">Assembled offline, so the page answers in a quarter of a second.</b></p>
+  </div>
+</section>
+
+<!-- 03.4 · THE SECOND PROBLEM — DARK GENES  (signature figure) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the second problem</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:31ch">Every source we just listed inherits the same blind spot.</h2>
+    <div class="lit" data-anim style="--d:2">
+      <div class="litband"><i class="hot"></i><i class="rest"></i></div>
+      <div class="litmark">
+        <span><b>2,000 genes</b> — 9.7%</span>
+        <span>the other <b>18,620</b></span>
+      </div>
+      <div class="litnote">Those 2,000 hold <b>52%</b> of every gene-to-paper link in the literature. The top 5,000 hold 74%.</div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">A wiki can only report what has been written, and attention has never been evenly spread. <b style="color:var(--ink)">For most of the genome, the page would be blank.</b></p>
+  </div>
+</section>
+
+<!-- 03.5 · THE HINGE -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the turn</div>
+    <h2 data-anim style="--d:1; font-size:clamp(32px,5.2vw,64px); max-width:26ch">But a CRISPR screen never played favourites.</h2>
+    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>Every screen switches off <b>every gene</b> — the famous ones and the ignored ones, in the same experiment, measured the same way.</span></div>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">So the evidence about dark genes already exists, in 2,157 published screens. <b style="color:var(--ink)">Nobody has read it together.</b></p>
+  </div>
+</section>
+
+<!-- 03.6 · HARMONISATION -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — step one</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">First we had to make 2,157 screens say the same thing.</h2>
+    <div class="ruler" data-anim style="--d:2">
+      <div class="rulertrack"></div>
+      <div class="rulercaps">
+        <span><b>−1</b>knockout kills the cell</span>
+        <span><b>0</b>no effect</span>
+        <span><b>+1</b>knockout helps</span>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:30px">Labs score with MaGeCK, CERES, CasTLE, log2FC — magnitudes that cannot be compared, and signs that disagree about which direction is bad. <b style="color:var(--ink)">We convert every screen to a signed within-screen rank: one ruler, 28.2 million measurements.</b></p>
+  </div>
+</section>
+
+<!-- 03.7 · BUILDING THE NETWORK -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — step two</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:34ch">Genes that fail together across 1,375 screens are probably doing one job.</h2>
+    <div class="netflow" data-anim style="--d:2">
+      <div class="nf"><div class="step">fingerprint</div><div class="body">One row per gene — its rank in <b>every</b> screen.</div></div>
+      <div class="nf"><div class="step">correlate</div><div class="body"><b>Pearson r</b> between two rows: do they rise and fall together?</div></div>
+      <div class="nf"><div class="step">strip the obvious</div><div class="body">Remove the axis that makes <b>all</b> essential genes look alike.</div></div>
+      <div class="nf"><div class="step">keep mutual</div><div class="body">An edge survives only if each gene is in the <b>other's top 25</b>.</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:26px">The last two steps are what stop a ribosomal gene bonding with everything. <b style="color:var(--ink)">109,412 edges over 5,269 genes — no literature consulted at any point.</b></p>
+  </div>
+</section>
+
+<!-- 03.8 · EVIDENCE TIERS (signature 2) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — step three</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">A second, independent channel grades every edge we draw.</h2>
+    <div class="tg" data-anim style="--d:2">
+      <div></div>
+      <div class="colh">also co-occur as hits</div>
+      <div class="colh">correlation only</div>
+
+      <div class="axl">mutual best</div>
+      <div class="tcell on"><div><div class="tn">tier 1 · both channels</div><div class="pr">46.4%</div></div><div class="sh">2,981 edges · 2.7%</div></div>
+      <div class="tcell"><div><div class="tn">tier 2 · mutual best</div><div class="pr">22.4%</div></div><div class="sh">6,924 edges · 6.3%</div></div>
+
+      <div class="axl">one-directional</div>
+      <div class="tcell"><div><div class="tn">tier 3 · co-hit</div><div class="pr">17.7%</div></div><div class="sh">7,740 edges · 7.1%</div></div>
+      <div class="tcell"><div><div class="tn">tier 4 · correlation</div><div class="pr">4.9%</div></div><div class="sh">91,767 edges · 83.9%</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:22px">Percentages are how often an edge turns out to be a real CORUM protein complex — against <b style="color:var(--ink)">0.6% for a random pair</b>. The best tier is the rarest, and the user is told which tier they are looking at.</p>
+  </div>
+</section>
+
+<!-- 03.9 · THE RESULT -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the result</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">FANCD2 rebuilds its own repair pathway, from screen data alone.</h2>
+    <div class="ex2" data-anim style="--d:2; margin-top:22px">
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss">RETICLE network — FANCD2<br><code>assets/reticle_network_fancd2.png</code></div>
+        </div>
+      </div>
+      <div>
+        <div class="exread">what came back</div>
+        <ul class="exmini">
+          <li><span class="ek">found</span>FANCA, FANCB, FANCC, FANCE, FANCL, FANCM, UBE2T, FAAP100 — <b>the Fanconi anaemia core complex</b>.</li>
+          <li><span class="ek">graded</span>12 of the 17 edges are <b>tier 1</b> — both channels agreeing.</li>
+          <li><span class="ek">never used</span>No pathway database, no annotation, no literature. Only which knockouts died together.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03.10 · PREDICTION -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — step four</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">If we trust the neighbours, we can name what a dark gene does.</h2>
+    <div class="netflow" data-anim style="--d:2">
+      <div class="nf"><div class="step">1 · gather</div><div class="body">The gene's co-essential neighbours, with <b>their</b> known functions.</div></div>
+      <div class="nf"><div class="step">2 · propose</div><div class="body">The model names a shared process the gene is <b>not yet annotated with</b>.</div></div>
+      <div class="nf"><div class="step">3 · verify</div><div class="body">The server re-checks novelty and <b>every cited neighbour</b>.</div></div>
+      <div class="nf"><div class="step">4 · label</div><div class="body">Ships as <b>verified</b>, single-supporter, or rejected.</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:26px">The model is never trusted to comply — a cited partner that is not really in the neighbourhood is dropped before the user sees it. <b style="color:var(--ink)">A leave-one-out backtest shows the signal is real and not circular.</b></p>
   </div>
 </section>
 
@@ -547,9 +814,46 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="partno" data-anim>04 — what's next · Aaron</div>
-    <h2 data-anim style="--d:1">Future</h2>
-    <p class="lede" data-anim style="--d:2">Cost estimate, funding opportunities by year, and next steps. The funding slide is the one the rubric weights most.</p>
-    <div class="stubtag" data-anim style="--d:3"><span></span>to be drafted · ~2:00</div>
+    <h2 data-anim style="--d:1">Future goals</h2>
+    <p class="lede" data-anim style="--d:2">Three things that would turn a working tool into a working method.</p>
+  </div>
+</section>
+
+<!-- 04.1 · WET LAB -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>04</b> — goal one</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Take one prediction to the bench and find out if we are right.</h2>
+    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>Every prediction already ships as a <b>testable claim</b>: this gene participates in that process, because these named partners do.</span></div>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">CORUM tells us how often an edge is a real complex. It cannot tell us whether a <b style="color:var(--ink)">new</b> claim about a dark gene is true — only an experiment can. <b style="color:var(--ink)">Nobody has run one yet, and that is the single most valuable thing left to do.</b></p>
+  </div>
+</section>
+
+<!-- 04.2 · OTHER LABS -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>04</b> — goal two</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Every new screen makes the network sharper for everyone.</h2>
+    <div class="netflow" data-anim style="--d:2">
+      <div class="nf"><div class="step">today</div><div class="body"><b>2,157</b> published screens · <b>5,077</b> genes reach the network.</div></div>
+      <div class="nf"><div class="step">the gap</div><div class="body">The other <b>15,500</b> genes have too little signal in the current corpus.</div></div>
+      <div class="nf"><div class="step">the fix</div><div class="body">Unpublished screens from labs like ours — the same harmonisation applies.</div></div>
+      <div class="nf"><div class="step">the return</div><div class="body">A lab that contributes gets its screen <b>placed in context</b> against all the rest.</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:26px">This is the part that compounds. <b style="color:var(--ink)">Coverage is not a software problem — it is a collaboration problem.</b></p>
+  </div>
+</section>
+
+<!-- 04.3 · API -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>04</b> — goal three</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Open the API so other tools can ask our questions.</h2>
+    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>The whole product is already a REST API — the website is just its first client. <b>Documenting and opening it is a small step with a large reach.</b></span></div>
+    <p class="tag" data-anim style="--d:3; margin-top:28px">A pipeline could score its hits against 2,157 screens automatically; another tool could pull a gene's co-essential neighbourhood without a browser. <b style="color:var(--ink)">The data is only useful if it can leave the page.</b></p>
   </div>
 </section>
 
