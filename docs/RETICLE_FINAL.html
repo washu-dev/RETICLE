@@ -408,6 +408,18 @@ h2 .em.adv{color:var(--adv)}
 .lpkey em{font-style:normal; display:inline-block; width:22px; height:3px; border-radius:2px;
   margin-right:8px; vertical-align:middle}
 
+/* ── 03 · three names, three question marks ──────────────────────────
+   Aaron narrates this one, so the slide carries no argument of its own: three
+   things the room has already tried, and nothing telling them what to think
+   about any of it. Set at display size because a word this short at caption
+   size reads as a label rather than a question. */
+.asks{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:44px}
+.ask3{border:1px solid var(--grid); border-radius:12px; background:#fff;
+  padding:52px 30px; text-align:center;
+  font-family:var(--disp); font-weight:500; font-size:clamp(28px,3.9vw,46px);
+  letter-spacing:-.01em; color:var(--ink); line-height:1.1}
+.ask3 em{font-style:normal; color:var(--adv)}
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -756,24 +768,11 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the search</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">You have a gene. You want to know what it does.</h2>
-    <div class="fails" data-anim style="--d:2">
-      <div class="fail">
-        <div class="who">google</div>
-        <div class="what">A dozen databases, each right about a different slice.</div>
-        <div class="verdict">Which one is right?</div>
-      </div>
-      <div class="fail">
-        <div class="who">wikipedia</div>
-        <div class="what">Fine for TP53. Nothing for a gene nobody studied.</div>
-        <div class="verdict">Nothing there</div>
-      </div>
-      <div class="fail">
-        <div class="who">chatgpt</div>
-        <div class="what">Fluent, confident, unsourced.</div>
-        <div class="verdict">No provenance</div>
-      </div>
+    <div class="asks" data-anim style="--d:2">
+      <div class="ask3">Google<em>?</em></div>
+      <div class="ask3">Wikipedia<em>?</em></div>
+      <div class="ask3">ChatGPT<em>?</em></div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">Every one of them summarises <b style="color:var(--ink)">what has been written</b>. None of them reads the experiments.</p>
   </div>
 </section>
 
@@ -882,19 +881,19 @@ h2 .em.adv{color:var(--adv)}
     <div data-anim style="--d:2">
       <div class="lp">
         <div class="lpgrid"><span></span><span></span><span></span></div>
-        <div class="lpline la" style="clip-path:polygon(0.00% 95.02%, 9.09% 88.63%, 18.18% 83.59%, 27.27% 79.50%, 36.36% 75.10%, 45.45% 69.98%, 54.55% 64.01%, 63.64% 57.05%, 72.73% 48.49%, 81.82% 37.20%, 90.91% 24.94%, 100.00% 7.62%, 100.00% 10.62%, 90.91% 27.94%, 81.82% 40.20%, 72.73% 51.49%, 63.64% 60.05%, 54.55% 67.01%, 45.45% 72.98%, 36.36% 78.10%, 27.27% 82.50%, 18.18% 86.59%, 9.09% 91.63%, 0.00% 98.02%)"></div>
-        <div class="lpline lb" style="clip-path:polygon(0.00% 76.75%, 9.09% 71.51%, 18.18% 68.11%, 27.27% 63.86%, 36.36% 61.66%, 45.45% 59.00%, 54.55% 53.06%, 63.64% 56.78%, 72.73% 55.41%, 81.82% 52.54%, 90.91% 41.12%, 100.00% 44.59%, 100.00% 47.59%, 90.91% 44.12%, 81.82% 55.54%, 72.73% 58.41%, 63.64% 59.78%, 54.55% 56.06%, 45.45% 62.00%, 36.36% 64.66%, 27.27% 66.86%, 18.18% 71.11%, 9.09% 74.51%, 0.00% 79.75%)"></div>
-        <div class="lpline lc" style="clip-path:polygon(0.00% 65.34%, 9.09% 77.09%, 18.18% 75.18%, 27.27% 74.23%, 36.36% 77.88%, 45.45% 79.07%, 54.55% 81.86%, 63.64% 71.46%, 72.73% 77.57%, 81.82% 71.96%, 90.91% 68.25%, 100.00% 64.36%, 100.00% 67.36%, 90.91% 71.25%, 81.82% 74.96%, 72.73% 80.57%, 63.64% 74.46%, 54.55% 84.86%, 45.45% 82.07%, 36.36% 80.88%, 27.27% 77.23%, 18.18% 78.18%, 9.09% 80.09%, 0.00% 68.34%)"></div>
-        <i class="da" style="left:0.00%; top:96.52%"></i><i class="da" style="left:9.09%; top:90.13%"></i><i class="da" style="left:18.18%; top:85.09%"></i><i class="da" style="left:27.27%; top:81.00%"></i><i class="da" style="left:36.36%; top:76.60%"></i><i class="da" style="left:45.45%; top:71.48%"></i><i class="da" style="left:54.55%; top:65.51%"></i><i class="da" style="left:63.64%; top:58.55%"></i><i class="da" style="left:72.73%; top:49.99%"></i><i class="da" style="left:81.82%; top:38.70%"></i><i class="da" style="left:90.91%; top:26.44%"></i><i class="da" style="left:100.00%; top:9.12%"></i><i class="db" style="left:0.00%; top:78.25%"></i><i class="db" style="left:9.09%; top:73.01%"></i><i class="db" style="left:18.18%; top:69.61%"></i><i class="db" style="left:27.27%; top:65.36%"></i><i class="db" style="left:36.36%; top:63.16%"></i><i class="db" style="left:45.45%; top:60.50%"></i><i class="db" style="left:54.55%; top:54.56%"></i><i class="db" style="left:63.64%; top:58.28%"></i><i class="db" style="left:72.73%; top:56.91%"></i><i class="db" style="left:81.82%; top:54.04%"></i><i class="db" style="left:90.91%; top:42.62%"></i><i class="db" style="left:100.00%; top:46.09%"></i><i class="dc" style="left:0.00%; top:66.84%"></i><i class="dc" style="left:9.09%; top:78.59%"></i><i class="dc" style="left:18.18%; top:76.68%"></i><i class="dc" style="left:27.27%; top:75.73%"></i><i class="dc" style="left:36.36%; top:79.38%"></i><i class="dc" style="left:45.45%; top:80.57%"></i><i class="dc" style="left:54.55%; top:83.36%"></i><i class="dc" style="left:63.64%; top:72.96%"></i><i class="dc" style="left:72.73%; top:79.07%"></i><i class="dc" style="left:81.82%; top:73.46%"></i><i class="dc" style="left:90.91%; top:69.75%"></i><i class="dc" style="left:100.00%; top:65.86%"></i>
-        <div class="lpy"><span>+1 grew</span><span>0</span><span>−1 died</span></div>
+        <div class="lpline la" style="clip-path:polygon(0.00% 94.16%, 9.09% 87.96%, 18.18% 83.26%, 27.27% 79.33%, 36.36% 74.99%, 45.45% 69.93%, 54.55% 64.04%, 63.64% 57.14%, 72.73% 48.81%, 81.82% 37.44%, 90.91% 25.33%, 100.00% 7.96%, 100.00% 10.96%, 90.91% 28.33%, 81.82% 40.44%, 72.73% 51.81%, 63.64% 60.14%, 54.55% 67.04%, 45.45% 72.93%, 36.36% 77.99%, 27.27% 82.33%, 18.18% 86.26%, 9.09% 90.96%, 0.00% 97.16%)"></div>
+        <div class="lpline lb" style="clip-path:polygon(0.00% 73.76%, 9.09% 70.41%, 18.18% 68.73%, 27.27% 63.54%, 36.36% 61.32%, 45.45% 59.25%, 54.55% 53.32%, 63.64% 57.96%, 72.73% 55.11%, 81.82% 51.46%, 90.91% 40.89%, 100.00% 44.31%, 100.00% 47.31%, 90.91% 43.89%, 81.82% 54.46%, 72.73% 58.11%, 63.64% 60.96%, 54.55% 56.32%, 45.45% 62.25%, 36.36% 64.32%, 27.27% 66.54%, 18.18% 71.73%, 9.09% 73.41%, 0.00% 76.76%)"></div>
+        <div class="lpline lc" style="clip-path:polygon(0.00% 79.25%, 9.09% 84.07%, 18.18% 81.92%, 27.27% 85.01%, 36.36% 84.54%, 45.45% 85.46%, 54.55% 85.62%, 63.64% 77.71%, 72.73% 81.62%, 81.82% 81.07%, 90.91% 74.63%, 100.00% 71.04%, 100.00% 74.04%, 90.91% 77.63%, 81.82% 84.07%, 72.73% 84.62%, 63.64% 80.71%, 54.55% 88.62%, 45.45% 88.46%, 36.36% 87.54%, 27.27% 88.01%, 18.18% 84.92%, 9.09% 87.07%, 0.00% 82.25%)"></div>
+        <i class="da" style="left:0.00%; top:95.66%"></i><i class="da" style="left:9.09%; top:89.46%"></i><i class="da" style="left:18.18%; top:84.76%"></i><i class="da" style="left:27.27%; top:80.83%"></i><i class="da" style="left:36.36%; top:76.49%"></i><i class="da" style="left:45.45%; top:71.43%"></i><i class="da" style="left:54.55%; top:65.54%"></i><i class="da" style="left:63.64%; top:58.64%"></i><i class="da" style="left:72.73%; top:50.31%"></i><i class="da" style="left:81.82%; top:38.94%"></i><i class="da" style="left:90.91%; top:26.83%"></i><i class="da" style="left:100.00%; top:9.46%"></i><i class="db" style="left:0.00%; top:75.26%"></i><i class="db" style="left:9.09%; top:71.91%"></i><i class="db" style="left:18.18%; top:70.23%"></i><i class="db" style="left:27.27%; top:65.04%"></i><i class="db" style="left:36.36%; top:62.82%"></i><i class="db" style="left:45.45%; top:60.75%"></i><i class="db" style="left:54.55%; top:54.82%"></i><i class="db" style="left:63.64%; top:59.46%"></i><i class="db" style="left:72.73%; top:56.61%"></i><i class="db" style="left:81.82%; top:52.96%"></i><i class="db" style="left:90.91%; top:42.39%"></i><i class="db" style="left:100.00%; top:45.81%"></i><i class="dc" style="left:0.00%; top:80.75%"></i><i class="dc" style="left:9.09%; top:85.57%"></i><i class="dc" style="left:18.18%; top:83.42%"></i><i class="dc" style="left:27.27%; top:86.51%"></i><i class="dc" style="left:36.36%; top:86.04%"></i><i class="dc" style="left:45.45%; top:86.96%"></i><i class="dc" style="left:54.55%; top:87.12%"></i><i class="dc" style="left:63.64%; top:79.21%"></i><i class="dc" style="left:72.73%; top:83.12%"></i><i class="dc" style="left:81.82%; top:82.57%"></i><i class="dc" style="left:90.91%; top:76.13%"></i><i class="dc" style="left:100.00%; top:72.54%"></i>
+        <div class="lpy"><span>+1 grew</span><span>0</span><span>&minus;1 died</span></div>
       </div>
       <div class="lpkey">
         <span><em style="background:var(--ess)"></em><b>FANCD2</b></span>
-        <span><em style="background:var(--ess); opacity:.55"></em><b>FANCA</b> — tracks it, r = +0.36</span>
-        <span><em style="background:#B9BFC5"></em><b>ACTB</b> — does not, r = +0.08</span>
+        <span><em style="background:var(--ess); opacity:.55"></em><b>FANCA</b> &mdash; tracks it, r = +0.35</span>
+        <span><em style="background:#B9BFC5"></em><b>RPL13</b> &mdash; essential everywhere, r = +0.11</span>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:6; margin-top:22px">1,396 screens measure all three. Sorted by FANCD2 and cut into twelve equal groups, each point is that group's mean. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b> — which is what stops a gene that dies everywhere bonding with everything.</p>
+    <p class="tag" data-anim style="--d:6; margin-top:22px">1,335 screens measure all three. Sorted by FANCD2 and cut into twelve equal groups, each point is that group's mean. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b> — which is what stops a gene that dies everywhere bonding with everything.</p>
   </div>
 </section>
 
