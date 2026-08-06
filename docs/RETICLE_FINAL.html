@@ -338,12 +338,12 @@ h2 .em.adv{color:var(--adv)}
 .litnote{margin-top:8px; font-family:var(--mono); font-size:12.5px; color:var(--ess)}
 
 /* data-source coverage */
-.srcs{display:grid; grid-template-columns:1fr 1fr; gap:10px 34px; margin-top:24px}
-.srcrow{display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:12px}
-.srcrow .nm{font-family:var(--mono); font-size:12.5px; color:var(--ink)}
-.srcrow .tr{height:9px; border-radius:5px; background:var(--grid-soft); overflow:hidden}
-.srcrow .tr i{display:block; height:100%; background:var(--ess); border-radius:5px}
-.srcrow .pc{font-family:var(--mono); font-size:12.5px; color:var(--mute); text-align:right}
+.srcs{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-top:30px}
+.srcrow{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px;
+  min-height:104px; padding:16px 12px; border:1px solid var(--grid); border-radius:10px; background:#fff}
+/* Drops in once the real marks are on disk; until then the wordmark carries the cell. */
+.srcrow img{max-width:100%; max-height:38px; width:auto; height:auto; object-fit:contain}
+.srcrow .nm{font-family:var(--mono); font-size:12.5px; color:var(--ink); text-align:center; line-height:1.35}
 
 /* the shared ruler that makes screens comparable */
 .ruler{margin-top:28px}
@@ -711,18 +711,18 @@ h2 .em.adv{color:var(--adv)}
     <div class="eyebrow" data-anim><b>03</b> — the answer</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">RETICLE Wiki: ten trusted sources, assembled into one page.</h2>
     <div class="srcs" data-anim style="--d:2">
-      <div class="srcrow"><div class="nm">NCBI Gene</div><div class="tr"><i style="width:92%"></i></div><div class="pc">92%</div></div>
-      <div class="srcrow"><div class="nm">Reactome</div><div class="tr"><i style="width:98%"></i></div><div class="pc">98%</div></div>
-      <div class="srcrow"><div class="nm">UniProt</div><div class="tr"><i style="width:81%"></i></div><div class="pc">81%</div></div>
-      <div class="srcrow"><div class="nm">STRING</div><div class="tr"><i style="width:87%"></i></div><div class="pc">87%</div></div>
-      <div class="srcrow"><div class="nm">Gene Ontology</div><div class="tr"><i style="width:83%"></i></div><div class="pc">83%</div></div>
-      <div class="srcrow"><div class="nm">DepMap</div><div class="tr"><i style="width:87%"></i></div><div class="pc">87%</div></div>
-      <div class="srcrow"><div class="nm">PubMed</div><div class="tr"><i style="width:94%"></i></div><div class="pc">94%</div></div>
-      <div class="srcrow"><div class="nm">AlphaFold · PDBe</div><div class="tr"><i style="width:90%"></i></div><div class="pc">90%</div></div>
-      <div class="srcrow"><div class="nm">Ensembl</div><div class="tr"><i style="width:96%"></i></div><div class="pc">96%</div></div>
-      <div class="srcrow"><div class="nm">BioGRID ORCS</div><div class="tr"><i style="width:100%"></i></div><div class="pc">2,157</div></div>
+      <div class="srcrow"><div class="nm">NCBI Gene</div></div>
+      <div class="srcrow"><div class="nm">UniProt</div></div>
+      <div class="srcrow"><div class="nm">Gene Ontology</div></div>
+      <div class="srcrow"><div class="nm">PubMed</div></div>
+      <div class="srcrow"><div class="nm">Ensembl</div></div>
+      <div class="srcrow"><div class="nm">Reactome</div></div>
+      <div class="srcrow"><div class="nm">STRING</div></div>
+      <div class="srcrow"><div class="nm">DepMap</div></div>
+      <div class="srcrow"><div class="nm">AlphaFold · PDBe</div></div>
+      <div class="srcrow"><div class="nm">BioGRID ORCS</div></div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:24px">Bars are the share of protein-coding genes each source covers. <b style="color:var(--ink)">Ten sources, and the dark half is still dark.</b></p>
+    <p class="tag" data-anim style="--d:3; margin-top:24px"><b style="color:var(--ink)">Ten sources, and the dark half is still dark.</b></p>
   </div>
 </section>
 
