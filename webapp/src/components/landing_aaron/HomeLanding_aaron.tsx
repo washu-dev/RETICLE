@@ -43,12 +43,75 @@ const isGene = (h: Hit): h is GeneHit => 'symbol' in h;
 const CSS = `
 .rxhome{
   ${EDITORIAL_TOKENS}
+  --ease:cubic-bezier(.22,.68,.28,1);
+  position:relative;
   min-height:100vh; background:${PAPER_GROUND};
   color:var(--ink); font-family:var(--sans); line-height:1.5;
   display:flex; flex-direction:column;
 }
 .rxhome *{box-sizing:border-box}
+
+/* ── the corpus ──────────────────────────────────────────────────────────
+   The paper ground is a 22px lattice of grey dots. These two layers light a
+   sparse few of those same nodes -- every offset is 1+22k, so a lit dot lands
+   exactly on an existing one and reads as "some of these are on", not as a
+   second pattern laid over the first.
+
+   It is the only ambient element on the page and it is not decoration: teal is
+   essential and ochre is KO-advantageous, the same two readings these accents
+   carry everywhere else in the product, so what sits under the search box is
+   the corpus it searches. They breathe on 19s and 23s -- coprime, so the pair
+   never settles into a loop you can catch -- and they do not translate. Drift
+   would read as wallpaper; a slow swell reads as phosphor, which is the right
+   register for an instrument sitting idle.
+
+   Sparsity is the whole point and was tuned by eye: a denser first pass read as
+   polka dots, which is decoration, which is the one thing this page must not
+   grow. Two dots per tile on tiles of 22x23 and 22x29 puts roughly a dozen lit
+   nodes on a laptop screen and keeps the tile repeat below noticing. The lit
+   dots are 1.3px against the ground's 1px so they read as the same dot turned
+   up, not as a second, larger dot laid over it. */
+.rxhome::before,
+.rxhome::after{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+}
+.rxhome::before{
+  background:
+    radial-gradient(circle at 89px 331px,  var(--know) 1.3px, transparent 1.8px),
+    radial-gradient(circle at 375px 133px, var(--know) 1.3px, transparent 1.8px);
+  background-size:506px 506px;            /* 22 × 23 */
+  animation:corpus-ess 19s ease-in-out infinite;
+}
+.rxhome::after{
+  background:
+    radial-gradient(circle at 199px 67px,  var(--eviq) 1.3px, transparent 1.8px),
+    radial-gradient(circle at 463px 441px, var(--eviq) 1.3px, transparent 1.8px);
+  background-size:638px 638px;            /* 22 × 29 — coprime with the layer above */
+  animation:corpus-adv 23s ease-in-out infinite;
+}
+@keyframes corpus-ess{0%,100%{opacity:.14}50%{opacity:.40}}
+@keyframes corpus-adv{0%,100%{opacity:.12}50%{opacity:.34}}
+
+/* Arrival, in reading order. Same rise/--ease the public page uses, on purpose:
+   editorialTheme exists so the login boundary is not a change of identity, and
+   that has to include how a page comes in, not only what it is made of. */
+.rxhome .rise{opacity:0; transform:translateY(10px)}
+.rxhome.anim .rise{animation:rise .8s var(--ease) forwards}
+@keyframes rise{to{opacity:1; transform:none}}
+.rxhome.anim .r1{animation-delay:.04s}
+.rxhome.anim .r2{animation-delay:.13s}
+.rxhome.anim .r3{animation-delay:.22s}
+.rxhome.anim .r4{animation-delay:.30s}
+.rxhome.anim .r5{animation-delay:.40s}
+
+@media (prefers-reduced-motion:reduce){
+  .rxhome::before{animation:none; opacity:.28}
+  .rxhome::after{animation:none; opacity:.22}
+  .rxhome .rise,
+  .rxhome.anim .rise{opacity:1; transform:none; animation:none}
+}
 .rxhome .stage{
+  position:relative; z-index:1;
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:24px clamp(20px,5vw,48px) 96px; gap:26px;
 }
@@ -63,7 +126,13 @@ const CSS = `
 }
 
 /* ── the box ─────────────────────────────────────────────────────────── */
-.rxhome .boxwrap{position:relative; width:100%; max-width:660px}
+/* z-index is explicit because the suggestion list has to cover the toggle, the hint and the
+   handoff card below it. It used to get that for free -- boxwrap is positioned and they were not,
+   so it painted later -- but the arrival animation gives them an opacity of their own, and an
+   element with opacity paints in the same layer as a positioned one. Being later in the document,
+   they started landing on top of the list. Stating the order stops that from depending on whether
+   a sibling happens to be animated. */
+.rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:660px}
 .rxhome .box{
   display:flex; align-items:center; gap:8px; padding:7px 7px 7px 8px;
   border:1px solid var(--line); border-radius:16px; background:var(--card);
@@ -184,6 +253,7 @@ const CSS = `
   border:1px solid var(--line); border-radius:16px; background:var(--card);
 }
 .rxhome .foot{
+  position:relative; z-index:1;
   flex:0 0 auto; padding:14px clamp(20px,5vw,48px); text-align:center;
   font-family:var(--mono); font-size:10px; letter-spacing:.05em; color:var(--faint);
 }
@@ -233,6 +303,10 @@ export default function HomeLanding_aaron({
      fails and the button falls back to copy that needs no number — a home page must not depend on
      an API being awake. */
   const [corpus, setCorpus] = useState<number | null>(null);
+  /* The arrival runs once, on the first frame after mount, so the page is painted in its start
+     state before anything moves. Set in an effect rather than at render because a class applied in
+     the same commit that creates the elements gives the browser no start state to animate from. */
+  const [arrived, setArrived] = useState(false);
 
   ensureEditorialFonts();
 
@@ -263,6 +337,11 @@ export default function HomeLanding_aaron({
     }, 120);
     return () => clearTimeout(t);
   }, [q, mode, organism]);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setArrived(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -309,13 +388,13 @@ export default function HomeLanding_aaron({
   };
 
   return (
-    <div className="rxhome">
+    <div className={`rxhome${arrived ? ' anim' : ''}`}>
       <style>{CSS}</style>
 
       <div className="stage">
-        <h1 className="mark">RETI<b>C</b>LE<span>beta</span></h1>
+        <h1 className="mark rise r1">RETI<b>C</b>LE<span>beta</span></h1>
 
-        <div className={`boxwrap${hits.length || down ? ' open' : ''}`} ref={wrapRef}>
+        <div className={`boxwrap rise r2${hits.length || down ? ' open' : ''}`} ref={wrapRef}>
           <form className="box" onSubmit={submit}>
             <button
               type="button"
@@ -418,7 +497,7 @@ export default function HomeLanding_aaron({
 
         {/* Screen similarity is currently precomputed for a 962-screen human pool. Keep that
             limitation visible and do not offer a mouse switch that can only lead to a 404. */}
-        <div className="orgs">
+        <div className="orgs rise r3">
           {mode === 'gene' ? (
             (['human', 'mouse'] as const).map((o) => (
               <button
@@ -433,7 +512,7 @@ export default function HomeLanding_aaron({
           )}
         </div>
 
-        <p className="hint">
+        <p className="hint rise r4">
           Type a symbol to look one up, or hand over a whole screen below.
         </p>
       {/* The product has two halves and this page used to present only one. Looking a gene up and
@@ -443,7 +522,7 @@ export default function HomeLanding_aaron({
           screens measured — which is exactly what lies on the other side of this button.
           The count is fetched live from the same endpoint the comparison page uses, so the button
           states its own value and is never stale. */}
-      <div className="handoff">
+      <div className="handoff rise r5">
         <div className="handoff-copy">
           <div className="handoff-k">your own screen</div>
           <p>Already ran one? Land it against everything published and see which screens agree.</p>
