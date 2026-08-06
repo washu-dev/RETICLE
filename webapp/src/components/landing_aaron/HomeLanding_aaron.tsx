@@ -145,7 +145,30 @@ const CSS = `
 .rxhome .hint{
   font-size:12.5px; color:var(--muted); text-align:center; margin:0;
 }
-.rxhome .hint button{
+.rxhome .handoff{
+  width:100%; max-width:620px; margin:26px auto 0; display:flex; align-items:center; gap:20px;
+  padding:16px 18px; border:1px solid var(--line); border-left:2px solid var(--eviq);
+  border-radius:12px; background:var(--card); text-align:left;
+}
+.handoff-copy{flex:1 1 auto; min-width:0}
+.handoff-k{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--eviq); margin-bottom:4px;
+}
+.handoff-copy p{margin:0; font-size:13px; line-height:1.5; color:var(--ink2)}
+.handoff-go{
+  flex:0 0 auto; font-family:var(--sans); font-size:13px; font-weight:500;
+  padding:9px 15px; border-radius:9px; border:1px solid var(--eviq);
+  background:var(--card); color:var(--eviq); cursor:pointer; white-space:nowrap; transition:.15s;
+}
+.handoff-go b{font-weight:600; font-variant-numeric:tabular-nums}
+.handoff-go:hover{background:var(--eviq); color:#fff}
+.handoff-go:focus-visible{outline:2px solid var(--eviq); outline-offset:2px}
+@media (max-width:620px){
+  .handoff{flex-direction:column; align-items:stretch; gap:13px}
+  .handoff-go{width:100%}
+}
+.hint button{
   border:0; background:none; padding:0; cursor:pointer; color:var(--know); font:inherit;
   text-decoration:underline; text-underline-offset:3px;
 }
@@ -156,6 +179,10 @@ const CSS = `
   border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; transition:.15s;
 }
 .rxhome .orgs button.on{background:var(--ink); border-color:var(--ink); color:#fff; font-weight:500}
+.rxhome .scope-note{
+  font-family:var(--mono); font-size:11px; color:var(--muted); padding:5px 12px;
+  border:1px solid var(--line); border-radius:16px; background:var(--card);
+}
 .rxhome .foot{
   flex:0 0 auto; padding:14px clamp(20px,5vw,48px); text-align:center;
   font-family:var(--mono); font-size:10px; letter-spacing:.05em; color:var(--faint);
@@ -175,7 +202,7 @@ const CSS = `
 const MODES: { key: Mode; label: string; blurb: string; placeholder: string }[] = [
   { key: 'gene', label: 'Gene', blurb: 'Everything on record, plus what the screens say',
     placeholder: 'Search a gene — try PO' },
-  { key: 'screen', label: 'Screen', blurb: 'Find a screen by cell line, drug or author',
+  { key: 'screen', label: 'Screen', blurb: 'Compare a supported human screen',
     placeholder: 'Search a screen — cell line, drug, author or id' },
 ];
 
@@ -201,6 +228,11 @@ export default function HomeLanding_aaron({
   const [menu, setMenu] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  /* The size of the comparison corpus, read from the endpoint the comparison page itself uses, so
+     the button on this page and the counter on that one can never disagree. Stays null if the call
+     fails and the button falls back to copy that needs no number — a home page must not depend on
+     an API being awake. */
+  const [corpus, setCorpus] = useState<number | null>(null);
 
   ensureEditorialFonts();
 
@@ -231,6 +263,15 @@ export default function HomeLanding_aaron({
     }, 120);
     return () => clearTimeout(t);
   }, [q, mode, organism]);
+
+  useEffect(() => {
+    let live = true;
+    fetch(`${API_BASE_URL}/api/corpus/count`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (live && d && typeof d.count === 'number') setCorpus(d.count); })
+      .catch(() => { /* leave it null; the button reads fine without a number */ });
+    return () => { live = false; };
+  }, []);
 
   // Close the mode menu on an outside click. The suggestion list is left alone — it closes when
   // the query empties or something is chosen, which is what a person expects from a search box.
@@ -316,7 +357,13 @@ export default function HomeLanding_aaron({
                   key={m.key}
                   role="menuitem"
                   className={m.key === mode ? 'on' : ''}
-                  onClick={() => { setMode(m.key); setMenu(false); setHits([]); inputRef.current?.focus(); }}
+                  onClick={() => {
+                    setMode(m.key);
+                    if (m.key === 'screen') setOrganism('human');
+                    setMenu(false);
+                    setHits([]);
+                    inputRef.current?.focus();
+                  }}
                 >
                   {m.label}
                   <small>{m.blurb}</small>
@@ -369,23 +416,45 @@ export default function HomeLanding_aaron({
           )}
         </div>
 
-        {/* Shown in BOTH modes. Screens are species-specific too — 1,952 human against 205 mouse —
-            and both suggesters filter on it, so hiding the control in screen mode meant someone who
-            had picked Mouse kept searching mouse screens with nothing on screen saying so. */}
+        {/* Screen similarity is currently precomputed for a 962-screen human pool. Keep that
+            limitation visible and do not offer a mouse switch that can only lead to a 404. */}
         <div className="orgs">
-          {(['human', 'mouse'] as const).map((o) => (
-            <button
-              key={o}
-              className={o === organism ? 'on' : ''}
-              onClick={() => setOrganism(o)}
-              aria-pressed={o === organism}
-            >{o === 'human' ? 'Human' : 'Mouse'}</button>
-          ))}
+          {mode === 'gene' ? (
+            (['human', 'mouse'] as const).map((o) => (
+              <button
+                key={o}
+                className={o === organism ? 'on' : ''}
+                onClick={() => setOrganism(o)}
+                aria-pressed={o === organism}
+              >{o === 'human' ? 'Human' : 'Mouse'}</button>
+            ))
+          ) : (
+            <span className="scope-note">Human comparison pool · 962 supported screens</span>
+          )}
         </div>
 
         <p className="hint">
-          or <button onClick={onStart}>bring a ranked gene list from your own screen →</button>
+          Type a symbol to look one up, or hand over a whole screen below.
         </p>
+      {/* The product has two halves and this page used to present only one. Looking a gene up and
+          comparing your own screen are peers, so the second one gets a real affordance rather than
+          an underlined word in a caption.
+          Ochre, not teal: in this palette teal is what is already established and ochre is what the
+          screens measured — which is exactly what lies on the other side of this button.
+          The count is fetched live from the same endpoint the comparison page uses, so the button
+          states its own value and is never stale. */}
+      <div className="handoff">
+        <div className="handoff-copy">
+          <div className="handoff-k">your own screen</div>
+          <p>Already ran one? Land it against everything published and see which screens agree.</p>
+        </div>
+        <button className="handoff-go" onClick={onStart}>
+          {corpus == null
+            ? 'Compare my screen'
+            : <>Compare against <b>{corpus.toLocaleString()}</b> screens</>} <span aria-hidden="true">→</span>
+        </button>
+      </div>
+
       </div>
 
       <div className="foot">
