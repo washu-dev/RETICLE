@@ -375,6 +375,39 @@ h2 .em.adv{color:var(--adv)}
 .gba .slot .val{font-family:var(--sans); font-size:17px; color:var(--ink); line-height:1.3; opacity:0}
 .slide.is-active .gba .slot .val{animation:nbin .7s ease both; animation-delay:2050ms}
 
+/* ── 03 · the co-essentiality line plot ──────────────────────────────
+   Replaces four blocky heat strips. Those showed three states where the score
+   is continuous, and made the audience compare two rows against each other; two
+   lines on one axis make agreement a single shape instead.
+
+   1,396 screens measure all three genes. They are sorted by FANCD2 and cut into
+   twelve equal groups, and each point is that group's mean — a binned trend,
+   which is how a correlation of this size is honestly drawn. Twelve raw screens
+   would have shown noise, and picking twelve that happened to agree would have
+   been picking. Lines are clip-path polygons: CSS, like every other figure here. */
+.lp{position:relative; height:280px; margin-top:26px; border-left:1px solid var(--grid);
+  border-bottom:1px solid var(--grid); padding:0}
+.lpgrid{position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between}
+.lpgrid span{height:1px; background:var(--grid-soft)}
+.lpline{position:absolute; inset:0}
+.lpline.la{background:var(--ess)}
+.lpline.lb{background:var(--ess); opacity:.55}
+.lpline.lc{background:#B9BFC5}
+.lp i{position:absolute; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%}
+.lp i.da{background:var(--ess)}
+.lp i.db{background:#fff; border:2.5px solid var(--ess)}
+.lp i.dc{background:#B9BFC5}
+.lpy{position:absolute; right:-6px; top:0; bottom:0; display:flex; flex-direction:column;
+  justify-content:space-between; align-items:flex-end; pointer-events:none}
+.lpy span{font-family:var(--mono); font-size:11px; color:var(--mute); background:var(--paper); padding:0 4px}
+/* draw left to right on arrival */
+.slide.is-active .lp{animation:lpdraw 1.5s cubic-bezier(.3,.7,.3,1) both; animation-delay:600ms}
+@keyframes lpdraw{from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 -2% 0 0)}}
+.lpkey{display:flex; gap:26px; margin-top:16px; font-family:var(--mono); font-size:13px; color:var(--mute)}
+.lpkey b{font-weight:500}
+.lpkey em{font-style:normal; display:inline-block; width:22px; height:3px; border-radius:2px;
+  margin-right:8px; vertical-align:middle}
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -789,21 +822,6 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — how the wiki is built</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:28ch">Ten sources, joined offline on one key.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">1 · fetch</div><div class="body">All ten pulled in <b>full</b>, not per request.</div></div>
-      <div class="nf"><div class="step">2 · join</div><div class="body">Every record keyed on one <b>GeneID</b>, so the ten agree which gene they mean.</div></div>
-      <div class="nf"><div class="step">3 · embed</div><div class="body">Chunked and embedded into <b>pgvector</b>, beside the screens.</div></div>
-      <div class="nf"><div class="step">4 · retrieve</div><div class="body">The page answers from that, in <b>a quarter of a second</b>.</div></div>
-    </div>
-    <p class="tag" data-anim style="--d:6; margin-top:26px">Nothing is fetched while you wait, so ten sources cost what one does — and <b style="color:var(--ink)">every sentence keeps the source it came from</b>, which is what a summary alone cannot give you.</p>
-  </div>
-</section>
-
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the turn</div>
     <h2 data-anim style="--d:1; font-size:clamp(32px,5.2vw,64px); max-width:26ch">But a CRISPR screen never played favourites.</h2>
     <div class="turnrow">
@@ -861,24 +879,22 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — how it is built</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:26ch">Two genes are linked when they die in the same screens.</h2>
-    <div class="build" data-anim style="--d:2">
-      <div class="bname">FANCD2 <i>query</i></div>
-      <div class="bstrip p-d2" style="--i:0"></div>
-      <div class="bverdict"></div>
-
-      <div class="bname">FANCA</div>
-      <div class="bstrip p-fa" style="--i:1"></div>
-      <div class="bverdict keep" style="--i:1">mutual best · tier 1</div>
-
-      <div class="bname">RPL13</div>
-      <div class="bstrip p-rp" style="--i:2"></div>
-      <div class="bverdict" style="--i:2">essential everywhere</div>
-
-      <div class="bname">ACTB</div>
-      <div class="bstrip p-ac" style="--i:3"></div>
-      <div class="bverdict" style="--i:3">no agreement</div>
+    <div data-anim style="--d:2">
+      <div class="lp">
+        <div class="lpgrid"><span></span><span></span><span></span></div>
+        <div class="lpline la" style="clip-path:polygon(0.00% 95.02%, 9.09% 88.63%, 18.18% 83.59%, 27.27% 79.50%, 36.36% 75.10%, 45.45% 69.98%, 54.55% 64.01%, 63.64% 57.05%, 72.73% 48.49%, 81.82% 37.20%, 90.91% 24.94%, 100.00% 7.62%, 100.00% 10.62%, 90.91% 27.94%, 81.82% 40.20%, 72.73% 51.49%, 63.64% 60.05%, 54.55% 67.01%, 45.45% 72.98%, 36.36% 78.10%, 27.27% 82.50%, 18.18% 86.59%, 9.09% 91.63%, 0.00% 98.02%)"></div>
+        <div class="lpline lb" style="clip-path:polygon(0.00% 76.75%, 9.09% 71.51%, 18.18% 68.11%, 27.27% 63.86%, 36.36% 61.66%, 45.45% 59.00%, 54.55% 53.06%, 63.64% 56.78%, 72.73% 55.41%, 81.82% 52.54%, 90.91% 41.12%, 100.00% 44.59%, 100.00% 47.59%, 90.91% 44.12%, 81.82% 55.54%, 72.73% 58.41%, 63.64% 59.78%, 54.55% 56.06%, 45.45% 62.00%, 36.36% 64.66%, 27.27% 66.86%, 18.18% 71.11%, 9.09% 74.51%, 0.00% 79.75%)"></div>
+        <div class="lpline lc" style="clip-path:polygon(0.00% 65.34%, 9.09% 77.09%, 18.18% 75.18%, 27.27% 74.23%, 36.36% 77.88%, 45.45% 79.07%, 54.55% 81.86%, 63.64% 71.46%, 72.73% 77.57%, 81.82% 71.96%, 90.91% 68.25%, 100.00% 64.36%, 100.00% 67.36%, 90.91% 71.25%, 81.82% 74.96%, 72.73% 80.57%, 63.64% 74.46%, 54.55% 84.86%, 45.45% 82.07%, 36.36% 80.88%, 27.27% 77.23%, 18.18% 78.18%, 9.09% 80.09%, 0.00% 68.34%)"></div>
+        <i class="da" style="left:0.00%; top:96.52%"></i><i class="da" style="left:9.09%; top:90.13%"></i><i class="da" style="left:18.18%; top:85.09%"></i><i class="da" style="left:27.27%; top:81.00%"></i><i class="da" style="left:36.36%; top:76.60%"></i><i class="da" style="left:45.45%; top:71.48%"></i><i class="da" style="left:54.55%; top:65.51%"></i><i class="da" style="left:63.64%; top:58.55%"></i><i class="da" style="left:72.73%; top:49.99%"></i><i class="da" style="left:81.82%; top:38.70%"></i><i class="da" style="left:90.91%; top:26.44%"></i><i class="da" style="left:100.00%; top:9.12%"></i><i class="db" style="left:0.00%; top:78.25%"></i><i class="db" style="left:9.09%; top:73.01%"></i><i class="db" style="left:18.18%; top:69.61%"></i><i class="db" style="left:27.27%; top:65.36%"></i><i class="db" style="left:36.36%; top:63.16%"></i><i class="db" style="left:45.45%; top:60.50%"></i><i class="db" style="left:54.55%; top:54.56%"></i><i class="db" style="left:63.64%; top:58.28%"></i><i class="db" style="left:72.73%; top:56.91%"></i><i class="db" style="left:81.82%; top:54.04%"></i><i class="db" style="left:90.91%; top:42.62%"></i><i class="db" style="left:100.00%; top:46.09%"></i><i class="dc" style="left:0.00%; top:66.84%"></i><i class="dc" style="left:9.09%; top:78.59%"></i><i class="dc" style="left:18.18%; top:76.68%"></i><i class="dc" style="left:27.27%; top:75.73%"></i><i class="dc" style="left:36.36%; top:79.38%"></i><i class="dc" style="left:45.45%; top:80.57%"></i><i class="dc" style="left:54.55%; top:83.36%"></i><i class="dc" style="left:63.64%; top:72.96%"></i><i class="dc" style="left:72.73%; top:79.07%"></i><i class="dc" style="left:81.82%; top:73.46%"></i><i class="dc" style="left:90.91%; top:69.75%"></i><i class="dc" style="left:100.00%; top:65.86%"></i>
+        <div class="lpy"><span>+1 grew</span><span>0</span><span>−1 died</span></div>
+      </div>
+      <div class="lpkey">
+        <span><em style="background:var(--ess)"></em><b>FANCD2</b></span>
+        <span><em style="background:var(--ess); opacity:.55"></em><b>FANCA</b> — tracks it, r = +0.36</span>
+        <span><em style="background:#B9BFC5"></em><b>ACTB</b> — does not, r = +0.08</span>
+      </div>
     </div>
-    <p class="tag" data-anim style="--d:6; margin-top:26px">Each strip is one gene across sixteen screens — <b style="color:var(--ess)">teal where the knockout killed</b>, <b style="color:var(--adv)">ochre where it helped</b>. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b>, which is what stops a ribosomal gene bonding with everything.</p>
+    <p class="tag" data-anim style="--d:6; margin-top:22px">1,396 screens measure all three. Sorted by FANCD2 and cut into twelve equal groups, each point is that group's mean. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b> — which is what stops a gene that dies everywhere bonding with everything.</p>
   </div>
 </section>
 
