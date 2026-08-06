@@ -13,7 +13,7 @@
   --grid:#DCE0E4; --grid-soft:#EBEDEF;
   --ess:#1F6F8B;          /* depletion pole — essential */
   --adv:#E08A3C;          /* enrichment pole — advantageous */
-  --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22;
+  --ess-soft:#1F6F8B22; --adv-soft:#E08A3C22; --pred-ink:#7C5CBF;
   --disp:"Fraunces",Georgia,serif;
   --sans:"IBM Plex Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -344,6 +344,36 @@ h2 .em.adv{color:var(--adv)}
 .slide.is-active .pipe .outruler{animation:outdraw .9s cubic-bezier(.22,.68,.28,1) both; animation-delay:2760ms}
 @keyframes outdraw{to{transform:none}}
 .pipe .outcap{display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--mute)}
+
+/* ── 03 · guilt by association ────────────────────────────────────────
+   The neighbours arrive, their functions arrive, and only then does the empty
+   slot beside the gene fill. That order is the argument: the prediction is a
+   consequence of what is already on the left, not a sentence produced from
+   nowhere. Every symbol, correlation and function on this figure is read from
+   the shipped network and the GO annotations behind it. */
+.gba{display:grid; grid-template-columns:1.05fr auto .95fr; gap:0 26px; align-items:center; margin-top:26px}
+.gba .nbrs{display:flex; flex-direction:column; gap:9px}
+.gba .nb{display:grid; grid-template-columns:78px 1fr; align-items:baseline; gap:12px;
+  border:1px solid var(--grid); border-radius:8px; background:#fff; padding:10px 14px;
+  opacity:0; transform:translateX(-14px)}
+.slide.is-active .gba .nb{animation:nbin .55s cubic-bezier(.22,.68,.28,1) both;
+  animation-delay:calc(var(--i,0)*180ms + 500ms)}
+@keyframes nbin{to{opacity:1; transform:none}}
+.gba .nb b{font-family:var(--mono); font-size:14px; color:var(--ink); font-weight:500}
+.gba .nb span{font-family:var(--sans); font-size:12.5px; color:var(--mute); line-height:1.35}
+.gba .arrows{display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:22px; color:var(--pred-ink); opacity:0}
+.slide.is-active .gba .arrows{animation:nbin .6s ease both; animation-delay:1500ms}
+.gba .target{display:flex; flex-direction:column; gap:10px; align-items:flex-start}
+.gba .qgene{font-family:var(--mono); font-size:19px; font-weight:500; color:var(--ink);
+  border:2px solid var(--ess); border-radius:9px; padding:11px 18px; background:var(--ess-soft)}
+.gba .qgene i{font-style:normal; font-size:12px; color:var(--mute); margin-left:10px}
+.gba .slot{width:100%; border:2px dashed var(--adv); border-radius:9px; padding:13px 16px; min-height:70px;
+  display:flex; flex-direction:column; justify-content:center; background:#fff}
+.gba .slot .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--adv); margin-bottom:5px}
+.gba .slot .val{font-family:var(--sans); font-size:17px; color:var(--ink); line-height:1.3; opacity:0}
+.slide.is-active .gba .slot .val{animation:nbin .7s ease both; animation-delay:2050ms}
 
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
@@ -852,29 +882,33 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
+<!-- 03.8 · GUILT BY ASSOCIATION -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — step three</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">A second, independent channel grades every edge we draw.</h2>
-    <div class="tg" data-anim style="--d:2">
-      <div></div>
-      <div class="colh">also co-occur as hits</div>
-      <div class="colh">correlation only</div>
-
-      <div class="axl">mutual best</div>
-      <div class="tcell on"><div><div class="tn">tier 1 · both channels</div><div class="pr">46.4%</div></div><div class="sh">2,981 edges · 2.7%</div></div>
-      <div class="tcell"><div><div class="tn">tier 2 · mutual best</div><div class="pr">22.4%</div></div><div class="sh">6,924 edges · 6.3%</div></div>
-
-      <div class="axl">one-directional</div>
-      <div class="tcell"><div><div class="tn">tier 3 · co-hit</div><div class="pr">17.7%</div></div><div class="sh">7,740 edges · 7.1%</div></div>
-      <div class="tcell"><div><div class="tn">tier 4 · correlation</div><div class="pr">4.9%</div></div><div class="sh">91,767 edges · 83.9%</div></div>
+    <div class="eyebrow" data-anim><b>03</b> — naming a gene by its neighbours</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Neighbours with the same job name the gene between them.</h2>
+    <div class="gba" data-anim style="--d:2">
+      <div class="nbrs">
+        <div class="nb" style="--i:0"><b>ELP1</b><span>regulation of translation</span></div>
+        <div class="nb" style="--i:1"><b>ELP3</b><span>tRNA wobble uridine modification</span></div>
+        <div class="nb" style="--i:2"><b>KTI12</b><span>tRNA wobble uridine modification</span></div>
+        <div class="nb" style="--i:3"><b>ELP5</b><span>tRNA modification</span></div>
+        <div class="nb" style="--i:4"><b>MOCS3</b><span>protein urmylation</span></div>
+      </div>
+      <div class="arrows">→<br>→<br>→</div>
+      <div class="target">
+        <div class="qgene">CTU2 <i>28 papers</i></div>
+        <div class="slot">
+          <div class="lbl">predicted function</div>
+          <div class="val">tRNA wobble uridine modification</div>
+        </div>
+      </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">How often an edge is a real CORUM complex, against <b style="color:var(--ink)">0.6% for a random pair</b>. We tell the user which tier they are seeing.</p>
+    <p class="tag" data-anim style="--d:7; margin-top:24px">Those five are CTU2's mutual-best partners in the shipped network, at r = 0.26 to 0.32 over more than 1,300 screens — chosen by co-essentiality alone. <b style="color:var(--ink)">CTU2's own annotation says exactly this</b>, which is how we know the step works before trusting it on a gene where nobody can check.</p>
   </div>
 </section>
 
-<!-- 03.9 · THE RESULT -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
