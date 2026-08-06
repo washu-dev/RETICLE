@@ -408,27 +408,6 @@ h2 .em.adv{color:var(--adv)}
 .lpkey em{font-style:normal; display:inline-block; width:22px; height:3px; border-radius:2px;
   margin-right:8px; vertical-align:middle}
 
-/* ── 03 · the four tiers, as a footnote rather than a table ───────────
-   These four numbers answer the one question this slide otherwise invites --
-   how often is an edge real -- and they used to have a slide of their own. As a
-   strip they cost four lines instead of forty words: bar height is precision,
-   and the dashed rule is what a random annotated pair scores, which is the only
-   comparison that makes 46.4% mean anything. */
-.tiers{display:flex; align-items:flex-end; gap:20px; margin-top:20px; padding-top:16px;
-  border-top:1px solid var(--grid-soft)}
-.tiers .tlab{font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
-  color:var(--mute); line-height:1.5; max-width:132px; padding-bottom:2px}
-.tiers .tset{display:flex; align-items:flex-end; gap:22px; position:relative; flex:1}
-.tiers .t{display:flex; flex-direction:column; align-items:flex-start; gap:5px}
-.tiers .t .bar{width:52px; background:var(--ess); border-radius:2px 2px 0 0}
-.tiers .t .pc{font-family:var(--mono); font-size:14px; color:var(--ink); font-weight:500}
-.tiers .t .nm{font-family:var(--mono); font-size:10.5px; color:var(--mute); white-space:nowrap}
-.tiers .chance{position:absolute; left:0; right:0; border-top:1.5px dashed var(--adv); pointer-events:none}
-.tiers .chance span{position:absolute; right:0; top:-17px; font-family:var(--mono); font-size:10.5px; color:var(--adv)}
-.slide.is-active .tiers .t .bar{animation:tgrow .8s cubic-bezier(.22,.68,.28,1) both;
-  animation-delay:calc(var(--i,0)*110ms + 1900ms); transform-origin:bottom}
-@keyframes tgrow{from{transform:scaleY(0)} to{transform:none}}
-
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -914,7 +893,6 @@ h2 .em.adv{color:var(--adv)}
         <span><em style="background:var(--ess); opacity:.55"></em><b>FANCA</b> — tracks it, r = +0.36</span>
         <span><em style="background:#B9BFC5"></em><b>ACTB</b> — does not, r = +0.08</span>
       </div>
-      <div class="tiers" data-anim style="--d:7"><div class="tlab">how often an edge is a real CORUM complex</div><div class="tset"><div class="t" style="--i:0"><div class="pc">46.4%</div><div class="bar" style="height:64.0px"></div><div class="nm">tier 1 · both channels</div></div><div class="t" style="--i:1"><div class="pc">22.4%</div><div class="bar" style="height:30.9px"></div><div class="nm">tier 2 · mutual best</div></div><div class="t" style="--i:2"><div class="pc">17.7%</div><div class="bar" style="height:24.4px"></div><div class="nm">tier 3 · co-hit</div></div><div class="t" style="--i:3"><div class="pc">4.9%</div><div class="bar" style="height:6.8px"></div><div class="nm">tier 4 · correlation</div></div><div class="chance" style="bottom:19.8px"><span>0.6% · a random pair</span></div></div></div>
     </div>
     <p class="tag" data-anim style="--d:6; margin-top:22px">1,396 screens measure all three. Sorted by FANCD2 and cut into twelve equal groups, each point is that group's mean. <b style="color:var(--ink)">An edge survives only if each gene is the other's best match</b> — which is what stops a gene that dies everywhere bonding with everything.</p>
   </div>
