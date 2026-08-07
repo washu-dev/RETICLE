@@ -109,35 +109,56 @@ class _Workload:
         return self._admission
 
 
-_QUEUE_TIMEOUT = _positive_float("RETICLE_WORK_QUEUE_TIMEOUT", 1.0)
+# How long a caller waits for a worker before being turned away.
+#
+# THIS IS PER WORKLOAD, AND IT HAS TO BE. One shared value shipped, at 1.0s, and it
+# made /api/query unusable: that endpoint runs on `cpu`, takes 8-10 seconds, and has
+# one worker. A one-second admission timeout in front of an eight-second job cannot
+# ever be satisfied — the queue is guaranteed to still be occupied when the timer
+# expires — so the second person to ask for an analysis was rejected, every time.
+# Measured against the deployed API: four concurrent /api/query, three of them 503
+# after 1.3s with "cpu service is busy".
+#
+# So the number belongs to the job, not to the service. A gene lookup that normally
+# answers in 100ms should shed load after a second, because a client waiting longer
+# than that has already lost. An analysis the user explicitly started and is watching
+# a progress bar for should queue, because they will wait and they have nowhere else
+# to go. The rule is roughly: as long as the work itself typically takes.
+_TIMEOUT_DB = _positive_float("RETICLE_DB_QUEUE_TIMEOUT", 1.0)
+_TIMEOUT_CPU = _positive_float("RETICLE_CPU_QUEUE_TIMEOUT", 45.0)
+_TIMEOUT_EXTERNAL = _positive_float("RETICLE_EXTERNAL_QUEUE_TIMEOUT", 6.0)
+_TIMEOUT_LLM = _positive_float("RETICLE_LLM_QUEUE_TIMEOUT", 60.0)
+
 _WORKLOADS = {
     # Keep this well below the 16-slot psycopg pool and the small RDS instance.
     "db": _Workload(
         "db",
         _positive_int("RETICLE_DB_WORKERS", 3),
         _nonnegative_int("RETICLE_DB_QUEUE", 3),
-        _QUEUE_TIMEOUT,
+        _TIMEOUT_DB,
     ),
-    # The ECS task currently has 0.25 vCPU; parallel NumPy jobs hurt more than help.
+    # The ECS task currently has 0.25 vCPU; parallel NumPy jobs hurt more than help,
+    # so this stays at one worker and gets its depth from the queue instead. Four deep
+    # at ~9s each is about 36s for the last in line, which is inside the timeout above.
     "cpu": _Workload(
         "cpu",
         _positive_int("RETICLE_CPU_WORKERS", 1),
-        _nonnegative_int("RETICLE_CPU_QUEUE", 1),
-        _QUEUE_TIMEOUT,
+        _nonnegative_int("RETICLE_CPU_QUEUE", 4),
+        _TIMEOUT_CPU,
     ),
     "external": _Workload(
         "external",
         _positive_int("RETICLE_EXTERNAL_WORKERS", 2),
-        _nonnegative_int("RETICLE_EXTERNAL_QUEUE", 2),
-        _QUEUE_TIMEOUT,
+        _nonnegative_int("RETICLE_EXTERNAL_QUEUE", 4),
+        _TIMEOUT_EXTERNAL,
     ),
     # Keep slow LLM gateway waits out of the deterministic endpoint worker slots.
     # Any DB lookup inside an LLM job is still bounded by the shared DB pool.
     "llm": _Workload(
         "llm",
         _positive_int("RETICLE_LLM_WORKERS", 1),
-        _nonnegative_int("RETICLE_LLM_QUEUE", 1),
-        _QUEUE_TIMEOUT,
+        _nonnegative_int("RETICLE_LLM_QUEUE", 2),
+        _TIMEOUT_LLM,
     ),
 }
 

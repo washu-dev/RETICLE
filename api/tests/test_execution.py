@@ -298,3 +298,41 @@ def test_db_and_llm_quotas_are_isolated(
             release.set()
 
     anyio.run(scenario)
+
+
+def test_a_queued_caller_outlasts_the_job_it_is_waiting_behind() -> None:
+    """The bug this file did not catch.
+
+    A one-second admission timeout shipped in front of an eight-second endpoint, so
+    the second person to ask for an analysis was rejected every time — the queue
+    could not possibly have drained before the timer expired. The limiter was working
+    exactly as written; the number was wrong for the work.
+
+    So the invariant is not "the limiter rejects when full", which is already covered
+    above. It is that a workload's timeout leaves room for the job in front of you to
+    finish. Asserted against the shipped configuration rather than a fixture, because
+    the configuration is the thing that was wrong.
+    """
+
+    limits = execution.workload_limits()
+
+    # Typical wall-clock for one job on each workload, measured against the deployed
+    # API: /api/query is 8-10s on cpu, a pooled gene lookup is well under a second,
+    # an LLM round trip is tens of seconds.
+    typical_seconds = {"db": 0.5, "cpu": 9.0, "external": 2.0, "llm": 25.0}
+
+    for name, budget in limits.items():
+        workers = int(budget["workers"])
+        waiting = int(budget["admission"]) - workers
+        timeout = float(budget["queue_timeout_seconds"])
+        job = typical_seconds[name]
+
+        # Someone who is admitted to the waiting room has to be able to reach a worker.
+        # With `workers` running in parallel, the last of `waiting` callers waits about
+        # ceil(waiting / workers) jobs. If the timeout is under one job length, the
+        # queue is decorative: every caller who ever waits is rejected.
+        assert timeout >= job, (
+            f"{name}: a caller is turned away after {timeout}s but one job takes ~{job}s, "
+            "so nobody who queues can ever be served"
+        )
+        assert waiting >= 1, f"{name}: no waiting room at all — any overlap is rejected"
