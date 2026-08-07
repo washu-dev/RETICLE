@@ -83,3 +83,8 @@ design/multi-screen-analysis/00_GROUNDING.md
 design/multi-screen-analysis/01_CAPABILITIES.md
 design/multi-screen-analysis/02_WIREFRAMES_W1_W2.md
 design/multi-screen-analysis/03_PRESENTER_NOTES.md
+
+# Rendered presentation PDF — regenerated from RETICLE_FINAL.html on every edit.
+# ~5 MB binary that changes wholesale each render, so it is committed only at
+# milestones, with: git add -f docs/RETICLE_FINAL.pdf
+docs/RETICLE_FINAL.pdf
