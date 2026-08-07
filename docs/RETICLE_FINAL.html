@@ -539,6 +539,22 @@ h2 .em.adv{color:var(--adv)}
 .falist .fg{font-family:var(--mono); font-size:14.5px; color:var(--ess); letter-spacing:.02em}
 .falist .fg i{font-style:normal; color:var(--grid); padding:0 3px}
 
+/* ── 05 · what it costs ─────────────────────────────────────────────
+   A bar chart would be dishonest here — one row is 68% of the total and the rest
+   round to nothing, so the shape would say "look at RDS" when the point is that
+   the whole column is small. A ledger says the number and gets out of the way. */
+.ledger{display:grid; grid-template-columns:1fr auto; gap:0 28px; margin-top:26px; max-width:760px}
+.ledger .li{display:contents}
+.ledger .lk{font-family:var(--sans); font-size:15px; color:#2C3037; padding:9px 0; border-bottom:1px solid var(--grid-soft)}
+.ledger .lk small{font-family:var(--mono); font-size:11.5px; color:var(--mute); display:block; margin-top:2px}
+.ledger .lv{font-family:var(--mono); font-size:15px; color:var(--ink); text-align:right; padding:9px 0;
+  border-bottom:1px solid var(--grid-soft); white-space:nowrap}
+.ledger .tot .lk,.ledger .tot .lv{border-bottom:0; border-top:2px solid var(--ink); font-weight:600; padding-top:13px}
+.ledger .tot .lv{font-size:19px}
+.costnote{margin-top:22px; font-family:var(--mono); font-size:13px; color:var(--mute); line-height:1.7; max-width:62ch}
+.costnote b{color:var(--ink); font-weight:500}
+
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -1114,7 +1130,7 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the turn</div>
-    <h2 data-anim style="--d:1; font-size:clamp(32px,5.2vw,64px); max-width:26ch">But a CRISPR screen never played favourites.</h2>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,54px); max-width:30ch">CRISPR screens provide information about dark genes, but in an uninterpretable way.</h2>
     <div class="turnrow">
       <div data-anim style="--d:2">
         <div class="shotwrap">
@@ -1136,10 +1152,41 @@ h2 .em.adv{color:var(--adv)}
 <!-- 03.6 · HOW THE NETWORK IS BUILT (animated) -->
 <!-- 03.6 · THE HARMONISATION PIPELINE (animated) -->
 <!-- 03.5 · THE NETWORK — lead-in -->
+<!-- 03.6 · WHERE THE MODEL HELPS (animated) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the turn</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:28ch">That is where an LLM can be helpful.</h2>
+    <div class="netflow pipe" data-anim style="--d:2">
+      <div class="nf" style="--i:0">
+        <div class="step">the raw score</div>
+        <div class="rows" style="margin-top:9px">Atp2b1 <span>&minus;7.34</span><br>Psmb3 <span>&minus;6.95</span><br>Cklf <span>&minus;6.57</span><br>Hspa5 <span>&minus;6.16</span></div>
+        <div class="meta" style="margin-top:10px">A number, and nothing about what it measured.</div>
+      </div>
+      <div class="nf" style="--i:1">
+        <div class="step">the screen&rsquo;s context</div>
+        <div class="meta" style="margin-top:9px"><b>YUMM1.7</b> melanoma<br>knockout &middot; Cas9<br>cell proliferation<br>implanted in a mouse<br>14 days &middot; <b>Log2FC</b></div>
+      </div>
+      <div class="nf" style="--i:2">
+        <div class="step">read together</div>
+        <div class="ask" style="margin-top:9px">What does losing this gene <i>do</i>, in this setting?</div>
+        <div class="meta" style="margin-top:10px">The model sees both halves at once &mdash; which no single column of the file ever contained.</div>
+      </div>
+      <div class="nf" style="--i:3">
+        <div class="step">gene function, in words</div>
+        <div class="meta" style="margin-top:9px; color:var(--ink)">&ldquo;Required for proliferation in an established melanoma &mdash; among the strongest depletions in this model.&rdquo;</div>
+        <div class="meta" style="margin-top:10px">Every claim re-checked against the numbers it came from before anyone sees it.</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:7; margin-top:24px">A score alone cannot say what a gene does; the screen&rsquo;s own description cannot either. <b style="color:var(--ink)">The interpretation lives in the two together</b>, and reading them together at the scale of 2,157 screens is the part a person cannot do by hand.</p>
+  </div>
+</section>
+
 <section class="slide divider">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="partno" data-anim>03 — what we built</div>
+    <div class="partno" data-anim>04 — what we built · Aaron</div>
     <h2 data-anim style="--d:1">RETICLE network</h2>
     <p class="lede" data-anim style="--d:2">A map of gene-to-gene relationships we built ourselves, from CRISPR screening data alone.</p>
   </div>
@@ -1148,7 +1195,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — how it is built</div>
+    <div class="eyebrow" data-anim><b>04</b> — how it is built</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:26ch">Two genes are linked when they die in the same screens.</h2>
     <div data-anim style="--d:2">
       <div class="lp">
@@ -1173,7 +1220,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — naming a gene by its neighbours</div>
+    <div class="eyebrow" data-anim><b>04</b> — naming a gene by its neighbours</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Neighbours with the same job name the gene between them.</h2>
     <div class="gba" data-anim style="--d:2">
       <div class="nbrs">
@@ -1199,7 +1246,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — the result</div>
+    <div class="eyebrow" data-anim><b>04</b> — the result</div>
     <h2 data-anim style="--d:1; font-size:clamp(28px,4.2vw,52px); max-width:26ch">Our network rebuilt FANCD2&rsquo;s repair pathway.</h2>
     <div class="falist" data-anim style="--d:2">
       <div class="fk">fa core complex</div>
@@ -1222,7 +1269,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide divider">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="partno" data-anim>04 — what's next · Aaron</div>
+    <div class="partno" data-anim>05 — what's next · Aaron</div>
     <h2 data-anim style="--d:1">Future goals</h2>
     <p class="lede" data-anim style="--d:2">Three things that would turn a working tool into a working method.</p>
   </div>
@@ -1250,10 +1297,28 @@ h2 .em.adv{color:var(--adv)}
   </div>
 </section>
 
+<!-- 05.4 · WHAT IT COSTS -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>05</b> — DTRC</div>
+    <div class="eyebrow" data-anim><b>05</b> — what it costs</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:26ch">The whole platform runs for $37 a month.</h2>
+    <div class="ledger" data-anim style="--d:2">
+      <div class="li"><div class="lk">API container<small>ECS Fargate · 0.25 vCPU · 512 MB · always on</small></div><div class="lv">$9.01</div></div>
+      <div class="li"><div class="lk">Database<small>RDS · 28.2M harmonized measurements</small></div><div class="lv">$12.41</div></div>
+      <div class="li"><div class="lk">Storage<small>100 GB</small></div><div class="lv">$11.50</div></div>
+      <div class="li"><div class="lk">Web hosting, secrets, images<small>S3 + CloudFront · Secrets Manager · KMS · ECR</small></div><div class="lv">$4.40</div></div>
+      <div class="li tot"><div class="lk">Per month</div><div class="lv">$37.32</div></div>
+    </div>
+    <p class="costnote" data-anim style="--d:4"><b>About $450 a year</b> — list price, from the deployed configuration. The pipeline that built the corpus ran on WashU RIS and is already paid for. <b>Compute was never the constraint.</b></p>
+  </div>
+</section>
+
+<!-- 05.5 · THE ASK -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>06</b> — DTRC</div>
     <h2 data-anim style="--d:1; font-size:clamp(28px,4vw,50px)">Reflections</h2>
     <div class="refl" data-anim style="--d:2">
       <div class="r-a">
@@ -1276,7 +1341,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1; font-size:clamp(34px,5.7vw,68px)">Our leaders</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1295,7 +1360,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1">Our faculty</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1314,7 +1379,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — the team</div>
+    <div class="eyebrow" data-anim><b>07</b> — the team</div>
     <h2 data-anim style="--d:1">The team</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1333,7 +1398,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1">Design support</h2>
     <div class="people one" data-anim style="--d:2">
       <figure class="person">
