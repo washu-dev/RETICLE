@@ -318,8 +318,9 @@ def test_a_queued_caller_outlasts_the_job_it_is_waiting_behind() -> None:
 
     # Typical wall-clock for one job on each workload, measured against the deployed
     # API: /api/query is 8-10s on cpu, a pooled gene lookup is well under a second,
-    # an LLM round trip is tens of seconds.
-    typical_seconds = {"db": 0.5, "cpu": 9.0, "external": 2.0, "llm": 25.0}
+    # and the llm slot is whichever of its two paths is slower — net_predict on opus
+    # at ~10s, rather than the gene reading, which haiku answers in ~6.
+    typical_seconds = {"db": 0.5, "cpu": 9.0, "external": 2.0, "llm": 11.0}
 
     for name, budget in limits.items():
         workers = int(budget["workers"])

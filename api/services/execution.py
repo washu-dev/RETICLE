@@ -136,7 +136,7 @@ _GATEWAY_CEILING = _positive_float("RETICLE_GATEWAY_TIMEOUT", 30.0)
 _TIMEOUT_DB = _positive_float("RETICLE_DB_QUEUE_TIMEOUT", 1.0)
 _TIMEOUT_CPU = _positive_float("RETICLE_CPU_QUEUE_TIMEOUT", 26.0)
 _TIMEOUT_EXTERNAL = _positive_float("RETICLE_EXTERNAL_QUEUE_TIMEOUT", 6.0)
-_TIMEOUT_LLM = _positive_float("RETICLE_LLM_QUEUE_TIMEOUT", 3.0)
+_TIMEOUT_LLM = _positive_float("RETICLE_LLM_QUEUE_TIMEOUT", 26.0)
 
 _WORKLOADS = {
     # Keep this well below the 16-slot psycopg pool and the small RDS instance.
@@ -166,15 +166,16 @@ _WORKLOADS = {
     # Keep slow LLM gateway waits out of the deterministic endpoint worker slots.
     # Any DB lookup inside an LLM job is still bounded by the shared DB pool.
     #
-    # No waiting room, deliberately. A measured round trip to the WashU gateway is
-    # 24.1s against a 30s CloudFront ceiling, so one call barely fits and a second
-    # one queued behind it cannot fit at all — it would wait out the first and then
-    # be killed by the gateway. There is no queue depth that helps here, so a caller
-    # who arrives while the worker is busy is told to retry straight away.
+    # One waiting place, which the gateway now has room for. This had none: a round
+    # trip measured 24.1s against a 30s CloudFront ceiling, so a second caller could
+    # only ever have waited out the first and then been killed by the gateway. Moving
+    # the gene-page reading to haiku took that path to ~6s and left net_predict, still
+    # on opus, as the slowest at ~10s — so two in the system finish around 20s, inside
+    # the ceiling. A third is still turned away at once, because it could not be.
     "llm": _Workload(
         "llm",
         _positive_int("RETICLE_LLM_WORKERS", 1),
-        _nonnegative_int("RETICLE_LLM_QUEUE", 0),
+        _nonnegative_int("RETICLE_LLM_QUEUE", 1),
         _TIMEOUT_LLM,
     ),
 }
