@@ -366,6 +366,19 @@ h2 .em.adv{color:var(--adv)}
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:.001s!important; animation:none!important}
   .is-active [data-anim]{transition-delay:0s!important}
+  /* Same trap as the print block at the bottom of this sheet: nine figures are drawn by
+     keyframes whose BASE rule is the hidden start state, so animation:none leaves them
+     invisible rather than instant. A presenter with Reduce Motion on would find the
+     middle of slides 20, 22 and 23 simply empty. Land them on the animation's `to`
+     state instead — reduced motion should mean no movement, not no figure. */
+  .build .bstrip{background-size:100% 100%!important}
+  .build .bverdict{opacity:.34!important}
+  .build .bverdict.keep{opacity:1!important}
+  .pipe .nf{opacity:1!important; transform:none!important}
+  .pipe .outruler{transform:none!important}
+  .gba .nb{opacity:1!important; transform:none!important}
+  .gba .arrows{opacity:1!important}
+  .gba .slot .val{opacity:1!important}
 }
 
 /* ============================================================ */
@@ -671,6 +684,20 @@ h2 .em.adv{color:var(--adv)}
   .axis__cross{left:var(--pos)!important}
   .domain .bar{width:var(--w)!important}
   .srow.lit{opacity:1!important}
+  /* The figures above are driven by transitions, so killing the transition lands them
+     on the final value. These nine are driven by KEYFRAMES, and their base rule is the
+     hidden start state — with animation:none they would print blank, taking the whole
+     argument of slides 20, 22 and 23 with them. Each line below is the animation's own
+     `to` state, so the PDF shows what the room sees after the build finishes.
+     .lp needs nothing: lpdraw only clips, and unanimated .lp is already unclipped. */
+  .build .bstrip{background-size:100% 100%!important}          /* bwipe  */
+  .build .bverdict{opacity:.34!important}                      /* bcull  */
+  .build .bverdict.keep{opacity:1!important}                   /* bkeep  */
+  .pipe .nf{opacity:1!important; transform:none!important}     /* pipein */
+  .pipe .outruler{transform:none!important}                    /* outdraw*/
+  .gba .nb{opacity:1!important; transform:none!important}      /* nbin   */
+  .gba .arrows{opacity:1!important}                            /* nbin   */
+  .gba .slot .val{opacity:1!important}                         /* nbin   */
 }
 </style>
 </head>
