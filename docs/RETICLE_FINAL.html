@@ -17,6 +17,7 @@
   --disp:"Fraunces",Georgia,serif;
   --sans:"IBM Plex Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --edge:clamp(9px,1.6vw,22px);   /* viewfinder bracket inset — corner counters align to it */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -228,20 +229,70 @@ h2 .em.adv{color:var(--adv)}
 #thanks-canvas{position:absolute; top:0; right:0; width:34%; height:100%; z-index:0; pointer-events:none; opacity:.9}
 .close .slide-inner{position:relative; z-index:1}
 
+/* ---- legacy strata — the throughline artifact (slides 03, 12, 22) ---- */
+/* oldest layer at the BOTTOM: the stack is something you stand on */
+.strata{display:flex; flex-direction:column; border:1px solid var(--grid); border-radius:12px;
+  overflow:hidden; background:#fff; margin-top:26px}
+.strata.sm{margin-top:18px}
+.srow{display:grid; grid-template-columns:130px 1.05fr 1.1fr auto; align-items:center;
+  gap:clamp(12px,2.2vw,28px); padding:17px 24px; border-bottom:1px solid var(--grid-soft);
+  opacity:.4; transition:opacity .6s ease}
+.srow:last-child{border-bottom:0}
+.is-active .srow.lit{opacity:1}
+.srow.lit{background:#FBFAF7; box-shadow:inset 3px 0 0 var(--ess)}
+.srow.now.lit{box-shadow:inset 3px 0 0 var(--adv)}
+.srow .syr{font-family:var(--mono); font-size:13px; color:var(--mute); letter-spacing:.04em}
+.srow .snm{font-family:var(--disp); font-size:clamp(19px,2.1vw,26px); font-weight:500; line-height:1.15}
+.srow.lit .snm{color:var(--ess)}
+.srow.now.lit .snm{color:var(--adv)}
+.srow .sws{font-size:15.5px; color:#3A3F46; line-height:1.4}
+.srow .snote{font-family:var(--mono); font-size:12px; color:var(--mute); text-align:right}
+.strata.sm .srow{padding:13px 22px}
+.strata.sm .srow .snm{font-size:clamp(17px,1.8vw,22px)}
+.strata.sm .srow .sws{font-size:14px}
+
+/* ---- tall image pair (slide 05 A/B variant) ---- */
+.tallpair{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3.6vw,44px); margin-top:20px}
+.tallwrap .shot{width:100%; height:50vh; object-fit:cover}
+.tallwrap .shotmiss{height:50vh; padding:20px}
+.thenlabel{font-family:var(--mono); font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--mute); margin-bottom:9px; display:flex; align-items:center; gap:9px}
+.thenlabel::before{content:""; width:20px; height:1.5px; background:currentColor}
+.thenlabel.now{color:var(--adv)}
+
+/* ---- single hero image (slide 03) ---- */
+.heroshot .shot{width:100%; height:44vh; object-fit:cover}
+.heroshot .shotmiss{height:44vh}
+
+/* ---- primary / secondary source tiers (slide 10) ---- */
+.tiers{display:grid; grid-template-columns:1.5fr 1fr; gap:clamp(20px,3.4vw,42px); align-items:start; margin-top:18px}
+.t2head{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--mute); margin-bottom:12px}
+.tier2{display:flex; flex-direction:column; gap:16px}
+.tier2 .shotcap{font-size:12px}
+.tier2 .shotmiss{padding:26px 16px; font-size:12px}
+
+/* ---- conflicting screen stack (slide 11) ---- */
+.stackfig{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:18px 20px 14px}
+.stackfig .sfcap{font-family:var(--mono); font-size:11.5px; color:var(--mute); margin-top:10px; line-height:1.5}
+
 /* ---- HUD ---- */
-.hud{position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; align-items:center;
-  justify-content:space-between; padding:10px clamp(12px,1.8vw,26px); pointer-events:none}
-.dots{display:flex; gap:8px; pointer-events:auto; flex-wrap:wrap; max-width:70%}
-.dots button{width:8px; height:8px; border-radius:50%; border:0; padding:0; cursor:pointer;
+.hud{position:fixed; left:0; right:0; bottom:12px; z-index:30; display:flex;
+  justify-content:center; pointer-events:none}
+.dots{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:62%}
+.dots span{display:block; width:7px; height:7px; border-radius:50%;
   background:var(--grid); transition:transform .25s, background .25s}
-.dots button.on{background:var(--ink); transform:scale(1.35)}
-.counter{font-family:var(--mono); font-size:12.5px; color:var(--mute)}
+.dots span.on{background:var(--ink); transform:scale(1.4)}
+/* slide number, repeated in all four corners, aligned to the viewfinder brackets */
+.counter{position:fixed; z-index:30; font-family:var(--mono); font-size:12.5px;
+  color:var(--mute); pointer-events:none; letter-spacing:.04em}
 .counter b{color:var(--ink); font-weight:500}
+.counter.tl{top:var(--edge); left:calc(var(--edge) + 38px)}
+.counter.tr{top:var(--edge); right:calc(var(--edge) + 38px)}
+.counter.bl{bottom:var(--edge); left:calc(var(--edge) + 38px)}
+.counter.br{bottom:var(--edge); right:calc(var(--edge) + 38px)}
 .progress{position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--ess),var(--adv)); width:0; z-index:31; transition:width .5s ease}
-.nav{position:fixed; inset:0; z-index:20; display:flex; pointer-events:none}
-.nav button{flex:1; background:none; border:0; cursor:pointer; pointer-events:auto}
-.nav button:focus-visible{outline:2px solid var(--ess); outline-offset:-4px}
-.hint{position:fixed; top:12px; right:clamp(12px,1.8vw,26px); z-index:30; font-family:var(--mono);
+.hint{position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:30; font-family:var(--mono);
   font-size:11.5px; color:var(--mute); letter-spacing:.04em}
 
 /* DNA helix on the title slide */
@@ -249,14 +300,19 @@ h2 .em.adv{color:var(--adv)}
 .slide.title-slide .slide-inner{position:relative; z-index:1}
 .slide.title-slide .frame{z-index:1}
 
-@media (max-width:900px){
+/* narrow-window fallbacks — scoped to `screen` so they never fire on the fixed-size print page */
+@media screen and (max-width:900px){
   .shots3{grid-template-columns:1fr}
-  .compare,.domains{grid-template-columns:1fr}
+  .compare,.domains,.tiers{grid-template-columns:1fr}
+  .srow{grid-template-columns:100px 1fr; gap:8px 18px}
+  .srow .snote{text-align:left; grid-column:2}
 }
-@media (max-width:760px){
+@media screen and (max-width:760px){
   .cols{grid-template-columns:1fr; gap:24px}
   .ex2{grid-template-columns:1fr}
   .people,.people.three{grid-template-columns:1fr; gap:30px}
+  .tallpair{grid-template-columns:1fr}
+  .tallwrap .shot,.tallwrap .shotmiss{height:34vh}
   .pipe{flex-direction:column}
   .flowdot{display:none}
 }
@@ -530,6 +586,29 @@ h2 .em.adv{color:var(--adv)}
 .tcell.on .pr{color:var(--ess)}
 .tcell .sh{font-family:var(--mono); font-size:12px; color:var(--mute); margin-top:6px}
 
+/* ---- print / PDF export: every slide visible, one 16:9 page each ---- */
+@media print{
+  @page{size:13.333in 7.5in; margin:0}
+  html,body{height:auto; overflow:visible; background:#fff}
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact;
+    transition:none!important; animation:none!important}
+  .deck{position:static; background-image:none}
+  .deck::after{display:none}
+  /* presenter chrome has no place in a PDF */
+  .hint,.hud,.progress,.counter{display:none!important}
+  .slide{
+    position:relative; inset:auto; width:13.333in; height:7.5in;
+    opacity:1!important; visibility:visible!important; transform:none!important;
+    overflow:hidden; break-after:page; page-break-after:always;
+  }
+  .slide:last-child{break-after:auto; page-break-after:auto}
+  /* entrance + reveal states are gated on .is-active — force their end state */
+  [data-anim]{opacity:1!important; transform:none!important; transition-delay:0s!important}
+  .frame i{transform:none!important}
+  .axis__cross{left:var(--pos)!important}
+  .domain .bar{width:var(--w)!important}
+  .srow.lit{opacity:1!important}
+}
 </style>
 </head>
 <body>
@@ -573,56 +652,159 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- ============================================================ -->
-<!-- 03 · HOOK — the evidence  (assertion–evidence)               -->
+<!-- 03 · McDONNELL — SOLO  (the held beat / mini history lesson) -->
 <!-- ============================================================ -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>00</b> — the McDonnell Genome Institute</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">WashU was one of the principal centers of the Human Genome Project.</h2>
-    <div class="shots3" data-anim style="--d:2; margin-top:26px">
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — the institute<br><code>assets/mcdonnell_institute.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>McDonnell Genome Institute</b><br>a key player in the Human Genome Project</div>
+    <div class="eyebrow" data-anim><b>00</b> — a short history</div>
+    <div class="heroshot" data-anim style="--d:1">
+      <div class="shotwrap">
+        <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="The McDonnell Genome Institute"
+             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+        <div class="shotmiss">the McDonnell Genome Institute — wide exterior or sequencing floor<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
       </div>
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/genome_scientist_1.jpg" alt="Key scientist"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — key scientist<br><code>assets/genome_scientist_1.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>[name]</b><br>[role — one line on who they are]</div>
-      </div>
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/genome_scientist_2.jpg" alt="Key scientist"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — key scientist<br><code>assets/genome_scientist_2.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>[name]</b><br>[role — one line on who they are]</div>
-      </div>
+      <div class="shotcap"><b>The McDonnell Genome Institute</b> &nbsp;·&nbsp; Washington University in St.&nbsp;Louis &nbsp;·&nbsp; one of the labs that carried the Human Genome Project to the finish line</div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing <b style="color:var(--ink)">25 percent of the finished sequence</b>&rdquo; — and more than 20% of the earlier draft sequence.</p>
-    <p class="tag" data-anim style="--d:4; margin-top:8px; font-size:11.5px; color:#9AA0A6">Source: McDonnell Genome Institute, Washington University in St.&nbsp;Louis &nbsp;·&nbsp; genome.wustl.edu/about-2 &nbsp;·&nbsp; genome.wustl.edu/items/human-genome-project</p>
+    <!-- the legacy artifact — layer 1 only. "This is the floor we're standing on." -->
+    <div class="strata sm" data-anim style="--d:2">
+      <div class="srow now"><div class="syr">2026 —</div><div class="snm">RETICLE</div><div class="sws">what they mean together</div><div class="snote">this project</div></div>
+      <div class="srow"><div class="syr">2003 – 2026</div><div class="snm">CRISPR screens</div><div class="sws">what the parts do</div><div class="snote">2,157 published · siloed</div></div>
+      <div class="srow lit"><div class="syr">1990 – 2003</div><div class="snm">Human Genome Project</div><div class="sws">the parts list</div><div class="snote">WashU · 25% of the finished sequence</div></div>
+    </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 04 · HOOK — the turn                                         -->
+<!-- 04 · HOOK — the evidence · VERSION A (3 images)              -->
+<!-- A/B with slide 05 below — keep one, delete the other.        -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>00</b> — what that work made possible</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">That sequence became the reference everything since is measured against.</h2>
+    <div class="shots3" data-anim style="--d:2; margin-top:26px">
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">photo — the institute<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>McDonnell Genome Institute</b><br>25% of the finished human sequence</div>
+      </div>
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/genome_scientist_1.jpg" alt="Key scientist"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">photo — key scientist<br><code>final_presentation_assets/genome_scientist_1.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>[name]</b><br>[what they did — one line, in impact terms]</div>
+      </div>
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/genome_scientist_2.jpg" alt="Key scientist"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">photo — key scientist<br><code>final_presentation_assets/genome_scientist_2.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>[name]</b><br>[what they did — one line, in impact terms]</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:22px">Every clinical genetic test compares a patient's DNA to it. Every disease-gene discovery since is anchored to it. Every CRISPR screen still maps its hits onto it — including <b style="color:var(--ink)">ours</b>.</p>
+    <p class="tag" data-anim style="--d:4; margin-top:10px">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing <b style="color:var(--ink)">25 percent of the finished sequence</b>&rdquo; — and more than 20% of the earlier draft.</p>
+    <p class="tag" data-anim style="--d:5; margin-top:8px; font-size:11.5px; color:#9AA0A6">Source: McDonnell Genome Institute, Washington University in St.&nbsp;Louis &nbsp;·&nbsp; genome.wustl.edu/about-2 &nbsp;·&nbsp; genome.wustl.edu/items/human-genome-project</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 05 · HOOK — the evidence · VERSION B (2 tall images)         -->
+<!-- A/B alternate to slide 04. Then / now, 50% slide height.     -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>00</b> — the same question, thirty years apart</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:34ch">The lab that read the genome, and the lab trying to understand it.</h2>
+    <div class="tallpair" data-anim style="--d:2">
+      <div>
+        <div class="thenlabel">then &nbsp;·&nbsp; 1990 – 2003</div>
+        <div class="tallwrap shotwrap">
+          <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss">McDonnell Genome Institute<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>McDonnell Genome Institute</b> — sequencing the parts list</div>
+      </div>
+      <div>
+        <div class="thenlabel now">now &nbsp;·&nbsp; 2026</div>
+        <div class="tallwrap shotwrap">
+          <img class="shot" src="final_presentation_assets/orvedahl_lab.jpg" alt="Orvedahl Lab / RETICLE"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss">Orvedahl Lab bench — or a RETICLE dashboard screenshot<br><code>final_presentation_assets/orvedahl_lab.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>Orvedahl Lab &amp; RETICLE</b> — working out what the parts <i>do</i></div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:18px">Same campus, same problem, one layer further up. RETICLE is a <b style="color:var(--ink)">direct continuation</b> of the work that finished here.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 06 · HOOK — the turn (+ paper thumbnail backing the 80%)     -->
 <!-- ============================================================ -->
 <section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>00</b> — and yet</div>
-    <p class="htxt" data-anim style="--d:1">But we still don't know what most of the genome <span class="em adv">does.</span></p>
-    <div class="hfig" data-anim style="--d:2">
-      <div class="n"><span data-count="80">0</span>%</div>
-      <div class="l">of protein-coding genes have a function that is <b>unknown or only partly understood</b> — two decades after the sequence was finished</div>
+    <div style="display:grid; grid-template-columns:1.5fr .5fr; gap:clamp(24px,4vw,60px); align-items:center">
+      <div>
+        <p class="htxt" data-anim style="--d:1; font-size:clamp(38px,6.8vw,96px); max-width:17ch">But we still don't know what most of the genome <span class="em adv">does.</span></p>
+        <div class="hfig" data-anim style="--d:2">
+          <div class="n"><span data-count="80">0</span>%</div>
+          <div class="l">of protein-coding genes have a function that is <b>unknown or only partly understood</b> — two decades after the sequence was finished</div>
+        </div>
+      </div>
+      <div data-anim style="--d:3">
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/unknome_paper.png" alt="Paper reporting the unknome figure"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">first page / figure of the paper this number comes from<br><code>final_presentation_assets/unknome_paper.png</code></div>
+        </div>
+        <div class="shotcap">the published source for this figure — <b>[author, journal, year]</b></div>
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 07 · WHY IT MATTERS  (impact hook, before the science)       -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>00</b> — why that gap matters</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">A gene nobody has characterised is a dead end for a real patient.</h2>
+    <div class="domains" data-anim style="--d:2; margin-top:24px">
+      <div class="domain">
+        <h3>Answers that never come</h3>
+        <div class="n">01 — the clinic</div>
+        <p>A genetic test finds a change in a gene no one has studied, so the result comes back as a <b>variant of unknown significance</b> — neither positive nor negative. The family waits.</p>
+        <div class="bar" style="--w:78%"></div>
+      </div>
+      <div class="domain">
+        <h3>Drugs that never get made</h3>
+        <div class="n">02 — the pipeline</div>
+        <p>Drug discovery concentrates on proteins that are already well studied. The understudied majority is <b>never even evaluated</b> as a target — not because it failed, but because nobody looked.</p>
+        <div class="bar" style="--w:66%"></div>
+      </div>
+      <div class="domain adv">
+        <h3>The biology in front of us</h3>
+        <div class="n">03 — this lab</div>
+        <p>The Orvedahl Lab studies cytokine-stress cell death in macrophages. The genes that matter most there are exactly the <b>buffered, under-studied</b> ones current methods are built to miss.</p>
+        <div class="bar" style="--w:88%"></div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:22px">We'll come back to this at the end. For now — this is what the next few minutes are in service of.</p>
   </div>
 </section>
 
@@ -634,27 +816,20 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>01</b> — why sequencing isn't enough</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Sequencing gives you the parts list — not what the parts do.</h2>
-    <div class="compare" data-anim style="--d:2; margin-top:26px">
-      <div class="cpanel">
-        <div class="ch">what the sequence tells you</div>
-        <ul>
-          <li>every gene, located and named</li>
-          <li>~20,000 protein-coding genes</li>
-          <li>how one person's letters differ from another's</li>
-        </ul>
+    <div data-anim style="--d:2; margin-top:20px">
+      <div class="shotwrap">
+        <img class="shot" src="final_presentation_assets/genome_parts_list.png" alt="The sequenced genome as a list of genes"
+             style="height:40vh; object-fit:contain; background:#fff"
+             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+        <div class="shotmiss" style="height:40vh">a visual of the sequenced genome as a list — gene names running down the page,<br>a chromosome map, or a genome-browser view<br><code>final_presentation_assets/genome_parts_list.png</code></div>
       </div>
-      <div class="cpanel off">
-        <div class="ch">what it doesn't</div>
-        <ul>
-          <li>what each gene actually does</li>
-          <li>what happens to a cell when it's lost</li>
-          <li>which genes matter, and under which conditions</li>
-        </ul>
-      </div>
+      <div class="shotcap">~20,000 protein-coding genes — every one located, named, and readable</div>
     </div>
-    <div class="callout" data-anim style="--d:3; margin-top:26px">
-      <span class="dot"></span>A parts list won't tell you which part the engine <b>can't run without</b> — for that, you have to remove one and see what breaks.
+    <!-- single <span> keeps this one flex item; splitting it lays the clauses out side-by-side -->
+    <div class="callout" data-anim style="--d:3; margin-top:20px">
+      <span class="dot"></span><span>A parts list won't tell you which part the engine <b>can't run without</b> — for that, you have to remove one and see what breaks.</span>
     </div>
+    <p class="tag" data-anim style="--d:4; margin-top:14px">So we have every gene. <b style="color:var(--ink)">What does each one actually do?</b></p>
   </div>
 </section>
 
@@ -669,9 +844,9 @@ h2 .em.adv{color:var(--adv)}
     <div class="ex2" data-anim style="--d:2; margin-top:22px">
       <div>
         <div class="shotwrap">
-          <img class="shot" src="assets/crispr_mechanism.png" alt="How CRISPR knockout works"
+          <img class="shot" src="final_presentation_assets/crispr_mechanism.png" alt="How CRISPR knockout works"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">CRISPR mechanism diagram / animation still<br><code>assets/crispr_mechanism.png</code></div>
+          <div class="shotmiss">CRISPR mechanism diagram / animation still<br><code>final_presentation_assets/crispr_mechanism.png</code></div>
         </div>
         <div class="shotcap">Cas9 guided to one gene per cell — a library of guides covers the whole genome</div>
       </div>
@@ -684,15 +859,15 @@ h2 .em.adv{color:var(--adv)}
         </ul>
       </div>
     </div>
-    <div data-anim style="--d:3; margin-top:8px">
-      <div class="axis" style="--pos:50%">
+    <div data-anim style="--d:3; margin-top:2px">
+      <div class="axis" style="--pos:50%; height:92px; margin:6px 0">
         <div class="axis__track"></div>
         <div class="axis__cap l">dropped out → the gene was essential</div>
         <div class="axis__cap r">took over → losing it helped</div>
         <div class="axis__cross"><b></b></div>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:4">This is rare data: the measured result of actually <b style="color:var(--ink)">breaking</b> each gene — cause, not correlation. Every screen ends the same way: <b style="color:var(--ink)">one score per gene</b>.</p>
+    <p class="tag" data-anim style="--d:4">Rare data — the measured result of actually <b style="color:var(--ink)">breaking</b> each gene. Every screen ends the same way: <b style="color:var(--ink)">one score per gene</b>. So what do we do with <b style="color:var(--ink)">thousands</b> of them?</p>
   </div>
 </section>
 
@@ -704,33 +879,39 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>02</b> — the gap</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Today's tools each answer half the question.</h2>
-    <div class="shots3" data-anim style="--d:2; margin-top:24px">
+    <div class="tiers" data-anim style="--d:2">
       <div>
+        <div class="t2head">the primary evidence — the screen data itself</div>
         <div class="shotwrap">
-          <img class="shot" src="assets/uijttewaal_2024_screen.png" alt="BioGRID ORCS screen page"
+          <img class="shot" src="midterm_assets/uijttewaal_2024_screen.png" alt="BioGRID ORCS screen page"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">BioGRID ORCS screenshot<br><code>assets/uijttewaal_2024_screen.png</code></div>
+          <div class="shotmiss">BioGRID ORCS screenshot<br><code>midterm_assets/uijttewaal_2024_screen.png</code></div>
         </div>
-        <div class="shotcap"><b>BioGRID ORCS</b><br>one gene, looked up across many screens</div>
+        <div class="shotcap"><b>BioGRID ORCS</b> — the published screens. One gene, looked up across many experiments. <b>This is the evidence base RETICLE is built on</b> — and the only place the causal data lives.</div>
       </div>
       <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/string_network.png" alt="STRING network"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">STRING screenshot<br><code>assets/string_network.png</code></div>
+        <div class="t2head">second tier — annotation you check afterwards</div>
+        <div class="tier2">
+          <div>
+            <div class="shotwrap">
+              <img class="shot" src="final_presentation_assets/string_network.png" alt="STRING network"
+                   onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+              <div class="shotmiss sm">STRING screenshot<br><code>final_presentation_assets/string_network.png</code></div>
+            </div>
+            <div class="shotcap"><b>STRING</b> — <i>&ldquo;is my hit already known to bind these partners?&rdquo;</i></div>
+          </div>
+          <div>
+            <div class="shotwrap">
+              <img class="shot" src="final_presentation_assets/gsea_pathway.png" alt="GSEA / GO enrichment"
+                   onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+              <div class="shotmiss sm">GSEA / GO screenshot<br><code>final_presentation_assets/gsea_pathway.png</code></div>
+            </div>
+            <div class="shotcap"><b>GSEA · Gene Ontology</b> — <i>&ldquo;do my hits pile up in one pathway?&rdquo;</i></div>
+          </div>
         </div>
-        <div class="shotcap"><b>STRING</b><br>one gene list, drawn as a network</div>
-      </div>
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/gsea_pathway.png" alt="GSEA / GO enrichment"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">GSEA / GO screenshot<br><code>assets/gsea_pathway.png</code></div>
-        </div>
-        <div class="shotcap"><b>GSEA · Gene Ontology</b><br>one gene list, ranked into pathways</div>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">One does <b style="color:var(--ink)">a gene across screens</b>. The others do <b style="color:var(--ink)">a list at a time</b>. Nothing lets you ask the question a biologist finishing a screen actually has.</p>
+    <p class="tag" data-anim style="--d:3; margin-top:20px">The screens hold the answer. The annotation tools take <b style="color:var(--ink)">one list at a time</b> and know nothing about screens. So our output is screen data and published papers — <b style="color:var(--ink)">where does a researcher go from there?</b></p>
   </div>
 </section>
 
@@ -741,28 +922,63 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>02</b> — and the data itself doesn't line up</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Thousands of screens exist — but no two speak the same language.</h2>
-    <div class="domains" data-anim style="--d:2; margin-top:24px">
-      <div class="domain">
-        <h3>Context is missing</h3>
-        <div class="n">01 — can't compare</div>
-        <p>What a score <i>means</i> — what was perturbed, under what stress, in which cells — is usually left in the methods section. So rank <b>#132 in one screen</b> is not rank <b>#132 in another</b>.</p>
-        <div class="bar" style="--w:82%"></div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Thousands of screens exist — and there is no way to use them together.</h2>
+    <div class="cols" data-anim style="--d:2; margin-top:20px; grid-template-columns:.92fr 1.08fr; align-items:start">
+      <div class="stackfig">
+        <svg viewBox="0 0 460 236" style="width:100%;display:block" font-family="IBM Plex Mono">
+          <!-- five published screens, same gene, disagreeing directions -->
+          <g>
+            <rect x="8" y="8" width="288" height="38" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.2"/>
+            <text x="22" y="32" font-size="11.5" fill="#6A7178">screen 1839 · IFN-γ · MAGeCK</text>
+            <g stroke="#1F6F8B" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="400" y1="27" x2="318" y2="27"/><polyline points="326,21 318,27 326,33"/>
+            </g>
+            <text x="412" y="32" font-size="15" fill="#1F6F8B" font-weight="500">−</text>
+          </g>
+          <g>
+            <rect x="8" y="52" width="288" height="38" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.2"/>
+            <text x="22" y="76" font-size="11.5" fill="#6A7178">screen 0774 · TNF · log2FC</text>
+            <g stroke="#E08A3C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="318" y1="71" x2="400" y2="71"/><polyline points="392,65 400,71 392,77"/>
+            </g>
+            <text x="412" y="76" font-size="15" fill="#E08A3C" font-weight="500">+</text>
+          </g>
+          <g>
+            <rect x="8" y="96" width="288" height="38" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.2"/>
+            <text x="22" y="120" font-size="11.5" fill="#6A7178">screen 1512 · IFN-γ · CERES</text>
+            <g stroke="#1F6F8B" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="400" y1="115" x2="318" y2="115"/><polyline points="326,109 318,115 326,121"/>
+            </g>
+            <text x="412" y="120" font-size="15" fill="#1F6F8B" font-weight="500">−</text>
+          </g>
+          <g>
+            <rect x="8" y="140" width="288" height="38" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.2"/>
+            <text x="22" y="164" font-size="11.5" fill="#6A7178">screen 2043 · TNF · z-score</text>
+            <g stroke="#1F6F8B" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="400" y1="159" x2="318" y2="159"/><polyline points="326,153 318,159 326,165"/>
+            </g>
+            <text x="412" y="164" font-size="15" fill="#1F6F8B" font-weight="500">−</text>
+          </g>
+          <g>
+            <rect x="8" y="184" width="288" height="38" rx="9" fill="#fff" stroke="#DCE0E4" stroke-width="1.2"/>
+            <text x="22" y="208" font-size="11.5" fill="#6A7178">screen 0918 · IFN-γ · CasTLE</text>
+            <g stroke="#E08A3C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="318" y1="203" x2="400" y2="203"/><polyline points="392,197 400,203 392,209"/>
+            </g>
+            <text x="412" y="208" font-size="15" fill="#E08A3C" font-weight="500">+</text>
+          </g>
+        </svg>
+        <div class="sfcap">One gene. Five published screens. Three call it <b style="color:var(--ess)">essential</b>, two call it <b style="color:var(--adv)">advantageous</b> — and nothing in the deposited data says which convention each one used.</div>
       </div>
-      <div class="domain">
-        <h3>Cutoffs hide the buffered genes</h3>
-        <div class="n">02 — can't see</div>
-        <p>Every screen draws a line: above it are "hits," the rest is discarded. Genes whose function is <b>backed up by a partner</b> are real but modest — and always fall below the line.</p>
-        <div class="bar" style="--w:64%"></div>
-      </div>
-      <div class="domain adv">
-        <h3>Absence is read as zero</h3>
-        <div class="n">03 — can't trust</div>
-        <p>Many screens deposit only their hit list. A missing gene might have <b>scored near zero</b>, or might <b>never have been measured</b> — opposite facts that no current method tells apart.</p>
-        <div class="bar" style="--w:73%"></div>
+      <div>
+        <ul class="exmini">
+          <li><span class="ek">01 · inside one screen</span>A hard cutoff throws away everything below the line · a gene that is absent is stored as if it scored <b>zero</b> · the stimulus, cell type and methods that give a score meaning never make it into the data at all</li>
+          <li><span class="ek">02 · between screens</span>Different stimuli, different cell lines, disagreeing directionality — <b>the same gene gets opposite signs</b> in two experiments and nothing reconciles them</li>
+          <li><span class="ek">03 · beyond the screens</span>Even once they line up, there is no way to ask the questions that matter: <b>co-essentiality</b> relationships, <b>dark-gene</b> candidates worth chasing, the published literature — and STRING, GO and the screens all live in separate tools</li>
+        </ul>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">Together: an enormous evidence base that is effectively write-only — deposited, and never reused in aggregate.</p>
+    <p class="tag" data-anim style="--d:3; margin-top:18px">The result: an enormous body of causal evidence that is effectively <b style="color:var(--ink)">write-only</b> — deposited, and never reused together.</p>
   </div>
 </section>
 
@@ -774,6 +990,13 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the answer</div>
     <p class="htxt" data-anim style="--d:1">This is where <span class="em">RETICLE</span> comes in.</p>
+    <!-- the legacy artifact returns — all three layers, RETICLE lit -->
+    <div class="strata sm" data-anim style="--d:2" >
+      <div class="srow now lit"><div class="syr">2026 —</div><div class="snm">RETICLE</div><div class="sws">what they mean together</div><div class="snote">this project</div></div>
+      <div class="srow lit"><div class="syr">2003 – 2026</div><div class="snm">CRISPR screens</div><div class="sws">what the parts do</div><div class="snote">2,157 published · siloed</div></div>
+      <div class="srow lit"><div class="syr">1990 – 2003</div><div class="snm">Human Genome Project</div><div class="sws">the parts list</div><div class="snote">WashU · 25% of the finished sequence</div></div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:16px">The genome project let everyone stand on one lab's shoulders. <b style="color:var(--ink)">RETICLE does that for every published screen.</b></p>
   </div>
 </section>
 
@@ -877,7 +1100,7 @@ h2 .em.adv{color:var(--adv)}
     <div class="turnrow">
       <div data-anim style="--d:2">
         <div class="shotwrap">
-          <img class="shot" src="assets/uijttewaal_2024_screen.png" alt="A BioGRID ORCS screen record"
+          <img class="shot" src="midterm_assets/uijttewaal_2024_screen.png" alt="A BioGRID ORCS screen record"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
           <div class="shotmiss sm">BioGRID ORCS screenshot<br><code>assets/uijttewaal_2024_screen.png</code></div>
         </div>
@@ -1141,33 +1364,40 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <p class="htxt" data-anim>Thank you.</p>
-    <div class="hsub" data-anim style="--d:1">RETICLE &nbsp;·&nbsp; Orvedahl Lab &nbsp;×&nbsp; DI2 Summer Corps &nbsp;·&nbsp; 2026</div>
-    <div class="hsub" data-anim style="--d:2; margin-top:12px">github.com/washu-dev/RETICLE</div>
+    <!-- closing callback to the legacy artifact — delete this block if it's one beat too many -->
+    <div class="strata sm" data-anim style="--d:1; max-width:62%">
+      <div class="srow now lit"><div class="syr">2026 —</div><div class="snm">RETICLE</div><div class="sws">what they mean together</div><div class="snote">this project</div></div>
+      <div class="srow lit"><div class="syr">2003 – 2026</div><div class="snm">CRISPR screens</div><div class="sws">what the parts do</div><div class="snote">2,157 published</div></div>
+      <div class="srow lit"><div class="syr">1990 – 2003</div><div class="snm">Human Genome Project</div><div class="sws">the parts list</div><div class="snote">WashU · 25%</div></div>
+    </div>
+    <div class="hsub" data-anim style="--d:2">RETICLE &nbsp;·&nbsp; Orvedahl Lab &nbsp;×&nbsp; DI2 Summer Corps &nbsp;·&nbsp; 2026</div>
+    <div class="hsub" data-anim style="--d:3; margin-top:12px">github.com/washu-dev/RETICLE</div>
   </div>
 </section>
 
 </div>
 
-<div class="nav"><button id="prevZone" aria-label="Previous slide"></button><button id="nextZone" aria-label="Next slide"></button></div>
+<div class="counter tl"><b class="cur">01</b> / <span class="tot">00</span></div>
+<div class="counter tr"><b class="cur">01</b> / <span class="tot">00</span></div>
+<div class="counter bl"><b class="cur">01</b> / <span class="tot">00</span></div>
+<div class="counter br"><b class="cur">01</b> / <span class="tot">00</span></div>
 <div class="hud">
   <div class="dots" id="dots"></div>
-  <div class="counter"><b id="cur">01</b> / <span id="tot">00</span></div>
 </div>
 
 <script>
 (function(){
   var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
   var dotsWrap = document.getElementById('dots');
-  var cur = document.getElementById('cur'), tot = document.getElementById('tot');
+  var curEls = Array.prototype.slice.call(document.querySelectorAll('.counter .cur'));
+  var totEls = Array.prototype.slice.call(document.querySelectorAll('.counter .tot'));
   var progress = document.getElementById('progress');
   var i = 0, n = slides.length;
-  tot.textContent = String(n).padStart(2,'0');
+  totEls.forEach(function(el){ el.textContent = String(n).padStart(2,'0'); });
 
+  // progress pips only — deliberately not clickable; arrows are the sole navigation
   slides.forEach(function(s,idx){
-    var b = document.createElement('button');
-    b.setAttribute('aria-label','Go to slide '+(idx+1));
-    b.addEventListener('click', function(){ go(idx); });
-    dotsWrap.appendChild(b);
+    dotsWrap.appendChild(document.createElement('span'));
   });
   var dots = Array.prototype.slice.call(dotsWrap.children);
 
@@ -1192,17 +1422,26 @@ h2 .em.adv{color:var(--adv)}
     });
   }
 
+  // printing shows every slide at once, so any counter that hasn't animated yet
+  // would export as "0" — settle them all to their final value first
+  function settleCounts(){
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      el.dataset.done = '1';
+      var t = parseFloat(el.dataset.count), d = parseInt(el.dataset.dec||'0',10);
+      el.textContent = d ? t.toFixed(d) : Math.round(t).toLocaleString('en-US');
+    });
+  }
+  window.addEventListener('beforeprint', settleCounts);
+  if(/print/.test(location.search + location.hash)) settleCounts();
+
   function go(to){
     i = (to+n)%n;
     slides.forEach(function(s,idx){ s.classList.toggle('is-active', idx===i); });
     dots.forEach(function(d,idx){ d.classList.toggle('on', idx===i); });
-    cur.textContent = String(i+1).padStart(2,'0');
+    curEls.forEach(function(el){ el.textContent = String(i+1).padStart(2,'0'); });
     progress.style.width = ((i)/(n-1)*100)+'%';
     countUp(slides[i]);
   }
-
-  document.getElementById('nextZone').addEventListener('click', function(){ go(i+1); });
-  document.getElementById('prevZone').addEventListener('click', function(){ go(i-1); });
 
   document.addEventListener('keydown', function(e){
     if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'||e.key==='ArrowDown'){ e.preventDefault(); go(i+1); }
