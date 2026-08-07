@@ -323,6 +323,22 @@ h2 .em.adv{color:var(--adv)}
 .stackfig{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:18px 20px 14px}
 .stackfig .sfcap{font-family:var(--mono); font-size:11.5px; color:var(--mute); margin-top:10px; line-height:1.5}
 
+/* ---- funding at three scales (AO's note: size the blocks to the money,
+       and let the last one keep growing out of the $5M block) ---- */
+.fundscale{display:grid; grid-template-columns:1fr 1.2fr 1.5fr; gap:clamp(16px,2.6vw,30px);
+  align-items:end; margin-top:22px; height:30vh}
+.fs-col{display:flex; flex-direction:column; justify-content:flex-end; height:100%}
+.fs-bar{width:100%; height:var(--h); border-radius:10px 10px 0 0; background:var(--ess)}
+.fs-col.mid .fs-bar{background:#2A7C96}
+/* the ramp starts level with the $5M block and rises across the slide */
+.fs-col.grow .fs-bar{height:100%; background:linear-gradient(90deg,var(--adv),#EFB273);
+  clip-path:polygon(0 52%, 100% 0, 100% 100%, 0 100%); border-radius:0}
+.fs-when{font-family:var(--mono); font-size:12.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--mute); margin-top:14px}
+.fs-amt{font-family:var(--disp); font-size:clamp(26px,3.4vw,42px); font-weight:600; line-height:1.1; margin-top:6px}
+.fs-col .fs-amt{color:var(--ess)} .fs-col.grow .fs-amt{color:var(--adv)}
+.fs-src{font-size:clamp(14px,1.5vw,17px); color:#3A3F46; line-height:1.4; margin-top:7px}
+
 /* ---- HUD ---- */
 .hud{position:fixed; left:0; right:0; bottom:12px; z-index:30; display:flex;
   justify-content:center; pointer-events:none}
@@ -916,7 +932,7 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>01</b> — what a CRISPR screen is</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">A CRISPR screen switches off every gene — one per cell.</h2>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">A CRISPR screen perturbs every gene — one per cell.</h2>
     <div class="ex2" data-anim style="--d:2; margin-top:22px">
       <div>
         <div class="shotwrap">
@@ -931,7 +947,7 @@ h2 .em.adv{color:var(--adv)}
       <div>
         <div class="exread">the experiment, in three steps</div>
         <ul class="exmini">
-          <li><span class="ek">perturb</span>A guide library disables <b>each gene</b> — one per cell, across millions of cells</li>
+          <li><span class="ek">perturb</span>A guide library perturbs <b>each gene</b> — activating, inhibiting, inactivating or mutating it, one gene per cell across millions of cells</li>
           <li><span class="ek">select</span>The pool grows for weeks — on its own, or under a <b>drug or stress</b></li>
           <li><span class="ek">read out</span>Sequence before and after — which knockouts <b>vanished</b>, which <b>took over</b></li>
         </ul>
@@ -945,7 +961,7 @@ h2 .em.adv{color:var(--adv)}
         <div class="axis__cross"><b></b></div>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:4">Rare data — the measured result of actually <b style="color:var(--ink)">breaking</b> each gene. Every screen ends the same way: <b style="color:var(--ink)">one score per gene</b>. So what do we do with <b style="color:var(--ink)">thousands</b> of them?</p>
+    <p class="tag" data-anim style="--d:4">Rare data — the measured result of actually <b style="color:var(--ink)">breaking</b> each gene. Every screen ends the same way: <b style="color:var(--ink)">one score per gene</b>. So what do we do with <b style="color:var(--ink)">thousands of screens</b>?</p>
   </div>
 </section>
 
@@ -1103,8 +1119,135 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="partno" data-anim>02 — since the MVP · Oseremen</div>
     <h2 data-anim style="--d:1">Multi-gene</h2>
-    <p class="lede" data-anim style="--d:2">Snapshot slides on what's new, then straight into the live demo — upload → compare → matched-screen drawer.</p>
-    <div class="stubtag" data-anim style="--d:3"><span></span>to be drafted · ~3:00</div>
+    <p class="lede" data-anim style="--d:2">A whole screen, compared against every published screen.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.1 · YOU HAVE A SCREEN — the situation                     -->
+<!-- Mirrors Aaron's "You have a gene" opener.                    -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — the situation</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">You have a screen. Twenty thousand genes, and one ranked list.</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>Your screen measured every gene in the genome and gave each one a score.</span></li>
+      <li><span>You publish the handful at the top, and the rest of the list goes in a drawer.</span></li>
+      <li><span>Somewhere in the 2,157 published screens, another lab has probably seen the same pattern.</span></li>
+      <li><span>Right now there is no way to find out who.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.2 · HARMONISATION — the enabling step, one slide only     -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — what had to happen first</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Screens cannot be compared until they speak the same language.</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>Every lab scores its screen differently. We found about 58 different score types.</span></li>
+      <li><span>Some scores count up and some count down, and the file does not say which.</span></li>
+      <li><span>RETICLE puts all 2,157 screens onto one calibrated axis.</span></li>
+    </ul>
+    <div data-anim style="--d:3; margin-top:10px">
+      <div class="axis" style="--pos:50%; height:96px">
+        <div class="axis__track"></div>
+        <div class="axis__cap l">essential</div>
+        <div class="axis__cap c">one harmonized score</div>
+        <div class="axis__cap r">advantageous</div>
+        <div class="axis__cross"><b></b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.3 · THE QUESTION IT UNLOCKS                               -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — the question it unlocks</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:34ch">Which published screens are asking the same question as mine?</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>We turn your scores into ranks, so your screen sits on the same scale as every other one.</span></li>
+      <li><span>We compare your ranked list against all 2,157 screens, using only the genes that both screens measured.</span></li>
+      <li><span>The closest matches come back ranked, each one with a confidence value attached.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.4 · DEMO LEAD-IN                                          -->
+<!-- ============================================================ -->
+<section class="slide hero">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — walkthrough</div>
+    <p class="htxt" data-anim style="--d:1; font-size:clamp(38px,6.8vw,96px); max-width:18ch">Here is what that <span class="em">looks like.</span></p>
+    <div class="hsub" data-anim style="--d:2">a 25-gene autophagy list, taken through the platform step by step</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.5 · WALKTHROUGH 1 — bring your screen                     -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — step one</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:34ch">You hand RETICLE your gene list, and it tells you what it read.</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>Drop in a ranked screen, or paste a handful of favourite genes.</span></li>
+      <li><span>Unpublished screens stay in your WashU session unless you choose to contribute them.</span></li>
+    </ul>
+    <div data-anim style="--d:3; display:grid; grid-template-columns:1fr 1.02fr; gap:20px; align-items:center; margin-top:14px">
+      <img class="shot fit" style="height:27vh" src="final_presentation_assets/app_01_input.png" alt="Screen input — dropping a gene list into RETICLE">
+      <img class="shot fit" style="height:27vh" src="final_presentation_assets/app_02_whatweread.png" alt="What we read — auto-detected format, organism and direction">
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.6 · WALKTHROUGH 2 — describe and scope                    -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — step two</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:36ch">You say what your screen was, and how much of the corpus to compare it against.</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>The modality matters — a knockout screen and an activation screen mean opposite things.</span></li>
+      <li><span>Everything RETICLE guessed is marked, so you can correct it before anything is compared.</span></li>
+    </ul>
+    <div data-anim style="--d:3; display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:center; margin-top:14px">
+      <img class="shot fit" style="height:26vh" src="final_presentation_assets/app_03_describe.png" alt="Describe your screen — modality, organism, selection, assay domain">
+      <img class="shot fit" style="height:26vh" src="final_presentation_assets/app_04_compare.png" alt="Compare against — narrowing the corpus pool">
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02.7 · WALKTHROUGH 3 — what comes back                       -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>02</b> — step three</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:36ch">Published screens probing biology like yours, and the pathways behind them.</h2>
+    <ul class="bigbullets" data-anim style="--d:2">
+      <li><span>Every match shows the biology it shares with your screen, and links straight out to the paper.</span></li>
+      <li><span>The pathways come back from the gene list alone — autophagy, mitophagy, macroautophagy.</span></li>
+    </ul>
+    <div data-anim style="--d:3; display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-top:14px">
+      <img class="shot fit" style="height:26vh" src="final_presentation_assets/app_06_matched.png" alt="Matched screens — ranked by shared hits, with PubMed and ORCS links">
+      <img class="shot fit" style="height:26vh" src="final_presentation_assets/app_07_pathways.png" alt="Shared pathways — Reactome enrichment over the query genes">
+    </div>
   </div>
 </section>
 
@@ -1358,6 +1501,39 @@ h2 .em.adv{color:var(--adv)}
       <div class="li tot"><div class="lk">Per month</div><div class="lv">$37.32</div></div>
     </div>
     <p class="costnote" data-anim style="--d:4"><b>About $450 a year</b> — list price, from the deployed configuration. The pipeline that built the corpus ran on WashU RIS and is already paid for. <b>Compute was never the constraint.</b></p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 05.4b · FUNDING AT THREE SCALES                              -->
+<!-- Figures and framing from Dr. Orvedahl's review note.         -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>05</b> — what it would take</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:28ch">Running it is cheap. Growing it is the ask.</h2>
+    <div class="fundscale" data-anim style="--d:2">
+      <div class="fs-col">
+        <div class="fs-bar" style="--h:22%"></div>
+        <div class="fs-when">next 9 months</div>
+        <div class="fs-amt">$20–50k</div>
+        <div class="fs-src">institutional support, through DI2</div>
+      </div>
+      <div class="fs-col mid">
+        <div class="fs-bar" style="--h:48%"></div>
+        <div class="fs-when">five years</div>
+        <div class="fs-amt">$5M</div>
+        <div class="fs-src">NIH Transformative Research Award</div>
+      </div>
+      <div class="fs-col grow">
+        <div class="fs-bar"></div>
+        <div class="fs-when">beyond</div>
+        <div class="fs-amt">open-ended</div>
+        <div class="fs-src">commercialization, growing from there</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:3; margin-top:16px">None of this is secured. These are the mechanisms that fit each stage, drawn to scale.</p>
   </div>
 </section>
 
