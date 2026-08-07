@@ -7,25 +7,30 @@ import {
 } from './editorialTheme_aaron';
 
 /**
- * The signed-in home: one box, and nothing else.
+ * The signed-in home: two doors, split down the middle.
  *
  * WHAT IT REPLACED. First a marketing-shaped page — headline, buttons, four round numbers — aimed
- * at someone who had already signed in. Then a version of this that led with a gene search but
- * still carried a statistics rule and four destination cards under it. Both were answering a
- * question nobody arriving here is asking. A researcher reaching this screen holds exactly one of
- * three things: a gene symbol, a screen they remember, or a ranked list from their own bench. So
- * the page is the box that takes all three, and the destinations are reached by using it.
+ * at someone who had already signed in. Then a version with a statistics rule and four destination
+ * cards. Then one search box with a mode chip, which was right about the important thing (the page
+ * is the box) and wrong about one: it made the user tell the box what kind of thing they were
+ * holding, when the box could just as easily be two boxes and read that from where they typed.
  *
- *   the mode chip     gene | screen — which index the box searches
- *   the + button      the third case: bring a ranked gene list of your own
- *   the type-ahead    what makes the box worth having, see below
+ * THE SPLIT IS THE PRODUCT, NOT A LAYOUT. This tool has exactly two halves, and the palette has
+ * said so since editorialTheme was written: teal is what is already established, ochre is what the
+ * screens measured. So the left side is a gene — what ten sources already know about it — and the
+ * right side is a screen, published or your own. A seam down the centre is the honest picture of a
+ * product with two entrances, and it fills a page that was two thirds empty without inventing
+ * anything to put there.
  *
- * THE TYPE-AHEAD IS THE POINT. Typing "PO" answers POLR2A, POLR2B, POLR2E, POLD1 — not POC1A and
- * POC1B-DUSP6, which is what alphabetical order gives and what makes most gene boxes useless.
- * That ranking took two signals and a build step; script/build_gene_search.py carries the
- * reasoning and the measurements. Screens are matched on what people remember them by — cell line,
- * drug, phenotype, first author — with the punctuation BioGRID writes and nobody types ("K562"
- * against a stored "K-562") normalised away.
+ * The mode chip is gone as a consequence. It existed to disambiguate one box; two boxes each know
+ * what they are. The organism toggle stays on the gene side only, because the screen comparison
+ * pool is human-only and a mouse switch over it would offer something that cannot be delivered.
+ *
+ * THE TYPE-AHEAD IS STILL THE POINT. Typing "PO" answers POLR2A, POLR2B, POLR2E, POLD1 — not
+ * POC1A and POC1B-DUSP6, which is what alphabetical order gives and what makes most gene boxes
+ * useless. script/build_gene_search.py carries the reasoning and the measurements. Screens are
+ * matched on what people remember them by — cell line, drug, phenotype, first author — with the
+ * punctuation BioGRID writes and nobody types ("K562" against a stored "K-562") normalised away.
  */
 
 type Mode = 'gene' | 'screen';
@@ -44,168 +49,114 @@ const CSS = `
 .rxhome{
   ${EDITORIAL_TOKENS}
   --ease:cubic-bezier(.22,.68,.28,1);
-  position:relative;
-  min-height:100vh; background:${PAPER_GROUND};
+  position:relative; min-height:100vh; background:${PAPER_GROUND};
   color:var(--ink); font-family:var(--sans); line-height:1.5;
   display:flex; flex-direction:column;
 }
 .rxhome *{box-sizing:border-box}
 
-/* ── the corpus ──────────────────────────────────────────────────────────
-   The paper ground is a 22px lattice of grey dots. These two layers light a
-   sparse few of those same nodes -- every offset is 1+22k, so a lit dot lands
-   exactly on an existing one and reads as "some of these are on", not as a
-   second pattern laid over the first.
-
-   It is the only ambient element on the page and it is not decoration: teal is
-   essential and ochre is KO-advantageous, the same two readings these accents
-   carry everywhere else in the product, so what sits under the search box is
-   the corpus it searches. They breathe on 19s and 23s -- coprime, so the pair
-   never settles into a loop you can catch -- and they do not translate. Drift
-   would read as wallpaper; a slow swell reads as phosphor, which is the right
-   register for an instrument sitting idle.
-
-   Sparsity is the whole point and was tuned by eye: a denser first pass read as
-   polka dots, which is decoration, which is the one thing this page must not
-   grow. Two dots per tile on tiles of 22x23 and 22x29 puts roughly a dozen lit
-   nodes on a laptop screen and keeps the tile repeat below noticing. The lit
-   dots are 1.3px against the ground's 1px so they read as the same dot turned
-   up, not as a second, larger dot laid over it. */
-.rxhome::before,
-.rxhome::after{
-  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
-}
-.rxhome::before{
-  background:
-    radial-gradient(circle at 89px 331px,  var(--know) 1.3px, transparent 1.8px),
-    radial-gradient(circle at 375px 133px, var(--know) 1.3px, transparent 1.8px);
-  background-size:506px 506px;            /* 22 × 23 */
-  animation:corpus-ess 19s ease-in-out infinite;
-}
-.rxhome::after{
-  background:
-    radial-gradient(circle at 199px 67px,  var(--eviq) 1.3px, transparent 1.8px),
-    radial-gradient(circle at 463px 441px, var(--eviq) 1.3px, transparent 1.8px);
-  background-size:638px 638px;            /* 22 × 29 — coprime with the layer above */
-  animation:corpus-adv 23s ease-in-out infinite;
-}
-@keyframes corpus-ess{0%,100%{opacity:.14}50%{opacity:.40}}
-@keyframes corpus-adv{0%,100%{opacity:.12}50%{opacity:.34}}
-
-/* Arrival, in reading order. Same rise/--ease the public page uses, on purpose:
-   editorialTheme exists so the login boundary is not a change of identity, and
-   that has to include how a page comes in, not only what it is made of. */
-.rxhome .rise{opacity:0; transform:translateY(10px)}
-.rxhome.anim .rise{animation:rise .8s var(--ease) forwards}
-@keyframes rise{to{opacity:1; transform:none}}
-.rxhome.anim .r1{animation-delay:.04s}
-.rxhome.anim .r2{animation-delay:.13s}
-.rxhome.anim .r3{animation-delay:.22s}
-.rxhome.anim .r4{animation-delay:.30s}
-
-@media (prefers-reduced-motion:reduce){
-  .rxhome::before{animation:none; opacity:.28}
-  .rxhome::after{animation:none; opacity:.22}
-  .rxhome .rise,
-  .rxhome.anim .rise{opacity:1; transform:none; animation:none}
-}
-/* The gap is the SUBORDINATE step, not the only one. Everything here used to sit 26px apart, which
-   made five equal items out of a page that has two: a search (its scope pill and its box are one
-   thing) and, under a real break, the other half of the product. Spacing is the only thing telling
-   a reader which of those they are looking at, so the group break is set on the elements that start
-   a group rather than shared out evenly down the column. */
-.rxhome .stage{
-  position:relative; z-index:1;
-  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:24px clamp(20px,5vw,48px) 96px; gap:12px;
+/* ── the mark, sitting on the seam ───────────────────────────────────── */
+.rxhome .cap{
+  position:relative; z-index:2; flex:0 0 auto;
+  padding:clamp(26px,4.4vh,52px) 0 clamp(18px,3vh,34px); text-align:center;
 }
 .rxhome .mark{
-  font-family:var(--serif); font-weight:500; font-size:clamp(34px,5vw,46px); letter-spacing:-.02em;
+  font-family:var(--serif); font-weight:500; font-size:clamp(30px,4.2vw,44px); letter-spacing:-.02em;
   margin:0; color:var(--ink);
 }
 .rxhome .mark b{color:var(--know); font-weight:600}
 .rxhome .mark span{
-  font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--faint); margin-left:11px; vertical-align:9px;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--faint); margin-left:10px; vertical-align:9px;
 }
+
+/* ── the split ───────────────────────────────────────────────────────────
+   One rule down the centre and a quarter-degree of temperature either side —
+   the halves have to read as two territories without either of them turning
+   into a coloured panel, because everything that matters on this page is
+   printed on them. */
+.rxhome .split{
+  position:relative; z-index:2; flex:1 1 auto;
+  display:grid; grid-template-columns:1fr 1fr; align-items:stretch;
+}
+/* Centred, not top-aligned. The two sides carry different amounts — the screens
+   side has a second door under it — so anchoring them to the top left a single
+   dead band across the bottom of the page. Centring splits that space above and
+   below, where it reads as margin instead of as something missing. */
+.rxhome .half{
+  position:relative; display:flex; flex-direction:column; justify-content:center;
+  gap:15px; padding:clamp(20px,3.4vh,38px) clamp(26px,4.2vw,64px) clamp(26px,4vh,44px);
+}
+.rxhome .half.genes{border-right:1px solid var(--line)}
+/* The tint is the paper warming and cooling, not a fill: at 3% the seam reads
+   as a change of light rather than a change of surface. */
+.rxhome .half.genes::before,
+.rxhome .half.screens::before{content:''; position:absolute; inset:0; pointer-events:none; z-index:0}
+.rxhome .half.genes::before{background:linear-gradient(90deg,#1F6F8B08,transparent 62%)}
+.rxhome .half.screens::before{background:linear-gradient(270deg,#C77D3108,transparent 62%)}
+.rxhome .half > *{position:relative; z-index:1}
+
+.rxhome .hk{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+  display:flex; align-items:center; gap:10px;
+}
+.rxhome .genes .hk{color:var(--know)}
+.rxhome .screens .hk{color:var(--eviq)}
+.rxhome .hk::before{content:''; width:22px; height:1.5px; background:currentColor; display:block}
+.rxhome .hh{
+  font-family:var(--serif); font-weight:400; font-size:clamp(21px,2.5vw,31px); letter-spacing:-.015em;
+  line-height:1.2; margin:0; color:var(--ink); max-width:17ch;
+}
+.rxhome .hnote{font-size:12.5px; color:var(--muted); margin:0; max-width:38ch}
+.rxhome .hnote b{color:var(--ink2); font-weight:500}
 
 /* ── the box ─────────────────────────────────────────────────────────── */
-/* z-index is explicit because the suggestion list has to cover the toggle, the hint and the
-   handoff card below it. It used to get that for free -- boxwrap is positioned and they were not,
-   so it painted later -- but the arrival animation gives them an opacity of their own, and an
-   element with opacity paints in the same layer as a positioned one. Being later in the document,
-   they started landing on top of the list. Stating the order stops that from depending on whether
-   a sibling happens to be animated. */
-.rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:660px; margin-top:18px}
+.rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:none}
 .rxhome .box{
-  display:flex; align-items:center; gap:8px; padding:7px 7px 7px 8px;
-  border:1px solid var(--line); border-radius:16px; background:var(--card);
-  box-shadow:0 1px 2px #14161A08, 0 10px 34px -20px #14161A29;
+  display:flex; align-items:center; gap:8px; padding:6px 6px 6px 14px;
+  border:1px solid var(--line); border-radius:14px; background:var(--card);
+  box-shadow:0 1px 2px #14161A08, 0 10px 34px -22px #14161A29;
   transition:border-color .18s, box-shadow .18s;
 }
-.rxhome .boxwrap.open .box{border-radius:16px 16px 0 0}
-.rxhome .drop.down{border-color:var(--eviq)}
-.rxhome .drop .nolist{
-  display:block; padding:11px 15px; font-size:12.5px; color:var(--eviq); line-height:1.55; cursor:default;
-}
-.rxhome .drop .nolist b{font-family:var(--mono); font-size:11.5px}
-.rxhome .box:focus-within{border-color:var(--know); box-shadow:0 0 0 4px var(--know-soft)}
-.rxhome .plus{
-  flex:0 0 auto; width:34px; height:34px; border-radius:10px; border:1px solid transparent;
-  background:transparent; color:var(--muted); font-size:19px; line-height:1; cursor:pointer;
-  transition:.15s;
-}
-.rxhome .plus:hover{background:var(--line2); color:var(--ink); border-color:var(--line)}
+.rxhome .boxwrap.open .box{border-radius:14px 14px 0 0}
+.rxhome .genes .box:focus-within{border-color:var(--know); box-shadow:0 0 0 4px var(--know-soft)}
+.rxhome .screens .box:focus-within{border-color:var(--eviq); box-shadow:0 0 0 4px var(--eviq-soft)}
 .rxhome .box input{
   flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink);
-  font-family:var(--mono); font-size:15.5px; letter-spacing:.015em; padding:10px 4px;
+  font-family:var(--mono); font-size:15px; letter-spacing:.015em; padding:10px 0;
 }
 .rxhome .box input::placeholder{font-family:var(--sans); letter-spacing:0; color:var(--faint)}
-.rxhome .chip{
-  flex:0 0 auto; display:flex; align-items:center; gap:6px; cursor:pointer;
-  border:1px solid var(--line); border-radius:11px; background:var(--paper);
-  font-family:var(--sans); font-size:12.5px; color:var(--ink2); padding:7px 11px; transition:.15s;
-}
-.rxhome .chip:hover{border-color:var(--know); color:var(--know)}
-.rxhome .chip i{font-style:normal; font-size:9px; color:var(--faint)}
 .rxhome .send{
-  flex:0 0 auto; width:36px; height:36px; border:0; border-radius:11px; cursor:pointer;
-  background:var(--ink); color:#fff; font-size:15px; transition:background .16s;
+  flex:0 0 auto; width:34px; height:34px; border:0; border-radius:10px; cursor:pointer;
+  background:var(--ink); color:#fff; font-size:14px; transition:background .16s;
 }
-.rxhome .send:hover{background:var(--know)}
+.rxhome .genes .send:hover{background:var(--know)}
+.rxhome .screens .send:hover{background:var(--eviq)}
 .rxhome .send:disabled{background:var(--line); color:var(--faint); cursor:default}
-
-/* ── the mode menu ───────────────────────────────────────────────────── */
-.rxhome .menu{
-  position:absolute; right:52px; top:calc(100% + 6px); z-index:20; min-width:210px;
-  background:var(--card); border:1px solid var(--line); border-radius:13px; padding:5px;
-  box-shadow:0 16px 42px -18px #14161A3d;
-}
-.rxhome .menu button{
-  display:block; width:100%; text-align:left; border:0; background:none; cursor:pointer;
-  border-radius:9px; padding:9px 11px; font-family:var(--sans); font-size:13px; color:var(--ink);
-}
-.rxhome .menu button:hover{background:var(--line2)}
-.rxhome .menu button.on{background:var(--know-soft); color:var(--know); font-weight:500}
-.rxhome .menu button small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:2px}
-.rxhome .menu button.on small{color:var(--know); opacity:.75}
 
 /* ── suggestions ─────────────────────────────────────────────────────── */
 .rxhome .drop{
   position:absolute; left:0; right:0; top:100%; z-index:15;
   background:var(--card); border:1px solid var(--know); border-top:0;
-  border-radius:0 0 16px 16px; overflow:hidden;
+  border-radius:0 0 14px 14px; overflow:hidden;
   box-shadow:0 18px 44px -22px #14161A3d;
 }
+.rxhome .screens .drop{border-color:var(--eviq)}
+.rxhome .drop.down{border-color:var(--eviq)}
+.rxhome .drop .nolist{
+  display:block; padding:11px 15px; font-size:12.5px; color:var(--eviq); line-height:1.55; cursor:default;
+}
+.rxhome .drop .nolist b{font-family:var(--mono); font-size:11.5px}
 .rxhome .drop .row{
   display:flex; align-items:baseline; gap:10px; width:100%; text-align:left;
-  border:0; background:none; cursor:pointer; padding:10px 15px; font-family:inherit;
+  border:0; background:none; cursor:pointer; padding:9px 14px; font-family:inherit;
   border-top:1px solid var(--line2);
 }
 .rxhome .drop .row:first-child{border-top:0}
-.rxhome .drop .row.sel{background:var(--know-soft)}
+.rxhome .genes .drop .row.sel{background:var(--know-soft)}
+.rxhome .screens .drop .row.sel{background:var(--eviq-soft)}
 .rxhome .drop .row b{
-  font-family:var(--mono); font-size:13.5px; font-weight:500; color:var(--ink); flex:0 0 auto;
+  font-family:var(--mono); font-size:13px; font-weight:500; color:var(--ink); flex:0 0 auto;
 }
 .rxhome .drop .row .why{font-family:var(--mono); font-size:10px; color:var(--eviq); flex:0 0 auto}
 .rxhome .drop .row span{
@@ -215,106 +166,123 @@ const CSS = `
   font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--faint);
   margin-left:auto; flex:0 0 auto; padding-left:10px;
 }
-/* 660 to match the search box exactly. At 620 it sat 20px inside the box's edges — close enough to
-   look like a mistake rather than a distinction, and these two are peers, not parent and child. */
-.rxhome .handoff{
-  width:100%; max-width:660px; margin:34px auto 0; display:flex; align-items:center; gap:20px;
-  padding:16px 18px; border:1px solid var(--line); border-left:2px solid var(--eviq);
-  border-radius:12px; background:var(--card); text-align:left;
+
+/* ── organism, gene side only ────────────────────────────────────────── */
+/* Example genes. They are here because the left side was a block shorter than
+   the right, and centring two columns of different height puts their headlines
+   on different lines — which in a composition this symmetric reads as a mistake.
+   The fix is the side that was short getting the thing it was actually missing:
+   a way in for someone who has not yet thought of a gene. */
+.rxhome .trys{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:11.5px; color:var(--faint)}
+.rxhome .trys button{
+  border:0; background:none; padding:0; cursor:pointer; font:inherit;
+  color:var(--know); text-decoration:underline; text-underline-offset:3px;
 }
-.handoff-copy{flex:1 1 auto; min-width:0}
-.handoff-k{
-  font-family:var(--mono); font-size:9.5px; letter-spacing:.15em; text-transform:uppercase;
-  color:var(--eviq); margin-bottom:4px;
-}
-.handoff-copy p{margin:0; font-size:13px; line-height:1.5; color:var(--ink2)}
-.handoff-go{
-  flex:0 0 auto; font-family:var(--sans); font-size:13px; font-weight:500;
-  padding:9px 15px; border-radius:9px; border:1px solid var(--eviq);
-  background:var(--card); color:var(--eviq); cursor:pointer; white-space:nowrap; transition:.15s;
-}
-.handoff-go b{font-weight:600; font-variant-numeric:tabular-nums}
-.handoff-go:hover{background:var(--eviq); color:#fff}
-.handoff-go:focus-visible{outline:2px solid var(--eviq); outline-offset:2px}
-@media (max-width:620px){
-  .handoff{flex-direction:column; align-items:stretch; gap:13px}
-  .handoff-go{width:100%}
-}
-.rxhome .orgs{display:flex; gap:7px; justify-content:center}
+.rxhome .trys button:hover{color:var(--ink)}
+.rxhome .orgs{display:flex; gap:7px}
 .rxhome .orgs button{
   font-family:var(--sans); font-size:12px; padding:4px 12px; border-radius:16px;
   border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; transition:.15s;
 }
 .rxhome .orgs button.on{background:var(--ink); border-color:var(--ink); color:#fff; font-weight:500}
-.rxhome .scope-note{
-  font-family:var(--mono); font-size:11px; color:var(--muted); padding:5px 12px;
-  border:1px solid var(--line); border-radius:16px; background:var(--card);
+
+/* ── the second door on the screens side ─────────────────────────────── */
+.rxhome .orrule{
+  display:flex; align-items:center; gap:12px; margin-top:4px;
+  font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint);
 }
+.rxhome .orrule::before,.rxhome .orrule::after{content:''; flex:1; height:1px; background:var(--line)}
+.rxhome .own{
+  display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%;
+  padding:13px 16px; border-radius:12px; border:1px solid var(--eviq); background:var(--card);
+  font-family:var(--sans); font-size:13.5px; font-weight:500; color:var(--eviq);
+  cursor:pointer; text-align:left; transition:.15s;
+}
+.rxhome .own small{display:block; font-weight:400; font-size:12px; color:var(--muted); margin-top:3px}
+.rxhome .own:hover{background:var(--eviq); color:#fff; border-color:var(--eviq)}
+.rxhome .own:hover small{color:#ffffffcc}
+.rxhome .own:focus-visible{outline:2px solid var(--eviq); outline-offset:2px}
+.rxhome .own b{font-variant-numeric:tabular-nums}
+
 .rxhome .foot{
-  position:relative; z-index:1;
-  flex:0 0 auto; padding:14px clamp(20px,5vw,48px); text-align:center;
+  position:relative; z-index:2; flex:0 0 auto; padding:12px clamp(20px,5vw,48px); text-align:center;
   font-family:var(--mono); font-size:10px; letter-spacing:.05em; color:var(--faint);
+  border-top:1px solid var(--line2);
 }
 .rxhome .foot button{
   border:0; background:none; padding:0; cursor:pointer; font:inherit; color:var(--faint);
   text-decoration:underline; text-underline-offset:3px;
 }
 .rxhome .foot button:hover{color:var(--know)}
-@media(max-width:560px){
-  .rxhome .chip span{display:none}
-  .rxhome .menu{right:8px; left:8px}
+
+/* ── the corpus, now split by side ───────────────────────────────────────
+   The lit nodes were always the two accents. Giving each half only its own
+   colour turns an ambient texture into part of the argument: teal nodes lie
+   under the gene, ochre under the screens. Offsets are 1+22k so every lit dot
+   lands on an existing grey one, and the two breathe on coprime periods so the
+   pair never settles into a loop you can catch. */
+.rxhome .half::after{content:''; position:absolute; inset:0; pointer-events:none; z-index:0}
+.rxhome .genes::after{
+  background:
+    radial-gradient(circle at 89px 331px,  var(--know) 1.3px, transparent 1.8px),
+    radial-gradient(circle at 375px 133px, var(--know) 1.3px, transparent 1.8px);
+  background-size:506px 506px;
+  animation:corpus-ess 19s ease-in-out infinite;
 }
-@media(prefers-reduced-motion:reduce){.rxhome *{transition:none!important}}
+.rxhome .screens::after{
+  background:
+    radial-gradient(circle at 199px 67px,  var(--eviq) 1.3px, transparent 1.8px),
+    radial-gradient(circle at 463px 441px, var(--eviq) 1.3px, transparent 1.8px);
+  background-size:638px 638px;
+  animation:corpus-adv 23s ease-in-out infinite;
+}
+@keyframes corpus-ess{0%,100%{opacity:.14}50%{opacity:.40}}
+@keyframes corpus-adv{0%,100%{opacity:.12}50%{opacity:.34}}
+
+/* Arrival: the mark, then the two halves opening outward from the seam. */
+.rxhome .rise{opacity:0; transform:translateY(10px)}
+.rxhome .half.genes{opacity:0; transform:translateX(-14px)}
+.rxhome .half.screens{opacity:0; transform:translateX(14px)}
+.rxhome.anim .rise{animation:rise .8s var(--ease) forwards}
+.rxhome.anim .half{animation:open .85s var(--ease) .12s forwards}
+@keyframes rise{to{opacity:1; transform:none}}
+@keyframes open{to{opacity:1; transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .rxhome .genes::after{animation:none; opacity:.28}
+  .rxhome .screens::after{animation:none; opacity:.22}
+  .rxhome .rise,.rxhome.anim .rise,
+  .rxhome .half,.rxhome.anim .half{opacity:1; transform:none; animation:none}
+}
+
+/* Below the fold for a split this narrow, so the seam becomes a horizontal one. */
+@media (max-width:860px){
+  .rxhome .split{grid-template-columns:1fr}
+  .rxhome .half.genes{border-right:0; border-bottom:1px solid var(--line)}
+  .rxhome .half.genes::before{background:linear-gradient(180deg,#1F6F8B08,transparent 62%)}
+  .rxhome .half.screens::before{background:linear-gradient(0deg,#C77D3108,transparent 62%)}
+}
+@media (prefers-reduced-motion:reduce){.rxhome *{transition:none!important}}
 `;
 
-const MODES: { key: Mode; label: string; blurb: string; placeholder: string }[] = [
-  { key: 'gene', label: 'Gene', blurb: 'Everything on record, plus what the screens say',
-    placeholder: 'Search a gene — try PO' },
-  { key: 'screen', label: 'Screen', blurb: 'Compare a supported human screen',
-    placeholder: 'Search a screen — cell line, drug, author or id' },
-];
-
-export default function HomeLanding_aaron({
-  onOpenGene,
-  onOpenScreen,
-  onStart,
-  onExplore,
+/** One side of the split. Each owns its query and its suggestions, which is the whole reason the
+ *  mode chip could go: a box that only ever searches one index does not need to be told which. */
+function Side({
+  mode, organism, onPick, children,
 }: {
-  onOpenGene: (gene: string, organism: Organism) => void;
-  onOpenScreen: (screenId: string) => void;
-  onStart: () => void;
-  /** The Explorer has no card and no mode — stripping the page to one box left it with nowhere to
-   *  be. It keeps a footer link rather than being dropped: it is a working page someone else owns,
-   *  and quietly making it unreachable is not the same decision as retiring it. */
-  onExplore: () => void;
+  mode: Mode;
+  organism: Organism;
+  onPick: (term: string, hit: Hit | null) => void;
+  children?: React.ReactNode;
 }) {
-  const [mode, setMode] = useState<Mode>('gene');
-  const [organism, setOrganism] = useState<Organism>('human');
   const [q, setQ] = useState('');
   const [hits, setHits] = useState<Hit[]>([]);
   const [sel, setSel] = useState(0);
-  const [menu, setMenu] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  /* The size of the comparison corpus, read from the endpoint the comparison page itself uses, so
-     the button on this page and the counter on that one can never disagree. Stays null if the call
-     fails and the button falls back to copy that needs no number — a home page must not depend on
-     an API being awake. */
-  const [corpus, setCorpus] = useState<number | null>(null);
-  /* The arrival runs once, on the first frame after mount, so the page is painted in its start
-     state before anything moves. Set in an effect rather than at render because a class applied in
-     the same commit that creates the elements gives the browser no start state to animate from. */
-  const [arrived, setArrived] = useState(false);
-
-  ensureEditorialFonts();
-
-  const meta = MODES.find((m) => m.key === mode)!;
-
-  /* Every keystroke stamps its request. Suggestions come back out of order often enough on a slow
-     link that without this the list can settle on the answer to a prefix the user has already
-     typed past. */
-  const reqRef = useRef(0);
   const [down, setDown] = useState(false);
+  const reqRef = useRef(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const term = q.trim();
     if (!term) { setHits([]); setDown(false); return; }
@@ -336,6 +304,110 @@ export default function HomeLanding_aaron({
     return () => clearTimeout(t);
   }, [q, mode, organism]);
 
+  const take = useCallback((h: Hit) => {
+    setHits([]);
+    setQ(isGene(h) ? h.symbol : h.screen_id);
+    onPick(isGene(h) ? h.symbol : h.screen_id, h);
+  }, [onPick]);
+
+  const submit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    // Enter with the list open takes the highlighted row; otherwise it takes the box verbatim, so
+    // someone who knows the exact symbol never waits for a suggestion to catch up.
+    if (hits.length && hits[sel]) return take(hits[sel]);
+    const term = q.trim();
+    if (term) onPick(term, null);
+  };
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (!hits.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSel((s) => (s + 1) % hits.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSel((s) => (s - 1 + hits.length) % hits.length); }
+    else if (e.key === 'Escape') { setHits([]); }
+  };
+
+  return (
+    <>
+      <div className={`boxwrap${hits.length || down ? ' open' : ''}`}>
+        <form className="box" onSubmit={submit}>
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={onKey}
+            placeholder={mode === 'gene' ? 'Search a gene — try PO' : 'Cell line, drug, phenotype, author'}
+            aria-label={mode === 'gene' ? 'Search a gene' : 'Search a published screen'}
+            autoComplete="off" spellCheck={false}
+          />
+          <button className="send" type="submit" disabled={!q.trim()} aria-label="Search">→</button>
+        </form>
+
+        {down && !hits.length && (
+          <div className="drop down" role="status">
+            <span className="nolist">
+              Suggestions are unavailable right now — the search index could not be read.
+              Press <b>Enter</b> to open the {mode === 'gene' ? 'gene' : 'screen'} anyway.
+            </span>
+          </div>
+        )}
+
+        {!!hits.length && (
+          <div className="drop" role="listbox">
+            {hits.map((h, i) => (
+              <button
+                key={isGene(h) ? h.symbol : h.screen_id}
+                className={`row${i === sel ? ' sel' : ''}`}
+                onMouseEnter={() => setSel(i)}
+                onClick={() => take(h)}
+                type="button"
+              >
+                {isGene(h) ? (
+                  <>
+                    <b>{h.symbol}</b>
+                    {h.matched && <span className="why">via {h.matched}</span>}
+                    <span>{h.name}</span>
+                    {!!h.n_hits && <em>{h.n_hits.toLocaleString()} screens</em>}
+                  </>
+                ) : (
+                  <>
+                    <b>{h.cell_line || h.screen_id}</b>
+                    <span>{[h.condition, h.phenotype, h.author].filter(Boolean).join(' · ')}</span>
+                    {!!h.n_hits && <em>{h.n_hits.toLocaleString()} hits</em>}
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {children}
+    </>
+  );
+}
+
+export default function HomeLanding_aaron({
+  onOpenGene,
+  onOpenScreen,
+  onStart,
+  onExplore,
+}: {
+  onOpenGene: (gene: string, organism: Organism) => void;
+  onOpenScreen: (screenId: string) => void;
+  /** The third case: a ranked gene list from the user's own bench. */
+  onStart: () => void;
+  onExplore: () => void;
+}) {
+  const [organism, setOrganism] = useState<Organism>('human');
+  /* The size of the comparison corpus, read from the endpoint the comparison page itself uses, so
+     the button here and the counter there can never disagree. Stays null if the call fails and the
+     button falls back to copy that needs no number — a home page must not depend on an API. */
+  const [corpus, setCorpus] = useState<number | null>(null);
+  /* The arrival runs once, on the first frame after mount, so the page is painted in its start
+     state before anything moves. */
+  const [arrived, setArrived] = useState(false);
+
+  ensureEditorialFonts();
+
   useEffect(() => {
     const id = requestAnimationFrame(() => setArrived(true));
     return () => cancelAnimationFrame(id);
@@ -350,197 +422,79 @@ export default function HomeLanding_aaron({
     return () => { live = false; };
   }, []);
 
-  // Close the mode menu on an outside click. The suggestion list is left alone — it closes when
-  // the query empties or something is chosen, which is what a person expects from a search box.
-  useEffect(() => {
-    if (!menu) return;
-    const onDoc = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setMenu(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [menu]);
-
-  const choose = useCallback((h: Hit) => {
-    setHits([]);
-    if (isGene(h)) { setQ(h.symbol); onOpenGene(h.symbol, organism); }
-    else { setQ(h.screen_id); onOpenScreen(h.screen_id); }
-  }, [organism, onOpenGene, onOpenScreen]);
-
-  const submit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    // Enter with the list open takes the highlighted row; otherwise it takes the box verbatim, so
-    // someone who knows the exact symbol never has to wait for a suggestion to catch up.
-    if (hits.length && hits[sel]) return choose(hits[sel]);
-    const term = q.trim();
-    if (!term) return;
-    if (mode === 'gene') onOpenGene(term, organism);
-    else onOpenScreen(term.replace(/\D/g, ''));
-  };
-
-  const onKey = (e: React.KeyboardEvent) => {
-    if (!hits.length) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); setSel((s) => (s + 1) % hits.length); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setSel((s) => (s - 1 + hits.length) % hits.length); }
-    else if (e.key === 'Escape') { setHits([]); }
-  };
+  const pickGene = useCallback((term: string) => onOpenGene(term, organism), [onOpenGene, organism]);
+  const pickScreen = useCallback((term: string, hit: Hit | null) => {
+    // A chosen row carries its own id; a typed line is whatever digits are in it.
+    onOpenScreen(hit && !isGene(hit) ? hit.screen_id : term.replace(/\D/g, ''));
+  }, [onOpenScreen]);
 
   return (
     <div className={`rxhome${arrived ? ' anim' : ''}`}>
       <style>{CSS}</style>
 
-      <div className="stage">
-        <h1 className="mark rise r1">RETI<b>C</b>LE<span>beta</span></h1>
+      <div className="cap">
+        <h1 className="mark rise">RETI<b>C</b>LE<span>beta</span></h1>
+      </div>
 
-        <div className={`boxwrap rise r2${hits.length || down ? ' open' : ''}`} ref={wrapRef}>
-          <form className="box" onSubmit={submit}>
-            <button
-              type="button"
-              className="plus"
-              onClick={onStart}
-              title="Analyse a ranked gene list from your own screen"
-              aria-label="Analyse a ranked gene list"
-            >+</button>
-
-            <input
-              ref={inputRef}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={onKey}
-              placeholder={meta.placeholder}
-              aria-label={meta.placeholder}
-              autoComplete="off"
-              spellCheck={false}
-              autoFocus
-            />
-
-            <button
-              type="button"
-              className="chip"
-              onClick={() => setMenu((v) => !v)}
-              aria-haspopup="menu"
-              aria-expanded={menu}
-            >
-              <span>{meta.label}</span><i>▾</i>
-            </button>
-
-            <button className="send" type="submit" disabled={!q.trim()} aria-label="Search">→</button>
-          </form>
-
-          {menu && (
-            <div className="menu" role="menu">
-              {MODES.map((m) => (
-                <button
-                  key={m.key}
-                  role="menuitem"
-                  className={m.key === mode ? 'on' : ''}
-                  onClick={() => {
-                    setMode(m.key);
-                    if (m.key === 'screen') setOrganism('human');
-                    setMenu(false);
-                    setHits([]);
-                    inputRef.current?.focus();
-                  }}
-                >
-                  {m.label}
-                  <small>{m.blurb}</small>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {down && !hits.length && (
-            <div className="drop down" role="status">
-              <div className="row nolist">
-                Suggestions are unavailable right now — the search index could not be read.
-                Press <b>Enter</b> to open the {mode === 'gene' ? 'gene' : 'screen'} anyway.
-              </div>
-            </div>
-          )}
-
-          {!!hits.length && (
-            <div className="drop" role="listbox">
-              {hits.map((h, i) => (
-                <button
-                  key={isGene(h) ? h.symbol : h.screen_id}
-                  role="option"
-                  aria-selected={i === sel}
-                  className={`row${i === sel ? ' sel' : ''}`}
-                  onMouseEnter={() => setSel(i)}
-                  onClick={() => choose(h)}
-                >
-                  {isGene(h) ? (
-                    <>
-                      <b>{h.symbol}</b>
-                      {/* Say WHY a row is here when the reason is not the text they typed. */}
-                      {h.matched && <span className="why">via {h.matched}</span>}
-                      <span>{h.name}</span>
-                      {h.n_hits > 0 && <em>{h.n_hits.toLocaleString()} screens</em>}
-                    </>
-                  ) : (
-                    <>
-                      <b>{h.screen_id}</b>
-                      <span>
-                        {[h.cell_line, h.condition || h.phenotype, h.author]
-                          .filter(Boolean).join(' · ')}
-                      </span>
-                      {h.n_hits > 0 && <em>{Number(h.n_hits).toLocaleString()} hits</em>}
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Screen similarity is currently precomputed for a 962-screen human pool. Keep that
-            limitation visible and do not offer a mouse switch that can only lead to a 404. */}
-        <div className="orgs rise r3">
-          {mode === 'gene' ? (
-            (['human', 'mouse'] as const).map((o) => (
+      <div className="split">
+        <section className="half genes">
+          <div className="hk">genes</div>
+          <h2 className="hh">What is already known about one gene.</h2>
+          <Side mode="gene" organism={organism} onPick={pickGene} />
+          <div className="orgs">
+            {(['human', 'mouse'] as Organism[]).map((o) => (
               <button
                 key={o}
+                type="button"
                 className={o === organism ? 'on' : ''}
                 onClick={() => setOrganism(o)}
                 aria-pressed={o === organism}
               >{o === 'human' ? 'Human' : 'Mouse'}</button>
-            ))
-          ) : (
-            <span className="scope-note">Human comparison pool · 962 supported screens</span>
-          )}
-        </div>
+            ))}
+          </div>
+          <div className="trys">
+            <span>try</span>
+            {['TP53', 'BRCA1', 'RAN', 'CGAS'].map((g) => (
+              <button key={g} type="button" onClick={() => onOpenGene(g, organism)}>{g}</button>
+            ))}
+          </div>
+          <p className="hnote">
+            Ten sources on one page — <b>NCBI, UniProt, GO, PubMed, Ensembl</b> and five more,
+            assembled offline so the page answers in a quarter of a second.
+          </p>
+        </section>
 
-      {/* The product has two halves and this page used to present only one. Looking a gene up and
-          comparing your own screen are peers, so the second one gets a real affordance rather than
-          an underlined word in a caption.
-          Ochre, not teal: in this palette teal is what is already established and ochre is what the
-          screens measured — which is exactly what lies on the other side of this button.
-          The count is fetched live from the same endpoint the comparison page uses, so the button
-          states its own value and is never stale.
+        <section className="half screens">
+          <div className="hk">screens</div>
+          <h2 className="hh">What the experiments actually measured.</h2>
+          <Side mode="screen" organism="human" onPick={pickScreen} />
+          <p className="hnote">
+            Every published screen, searchable by what you remember it by — cell line, drug,
+            phenotype or first author.
+          </p>
 
-          A caption used to sit between the toggle and this card, reading "Type a symbol to look one
-          up, or hand over a whole screen below." It is gone rather than shortened: the first half
-          restated the placeholder, and the second narrated this card, which carries its own label
-          and its own sentence. It also blurred the one distinction on this page worth keeping
-          sharp — searching a PUBLISHED screen is the mode chip, handing over YOUR OWN is this card,
-          and "a whole screen below" sat between the two meaning neither cleanly. */}
-      <div className="handoff rise r4">
-        <div className="handoff-copy">
-          <div className="handoff-k">your own screen</div>
-          <p>Already ran one? Land it against everything published and see which screens agree.</p>
-        </div>
-        <button className="handoff-go" onClick={onStart}>
-          {corpus == null
-            ? 'Compare my screen'
-            : <>Compare against <b>{corpus.toLocaleString()}</b> screens</>} <span aria-hidden="true">→</span>
-        </button>
-      </div>
-
+          <div className="orrule">or</div>
+          {/* The product's third case, and the only one that is not a search. Ochre, not teal: in
+              this palette teal is what is established and ochre is what the screens measured, which
+              is exactly what lies on the other side of this button. The count is fetched live from
+              the same endpoint the comparison page uses, so it is never stale. */}
+          <button className="own" onClick={onStart} type="button">
+            <span>
+              Bring your own screen
+              <small>
+                {corpus == null
+                  ? 'Land a ranked gene list against everything published.'
+                  : <>Land a ranked gene list against all <b>{corpus.toLocaleString()}</b>.</>}
+              </small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </section>
       </div>
 
       <div className="foot">
         2,157 harmonized CRISPR screens · pure BioGRID ORCS — no literature mining ·{' '}
-        <button onClick={onExplore}>Explorer</button>
+        <button onClick={onExplore} type="button">Explorer</button>
       </div>
     </div>
   );
