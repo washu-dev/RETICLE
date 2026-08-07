@@ -420,6 +420,15 @@ h2 .em.adv{color:var(--adv)}
   letter-spacing:-.01em; color:var(--ink); line-height:1.1}
 .ask3 em{font-style:normal; color:var(--adv)}
 
+/* A screenshot that stands alone has to fit under its title, not push it off the
+   slide. width:100% is right inside the three-up grid, where the column sets the
+   size; on its own it lets a 3418px-wide capture set the height and the heading
+   goes over the top edge. This caps the height instead and lets the width follow,
+   so the frame hugs the image at whatever size fits. */
+.shot-solo{
+  width:auto; max-width:100%; max-height:66vh; height:auto; margin:0 auto;
+}
+
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
 .fail{border:1px solid var(--grid); border-radius:10px; background:#fff; padding:20px 20px 18px; position:relative}
@@ -928,40 +937,14 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the result</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">FANCD2 rebuilds its own repair pathway, from screen data alone.</h2>
-    <div class="ex2" data-anim style="--d:2; margin-top:22px">
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px)">Successful example</h2>
+    <div data-anim style="--d:2; margin-top:22px">
+      <div class="shotwrap">
+          <img class="shot shot-solo" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
           <div class="shotmiss">RETICLE network — FANCD2<br><code>assets/reticle_network_fancd2.png</code></div>
         </div>
-      </div>
-      <div>
-        <div class="exread">what came back</div>
-        <ul class="exmini">
-          <li><span class="ek">found</span>FANCA, FANCB, FANCC, FANCE, FANCL, FANCM, UBE2T, FAAP100 — <b>the Fanconi anaemia core complex</b>.</li>
-          <li><span class="ek">graded</span>12 of the 17 edges are <b>tier 1</b> — both channels agreeing.</li>
-          <li><span class="ek">never used</span>No pathway database, no annotation, no literature. Only which knockouts died together.</li>
-        </ul>
-      </div>
     </div>
-  </div>
-</section>
-
-<!-- 03.10 · PREDICTION -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — step four</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">If we trust the neighbours, we can name what a dark gene does.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">1 · gather</div><div class="body">Its co-essential neighbours and <b>their</b> known functions.</div></div>
-      <div class="nf"><div class="step">2 · propose</div><div class="body">A shared process it is <b>not yet annotated with</b>.</div></div>
-      <div class="nf"><div class="step">3 · verify</div><div class="body">Re-checked: novelty, and <b>every cited neighbour</b>.</div></div>
-      <div class="nf"><div class="step">4 · label</div><div class="body">Ships as <b>verified</b>, single-supporter, or rejected.</div></div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">A cited partner that is not really in the neighbourhood is dropped before you see it. <b style="color:var(--ink)">Leave-one-out says the signal is real, not circular.</b></p>
   </div>
 </section>
 
@@ -975,40 +958,24 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- 04.1 · WET LAB -->
-<section class="slide">
+<section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal one</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Take one prediction to the bench and find out if we are right.</h2>
-    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>Every prediction already ships as a <b>testable claim</b>: this gene participates in that process, because these named partners do.</span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">CORUM says how often an edge is a real complex. Only an experiment says whether a <b style="color:var(--ink)">new</b> claim is true. <b style="color:var(--ink)">Nobody has run one yet.</b></p>
+    <p class="htxt" data-anim><span class="em" style="color:var(--ess)">Wet lab verifications</span></p>
   </div>
 </section>
 
-<!-- 04.2 · OTHER LABS -->
-<section class="slide">
+<section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal two</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Every new screen makes the network sharper for everyone.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">today</div><div class="body"><b>2,157</b> published screens · <b>5,077</b> genes reach the network.</div></div>
-      <div class="nf"><div class="step">the gap</div><div class="body">Another <b>15,500</b> genes have too little signal yet.</div></div>
-      <div class="nf"><div class="step">the fix</div><div class="body">Unpublished screens from labs like ours.</div></div>
-      <div class="nf"><div class="step">the return</div><div class="body">A contributing lab sees its screen <b>placed in context</b>.</div></div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">This is the part that compounds. <b style="color:var(--ink)">Coverage is not a software problem — it is a collaboration problem.</b></p>
+    <p class="htxt" data-anim><span class="em" style="color:var(--ess)">Connect with labs.</span></p>
   </div>
 </section>
 
-<!-- 04.3 · API -->
-<section class="slide">
+<section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal three</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Open the API so other tools can ask our questions.</h2>
-    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>The whole product is already a REST API — the website is just its first client. <b>Documenting and opening it is a small step with a large reach.</b></span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">A pipeline could score its hits against 2,157 screens without a browser. <b style="color:var(--ink)">The data is only useful if it can leave the page.</b></p>
+    <p class="htxt" data-anim><span class="em" style="color:var(--adv)">Develop RETICLE API</span></p>
   </div>
 </section>
 
