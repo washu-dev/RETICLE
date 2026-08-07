@@ -431,7 +431,7 @@ h2 .em.adv{color:var(--adv)}
    goes over the top edge. This caps the height instead and lets the width follow,
    so the frame hugs the image at whatever size fits. */
 .shot-solo{
-  width:auto; max-width:100%; max-height:66vh; height:auto; margin:0 auto;
+  width:auto; max-width:100%; max-height:52vh; height:auto; margin:0 auto;
 }
 
 /* ── 05 · reflections, in their own words ────────────────────────────
@@ -456,6 +456,20 @@ h2 .em.adv{color:var(--adv)}
   padding-left:16px; border-left:2px solid var(--grid);
 }
 .refl blockquote b{color:var(--ink); font-weight:600}
+
+/* ── 03 · what the FANCD2 neighbourhood actually contains ────────────
+   Three rows, because the grouping is the argument. Finding six genes whose
+   names all start FANC would prove very little — symbol prefixes travel together
+   in any annotation. What the network found is the core complex that modifies
+   FANCD2, the partner it binds, and the downstream repair machinery it hands to:
+   three layers of one pathway, from screens that were never told any of it. */
+.falist{display:grid; grid-template-columns:auto 1fr; gap:7px 18px; align-items:baseline; margin-top:20px}
+.falist .fk{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--mute); white-space:nowrap;
+}
+.falist .fg{font-family:var(--mono); font-size:14.5px; color:var(--ess); letter-spacing:.02em}
+.falist .fg i{font-style:normal; color:var(--grid); padding:0 3px}
 
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
@@ -965,8 +979,16 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the result</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px)">Successful example</h2>
-    <div data-anim style="--d:2; margin-top:22px">
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.2vw,52px); max-width:26ch">Our network rebuilt FANCD2&rsquo;s repair pathway.</h2>
+    <div class="falist" data-anim style="--d:2">
+      <div class="fk">fa core complex</div>
+      <div class="fg">FANCG <i>·</i> FANCL <i>·</i> FANCE <i>·</i> FANCF <i>·</i> FANCM <i>·</i> UBE2T</div>
+      <div class="fk">its partner</div>
+      <div class="fg">FANCI</div>
+      <div class="fk">downstream repair</div>
+      <div class="fg">RAD51D <i>·</i> XRCC3 <i>·</i> MCM8 <i>·</i> MCM9 <i>·</i> RFWD3</div>
+    </div>
+    <div data-anim style="--d:4; margin-top:20px">
       <div class="shotwrap">
           <img class="shot shot-solo" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
