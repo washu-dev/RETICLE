@@ -99,6 +99,26 @@ h2 .em.adv{color:var(--adv)}
 .hero .hfig .l{font-family:var(--mono); font-size:16px; color:var(--mute); max-width:28ch; line-height:1.6}
 .hero .hfig .l b{color:var(--ink); font-weight:500}
 
+/* ---- negative slide — inverted half of a two-part statement beat ---- */
+.slide.negative{background:var(--ink)}
+.slide.negative::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+  background-size:64px 64px; background-position:center;
+}
+.slide.negative .slide-inner{position:relative; z-index:1}
+.slide.negative .frame{z-index:1}
+.slide.negative .frame i{border-color:var(--paper); opacity:.55}
+.slide.negative .eyebrow{color:#8A9299}
+.slide.negative .eyebrow::before{background:var(--paper)}
+.slide.negative .eyebrow b{color:var(--paper)}
+.slide.negative .htxt{color:var(--paper)}
+/* amber, not blue — blue on dark goes muddy at projector brightness */
+.slide.negative .htxt .em{color:var(--adv)}
+.slide.negative .hsub,.slide.negative .tag{color:#8A9299}
+
 /* ---- WORDMARK slide ---- */
 .wordmark .wm{font-family:var(--disp); font-weight:500; font-size:clamp(74px,17vw,272px);
   line-height:.9; letter-spacing:-.03em}
@@ -264,17 +284,33 @@ h2 .em.adv{color:var(--adv)}
 .heroshot .shot{width:100%; height:44vh; object-fit:cover}
 .heroshot .shotmiss{height:44vh}
 
+/* ---- one image held large, for impact ---- */
+.impactshot .shot{width:100%; height:70vh; object-fit:cover}
+.impactshot .shotmiss{height:70vh}
+
 /* ---- side-by-side archival pair (slide 03) — contain, so nothing is cropped ---- */
 .pairshot{display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2.6vw,32px); margin-top:14px}
 /* width:auto so the border hugs the photo instead of boxing it in whitespace —
    the two archival shots have very different aspect ratios */
-.pairshot .shot{width:auto; max-width:100%; height:34vh; object-fit:contain; background:#fff; margin:0 auto}
-.pairshot .shotmiss{height:34vh}
+.pairshot .shot{width:auto; max-width:100%; height:23vh; object-fit:contain; background:#fff; margin:0 auto}
+.pairshot .shotmiss{height:23vh}
 
 /* ---- stacked image column (slide 04) ---- */
 .stackshot{display:flex; flex-direction:column; gap:14px}
-.stackshot .shot{width:100%; height:22vh; object-fit:cover; object-position:center 30%}
-.stackshot .shotmiss{height:22vh}
+.stackshot .shot{width:100%; height:20vh; object-fit:cover; object-position:center 30%}
+.stackshot .shotmiss{height:20vh}
+/* .fit — for photos where cropping would lose the subject; border hugs the image.
+   Global, not scoped to a container, so it works wherever the photo is placed. */
+.shot.fit{width:auto; max-width:100%; height:22vh; object-fit:contain;
+  background:#fff; margin:0 auto; display:block}
+
+/* ---- large, self-contained bullet points ---- */
+.bigbullets{list-style:none; display:flex; flex-direction:column; gap:15px; margin-top:18px}
+.bigbullets li{display:flex; gap:16px; font-size:clamp(17px,2.05vw,24px);
+  line-height:1.42; color:#2C3037}
+.bigbullets li::before{content:""; flex:0 0 9px; height:9px; border-radius:50%;
+  background:var(--adv); margin-top:.58em}
+.bigbullets b{color:var(--ink); font-weight:600}
 
 /* ---- primary / secondary source tiers (slide 10) ---- */
 .tiers{display:grid; grid-template-columns:1.5fr 1fr; gap:clamp(20px,3.4vw,42px); align-items:start; margin-top:18px}
@@ -669,119 +705,99 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- ============================================================ -->
-<!-- 02 · HOOK — statement                                        -->
+<!-- 02 · HOOK part 1 — the world  (negative)                     -->
+<!-- Pairs with slide 03. "a single human genome" resolves to     -->
+<!-- "it" on the next slide, so keep these two back to back.      -->
+<!-- ============================================================ -->
+<section class="slide hero negative">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>00</b> — 1990 – 2003</div>
+    <p class="htxt" data-anim style="--d:1">For thirteen years, twenty labs across six countries worked to read <span class="em">a single human genome.</span></p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 03 · HOOK part 2 — WashU  (positive)                         -->
 <!-- ============================================================ -->
 <section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>00</b> — where this starts</div>
-    <p class="htxt" data-anim style="--d:1">A quarter of the human genome was finished <span class="em">right here.</span></p>
+    <p class="htxt" data-anim style="--d:1">A quarter of it was finished <span class="em">right here.</span></p>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 03 · McDONNELL — SOLO  (the held beat / mini history lesson) -->
+<!-- 03 · THE INSTITUTE — one large image, held for impact        -->
 <!-- ============================================================ -->
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>00</b> — a short history</div>
-    <div class="pairshot" data-anim style="--d:1">
+    <div class="eyebrow" data-anim><b>00</b> — the McDonnell Genome Institute</div>
+    <div class="impactshot" data-anim style="--d:1">
+      <div class="shotwrap">
+        <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="The McDonnell Genome Institute"
+             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+        <div class="shotmiss">the McDonnell Genome Institute<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+      </div>
+      <div class="shotcap"><b>The McDonnell Genome Institute</b> &nbsp;·&nbsp; Washington University in St.&nbsp;Louis</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 03 · HOOK — the evidence                                     -->
+<!-- archival pair across the top, bench scientist + text below   -->
+<!-- ============================================================ -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>00</b> — what that work made possible</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:36ch">Washington University sequenced a quarter of the human genome.</h2>
+    <!-- read left to right: the start, the work, the finish -->
+    <div class="shots3" data-anim style="--d:2; margin-top:14px">
       <div>
+        <div class="thenlabel">1990 &nbsp;·&nbsp; the start</div>
         <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/hgp_declaration.jpg" alt="Groundbreaking ceremony and proclamation"
+          <img class="shot fit" src="final_presentation_assets/hgp_declaration.jpg" alt="Groundbreaking ceremony and proclamation"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
           <div class="shotmiss sm">the declaration<br><code>final_presentation_assets/hgp_declaration.jpg</code></div>
         </div>
         <div class="shotcap"><b>Breaking ground</b> — the proclamation that started the work in St.&nbsp;Louis</div>
       </div>
       <div>
+        <div class="thenlabel">the decade in between</div>
         <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/hgp_press_reveal.jpg" alt="Human Genome Project press announcement, Nature cover"
+          <img class="shot fit" src="final_presentation_assets/bench_scientist.jpg" alt="Researcher in cryo gloves inspecting a frozen sample vial pulled from cold storage"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">photo — bench scientist<br><code>final_presentation_assets/bench_scientist.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>At the freezer</b> — checking a frozen sample pulled from cold storage, in cryo gloves</div>
+      </div>
+      <div>
+        <div class="thenlabel now">2001 &nbsp;·&nbsp; the finish</div>
+        <div class="shotwrap">
+          <img class="shot fit" src="final_presentation_assets/hgp_press_reveal.jpg" alt="Human Genome Project press announcement, Nature cover"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
           <div class="shotmiss sm">the press reveal<br><code>final_presentation_assets/hgp_press_reveal.jpg</code></div>
         </div>
         <div class="shotcap"><b>The announcement</b> — the finished sequence published in <i>Nature</i>, February 2001</div>
       </div>
     </div>
-    <!-- the legacy artifact — layer 1 only. "This is the floor we're standing on." -->
-    <div class="strata sm" data-anim style="--d:2">
-      <div class="srow now"><div class="syr">2026 —</div><div class="snm">RETICLE</div><div class="sws">what they mean together</div><div class="snote">this project</div></div>
-      <div class="srow"><div class="syr">2003 – 2026</div><div class="snm">CRISPR screens</div><div class="sws">what the parts do</div><div class="snote">2,157 published · siloed</div></div>
-      <div class="srow lit"><div class="syr">1990 – 2003</div><div class="snm">Human Genome Project</div><div class="sws">the parts list</div><div class="snote">WashU · 25% of the finished sequence</div></div>
-    </div>
+    <ul class="bigbullets" data-anim style="--d:3">
+      <li><span>The goal was to find every human gene once, so that nobody would have to find them one at a time.</span></li>
+      <li><span>Before this project, tracking down a single disease gene could take a laboratory ten years.</span></li>
+      <li><span>Now a doctor can read a patient's DNA and see exactly which gene is broken.</span></li>
+      <li><span>And a drug can be designed to target one specific human protein, because we finally have a list of every one of them.</span></li>
+    </ul>
+    <p class="tag" data-anim style="--d:4; margin-top:14px; font-size:11.5px; color:#9AA0A6">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing 25 percent of the finished sequence&rdquo; — and more than 20% of the earlier draft. &nbsp;·&nbsp; genome.wustl.edu/about-2</p>
   </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- 04 · HOOK — the evidence · VERSION A (3 images)              -->
-<!-- A/B with slide 05 below — keep one, delete the other.        -->
-<!-- ============================================================ -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>00</b> — what that work made possible</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">That sequence became the reference everything since is measured against.</h2>
-    <div class="cols" data-anim style="--d:2; grid-template-columns:.82fr 1.18fr; align-items:center; margin-top:18px">
-      <div class="stackshot">
-        <div>
-          <div class="shotwrap">
-            <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute building"
-                 onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-            <div class="shotmiss sm">photo — the building<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
-          </div>
-          <div class="shotcap"><b>McDonnell Genome Institute</b> — where the work was done</div>
-        </div>
-        <div>
-          <div class="shotwrap">
-            <img class="shot" src="final_presentation_assets/bench_scientist.jpg" alt="Researcher in cryo gloves inspecting a frozen sample vial pulled from cold storage"
-                 onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-            <div class="shotmiss sm">photo — bench scientist<br><code>final_presentation_assets/bench_scientist.jpg</code></div>
-          </div>
-          <div class="shotcap"><b>At the freezer</b> — checking a frozen sample pulled from cold storage, in cryo gloves</div>
-        </div>
-      </div>
-      <div>
-        <p class="tag" style="font-size:16px; line-height:1.65; color:#2C3037">Every clinical genetic test compares a patient's DNA to it. Every disease-gene discovery since is anchored to it. Every CRISPR screen still maps its hits onto it — including <b style="color:var(--ink)">ours</b>.</p>
-        <p class="tag" style="margin-top:16px">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing <b style="color:var(--ink)">25 percent of the finished sequence</b>&rdquo; — and more than 20% of the earlier draft.</p>
-        <p class="tag" style="margin-top:10px; font-size:11.5px; color:#9AA0A6">Source: McDonnell Genome Institute, Washington University in St.&nbsp;Louis &nbsp;·&nbsp; genome.wustl.edu/about-2 &nbsp;·&nbsp; genome.wustl.edu/items/human-genome-project</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- 05 · HOOK — the evidence · VERSION B (2 tall images)         -->
-<!-- A/B alternate to slide 04. Then / now, 50% slide height.     -->
-<!-- ============================================================ -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>00</b> — the same question, thirty years apart</div>
-    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,52px); max-width:34ch">The lab that read the genome, and the lab trying to understand it.</h2>
-    <div class="tallpair" data-anim style="--d:2">
-      <div>
-        <div class="thenlabel">then &nbsp;·&nbsp; 1990 – 2003</div>
-        <div class="tallwrap shotwrap">
-          <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">McDonnell Genome Institute<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>McDonnell Genome Institute</b> — sequencing the parts list</div>
-      </div>
-      <div>
-        <div class="thenlabel now">now &nbsp;·&nbsp; 2026</div>
-        <div class="tallwrap shotwrap">
-          <img class="shot" src="final_presentation_assets/orvedahl_lab.jpg" alt="Orvedahl Lab / RETICLE"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">Orvedahl Lab bench — or a RETICLE dashboard screenshot<br><code>final_presentation_assets/orvedahl_lab.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>Orvedahl Lab &amp; RETICLE</b> — working out what the parts <i>do</i></div>
-      </div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:18px">Same campus, same problem, one layer further up. RETICLE is a <b style="color:var(--ink)">direct continuation</b> of the work that finished here.</p>
-  </div>
-</section>
+<!-- The then/now lab comparison lived here and is shelved for now.
+     The Orvedahl-lab "now" half was never shot; the McDonnell image it used
+     is on the impact slide after slide 02. -->
 
 <!-- ============================================================ -->
 <!-- 06 · HOOK — the turn (+ paper thumbnail backing the 80%)     -->
@@ -794,17 +810,18 @@ h2 .em.adv{color:var(--adv)}
       <div>
         <p class="htxt" data-anim style="--d:1; font-size:clamp(38px,6.8vw,96px); max-width:17ch">But we still don't know what most of the genome <span class="em adv">does.</span></p>
         <div class="hfig" data-anim style="--d:2">
-          <div class="n"><span data-count="80">0</span>%</div>
-          <div class="l">of protein-coding genes have a function that is <b>unknown or only partly understood</b> — two decades after the sequence was finished</div>
+          <div class="n"><span data-count="90">0</span>%</div>
+          <div class="l">of human genes are barely studied — biomedical research concentrates on roughly <b>2,000 of the 19,000</b> genes in the human genome</div>
         </div>
       </div>
       <div data-anim style="--d:3">
         <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/unknome_paper.png" alt="Paper reporting the unknome figure"
+          <img class="shot" src="final_presentation_assets/ignored_genes_paper.png" alt="Stoeger et al., Large-scale investigation of the reasons why potentially important genes are ignored, PLOS Biology 2018"
+               style="height:38vh; object-fit:contain; background:#fff"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">first page / figure of the paper this number comes from<br><code>final_presentation_assets/unknome_paper.png</code></div>
+          <div class="shotmiss sm" style="height:38vh">first page / figure of the paper this number comes from<br><code>final_presentation_assets/ignored_genes_paper.png</code></div>
         </div>
-        <div class="shotcap">the published source for this figure — <b>[author, journal, year]</b></div>
+        <div class="shotcap"><b>Stoeger, Gerlach, Morimoto &amp; Nunes Amaral</b>, &ldquo;Large-scale investigation of the reasons why potentially important genes are ignored,&rdquo; <i>PLOS Biology</i>, 2018</div>
       </div>
     </div>
   </div>
@@ -838,7 +855,6 @@ h2 .em.adv{color:var(--adv)}
         <div class="bar" style="--w:88%"></div>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">We'll come back to this at the end. For now — this is what the next few minutes are in service of.</p>
   </div>
 </section>
 
@@ -857,7 +873,7 @@ h2 .em.adv{color:var(--adv)}
              onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
         <div class="shotmiss" style="height:40vh">a visual of the sequenced genome as a list — gene names running down the page,<br>a chromosome map, or a genome-browser view<br><code>final_presentation_assets/genome_parts_list.png</code></div>
       </div>
-      <div class="shotcap">~20,000 protein-coding genes — every one located, named, and readable</div>
+      <div class="shotcap">~20,000 protein-coding genes, every one located and named. Shown: an excerpt of the <b>Y chromosome</b> — UCSC Genome Browser · GENCODE v50 · hg38</div>
     </div>
     <!-- single <span> keeps this one flex item; splitting it lays the clauses out side-by-side -->
     <div class="callout" data-anim style="--d:3; margin-top:20px">
@@ -878,11 +894,13 @@ h2 .em.adv{color:var(--adv)}
     <div class="ex2" data-anim style="--d:2; margin-top:22px">
       <div>
         <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/crispr_mechanism.png" alt="How CRISPR knockout works"
+          <!-- animated GIF: plays live in the browser, exports as frame 1 in the PDF -->
+          <img class="shot fit" src="final_presentation_assets/crispr_mechanism.gif" alt="Animation of the CRISPR-Cas9 mechanism: guide RNA complexed with Cas9 unwinding and cutting target DNA"
+               style="height:30vh"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">CRISPR mechanism diagram / animation still<br><code>final_presentation_assets/crispr_mechanism.png</code></div>
+          <div class="shotmiss">CRISPR mechanism animation<br><code>final_presentation_assets/crispr_mechanism.gif</code></div>
         </div>
-        <div class="shotcap">Cas9 guided to one gene per cell — a library of guides covers the whole genome</div>
+        <div class="shotcap">In the genome editing technology known as CRISPR-Cas9, RNA (blue) forms a complex with the protein Cas9 (bumpy structure). Cas9 unwinds target DNA (red) and acts as a molecular scalpel, slicing both strands. Cas13, a related protein, cuts RNA instead of DNA. <b>Credit: HHMI BioInteractive, CRISPR-Cas 9 Mechanism &amp; Applications</b></div>
       </div>
       <div>
         <div class="exread">the experiment, in three steps</div>
@@ -913,36 +931,39 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>02</b> — the gap</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Today's tools each answer half the question.</h2>
-    <div class="tiers" data-anim style="--d:2">
+    <div class="t2head" data-anim style="--d:2; margin-top:6px">the primary evidence — the screen data itself</div>
+    <div data-anim style="--d:2; display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:6px">
+      <div class="shotwrap">
+        <img class="shot fit" style="height:32vh" src="final_presentation_assets/orcs_screen_detail.png" alt="BioGRID ORCS screen record for Orvedahl A 2019"
+             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+        <div class="shotmiss sm">BioGRID ORCS screen record<br><code>final_presentation_assets/orcs_screen_detail.png</code></div>
+      </div>
+      <div class="shotwrap">
+        <img class="shot fit" style="height:32vh" src="final_presentation_assets/orcs_hit_table.png" alt="BioGRID ORCS ranked hit table for the same screen"
+             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+        <div class="shotmiss sm">BioGRID ORCS hit table<br><code>final_presentation_assets/orcs_hit_table.png</code></div>
+      </div>
+    </div>
+    <div class="shotcap" data-anim style="--d:2; margin-top:9px"><b>BioGRID ORCS</b> — one published screen and its ranked hits. <b>This is the evidence base RETICLE is built on</b>, and the only place the causal data lives. The screen shown is our own lab's: <i>Orvedahl et&nbsp;al.</i>, 2019.</div>
+    <div class="t2head" data-anim style="--d:3; margin-top:14px">second tier — annotation you check afterwards</div>
+    <div data-anim style="--d:3; display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:6px">
       <div>
-        <div class="t2head">the primary evidence — the screen data itself</div>
         <div class="shotwrap">
-          <img class="shot" src="midterm_assets/uijttewaal_2024_screen.png" alt="BioGRID ORCS screen page"
+          <img class="shot fit" src="final_presentation_assets/string_network.png" alt="STRING network"
+               style="height:13vh"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss">BioGRID ORCS screenshot<br><code>midterm_assets/uijttewaal_2024_screen.png</code></div>
+          <div class="shotmiss sm" style="height:15vh; padding:10px">STRING screenshot<br><code>final_presentation_assets/string_network.png</code></div>
         </div>
-        <div class="shotcap"><b>BioGRID ORCS</b> — the published screens. One gene, looked up across many experiments. <b>This is the evidence base RETICLE is built on</b> — and the only place the causal data lives.</div>
+        <div class="shotcap"><b>STRING</b> — <i>&ldquo;is my hit already known to bind these partners?&rdquo;</i> &nbsp;Here: <b>IFNGR1</b> and its interaction partners.</div>
       </div>
       <div>
-        <div class="t2head">second tier — annotation you check afterwards</div>
-        <div class="tier2">
-          <div>
-            <div class="shotwrap">
-              <img class="shot" src="final_presentation_assets/string_network.png" alt="STRING network"
-                   onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-              <div class="shotmiss sm">STRING screenshot<br><code>final_presentation_assets/string_network.png</code></div>
-            </div>
-            <div class="shotcap"><b>STRING</b> — <i>&ldquo;is my hit already known to bind these partners?&rdquo;</i></div>
-          </div>
-          <div>
-            <div class="shotwrap">
-              <img class="shot" src="final_presentation_assets/gsea_pathway.png" alt="GSEA / GO enrichment"
-                   onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-              <div class="shotmiss sm">GSEA / GO screenshot<br><code>final_presentation_assets/gsea_pathway.png</code></div>
-            </div>
-            <div class="shotcap"><b>GSEA · Gene Ontology</b> — <i>&ldquo;do my hits pile up in one pathway?&rdquo;</i></div>
-          </div>
+        <div class="shotwrap">
+          <img class="shot fit" src="final_presentation_assets/gsea_pathway.png" alt="GSEA / GO enrichment"
+               style="height:13vh"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm" style="height:15vh; padding:10px">GSEA / GO screenshot<br><code>final_presentation_assets/gsea_pathway.png</code></div>
         </div>
+        <div class="shotcap"><b>Gene Ontology</b> — <i>&ldquo;do my hits pile up in one pathway?&rdquo;</i> &nbsp;Here: <b>IFNGR1</b> and <b>JAK2</b>, two of the top hits from the screen above.</div>
       </div>
     </div>
     <p class="tag" data-anim style="--d:3; margin-top:20px">The screens hold the answer. The annotation tools take <b style="color:var(--ink)">one list at a time</b> and know nothing about screens. So our output is screen data and published papers — <b style="color:var(--ink)">where does a researcher go from there?</b></p>
