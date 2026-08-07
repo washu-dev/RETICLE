@@ -264,6 +264,18 @@ h2 .em.adv{color:var(--adv)}
 .heroshot .shot{width:100%; height:44vh; object-fit:cover}
 .heroshot .shotmiss{height:44vh}
 
+/* ---- side-by-side archival pair (slide 03) — contain, so nothing is cropped ---- */
+.pairshot{display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2.6vw,32px); margin-top:14px}
+/* width:auto so the border hugs the photo instead of boxing it in whitespace —
+   the two archival shots have very different aspect ratios */
+.pairshot .shot{width:auto; max-width:100%; height:34vh; object-fit:contain; background:#fff; margin:0 auto}
+.pairshot .shotmiss{height:34vh}
+
+/* ---- stacked image column (slide 04) ---- */
+.stackshot{display:flex; flex-direction:column; gap:14px}
+.stackshot .shot{width:100%; height:22vh; object-fit:cover; object-position:center 30%}
+.stackshot .shotmiss{height:22vh}
+
 /* ---- primary / secondary source tiers (slide 10) ---- */
 .tiers{display:grid; grid-template-columns:1.5fr 1fr; gap:clamp(20px,3.4vw,42px); align-items:start; margin-top:18px}
 .t2head{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
@@ -658,13 +670,23 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>00</b> — a short history</div>
-    <div class="heroshot" data-anim style="--d:1">
-      <div class="shotwrap">
-        <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="The McDonnell Genome Institute"
-             onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-        <div class="shotmiss">the McDonnell Genome Institute — wide exterior or sequencing floor<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+    <div class="pairshot" data-anim style="--d:1">
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/hgp_declaration.jpg" alt="Groundbreaking ceremony and proclamation"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">the declaration<br><code>final_presentation_assets/hgp_declaration.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>Breaking ground</b> — the proclamation that started the work in St.&nbsp;Louis</div>
       </div>
-      <div class="shotcap"><b>The McDonnell Genome Institute</b> &nbsp;·&nbsp; Washington University in St.&nbsp;Louis &nbsp;·&nbsp; one of the labs that carried the Human Genome Project to the finish line</div>
+      <div>
+        <div class="shotwrap">
+          <img class="shot" src="final_presentation_assets/hgp_press_reveal.jpg" alt="Human Genome Project press announcement, Nature cover"
+               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+          <div class="shotmiss sm">the press reveal<br><code>final_presentation_assets/hgp_press_reveal.jpg</code></div>
+        </div>
+        <div class="shotcap"><b>The announcement</b> — the finished sequence published in <i>Nature</i>, February 2001</div>
+      </div>
     </div>
     <!-- the legacy artifact — layer 1 only. "This is the floor we're standing on." -->
     <div class="strata sm" data-anim style="--d:2">
@@ -684,35 +706,31 @@ h2 .em.adv{color:var(--adv)}
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>00</b> — what that work made possible</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">That sequence became the reference everything since is measured against.</h2>
-    <div class="shots3" data-anim style="--d:2; margin-top:26px">
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — the institute<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+    <div class="cols" data-anim style="--d:2; grid-template-columns:.82fr 1.18fr; align-items:center; margin-top:18px">
+      <div class="stackshot">
+        <div>
+          <div class="shotwrap">
+            <img class="shot" src="final_presentation_assets/mcdonnell_institute.jpg" alt="McDonnell Genome Institute building"
+                 onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+            <div class="shotmiss sm">photo — the building<br><code>final_presentation_assets/mcdonnell_institute.jpg</code></div>
+          </div>
+          <div class="shotcap"><b>McDonnell Genome Institute</b> — where the work was done</div>
         </div>
-        <div class="shotcap"><b>McDonnell Genome Institute</b><br>25% of the finished human sequence</div>
+        <div>
+          <div class="shotwrap">
+            <img class="shot" src="final_presentation_assets/bench_scientist.jpg" alt="Researcher in cryo gloves inspecting a frozen sample vial pulled from cold storage"
+                 onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
+            <div class="shotmiss sm">photo — bench scientist<br><code>final_presentation_assets/bench_scientist.jpg</code></div>
+          </div>
+          <div class="shotcap"><b>At the freezer</b> — checking a frozen sample pulled from cold storage, in cryo gloves</div>
+        </div>
       </div>
       <div>
-        <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/genome_scientist_1.jpg" alt="Key scientist"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — key scientist<br><code>final_presentation_assets/genome_scientist_1.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>[name]</b><br>[what they did — one line, in impact terms]</div>
-      </div>
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="final_presentation_assets/genome_scientist_2.jpg" alt="Key scientist"
-               onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
-          <div class="shotmiss sm">photo — key scientist<br><code>final_presentation_assets/genome_scientist_2.jpg</code></div>
-        </div>
-        <div class="shotcap"><b>[name]</b><br>[what they did — one line, in impact terms]</div>
+        <p class="tag" style="font-size:16px; line-height:1.65; color:#2C3037">Every clinical genetic test compares a patient's DNA to it. Every disease-gene discovery since is anchored to it. Every CRISPR screen still maps its hits onto it — including <b style="color:var(--ink)">ours</b>.</p>
+        <p class="tag" style="margin-top:16px">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing <b style="color:var(--ink)">25 percent of the finished sequence</b>&rdquo; — and more than 20% of the earlier draft.</p>
+        <p class="tag" style="margin-top:10px; font-size:11.5px; color:#9AA0A6">Source: McDonnell Genome Institute, Washington University in St.&nbsp;Louis &nbsp;·&nbsp; genome.wustl.edu/about-2 &nbsp;·&nbsp; genome.wustl.edu/items/human-genome-project</p>
       </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:22px">Every clinical genetic test compares a patient's DNA to it. Every disease-gene discovery since is anchored to it. Every CRISPR screen still maps its hits onto it — including <b style="color:var(--ink)">ours</b>.</p>
-    <p class="tag" data-anim style="--d:4; margin-top:10px">The McDonnell Genome Institute was &ldquo;a key player in the Human Genome Project, ultimately contributing <b style="color:var(--ink)">25 percent of the finished sequence</b>&rdquo; — and more than 20% of the earlier draft.</p>
-    <p class="tag" data-anim style="--d:5; margin-top:8px; font-size:11.5px; color:#9AA0A6">Source: McDonnell Genome Institute, Washington University in St.&nbsp;Louis &nbsp;·&nbsp; genome.wustl.edu/about-2 &nbsp;·&nbsp; genome.wustl.edu/items/human-genome-project</p>
   </div>
 </section>
 
