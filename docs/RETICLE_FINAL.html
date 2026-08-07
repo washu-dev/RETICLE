@@ -227,10 +227,9 @@ h2 .em.adv{color:var(--adv)}
 .people{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(28px,6vw,90px); margin-top:clamp(40px,7vh,90px); justify-items:center}
 .people.one{grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto}
 .people.three{grid-template-columns:repeat(3,1fr); gap:clamp(20px,4vw,54px)}
-/* Names only. The portraits were never in the repo — assets/people/*.jpg was
-   referenced but never committed, so every one of these fell through to its
-   initials. Two initials in a circle is not a portrait, it is the absence of one
-   drawn at 280px, so the circles are gone and the names carry the slide. */
+/* Portraits are now committed under final_presentation_assets/people/, so the
+   circles are back. The initials behind each image are the fallback only — if a
+   file goes missing the frame turns dashed rather than showing a broken image. */
 .person{display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px}
 .people{align-items:start}
 .pav{position:relative; width:clamp(170px,22vw,280px); aspect-ratio:1; border-radius:50%;
@@ -1366,9 +1365,19 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1; font-size:clamp(34px,5.7vw,68px)">Our leaders</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/sourabh.jpg" alt="Sourabh Sharma"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">SS</span>
+        </div>
         <figcaption><b>Sourabh Sharma</b><span>Project Lead · DI2</span></figcaption>
       </figure>
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/saif.jpg" alt="Saif Arif"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">SA</span>
+        </div>
         <figcaption><b>Saif Arif</b><span>Mini-DI2 Lead</span></figcaption>
       </figure>
     </div>
@@ -1385,9 +1394,19 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">Our faculty</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/orvedahl.jpg" alt="Dr. Anthony Orvedahl"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">AO</span>
+        </div>
         <figcaption><b>Dr. Anthony Orvedahl</b><span>Principal Investigator · Orvedahl Lab</span></figcaption>
       </figure>
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/perlin.jpg" alt="Eli Perlin"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">EP</span>
+        </div>
         <figcaption><b>Eli Perlin</b><span>Research Technician · Orvedahl Lab</span></figcaption>
       </figure>
     </div>
@@ -1404,9 +1423,19 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">The team</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/oseremen.jpg" alt="Oseremen Ojiefoh"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">OO</span>
+        </div>
         <figcaption><b>Oseremen Ojiefoh</b><span>BS Electrical Engineering &rsquo;28<br>web platform · deployment</span></figcaption>
       </figure>
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/aaron.jpg" alt="Aaron Gao"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">AG</span>
+        </div>
         <figcaption><b>Aaron Gao</b><span>BS Computer Science &amp; Statistics &rsquo;28<br>data pipeline · gene network</span></figcaption>
       </figure>
     </div>
@@ -1423,6 +1452,11 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">Design support</h2>
     <div class="people one" data-anim style="--d:2">
       <figure class="person">
+        <div class="pav">
+          <img src="final_presentation_assets/people/tejas.jpg" alt="Tejas"
+               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
+          <span class="pin">T</span>
+        </div>
         <figcaption><b>Tejas</b><span>Design Support</span></figcaption>
       </figure>
     </div>
