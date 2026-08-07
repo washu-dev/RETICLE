@@ -873,7 +873,7 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the turn</div>
-    <h2 data-anim style="--d:1; font-size:clamp(32px,5.2vw,64px); max-width:26ch">But a CRISPR screen never played favourites.</h2>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.4vw,54px); max-width:30ch">CRISPR screens provide information about dark genes, but in an uninterpretable way.</h2>
     <div class="turnrow">
       <div data-anim style="--d:2">
         <div class="shotwrap">
@@ -895,10 +895,41 @@ h2 .em.adv{color:var(--adv)}
 <!-- 03.6 · HOW THE NETWORK IS BUILT (animated) -->
 <!-- 03.6 · THE HARMONISATION PIPELINE (animated) -->
 <!-- 03.5 · THE NETWORK — lead-in -->
+<!-- 03.6 · WHERE THE MODEL HELPS (animated) -->
+<section class="slide">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <div class="eyebrow" data-anim><b>03</b> — the turn</div>
+    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:28ch">That is where an LLM can be helpful.</h2>
+    <div class="netflow pipe" data-anim style="--d:2">
+      <div class="nf" style="--i:0">
+        <div class="step">the raw score</div>
+        <div class="rows" style="margin-top:9px">Atp2b1 <span>&minus;7.34</span><br>Psmb3 <span>&minus;6.95</span><br>Cklf <span>&minus;6.57</span><br>Hspa5 <span>&minus;6.16</span></div>
+        <div class="meta" style="margin-top:10px">A number, and nothing about what it measured.</div>
+      </div>
+      <div class="nf" style="--i:1">
+        <div class="step">the screen&rsquo;s context</div>
+        <div class="meta" style="margin-top:9px"><b>YUMM1.7</b> melanoma<br>knockout &middot; Cas9<br>cell proliferation<br>implanted in a mouse<br>14 days &middot; <b>Log2FC</b></div>
+      </div>
+      <div class="nf" style="--i:2">
+        <div class="step">read together</div>
+        <div class="ask" style="margin-top:9px">What does losing this gene <i>do</i>, in this setting?</div>
+        <div class="meta" style="margin-top:10px">The model sees both halves at once &mdash; which no single column of the file ever contained.</div>
+      </div>
+      <div class="nf" style="--i:3">
+        <div class="step">gene function, in words</div>
+        <div class="meta" style="margin-top:9px; color:var(--ink)">&ldquo;Required for proliferation in an established melanoma &mdash; among the strongest depletions in this model.&rdquo;</div>
+        <div class="meta" style="margin-top:10px">Every claim re-checked against the numbers it came from before anyone sees it.</div>
+      </div>
+    </div>
+    <p class="tag" data-anim style="--d:7; margin-top:24px">A score alone cannot say what a gene does; the screen&rsquo;s own description cannot either. <b style="color:var(--ink)">The interpretation lives in the two together</b>, and reading them together at the scale of 2,157 screens is the part a person cannot do by hand.</p>
+  </div>
+</section>
+
 <section class="slide divider">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="partno" data-anim>03 — what we built</div>
+    <div class="partno" data-anim>04 — what we built · Aaron</div>
     <h2 data-anim style="--d:1">RETICLE network</h2>
     <p class="lede" data-anim style="--d:2">A map of gene-to-gene relationships we built ourselves, from CRISPR screening data alone.</p>
   </div>
@@ -907,7 +938,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — how it is built</div>
+    <div class="eyebrow" data-anim><b>04</b> — how it is built</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:26ch">Two genes are linked when they die in the same screens.</h2>
     <div data-anim style="--d:2">
       <div class="lp">
@@ -932,7 +963,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — naming a gene by its neighbours</div>
+    <div class="eyebrow" data-anim><b>04</b> — naming a gene by its neighbours</div>
     <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Neighbours with the same job name the gene between them.</h2>
     <div class="gba" data-anim style="--d:2">
       <div class="nbrs">
@@ -958,7 +989,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — the result</div>
+    <div class="eyebrow" data-anim><b>04</b> — the result</div>
     <h2 data-anim style="--d:1; font-size:clamp(28px,4.2vw,52px); max-width:26ch">Our network rebuilt FANCD2&rsquo;s repair pathway.</h2>
     <div class="falist" data-anim style="--d:2">
       <div class="fk">fa core complex</div>
@@ -981,7 +1012,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide divider">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="partno" data-anim>04 — what's next · Aaron</div>
+    <div class="partno" data-anim>05 — what's next · Aaron</div>
     <h2 data-anim style="--d:1">Future goals</h2>
     <p class="lede" data-anim style="--d:2">Three things that would turn a working tool into a working method.</p>
   </div>
@@ -1012,7 +1043,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>05</b> — DTRC</div>
+    <div class="eyebrow" data-anim><b>06</b> — DTRC</div>
     <h2 data-anim style="--d:1; font-size:clamp(28px,4vw,50px)">Reflections</h2>
     <div class="refl" data-anim style="--d:2">
       <div class="r-a">
@@ -1035,7 +1066,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1; font-size:clamp(34px,5.7vw,68px)">Our leaders</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1054,7 +1085,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1">Our faculty</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1073,7 +1104,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — the team</div>
+    <div class="eyebrow" data-anim><b>07</b> — the team</div>
     <h2 data-anim style="--d:1">The team</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
@@ -1092,7 +1123,7 @@ h2 .em.adv{color:var(--adv)}
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>06</b> — thank you to</div>
+    <div class="eyebrow" data-anim><b>07</b> — thank you to</div>
     <h2 data-anim style="--d:1">Design support</h2>
     <div class="people one" data-anim style="--d:2">
       <figure class="person">
