@@ -96,19 +96,16 @@ const CSS = `
 .rxhome .half.screens::before{background:linear-gradient(270deg,#C77D3108,transparent 62%)}
 .rxhome .half > *{position:relative; z-index:1}
 
-.rxhome .hk{
-  font-family:var(--mono); font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
-  display:flex; align-items:center; gap:10px;
-}
-.rxhome .genes .hk{color:var(--know)}
-.rxhome .screens .hk{color:var(--eviq)}
-.rxhome .hk::before{content:''; width:22px; height:1.5px; background:currentColor; display:block}
+/* A label, not a sentence, so it is set smaller than the headline it replaced and carries its
+   side's accent as a rule beside it — the only thing left naming which half you are in. */
 .rxhome .hh{
-  font-family:var(--serif); font-weight:400; font-size:clamp(21px,2.5vw,31px); letter-spacing:-.015em;
-  line-height:1.2; margin:0; color:var(--ink); max-width:17ch;
+  font-family:var(--serif); font-weight:500; font-size:clamp(19px,2.1vw,26px); letter-spacing:-.01em;
+  line-height:1.2; margin:0 0 4px; color:var(--ink);
+  display:flex; align-items:center; gap:13px;
 }
-.rxhome .hnote{font-size:12.5px; color:var(--muted); margin:0; max-width:38ch}
-.rxhome .hnote b{color:var(--ink2); font-weight:500}
+.rxhome .hh::before{content:''; flex:0 0 auto; width:26px; height:2px; border-radius:1px}
+.rxhome .genes .hh::before{background:var(--know)}
+.rxhome .screens .hh::before{background:var(--eviq)}
 
 /* ── the box ─────────────────────────────────────────────────────────── */
 .rxhome .boxwrap{position:relative; z-index:3; width:100%; max-width:none}
@@ -168,19 +165,14 @@ const CSS = `
 }
 
 /* ── organism, gene side only ────────────────────────────────────────── */
-/* Example genes. They are here because the left side was a block shorter than
-   the right, and centring two columns of different height puts their headlines
-   on different lines — which in a composition this symmetric reads as a mistake.
-   The fix is the side that was short getting the thing it was actually missing:
-   a way in for someone who has not yet thought of a gene. */
-.rxhome .trys{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
-  font-family:var(--mono); font-size:11.5px; color:var(--faint)}
-.rxhome .trys button{
-  border:0; background:none; padding:0; cursor:pointer; font:inherit;
-  color:var(--know); text-decoration:underline; text-underline-offset:3px;
+/* The two sides each carry one control and one small line under it, so their titles land on the
+   same baseline. On the right that line is not filler: it is what you need to know before you
+   click, and not knowing it is the reason someone bounces off an upload screen. */
+.rxhome .orgs{display:flex; gap:7px; min-height:28px; align-items:center}
+.rxhome .brings{
+  display:flex; align-items:center; min-height:28px;
+  font-family:var(--mono); font-size:11.5px; color:var(--faint);
 }
-.rxhome .trys button:hover{color:var(--ink)}
-.rxhome .orgs{display:flex; gap:7px}
 .rxhome .orgs button{
   font-family:var(--sans); font-size:12px; padding:4px 12px; border-radius:16px;
   border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; transition:.15s;
@@ -188,20 +180,14 @@ const CSS = `
 .rxhome .orgs button.on{background:var(--ink); border-color:var(--ink); color:#fff; font-weight:500}
 
 /* ── the second door on the screens side ─────────────────────────────── */
-.rxhome .orrule{
-  display:flex; align-items:center; gap:12px; margin-top:4px;
-  font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint);
-}
-.rxhome .orrule::before,.rxhome .orrule::after{content:''; flex:1; height:1px; background:var(--line)}
 .rxhome .own{
   display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%;
-  padding:13px 16px; border-radius:12px; border:1px solid var(--eviq); background:var(--card);
-  font-family:var(--sans); font-size:13.5px; font-weight:500; color:var(--eviq);
+  padding:16px 18px; border-radius:14px; border:1px solid var(--eviq); background:var(--card);
+  font-family:var(--sans); font-size:15px; font-weight:500; color:var(--eviq);
   cursor:pointer; text-align:left; transition:.15s;
+  box-shadow:0 1px 2px #14161A08, 0 10px 34px -22px #14161A29;
 }
-.rxhome .own small{display:block; font-weight:400; font-size:12px; color:var(--muted); margin-top:3px}
 .rxhome .own:hover{background:var(--eviq); color:#fff; border-color:var(--eviq)}
-.rxhome .own:hover small{color:#ffffffcc}
 .rxhome .own:focus-visible{outline:2px solid var(--eviq); outline-offset:2px}
 .rxhome .own b{font-variant-numeric:tabular-nums}
 
@@ -387,12 +373,10 @@ function Side({
 
 export default function HomeLanding_aaron({
   onOpenGene,
-  onOpenScreen,
   onStart,
   onExplore,
 }: {
   onOpenGene: (gene: string, organism: Organism) => void;
-  onOpenScreen: (screenId: string) => void;
   /** The third case: a ranked gene list from the user's own bench. */
   onStart: () => void;
   onExplore: () => void;
@@ -423,11 +407,6 @@ export default function HomeLanding_aaron({
   }, []);
 
   const pickGene = useCallback((term: string) => onOpenGene(term, organism), [onOpenGene, organism]);
-  const pickScreen = useCallback((term: string, hit: Hit | null) => {
-    // A chosen row carries its own id; a typed line is whatever digits are in it.
-    onOpenScreen(hit && !isGene(hit) ? hit.screen_id : term.replace(/\D/g, ''));
-  }, [onOpenScreen]);
-
   return (
     <div className={`rxhome${arrived ? ' anim' : ''}`}>
       <style>{CSS}</style>
@@ -438,9 +417,11 @@ export default function HomeLanding_aaron({
 
       <div className="split">
         <section className="half genes">
-          <div className="hk">genes</div>
-          <h2 className="hh">What is already known about one gene.</h2>
+          <h2 className="hh">Single Gene Query</h2>
           <Side mode="gene" organism={organism} onPick={pickGene} />
+          {/* The toggle stays. It is not decoration on a stripped-down side — without it half the
+              corpus is unreachable, because a mouse symbol looked up against the human index
+              returns nothing and says nothing about why. */}
           <div className="orgs">
             {(['human', 'mouse'] as Organism[]).map((o) => (
               <button
@@ -452,43 +433,24 @@ export default function HomeLanding_aaron({
               >{o === 'human' ? 'Human' : 'Mouse'}</button>
             ))}
           </div>
-          <div className="trys">
-            <span>try</span>
-            {['TP53', 'BRCA1', 'RAN', 'CGAS'].map((g) => (
-              <button key={g} type="button" onClick={() => onOpenGene(g, organism)}>{g}</button>
-            ))}
-          </div>
-          <p className="hnote">
-            Ten sources on one page — <b>NCBI, UniProt, GO, PubMed, Ensembl</b> and five more,
-            assembled offline so the page answers in a quarter of a second.
-          </p>
         </section>
 
         <section className="half screens">
-          <div className="hk">screens</div>
-          <h2 className="hh">What the experiments actually measured.</h2>
-          <Side mode="screen" organism="human" onPick={pickScreen} />
-          <p className="hnote">
-            Every published screen, searchable by what you remember it by — cell line, drug,
-            phenotype or first author.
-          </p>
-
-          <div className="orrule">or</div>
-          {/* The product's third case, and the only one that is not a search. Ochre, not teal: in
-              this palette teal is what is established and ochre is what the screens measured, which
-              is exactly what lies on the other side of this button. The count is fetched live from
-              the same endpoint the comparison page uses, so it is never stale. */}
+          <h2 className="hh">Analyze your screening result</h2>
+          {/* Ochre, not teal: in this palette teal is what is already established and ochre is what
+              the screens measured, which is exactly what lies on the other side of this button. The
+              count is read live from the same endpoint the comparison page counts from, so the two
+              can never quote different numbers — and stays null if that call fails, because a home
+              page must not go blank over an API. */}
           <button className="own" onClick={onStart} type="button">
             <span>
-              Bring your own screen
-              <small>
-                {corpus == null
-                  ? 'Land a ranked gene list against everything published.'
-                  : <>Land a ranked gene list against all <b>{corpus.toLocaleString()}</b>.</>}
-              </small>
+              {corpus == null
+                ? 'Compare my screen'
+                : <>Compare against <b>{corpus.toLocaleString()}</b> published screens</>}
             </span>
             <span aria-hidden="true">→</span>
           </button>
+          <div className="brings">CSV, TSV, or a plain list of gene symbols</div>
         </section>
       </div>
 

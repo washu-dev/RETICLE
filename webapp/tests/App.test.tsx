@@ -60,19 +60,19 @@ describe("App (signed in)", () => {
     expect(marks.length).toBeGreaterThan(0);
   });
 
-  // There is no mode chip any more. Both searches are on screen at once, which is the point of
-  // the split — you pick what you are looking for by where you type, not by telling a menu first.
-  it("offers both searches at once, without a mode to choose", async () => {
+  // There is no mode chip any more. The page is two doors — a gene search and the comparison
+  // flow — so there is nothing to choose a mode with and nothing to choose between.
+  it("offers a gene search and the comparison door, without a mode to choose", async () => {
     render(<App />);
     expect(await screen.findByRole("textbox", { name: /search a gene/i })).toBeTruthy();
-    expect(await screen.findByRole("textbox", { name: /published screen/i })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /compare/i })).toBeTruthy();
     expect(screen.queryByRole("menuitem")).toBeNull();
   });
 
   it("navigates into a sub-flow and back via the sticky Home control", async () => {
     render(<App />);
-    // "Bring your own screen" is the ranked-gene-list route.
-    fireEvent.click(await screen.findByRole("button", { name: /bring your own screen/i }));
+    // The right half is the ranked-gene-list route.
+    fireEvent.click(await screen.findByRole("button", { name: /compare/i }));
     // The sticky Home control is only shown off the home page.
     fireEvent.click(await screen.findByText("Home"));
     expect(await screen.findByRole("textbox", { name: /search a gene/i })).toBeTruthy();
