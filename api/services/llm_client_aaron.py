@@ -68,15 +68,29 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-# Model for the grounded text syntheses (screen analysis, reporter explanation, the AI reading).
-# Of the Claude models this API key can reach — opus-4-7 and haiku-4-5 — opus is the one chosen.
-# haiku is ~7x cheaper per token if the shared budget ever gets tight; it is a one-line change.
-INTERPRET_MODEL = "claude-opus-4-7"
+# The two Claude models this API key can reach are opus-4-7 and haiku-4-5.
+#
+# BOTH ARE OVERRIDABLE, under names of their own. The obvious env vars are unusable: existing .env
+# files set SECURE_API_MODEL / WASHU_MODEL to gpt-4o-mini from the retired gateway, and honouring
+# one yields a 403 "your API key does not have access to the requested model" that reads as a
+# permissions problem rather than stale config. These names cannot collide with that.
+def _model(env_name: str, default: str) -> str:
+    return (os.getenv(env_name) or "").strip() or default
 
-# The Network tab's function prediction reasons over a partner dossier rather than summarising, so
-# it gets the strongest available model. Same name as INTERPRET_MODEL today; kept separate because
-# the two have different quality/cost tradeoffs and are tuned independently.
-NET_PREDICT_MODEL = "claude-opus-4-7"
+
+# Grounded text synthesis — screen analysis, reporter explanation, the AI reading on a gene page.
+# haiku, because this summarises data it is handed rather than reasoning about it, and latency is
+# felt directly: the reader is watching a spinner on a page they asked for. Measured end to end
+# through CloudFront, opus answered this endpoint in 11.6s and once in 24.1s under load, against a
+# 30s gateway ceiling that leaves no room for a second caller.
+INTERPRET_MODEL = _model("RETICLE_INTERPRET_MODEL", "claude-haiku-4-5")
+
+# The Network tab's function prediction reasons over a partner dossier rather than summarising it,
+# and its output is re-checked server-side before anyone sees it — so quality here is worth the
+# seconds, and it stays on opus. Flip it with RETICLE_NET_PREDICT_MODEL if that trade changes;
+# note this path also asks for max_tokens=3000 against interpret's 600, so a good share of its
+# latency is generation length rather than the model.
+NET_PREDICT_MODEL = _model("RETICLE_NET_PREDICT_MODEL", "claude-opus-4-7")
 
 # ── endpoint ─────────────────────────────────────────────────────────────────────────────────
 # Published by WashU IT — public configuration, not a credential, which is why it lives here and
