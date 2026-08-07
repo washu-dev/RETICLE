@@ -124,10 +124,19 @@ class _Workload:
 # than that has already lost. An analysis the user explicitly started and is watching
 # a progress bar for should queue, because they will wait and they have nowhere else
 # to go. The rule is roughly: as long as the work itself typically takes.
+#
+# AND NOTHING MAY EXCEED THE GATEWAY. CloudFront gives the origin 30 seconds and
+# then returns its own 504, so a queue that would hold someone for 45s does not buy
+# them an answer — it buys them a half-minute stare ending in a gateway error page,
+# which is a strictly worse failure than being told to retry. Measured: five
+# concurrent /api/query served at 8.3s, 16.5s and 24.6s, the last two killed at
+# exactly 30.2s by CloudFront. Every timeout below stays under that ceiling, and a
+# workload's queue is only as deep as it can drain inside it.
+_GATEWAY_CEILING = _positive_float("RETICLE_GATEWAY_TIMEOUT", 30.0)
 _TIMEOUT_DB = _positive_float("RETICLE_DB_QUEUE_TIMEOUT", 1.0)
-_TIMEOUT_CPU = _positive_float("RETICLE_CPU_QUEUE_TIMEOUT", 45.0)
+_TIMEOUT_CPU = _positive_float("RETICLE_CPU_QUEUE_TIMEOUT", 26.0)
 _TIMEOUT_EXTERNAL = _positive_float("RETICLE_EXTERNAL_QUEUE_TIMEOUT", 6.0)
-_TIMEOUT_LLM = _positive_float("RETICLE_LLM_QUEUE_TIMEOUT", 60.0)
+_TIMEOUT_LLM = _positive_float("RETICLE_LLM_QUEUE_TIMEOUT", 3.0)
 
 _WORKLOADS = {
     # Keep this well below the 16-slot psycopg pool and the small RDS instance.
@@ -138,12 +147,14 @@ _WORKLOADS = {
         _TIMEOUT_DB,
     ),
     # The ECS task currently has 0.25 vCPU; parallel NumPy jobs hurt more than help,
-    # so this stays at one worker and gets its depth from the queue instead. Four deep
-    # at ~9s each is about 36s for the last in line, which is inside the timeout above.
+    # so this stays at one worker and gets its depth from the queue instead. Two deep:
+    # at ~8s a job the third in line finishes around 24s, inside the gateway's 30. A
+    # fourth caller is told to retry immediately, which is the honest answer — there
+    # is no arrangement of this queue that could have served them in time.
     "cpu": _Workload(
         "cpu",
         _positive_int("RETICLE_CPU_WORKERS", 1),
-        _nonnegative_int("RETICLE_CPU_QUEUE", 4),
+        _nonnegative_int("RETICLE_CPU_QUEUE", 2),
         _TIMEOUT_CPU,
     ),
     "external": _Workload(
@@ -154,10 +165,16 @@ _WORKLOADS = {
     ),
     # Keep slow LLM gateway waits out of the deterministic endpoint worker slots.
     # Any DB lookup inside an LLM job is still bounded by the shared DB pool.
+    #
+    # No waiting room, deliberately. A measured round trip to the WashU gateway is
+    # 24.1s against a 30s CloudFront ceiling, so one call barely fits and a second
+    # one queued behind it cannot fit at all — it would wait out the first and then
+    # be killed by the gateway. There is no queue depth that helps here, so a caller
+    # who arrives while the worker is busy is told to retry straight away.
     "llm": _Workload(
         "llm",
         _positive_int("RETICLE_LLM_WORKERS", 1),
-        _nonnegative_int("RETICLE_LLM_QUEUE", 2),
+        _nonnegative_int("RETICLE_LLM_QUEUE", 0),
         _TIMEOUT_LLM,
     ),
 }

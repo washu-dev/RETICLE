@@ -331,8 +331,33 @@ def test_a_queued_caller_outlasts_the_job_it_is_waiting_behind() -> None:
         # With `workers` running in parallel, the last of `waiting` callers waits about
         # ceil(waiting / workers) jobs. If the timeout is under one job length, the
         # queue is decorative: every caller who ever waits is rejected.
+        # A queue only helps when the caller at the back can still be served. With a
+        # 24s LLM round trip under a 30s gateway there is no such depth: one call
+        # barely fits and anyone behind it is killed waiting. So a workload whose job
+        # cannot run twice inside the ceiling must have no waiting room at all, and
+        # every other workload must have one it can actually drain.
+        if 2 * job > execution._GATEWAY_CEILING:
+            assert waiting == 0, (
+                f"{name}: one job is {job}s under a {execution._GATEWAY_CEILING}s "
+                "gateway, so anyone who queues is guaranteed a 504 — do not queue them"
+            )
+            continue
+
+        # A caller admitted to the waiting room has to outlast the job in front of
+        # them. Under a timeout shorter than one job, the queue is decorative: every
+        # caller who ever waits is rejected, which is the bug this test exists for.
         assert timeout >= job, (
             f"{name}: a caller is turned away after {timeout}s but one job takes ~{job}s, "
             "so nobody who queues can ever be served"
         )
+
         assert waiting >= 1, f"{name}: no waiting room at all — any overlap is rejected"
+        assert timeout < execution._GATEWAY_CEILING, (
+            f"{name}: would hold a caller {timeout}s, past the "
+            f"{execution._GATEWAY_CEILING}s gateway timeout"
+        )
+        drain = -(-waiting // workers) * job + job
+        assert drain <= execution._GATEWAY_CEILING, (
+            f"{name}: the last of {waiting} queued callers is served at ~{drain}s, "
+            f"past the {execution._GATEWAY_CEILING}s gateway timeout"
+        )
