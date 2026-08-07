@@ -204,10 +204,15 @@ h2 .em.adv{color:var(--adv)}
 .cpanel.off li::before{content:"?"; color:var(--adv); font-family:var(--mono); font-size:14px}
 
 /* ---- people (leaders / faculty / team / design) ---- */
-.people{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(28px,6vw,90px); margin-top:26px; justify-items:center}
+.people{display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(28px,6vw,90px); margin-top:clamp(40px,7vh,90px); justify-items:center}
 .people.one{grid-template-columns:1fr; max-width:340px; margin-left:auto; margin-right:auto}
 .people.three{grid-template-columns:repeat(3,1fr); gap:clamp(20px,4vw,54px)}
+/* Names only. The portraits were never in the repo — assets/people/*.jpg was
+   referenced but never committed, so every one of these fell through to its
+   initials. Two initials in a circle is not a portrait, it is the absence of one
+   drawn at 280px, so the circles are gone and the names carry the slide. */
 .person{display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px}
+.people{align-items:start}
 .pav{position:relative; width:clamp(170px,22vw,280px); aspect-ratio:1; border-radius:50%;
   overflow:hidden; background:#fff; border:1px solid var(--grid)}
 .pav.miss{border:1.5px dashed var(--grid); background:#FBFAF7}
@@ -475,6 +480,52 @@ h2 .em.adv{color:var(--adv)}
   font-family:var(--disp); font-weight:500; font-size:clamp(28px,3.9vw,46px);
   letter-spacing:-.01em; color:var(--ink); line-height:1.1}
 .ask3 em{font-style:normal; color:var(--adv)}
+
+/* A screenshot that stands alone has to fit under its title, not push it off the
+   slide. width:100% is right inside the three-up grid, where the column sets the
+   size; on its own it lets a 3418px-wide capture set the height and the heading
+   goes over the top edge. This caps the height instead and lets the width follow,
+   so the frame hugs the image at whatever size fits. */
+.shot-solo{
+  width:auto; max-width:100%; max-height:52vh; height:auto; margin:0 auto;
+}
+
+/* ── 05 · reflections, in their own words ────────────────────────────
+   Two columns, both people's text verbatim from the written report. This is the
+   densest slide in the deck and that is the right call here: it is the one place
+   where the point IS the sentences, the audience is meant to read while it is
+   spoken to, and paraphrasing someone's reflection to save space would be the
+   wrong kind of editing. Set small and generously leaded so a full column stays
+   readable from the back. */
+.refl{display:grid; grid-template-columns:1fr 1fr; gap:clamp(28px,4.5vw,64px); margin-top:26px}
+.refl .who{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  display:flex; align-items:center; gap:11px; margin-bottom:14px;
+}
+.refl .who::before{content:''; width:22px; height:2px; border-radius:1px; background:currentColor}
+.refl .r-a .who{color:var(--ess)}
+.refl .r-o .who{color:var(--adv)}
+.refl .nm{font-family:var(--disp); font-size:clamp(20px,2.2vw,27px); font-weight:500; line-height:1.15;
+  margin-bottom:12px; color:var(--ink)}
+.refl blockquote{
+  margin:0; font-size:clamp(12.5px,1.05vw,15px); line-height:1.62; color:#2C3037;
+  padding-left:16px; border-left:2px solid var(--grid);
+}
+.refl blockquote b{color:var(--ink); font-weight:600}
+
+/* ── 03 · what the FANCD2 neighbourhood actually contains ────────────
+   Three rows, because the grouping is the argument. Finding six genes whose
+   names all start FANC would prove very little — symbol prefixes travel together
+   in any annotation. What the network found is the core complex that modifies
+   FANCD2, the partner it binds, and the downstream repair machinery it hands to:
+   three layers of one pathway, from screens that were never told any of it. */
+.falist{display:grid; grid-template-columns:auto 1fr; gap:7px 18px; align-items:baseline; margin-top:20px}
+.falist .fk{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--mute); white-space:nowrap;
+}
+.falist .fg{font-family:var(--mono); font-size:14.5px; color:var(--ess); letter-spacing:.02em}
+.falist .fg i{font-style:normal; color:var(--grid); padding:0 3px}
 
 /* three ways the search fails today */
 .fails{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
@@ -1151,40 +1202,22 @@ h2 .em.adv{color:var(--adv)}
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
     <div class="eyebrow" data-anim><b>03</b> — the result</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">FANCD2 rebuilds its own repair pathway, from screen data alone.</h2>
-    <div class="ex2" data-anim style="--d:2; margin-top:22px">
-      <div>
-        <div class="shotwrap">
-          <img class="shot" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4.2vw,52px); max-width:26ch">Our network rebuilt FANCD2&rsquo;s repair pathway.</h2>
+    <div class="falist" data-anim style="--d:2">
+      <div class="fk">fa core complex</div>
+      <div class="fg">FANCG <i>·</i> FANCL <i>·</i> FANCE <i>·</i> FANCF <i>·</i> FANCM <i>·</i> UBE2T</div>
+      <div class="fk">its partner</div>
+      <div class="fg">FANCI</div>
+      <div class="fk">downstream repair</div>
+      <div class="fg">RAD51D <i>·</i> XRCC3 <i>·</i> MCM8 <i>·</i> MCM9 <i>·</i> RFWD3</div>
+    </div>
+    <div data-anim style="--d:4; margin-top:20px">
+      <div class="shotwrap">
+          <img class="shot shot-solo" src="assets/reticle_network_fancd2.png" alt="RETICLE network for FANCD2"
                onerror="this.style.display='none';this.parentNode.querySelector('.shotmiss').style.display='flex';">
           <div class="shotmiss">RETICLE network — FANCD2<br><code>assets/reticle_network_fancd2.png</code></div>
         </div>
-      </div>
-      <div>
-        <div class="exread">what came back</div>
-        <ul class="exmini">
-          <li><span class="ek">found</span>FANCA, FANCB, FANCC, FANCE, FANCL, FANCM, UBE2T, FAAP100 — <b>the Fanconi anaemia core complex</b>.</li>
-          <li><span class="ek">graded</span>12 of the 17 edges are <b>tier 1</b> — both channels agreeing.</li>
-          <li><span class="ek">never used</span>No pathway database, no annotation, no literature. Only which knockouts died together.</li>
-        </ul>
-      </div>
     </div>
-  </div>
-</section>
-
-<!-- 03.10 · PREDICTION -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>03</b> — step four</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:33ch">If we trust the neighbours, we can name what a dark gene does.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">1 · gather</div><div class="body">Its co-essential neighbours and <b>their</b> known functions.</div></div>
-      <div class="nf"><div class="step">2 · propose</div><div class="body">A shared process it is <b>not yet annotated with</b>.</div></div>
-      <div class="nf"><div class="step">3 · verify</div><div class="body">Re-checked: novelty, and <b>every cited neighbour</b>.</div></div>
-      <div class="nf"><div class="step">4 · label</div><div class="body">Ships as <b>verified</b>, single-supporter, or rejected.</div></div>
-    </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">A cited partner that is not really in the neighbourhood is dropped before you see it. <b style="color:var(--ink)">Leave-one-out says the signal is real, not circular.</b></p>
   </div>
 </section>
 
@@ -1198,50 +1231,44 @@ h2 .em.adv{color:var(--adv)}
 </section>
 
 <!-- 04.1 · WET LAB -->
-<section class="slide">
+<section class="slide hero">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal one</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:30ch">Take one prediction to the bench and find out if we are right.</h2>
-    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>Every prediction already ships as a <b>testable claim</b>: this gene participates in that process, because these named partners do.</span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">CORUM says how often an edge is a real complex. Only an experiment says whether a <b style="color:var(--ink)">new</b> claim is true. <b style="color:var(--ink)">Nobody has run one yet.</b></p>
+    <p class="htxt" data-anim><span class="em" style="color:var(--ess)">Wet lab verifications</span></p>
   </div>
 </section>
 
-<!-- 04.2 · OTHER LABS -->
+<section class="slide hero">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <p class="htxt" data-anim><span class="em" style="color:var(--ess)">Connect with labs.</span></p>
+  </div>
+</section>
+
+<section class="slide hero">
+  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+  <div class="slide-inner">
+    <p class="htxt" data-anim><span class="em" style="color:var(--adv)">Develop RETICLE API</span></p>
+  </div>
+</section>
+
 <section class="slide">
   <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal two</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Every new screen makes the network sharper for everyone.</h2>
-    <div class="netflow" data-anim style="--d:2">
-      <div class="nf"><div class="step">today</div><div class="body"><b>2,157</b> published screens · <b>5,077</b> genes reach the network.</div></div>
-      <div class="nf"><div class="step">the gap</div><div class="body">Another <b>15,500</b> genes have too little signal yet.</div></div>
-      <div class="nf"><div class="step">the fix</div><div class="body">Unpublished screens from labs like ours.</div></div>
-      <div class="nf"><div class="step">the return</div><div class="body">A contributing lab sees its screen <b>placed in context</b>.</div></div>
+    <div class="eyebrow" data-anim><b>05</b> — DTRC</div>
+    <h2 data-anim style="--d:1; font-size:clamp(28px,4vw,50px)">Reflections</h2>
+    <div class="refl" data-anim style="--d:2">
+      <div class="r-a">
+        <div class="who">student contributor</div>
+        <div class="nm">Aaron Gao</div>
+        <blockquote>My role was to build a data pipeline that transforms more than two thousand CRISPR-screen datasets into <b>interpretable insights about gene function</b>. I used Python, PostgreSQL, and WashU&rsquo;s RIS infrastructure to build the foundation, while learning to work with bioinformatics resources such as BioGRID ORCS, Gene Ontology, Reactome, and STRING. I also learned to apply LLMs to the interpretation layer, and &mdash; just as importantly &mdash; to <b>build the checks that verify what a model produces</b> against the underlying data before a user ever sees it. Another important skill I developed was cloud computing: with guidance from our technical lead, I learned how to turn a local application into a cloud-based tool other researchers could access. The most challenging part was that <b>real data does not arrive clean or consistent</b>, and much of the work was making it trustworthy before any analysis could mean anything. Working with researchers from different disciplines was one of the most valuable parts of this experience: I thought in pipelines and benchmarks, while the biology side of the team thought in pathways and whether a result would hold up at the bench. I learned that <b>a statistically strong result is not the same as a biologically meaningful one</b>, and that technical knowledge is most valuable when it addresses a real scientific need.</blockquote>
+      </div>
+      <div class="r-o">
+        <div class="who">student contributor</div>
+        <div class="nm">Oseremen Ojiefoh</div>
+        <blockquote>My role was on the front end &mdash; taking the team&rsquo;s research prototypes and turning them into <b>a web application a biologist could actually use</b>, and handling the deployment side so our work went live automatically. A lot of the job was <b>translation</b>: sitting between the science and the software, taking the researchers&rsquo; questions and user stories and figuring out how to express them as an interface. The most challenging &mdash; and most rewarding &mdash; part was working across disciplines. I&rsquo;m not a biologist, so I had to learn enough of the science to design for it, and the researchers had to see their ideas take shape as something clickable. I picked up real skills in cloud deployment, CI/CD, and single sign-on that I&rsquo;d only read about before, and I learned <b>how much of good software is just clear communication</b> with people who think differently than you do.</blockquote>
+      </div>
     </div>
-    <p class="tag" data-anim style="--d:3; margin-top:26px">This is the part that compounds. <b style="color:var(--ink)">Coverage is not a software problem — it is a collaboration problem.</b></p>
-  </div>
-</section>
-
-<!-- 04.3 · API -->
-<section class="slide">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="eyebrow" data-anim><b>04</b> — goal three</div>
-    <h2 data-anim style="--d:1; font-size:clamp(30px,4.8vw,58px); max-width:32ch">Open the API so other tools can ask our questions.</h2>
-    <div class="callout" data-anim style="--d:2; margin-top:30px"><span class="dot"></span><span>The whole product is already a REST API — the website is just its first client. <b>Documenting and opening it is a small step with a large reach.</b></span></div>
-    <p class="tag" data-anim style="--d:3; margin-top:28px">A pipeline could score its hits against 2,157 screens without a browser. <b style="color:var(--ink)">The data is only useful if it can leave the page.</b></p>
-  </div>
-</section>
-
-<section class="slide divider">
-  <div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
-  <div class="slide-inner">
-    <div class="partno" data-anim>05 — DTRC · both</div>
-    <h2 data-anim style="--d:1">Reflections</h2>
-    <p class="lede" data-anim style="--d:2">Most valuable thing learned · what challenged us · what we're taking forward.</p>
-    <div class="stubtag" data-anim style="--d:3"><span></span>to be drafted · ~1:00</div>
   </div>
 </section>
 
@@ -1255,19 +1282,9 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1; font-size:clamp(34px,5.7vw,68px)">Our leaders</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/sourabh.jpg" alt="Sourabh Sharma"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">SS</span>
-        </div>
         <figcaption><b>Sourabh Sharma</b><span>Project Lead · DI2</span></figcaption>
       </figure>
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/saif.jpg" alt="Saif Arif"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">SA</span>
-        </div>
         <figcaption><b>Saif Arif</b><span>Mini-DI2 Lead</span></figcaption>
       </figure>
     </div>
@@ -1284,19 +1301,9 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">Our faculty</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/orvedahl.jpg" alt="Dr. Anthony Orvedahl"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">AO</span>
-        </div>
         <figcaption><b>Dr. Anthony Orvedahl</b><span>Principal Investigator · Orvedahl Lab</span></figcaption>
       </figure>
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/perlin.jpg" alt="Eli Perlin"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">EP</span>
-        </div>
         <figcaption><b>Eli Perlin</b><span>Research Technician · Orvedahl Lab</span></figcaption>
       </figure>
     </div>
@@ -1313,20 +1320,10 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">The team</h2>
     <div class="people" data-anim style="--d:2">
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/oseremen.jpg" alt="Oseremen Ojiefoh"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">OO</span>
-        </div>
         <figcaption><b>Oseremen Ojiefoh</b><span>BS Electrical Engineering &rsquo;28<br>web platform · deployment</span></figcaption>
       </figure>
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/aaron.jpg" alt="Aaron Gao"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">AG</span>
-        </div>
-        <figcaption><b>Aaron Gao</b><span>BS Computer Science &amp; Statistics &rsquo;28<br>data pipeline · harmonization</span></figcaption>
+        <figcaption><b>Aaron Gao</b><span>BS Computer Science &amp; Statistics &rsquo;28<br>data pipeline · gene network</span></figcaption>
       </figure>
     </div>
   </div>
@@ -1342,11 +1339,6 @@ h2 .em.adv{color:var(--adv)}
     <h2 data-anim style="--d:1">Design support</h2>
     <div class="people one" data-anim style="--d:2">
       <figure class="person">
-        <div class="pav">
-          <img src="final_presentation_assets/people/tejas.jpg" alt="Tejas"
-               onerror="this.style.display='none';this.parentNode.classList.add('miss');">
-          <span class="pin">T</span>
-        </div>
         <figcaption><b>Tejas</b><span>Design Support</span></figcaption>
       </figure>
     </div>
